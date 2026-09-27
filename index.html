@@ -309,6 +309,7 @@ input[type=file]{display:none}
         <input type="file" id="greg-load-in" accept=".notator,.json" style="display:none" onchange="gregLoadPiece(this)">
         <button class="b" onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (benötigt API-Key rechts)">&#128196; PDF lesen</button>
         <input type="file" id="greg-pdf-in" accept=".pdf" style="display:none" onchange="gregLoadPDF(this)">
+        <button id="greg-pdf-panel-toggle" class="b" onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:2px 6px;display:none" title="Original-PDF-Panel ein-/ausblenden">&#128196; Original</button>
         <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird nicht gespeichert" style="width:150px;font-size:9px;padding:1px 4px;background:#0a1406;color:#6b8a60;border:1px solid #2a3820;outline:none">
       </div>
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
@@ -404,13 +405,15 @@ input[type=file]{display:none}
         <div style="font-size:9px;color:#6b8a60;font-variant:small-caps;cursor:pointer;user-select:none" onclick="gregToggleNeumes()" id="greg-neume-hdr">▾ Neumen</div>
         <div id="greg-neume-grid" style="display:flex;flex-wrap:wrap;gap:2px;padding:2px 0"></div>
         <div id="greg-neume-hint" style="font-size:9px;color:#6b8a60;padding:1px 0">→ Klick auf Notenlinie = 1. Ton setzen</div>
+        <button id="greg-finish-open-neume" class="b" onclick="gregFinishPendingNeume()" style="display:none;font-size:9px;padding:1px 6px;margin-bottom:2px" title="Neume mit den bisher gesetzten Noten abschliessen (oder Enter-Taste)">✓ Fertig (Enter)</button>
         <div style="display:flex;gap:4px;align-items:center">
           <span style="font-size:9px;color:#6b8a60;min-width:55px">Silbe</span>
           <input id="greg-syllable" type="text" placeholder="z.B. Ky-" style="flex:1;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px"><input type="checkbox" id="greg-mora"> Mora (.)</label>
-          <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px"><input type="checkbox" id="greg-iktus"> Iktus (')</label>
+          <span style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px" title="Mora (.) auf einer oder mehreren Noten dieses Neumes — pro Note einzeln wählbar, z.B. beide Noten eines Podatus/einer Clivis">Mora (.): <label style="display:flex;align-items:center"><input type="checkbox" id="greg-mora-n1">N1</label><label style="display:flex;align-items:center"><input type="checkbox" id="greg-mora-n2">N2</label><label style="display:flex;align-items:center"><input type="checkbox" id="greg-mora-n3">N3</label><label style="display:flex;align-items:center"><input type="checkbox" id="greg-mora-n4">N4</label></span>
+          <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px"><input type="checkbox" id="greg-iktus" onchange="gregUpdateIktusUI()"> Iktus (')</label>
+          <span id="greg-iktus-pos-w" style="font-size:9px;color:#6b8a60;display:none;align-items:center;gap:2px"><select id="greg-iktus-pos" style="font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px"><option value="">Standard</option><option value="above">oben</option><option value="below">unten</option></select></span>
           <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px"><input type="checkbox" id="greg-episema" onchange="gregUpdateEpisemaUI()"> Episema (_)</label>
         </div>
       </div>
@@ -427,6 +430,8 @@ input[type=file]{display:none}
         <button class="b" onclick="gregSetAccidental('x')" style="font-size:10px;padding:0px 5px" title="b molle (Halbton tiefer) — gilt für nächste Note">b&#x266D;</button>
         <button class="b" onclick="gregSetAccidental('#')" style="font-size:10px;padding:0px 5px" title="Diesis (Halbton höher) — gilt für nächste Note">&#x266F;</button>
         <button class="b" onclick="gregSetAccidental('y')" style="font-size:10px;padding:0px 5px" title="Auflösungszeichen — gilt für nächste Note">&#x266E;</button>
+        <button class="b" onclick="gregAddDirective('Ant.')" style="font-size:10px;padding:0px 5px" title="Ant. (Antiphon-Rubrik, kursiv, eigene Silbe ohne Note)"><i>Ant.</i></button>
+        <button class="b" onclick="gregAddDirective('Ps.')" style="font-size:10px;padding:0px 5px" title="Ps. (Psalm-Rubrik, kursiv, eigene Silbe ohne Note)"><i>Ps.</i></button>
         <button class="b" onclick="gregAddDirective('ij.')" style="font-size:10px;padding:0px 5px" title="ij. (Doppel-Antiphon, kursiv)"><i>ij.</i></button>
         <button class="b" onclick="gregAddDirective('iij.')" style="font-size:10px;padding:0px 5px" title="iij. (Dreifach-Antiphon, kursiv)"><i>iij.</i></button>
         <button class="b" onclick="gregAddLinebreak()" style="font-size:10px;padding:0px 5px" title="Neue leere Notenlinie einfügen">&#9135; Linie</button>
@@ -439,6 +444,8 @@ input[type=file]{display:none}
         <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px" title="Oriscus: spezielle Neume"><input type="checkbox" id="greg-oriscus"> Orisc.</label>
         <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px" title="Strophicus: runde Note"><input type="checkbox" id="greg-strophicus"> Stroph.</label>
         <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px" title="Pressus: Note mit Druck"><input type="checkbox" id="greg-pressus"> Pres.</label>
+        <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px" title="Quilisma: gezackte Verzierungsnote (steht in echten Neumen meist auf einer Note VOR einem Aufstieg, z.B. 1. Note eines Podatus)"><input type="checkbox" id="greg-quilisma" onchange="gregUpdateQuilismaUI()"> Quilisma</label>
+        <span id="greg-quilisma-pos-w" style="font-size:9px;color:#6b8a60;display:none;align-items:center;gap:2px">auf <select id="greg-quilisma-pos" style="font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px"><option value="1">Note 1</option><option value="2">Note 2</option><option value="3">Note 3</option><option value="4">Note 4</option></select></span>
       </div>
       <div style="flex:1;overflow-y:auto;padding:4px">
         <div style="font-size:9px;color:#6b8a60;padding:2px 4px;font-variant:small-caps;letter-spacing:.05em">Einträge</div>
@@ -454,7 +461,7 @@ input[type=file]{display:none}
             <button class="b" onclick="gregDownloadGABC()" style="font-size:9px;padding:0px 5px" title="GABC als .gabc-Datei speichern">&#8595; .gabc</button>
           </div>
         </div>
-        <textarea id="greg-gabc-out" readonly spellcheck="false" style="width:100%;height:45px;font-size:9px;background:#0a1406;color:#6b8a60;border:1px solid #2a3820;padding:3px;resize:none;outline:none;font-family:monospace;box-sizing:border-box"></textarea>
+        <textarea id="greg-gabc-out" readonly spellcheck="false" style="width:100%;height:85px;font-size:9px;background:#0a1406;color:#6b8a60;border:1px solid #2a3820;padding:3px;resize:none;outline:none;font-family:monospace;box-sizing:border-box"></textarea>
       </div>
       <div id="greg-gabc-import-panel" style="display:none;padding:4px 8px;background:#0d1a08;border-top:1px solid #4a7a40">
         <div style="font-size:9px;color:#a8d878;margin-bottom:2px;font-variant:small-caps">GABC importieren</div>
@@ -467,18 +474,30 @@ input[type=file]{display:none}
     </div>
     <div id="greg-drag-handle" style="width:5px;flex-shrink:0;background:#2a3820;cursor:col-resize;position:relative;z-index:10;transition:background .15s" onmouseenter="this.style.background='#4a7a40'" onmouseleave="this.style.background='#2a3820'"></div>
     <div id="greg-canvas-wrap" style="flex:1;overflow:auto;background:#ffffff;padding:20px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start">
-      <div id="greg-pdf-nav" style="display:none;align-items:center;gap:6px;padding:4px 0;font-size:10px;color:#8b9a70;margin-bottom:8px">
-        <button class="b" onclick="gregPdfPage(-1)" style="font-size:10px;padding:1px 6px">&#9664;</button>
-        <span id="greg-pdf-page-lbl">S. 1/1</span>
-        <button class="b" onclick="gregPdfPage(1)" style="font-size:10px;padding:1px 6px">&#9654;</button>
-        <button class="b" onclick="gregClearPDF()" style="font-size:10px;padding:1px 6px;color:#c05050">&#10005; PDF</button>
-      </div>
       <div id="greg-svg-original-slot" style="position:relative;width:100%">
-        <canvas id="greg-pdf-bg" style="display:none;position:absolute;top:0;left:0;width:100%;opacity:0.35;pointer-events:none;z-index:0"></canvas>
         <div id="greg-svg-wrap" style="background:transparent;position:relative;z-index:1;padding:0;width:100%;min-height:200px;box-sizing:border-box"></div>
       </div>
       <!-- Multi-section container: sections rendered as draggable divs -->
       <div id="greg-sections-container" style="display:none;position:relative;width:100%;min-height:400px"></div>
+    </div>
+    <!-- Runde 65: Original-PDF-Seitenpanel — ersetzt die frühere 35%-Geister-
+         Canvas hinter der Notation (schlecht lesbar für beides). Zeigt die
+         geladene PDF-Seite in voller Deckkraft, ausklappbar per Ziehleiste. -->
+    <div id="greg-pdf-drag-handle" style="display:none;width:5px;flex-shrink:0;background:#2a3820;cursor:col-resize;position:relative;z-index:10;transition:background .15s" onmouseenter="this.style.background='#4a7a40'" onmouseleave="this.style.background='#2a3820'"></div>
+    <div id="greg-pdf-panel" style="display:none;width:360px;min-width:200px;flex-shrink:0;background:#1a2414;border-left:1px solid #3a4a30;flex-direction:column;overflow:hidden">
+      <div style="padding:4px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:9px;color:#6b8a60;font-variant:small-caps;flex:1">Original-PDF</span>
+        <span id="greg-pdf-nav" style="display:none;align-items:center;gap:6px">
+          <button class="b" onclick="gregPdfPage(-1)" style="font-size:10px;padding:1px 6px">&#9664;</button>
+          <span id="greg-pdf-page-lbl">S. 1/1</span>
+          <button class="b" onclick="gregPdfPage(1)" style="font-size:10px;padding:1px 6px">&#9654;</button>
+        </span>
+        <button class="b" onclick="gregClearPDF()" style="font-size:10px;padding:1px 6px;color:#c05050" title="Original-PDF komplett entfernen">&#10005; PDF</button>
+        <button class="b" onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:1px 6px" title="Panel schliessen (Original bleibt geladen, über Toolbar-Knopf wieder einblendbar)">&#8722;</button>
+      </div>
+      <div style="flex:1;overflow:auto;padding:8px;background:#0a0f08">
+        <canvas id="greg-pdf-bg" style="display:none;width:100%"></canvas>
+      </div>
     </div>
   </div>
   <div id="greg-status" style="font-size:10px;color:#8b9a70;padding:3px 10px;background:#121c0e;border-top:1px solid #3a4a30">Bereit — Neume wählen, Silbe eingeben, dann auf Notenlinie klicken</div>
@@ -1331,8 +1350,8 @@ let _gregScore = null, _gregCtxtRef = null, _gregPending = null;
 const GREG_CLEF_MAP = {'do':'c3','do4':'c4','fa':'f3','fa4':'f4'};
 const NEUME_PITCHES = {
   punctum:1, virga:1, quilisma:1,
-  podatus:2, clivis:2, salicus:2,
-  torculus:3, porrectus:3, scandicus:3, climacus:3,
+  podatus:2, clivis:2,
+  torculus:3, porrectus:3, scandicus:3, climacus:3, salicus:3,
   // Extended
   apostropha:1, distropha:1, bivirga:1, trivirga:1,
   puncta_inclinata:3, pes_subpunctis:4, pes_quassus:2,
@@ -1340,6 +1359,28 @@ const NEUME_PITCHES = {
   // Bistropha/Tristropha: free note choices (not locked to same pitch)
   bistropha:2, tristropha:3,
 };
+
+// Neumes in this list are not capped at their NEUME_PITCHES count -- that
+// number is only the MINIMUM before the neume can be finished. Added
+// 2026-08-10 for Climacus after surveying 45+ real GregoBase/Solesmes
+// chants for genuine "virga + puncta inclinata" usage (see NOTES): almost
+// every real-world occurrence has MORE than 2 trailing inclinata notes, and
+// exsurge's own Climacus class already supports an arbitrary number of
+// them (virgaAt(notes[0]).withInclinati(notes.slice(1))) -- only the
+// click-editor's fixed 3-click limit was artificially capping it. See
+// gregHandleClick (open-ended continuation) and gregFinishPendingNeume.
+const NEUME_OPEN_ENDED = ['climacus'];
+
+// Neume types whose legacy (manual/click-editor) formula in
+// buildSingleNeumeGABC can carry a Quilisma modifier on one of their
+// notes -- added 2026-08-10. Excludes types where a quilisma is not
+// meaningful: single-note types (Quilisma already exists as its own
+// dedicated neume), same-pitch-repeat types (Bistropha/Tristropha/
+// Bivirga/Trivirga/Distropha), and Puncta Inclinata (already
+// diamond-shaped, not compatible with the quilisma glyph).
+const QUILISMA_APPLICABLE = ['podatus','clivis','salicus','torculus','porrectus',
+  'scandicus','climacus','pes_subpunctis','pes_quassus',
+  'torculus_resupinus','porrectus_flexus','scandicus_flexus'];
 
 function staffPosToGabc(sp) {
   const code = sp + 6 + 97;
@@ -1376,7 +1417,7 @@ function buildSingleNeumeGABC(e) {
       else if (n.shape === 4) s += 's';  // Stropha
       else if (n.shape === 5) s += 'o';  // Oriscus
       if (n.episema)    s += '_';
-      if (n.ictus)      s += "'";
+      if (n.ictus)      s += "'" + (n.ictusPos === 'above' ? '1' : n.ictusPos === 'below' ? '0' : '');
       if (n.liquescent) s += '~';
       if (n.mora)       s += '.';
       return s;
@@ -1387,7 +1428,12 @@ function buildSingleNeumeGABC(e) {
   //    (used for entries created via the click-editor before this
   //    change, or hand-built entries without e.notes). ──────────────
   const rp = e.rawPitches || e.pitches;
-  const dot = e.mora?'.':'', ik = e.iktus?"'":'', ep = e.episema?'_':'';
+  const dot = e.mora?'.':'';
+  // Ictus position suffix ('1'=above, '0'=below, none=exsurge's own
+  // per-neume default) -- added 2026-08-10, see convertNote's
+  // n.ictusPos capture and gregEditEntry's "oben/unten" dropdown.
+  const ik = e.iktus ? ("'" + (e.iktusPos === 'above' ? '1' : e.iktusPos === 'below' ? '0' : '')) : '';
+  const ep = e.episema?'_':'';
   const liq = e.liquescent, oris = e.oriscus, stroph = e.strophicus, pres = e.pressus;
 
   function lastMod(note) {
@@ -1397,7 +1443,33 @@ function buildSingleNeumeGABC(e) {
     if (pres)   return note + '~';
     return note;
   }
-  const r = (i) => rp[i] || rp[0] || 'a';
+  // Quilisma modifier ('w'): applied generically here (not per switch-case
+  // below) so every legacy neume type that can sensibly carry one
+  // (QUILISMA_APPLICABLE, e.g. Podatus/Torculus/Climacus...) supports it on
+  // any one note, via e.quilisma + e.quilismaPos (1-based note index) --
+  // mirrors e.episema/e.episemaPos. Added 2026-08-10: fixes Quilisma being
+  // silently unrepresentable (and thus destroyed on save) for any manually
+  // edited or click-built multi-note neume. Deliberately excludes neume
+  // types with their OWN dedicated 'w' handling (e.g. case 'quilisma'
+  // below already appends its own 'w') to avoid a doubled "ww".
+  const quilismaHere = (i) => e.quilisma && e.quilismaPos && (e.quilismaPos - 1) === i && QUILISMA_APPLICABLE.includes(e.neume);
+  // Extra mora positions ('.' on notes OTHER than the last): e.moraExtra
+  // is an array of 1-based note indices, added 2026-08-10 alongside the
+  // existing e.mora/dot (which still always covers the LAST note, exactly
+  // as before -- unchanged, zero regression risk). Real gabc convention
+  // for "mora on a non-final note" is the dot placed right after THAT
+  // note's own pitch letter (e.g. "g.h" = mora on g, not h) -- which is
+  // exactly what embedding it into r(i) produces. Confirmed real-world
+  // need: e.g. a 2-note Podatus/Clivis where BOTH notes carry a mora, not
+  // just the last one.
+  const moraExtra = e.moraExtra || [];
+  const moraExtraHere = (i) => moraExtra.includes(i + 1) && (i + 1) !== rp.length;
+  const r = (i) => {
+    let p = rp[i] || rp[0] || 'a';
+    if (quilismaHere(i)) p += 'w';
+    if (moraExtraHere(i)) p += '.';
+    return p;
+  };
 
   // Accidentals are NOT emitted inline here — emitParenGroup() always
   // prepends a standalone accidental group ("(ix)(hi)" GABC convention)
@@ -1408,7 +1480,17 @@ function buildSingleNeumeGABC(e) {
     case 'quilisma':   return r(0) + 'w' + dot;
     case 'podatus':    return r(0) + lastMod(r(1)) + ep + ik + dot;
     case 'clivis':     return r(0) + lastMod(r(1)) + ep + ik + dot;
-    case 'salicus':    return r(0) + r(1) + 'v' + ep + dot;
+    // Salicus is intrinsically a 3-note figure (per exsurge's own Salicus
+    // class, which directly indexes notes[0..2] — and per real chant
+    // notation): punctum, then an ASCENDING note marked oriscus ('o'
+    // suffix — this is what exsurge's parser state machine keys off to
+    // even recognise the group as a Salicus at all, see podatusState ->
+    // salicusState transition, requires prevNote.shape===Oriscus), then a
+    // third, highest note that exsurge's Salicus.performLayout always
+    // draws as a virga regardless of any suffix on it. A 2-note "salicus"
+    // is not a distinct neume at all — 2 ascending notes are always parsed
+    // back as a plain Podatus (found+fixed 2026-07-22, see notator_workflow_rules).
+    case 'salicus':    return r(0) + r(1) + 'o' + r(2) + ep + ik + dot;
     case 'torculus':   {
       const epos = e.episemaPos || 3;
       return r(0) + (epos===1?ep:'') + r(1) + (epos===2?ep:'') + lastMod(r(2)) + (epos===3?ep:'') + ik + dot;
@@ -1419,9 +1501,23 @@ function buildSingleNeumeGABC(e) {
     }
     case 'scandicus':  {
       const epos = e.episemaPos || 3;
-      return r(0) + (epos===1?ep:'') + r(1) + (epos===2?ep:'') + lastMod(r(2)) + 'v' + (epos===3?ep:'') + dot;
+      // NOTE (fixed 2026-08-01, Runde 59): no trailing 'v' on the third note.
+      // A 'v' here forces exsurge's Scandicus to render as "podatus + virga"
+      // (see its own performLayout comment) instead of the correct/expected
+      // "punctum + podatus" -- plain ascending notes already classify as a
+      // Scandicus on their own (podatusState -> scandicusState), no 'v' modifier needed.
+      return r(0) + (epos===1?ep:'') + r(1) + (epos===2?ep:'') + lastMod(r(2)) + (epos===3?ep:'') + dot;
     }
-    case 'climacus':   return r(0) + 'v' + r(1) + lastMod(r(2)) + ep + dot;
+    case 'climacus':   {
+      // Virga on the first note, then an arbitrary number (>=2) of
+      // trailing puncta-inclinata-shaped notes -- uncapped 2026-08-10,
+      // see NEUME_OPEN_ENDED comment. Falls back to a 2-note tail if
+      // rp has only 3 entries total (unchanged old behaviour).
+      let s = r(0) + 'v';
+      const n = rp.length;
+      for (let i = 1; i < n; i++) s += (i === n - 1) ? lastMod(r(i)) : r(i);
+      return s + ep + dot;
+    }
     case 'bistropha':  return r(0) + 's' + r(1) + 's' + dot;
     case 'tristropha': return r(0) + 's' + r(1) + 's' + r(2) + 's' + dot;
     // Extended neume types
@@ -1446,15 +1542,27 @@ function buildSingleNeumeGABC(e) {
   }
 }
 
-function buildNeumeGABC(e) {
-  const parts = [buildSingleNeumeGABC(e)];
-  if (e.extra && e.extra.length) {
-    for (const ex of e.extra) parts.push(buildSingleNeumeGABC(ex));
-  }
-  return parts.join('/');
-}
-
 function gregEntriesToBody(entries, clefGabc) {
+  // WICHTIG (Session 21, per echtem Rendering-Test widerlegt): ein
+  // frueherer Versuch, ein Silben-"/" beim Export in <sp>/</sp> zu
+  // escapen (um es vor exsurges Schraegstrich-Verschlucken bei einem
+  // erneuten Import zu schuetzen), wurde hier bewusst wieder entfernt.
+  // Grund: <sp>...</sp> ist KEINE exsurge-Rendering-Funktion -- exsurge
+  // kennt dieses Tag beim Parsen ueberhaupt nicht (kein einziges
+  // Vorkommen von "sp>" in der ganzen Bibliothek) und zeigt es beim
+  // RENDERN darum als LITERALEN Text an ("V<sp>/</sp>." statt "V/.").
+  // <sp> wird nur von Notators eigenem cleanSyl() beim IMPORT einmalig
+  // interpretiert und entfernt -- die von gregEntriesToBody erzeugte
+  // GABC-Zeichenkette wird aber direkt an exsurge zum RENDERN
+  // weitergereicht (kein erneuter cleanSyl-Durchlauf dazwischen), darum
+  // brach das Escapen die sichtbare Notenausgabe. Ein bare "/" ausserhalb
+  // von <sp> wird von exsurge beim Parsen ohnehin schon verschluckt
+  // (lyric.text verliert es), UND ZWAR SCHON BEIM ALLERERSTEN RENDERN --
+  // das war folglich nie sichtbar unterschiedlich (die Notenausgabe zeigt
+  // so oder so nur "V." ohne Schraegstrich). Die reine TEXT-Roundtrip-
+  // Stabilitaet (Export-Text exakt gleich nach zweitem Reimport) ist damit
+  // zwar nicht mehr 100% garantiert, aber das betrifft nur die interne
+  // GABC-Zeichenkette, nie das tatsaechlich gerenderte Notenbild.
   const frags = [{text: '(' + clefGabc + ')', glue: false}];
 
   let prevRunHyphen = false;
@@ -1610,7 +1718,65 @@ function gregEntriesToBody(entries, clefGabc) {
     if (inRun) endRun();
     if (e.type === 'special')        { frags.push({text: e.text, glue:false}); }
     else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue:false}); }
-    else if (e.type === 'directive') { frags.push({text: '_' + e.text + '_()', glue:false}); }
+    // Exported as gabc's <i>...</i> HTML-style italic markup rather than
+    // the native "_..._()" underscore syntax (changed 2026-08-10, per
+    // user request): real-world sources (GregoBase, Source&Summit, ...)
+    // universally use <i>...</i>, and Notator's own import already
+    // recognizes it as the PRIMARY match (italicWholeMatch in
+    // gregImportGABCString) -- so this round-trips correctly and produces
+    // text that looks like what a Notator user would see when comparing
+    // against those external sources. The native "_..._()" import path
+    // (nativeItalicMatch) is kept for backward compatibility with already
+    // -exported older .gabc files and other native-gabc sources.
+    //
+    // Trailing "()" (2026-08-10 Runde 2, REVERTED 2026-08-13 Runde 3 --
+    // see below): briefly tried dropping "()" whenever a note-bearing
+    // entry followed directly, to match GregoBase's literal parenless
+    // source spelling ("<i>Ps.</i> Cán(...)"). That relies on exsurge's
+    // own "bare text glues onto the next note" behaviour -- which merges
+    // the directive's raw characters INTO the same lyric string as the
+    // following real syllable for RENDERING purposes, not just for
+    // Notator's own import bookkeeping. exsurge centers a lyric
+    // horizontally under its note by searching that merged string for its
+    // first vowel (Latin.findVowelSegment, checked in FIXED PRIORITY order
+    // a/e/i/o/u -- not left-to-right by position) -- so whenever the
+    // directive's own text happens to contain whichever vowel wins that
+    // priority search (confirmed via real testing: "Ant." always does, "a"
+    // is checked first; "iij." does too whenever the following syllable's
+    // first vowel is only "i"/"o"/"u", checked after "a"/"e"), the WHOLE
+    // note group visually shifts left onto the directive text itself
+    // instead of the real word -- exactly the "notes sit above Ant./iij.,
+    // not above the real syllable" bug reported 2026-08-13. "Ps."/"ij."
+    // happened to look fine only by coincidence (their own text has no
+    // vowel, or the following word's higher-priority vowel wins first).
+    //
+    // FIRST attempt (2026-08-13, Runde 3) was to keep "()" but glue it
+    // (NO gabc space) directly onto the following word, reasoning that
+    // exsurge's Gabc.splitWords() only treats a space as a WORD boundary
+    // when it follows ")" -- so gluing would keep everything as one
+    // compact gabc "word" while __syllablesRegex still split it into two
+    // independent Lyric objects internally. That part was correct, but
+    // it turned out to be solving a problem that didn't exist: per
+    // exsurge's OWN spacing code (checked directly, not guessed), the gap
+    // AFTER a notation is controlled entirely by that notation's own
+    // `trailingSpace` property -- `ctxt.interSyllableSpacing` (the
+    // "real" inter-word constant) is computed but never actually READ
+    // anywhere else in the whole library, i.e. dead/unused. Whether two
+    // notations sit in the same gabc "word" or in separate ones makes
+    // NO visual difference at all. The true cause of "Ps./Ant. floats
+    // with too much space around it" is that TextOnly's `trailingSpace`
+    // is never explicitly set during parsing (stays at exsurge's -1
+    // sentinel), which the generic layout fallback then resolves to
+    // `ctxt2.intraNeumeSpacing * 4` -- a FULL word-gap-sized default,
+    // regardless of gluing. Real fix (2026-08-13, Runde 4): a dedicated
+    // exsurge patch shrinks TextOnly's own trailingSpace directly (see
+    // patchTextOnlyTrailingSpace below, same proven technique as the
+    // existing patchDividerLeadingSpace for barlines) -- so the gabc text
+    // itself is free to go back to matching the real S&S/GregoBase source
+    // convention exactly: "()" WITH a normal space before the next word
+    // (as requested), with the tight visual spacing handled purely at the
+    // rendering layer instead.
+    else if (e.type === 'directive') { frags.push({text: '<i>' + e.text + '</i>()', glue:false}); }
     else if (e.type === 'dropcapletter') { frags.push({text: '<sp>' + e.text + '</sp>()', glue:false}); }
     else if (e.type === 'comment')   { /* no GABC output */ }
     else if (e.type === 'linebreak') { frags.push({text:'(Z)', glue:false}); lastWasLinebreak = true; continue; }
@@ -1799,14 +1965,6 @@ function gregEnableMultiSection() {
   window._gregMultiSection = true;
 }
 
-function gregDisableMultiSection() {
-  const svgWrapParent = document.getElementById('greg-svg-wrap').parentElement;
-  const secContainer = document.getElementById('greg-sections-container');
-  if (svgWrapParent) svgWrapParent.style.display = 'block';
-  if (secContainer) { secContainer.style.display = 'none'; secContainer.innerHTML = ''; }
-  window._gregMultiSection = false;
-}
-
 // Render ALL sections: active one goes into the real interactive #greg-svg-wrap
 // (moved into its slot in the section list), others render as static previews.
 function gregRenderAllSections() {
@@ -1824,21 +1982,18 @@ function gregRenderAllSections() {
 
   const realSvgWrap = document.getElementById('greg-svg-wrap');
   // Runde 64: CONFIRMED root cause of the recurring "riesiger Weissraum"
-  // bug, found via live DevTools measurement (not a guess this time) —
-  // #greg-svg-wrap carries a min-height that gregRenderPDFPage() sets to
-  // match the FULL loaded PDF page's pixel height (e.g. 2027px), for the
-  // single-section "notate directly over a PDF background" feature. That
-  // min-height is only ever reset back to 200px in gregClearPDF() — never
-  // when this same shared node gets reused as the ACTIVE section's wrap in
-  // multi-section mode. Once a PDF was loaded (even for a different
-  // section, even earlier), the active section's box was permanently
-  // forced to at least the PDF page's height, however short its own actual
-  // content — exactly the huge gap the user kept seeing depending on which
-  // section was active. The PDF-background canvas itself is already fully
-  // hidden in multi-section mode (gregEnableMultiSection sets its whole
-  // parent slot to display:none), so this min-height serves no visual
-  // purpose here at all — safe to unconditionally clear it on every
-  // multi-section render pass.
+  // bug, found via live DevTools measurement — #greg-svg-wrap used to carry
+  // a min-height that gregRenderPDFPage() set to match the loaded PDF
+  // page's pixel height, for the old "PDF als Geisterbild hinter der
+  // Notation"-Darstellung. That min-height was only ever reset in
+  // gregClearPDF() — never when this shared node got reused as the ACTIVE
+  // section's wrap in multi-section mode, forcing the active section's box
+  // to at least the PDF page's height regardless of its own content.
+  // Runde 65: gregRenderPDFPage() sets this min-height nowhere anymore at
+  // all (the PDF now renders full-opacity in its own side panel instead of
+  // behind #greg-svg-wrap), which removes the root cause at the source —
+  // this unconditional clear stays in place regardless, as a zero-cost
+  // safety net.
   realSvgWrap.style.minHeight = '0';
 
   // Measure a width ONCE, up front, and use it for EVERY section rendered
@@ -2052,6 +2207,7 @@ function gregRenderSectionPreview(sec, container) {
         container.innerHTML = svg;
         const svgEl = container.querySelector('svg');
         if (svgEl) {
+          gregNeutralizeRubricRed(svgEl);
           const nativeW = parseFloat(svgEl.getAttribute('width')) || layoutWidth;
           svgEl.style.cssText = 'background:transparent;display:block;pointer-events:none;';
           const neededPad = gregCalcTitlePad(nativeW, secTitle, secSubtitle);
@@ -2103,6 +2259,25 @@ function gregBuildGABCFor(sec) {
 // point for the bug where direct gregRender() calls (from input listeners,
 // click handler, undo/redo, etc.) bypassed gregRenderAllSections() and left
 // gregSections[] stale / inactive previews un-refreshed in multi-section mode.
+// exsurge hardcodes ANY occurrence of "V/.", "R/.", "A/." (any letter case)
+// inside a lyric to a special glyph font PLUS red fill (#f00) — see the
+// library's own generateSpansFromText markup scanner. This is completely
+// independent of ctxt.autoColor (which Notator sets false everywhere) and
+// cannot be configured; it's a fixed, deliberate library convention for the
+// traditional two-colour "rubric red" printing style. Our reference material
+// (GregoBase / Solesmes reprints used throughout this project) prints these
+// in plain black, so override just the colour after rendering — keep the
+// nicer "Exsurge Characters" glyph, only force it back to Notator's normal
+// ink black (#1a1a0a, matching gregRenderTitle/gregRenderExtraAnnotations).
+function gregNeutralizeRubricRed(svgEl) {
+  if (!svgEl) return;
+  svgEl.querySelectorAll('[style*="Exsurge Characters"]').forEach(function(el) {
+    if ((el.getAttribute('style') || '').indexOf('#f00') >= 0) {
+      el.style.fill = '#1a1a0a';
+    }
+  });
+}
+
 function gregRender() {
   if (window._gregMultiSection) gregRenderAllSections();
   else gregRenderActiveOnly();
@@ -2231,6 +2406,7 @@ function gregRenderGABCInto(gabc, wrap, cb) {
         wrap.innerHTML = svg;
         const svgEl = wrap.querySelector('svg');
         if (svgEl) {
+          gregNeutralizeRubricRed(svgEl);
           const zoom = ctxt._zoom || 1;
           const nativeW = parseFloat(svgEl.getAttribute('width')) || width;
           // First apply padding and title at native scale
@@ -2267,12 +2443,63 @@ function gregUpdateEpisemaUI() {
   epPos.style.display = (epCb.checked && multiNoteNeumes.includes(curNeume)) ? 'inline-block' : 'none';
 }
 
+// Shows/hides the "auf Note N" position dropdown for the top-toolbar
+// Quilisma checkbox, depending on whether it's checked and the currently
+// selected neume type can actually carry a quilisma (see
+// QUILISMA_APPLICABLE). Called on checkbox change AND whenever the neume
+// selection changes (see gregBuildNeumeGrid's button onclick).
+function gregUpdateQuilismaUI() {
+  const cb = document.getElementById('greg-quilisma');
+  const w = document.getElementById('greg-quilisma-pos-w');
+  if (!cb || !w) return;
+  const curNeume = (document.getElementById('greg-neume-sel')||{value:''}).value;
+  w.style.display = (cb.checked && QUILISMA_APPLICABLE.includes(curNeume)) ? 'inline-flex' : 'none';
+}
+
+// Enables/disables the 4 top-toolbar Mora checkboxes (N1..N4) depending on
+// how many notes the currently selected neume type has (NEUME_PITCHES) --
+// e.g. a 2-note Podatus only offers N1/N2, N3/N4 are disabled+unchecked so
+// a stale checked box from a previously selected longer neume can't leak
+// a mora onto a nonexistent note. Called on neume-selection change (see
+// gregBuildNeumeGrid) AND once on initial page load.
+function gregUpdateMoraUI() {
+  const curNeume = (document.getElementById('greg-neume-sel')||{value:'punctum'}).value;
+  const nPitch = NEUME_PITCHES[curNeume] || 1;
+  [1,2,3,4].forEach(p => {
+    const cb = document.getElementById('greg-mora-n'+p);
+    if (!cb) return;
+    const enabled = p <= nPitch;
+    cb.disabled = !enabled;
+    if (!enabled) cb.checked = false;
+    cb.closest('label').style.opacity = enabled ? '1' : '0.35';
+  });
+}
+
+// Shows/hides the "oben/unten" position dropdown for the top-toolbar
+// Iktus checkbox. Unlike Quilisma, Iktus can sit on any neume type
+// (including single notes), so no neume-type gating is needed here.
+function gregUpdateIktusUI() {
+  const cb = document.getElementById('greg-iktus');
+  const w = document.getElementById('greg-iktus-pos-w');
+  if (!cb || !w) return;
+  w.style.display = cb.checked ? 'inline-flex' : 'none';
+}
+
 function gregUpdateStatus() {
+  const finishBtn = document.getElementById('greg-finish-open-neume');
   if (_gregPending) {
     const rem = _gregPending._need - _gregPending.pitches.length;
-    gregGst('Neume ' + _gregPending.neume + ': noch ' + rem + ' Ton/Töne klicken (' + _gregPending.pitches.join('-') + ' bisher)');
+    const openEnded = NEUME_OPEN_ENDED.includes(_gregPending.neume);
+    const canFinish = openEnded && rem <= 0;
+    if (canFinish) {
+      gregGst('Neume ' + _gregPending.neume + ': ' + _gregPending.pitches.join('-') + ' bisher — weiter klicken für mehr Noten, oder [Enter]/"Fertig" zum Abschliessen');
+    } else {
+      gregGst('Neume ' + _gregPending.neume + ': noch ' + rem + ' Ton/Töne klicken (' + _gregPending.pitches.join('-') + ' bisher)');
+    }
+    if (finishBtn) finishBtn.style.display = canFinish ? 'inline-block' : 'none';
   } else {
     gregGst(gregEntries.length ? gregEntries.length + ' Einträge — Neume/Silbe wählen, klicken' : 'Neume wählen, Silbe eingeben, dann auf Notenlinie klicken');
+    if (finishBtn) finishBtn.style.display = 'none';
   }
 }
 
@@ -2344,13 +2571,25 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const neume = (document.getElementById('greg-neume-sel')||{value:'punctum'}).value;
   const nPitch = NEUME_PITCHES[neume] || 1;
   const syllable = (document.getElementById('greg-syllable')||{value:''}).value;
-  const mora = !!(document.getElementById('greg-mora')||{}).checked;
+  // Unified Mora-Checkboxen (N1..N4, kein separater ".mora"-Hacken mehr,
+  // 2026-08-10 Runde 2 -- Nutzerwunsch): welche Note die "letzte" ist,
+  // hängt vom Neumentyp ab (nPitch) -- wie bei Quilisma/Episema oben
+  // bereits etabliert, wird das anhand der Basis-Notenzahl bestimmt, nicht
+  // dynamisch bei offenen Neumen (Climacus) nachjustiert, sobald mehr als
+  // die Mindestzahl geklickt wird -- dieselbe bereits bestehende
+  // Einschränkung wie bei Quilisma-/Episema-Position.
+  const moraChecked = [1,2,3,4].filter(p => !!(document.getElementById('greg-mora-n'+p)||{}).checked);
+  const mora = moraChecked.includes(nPitch);
+  const moraExtra = moraChecked.filter(p => p < nPitch);
   const iktus = !!(document.getElementById('greg-iktus')||{}).checked;
+  const iktusPos = (document.getElementById('greg-iktus-pos')||{value:''}).value;
   const episema = !!(document.getElementById('greg-episema')||{}).checked;
   const liquescent = !!(document.getElementById('greg-liquescent')||{}).checked;
   const oriscus = !!(document.getElementById('greg-oriscus')||{}).checked;
   const strophicus = !!(document.getElementById('greg-strophicus')||{}).checked;
   const pressus = !!(document.getElementById('greg-pressus')||{}).checked;
+  const quilisma = !!(document.getElementById('greg-quilisma')||{}).checked;
+  const quilismaPos = parseInt((document.getElementById('greg-quilisma-pos')||{value:'1'}).value) || 1;
   const accidental = _gregAccidental || null;
 
   const isDescending = ['clivis','porrectus','climacus','puncta_inclinata','porrectus_flexus'].includes(neume);
@@ -2359,32 +2598,80 @@ function gregHandleClick(svgEl, clientX, clientY) {
     gregPush();
     if (nPitch === 1) {
       const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;
-      gregEntries.push({type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, iktus, episema, episemaPos, liquescent, oriscus, strophicus, pressus, accidental});
+      gregEntries.push({type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, accidental});
       if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
       _gregAccidental = null; // consume accidental
       gregRefreshList();
     } else {
-      _gregPending = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, iktus, episema, liquescent, oriscus, strophicus, pressus, _need:nPitch};
+      _gregPending = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, _need:nPitch};
       if (isDescending && nPitch > 1) gregGst(neume + ': höchste Note gewählt (' + gabcLetter + ') — jetzt tiefere Note(n) klicken');
       else gregUpdateStatus();
       gregRender();
     }
   } else {
     _gregPending.pitches.push(gregDefaultNoteCase(neume, _gregPending.pitches.length, gabcLetter));
-    if (_gregPending.pitches.length >= _gregPending._need) {
-      const e = _gregPending; delete e._need;
-      e.accidental = _gregAccidental || null;
-      gregEntries.push(e);
-      if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
-      _gregAccidental = null;
-      _gregPending = null;
-      gregRefreshList();
+    const reachedMin = _gregPending.pitches.length >= _gregPending._need;
+    if (reachedMin && !NEUME_OPEN_ENDED.includes(neume)) {
+      // Fixed-length neume (Podatus, Torculus, ...): finish immediately,
+      // as before.
+      gregFinishPendingNeume();
     } else {
+      // Either still short of the minimum, or an open-ended neume
+      // (Climacus) that has reached its minimum but can keep accepting
+      // more clicks until the user explicitly finishes it (Enter key,
+      // "Fertig"-button, or by picking a different neume).
       gregUpdateStatus();
       gregRender();
     }
   }
 }
+
+// Finalizes the neume currently being built via multiple staff clicks
+// (_gregPending) and adds it to gregEntries. Used both for the automatic
+// finish of fixed-length neumes (once their required click count is
+// reached) and for the explicit finish of open-ended neumes like Climacus
+// (see NEUME_OPEN_ENDED) once their minimum has been met.
+function gregFinishPendingNeume() {
+  if (!_gregPending) return;
+  const e = _gregPending; delete e._need;
+  e.accidental = _gregAccidental || null;
+  gregEntries.push(e);
+  if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
+  _gregAccidental = null;
+  _gregPending = null;
+  gregRefreshList();
+}
+
+// Cancels a neume currently being built via multiple staff clicks, discarding
+// any notes already placed for it. Bound to Escape (see keydown listener
+// below) -- mainly useful for open-ended neumes (Climacus), which no longer
+// finish themselves automatically once their minimum click count is reached.
+function gregCancelPendingNeume() {
+  if (!_gregPending) return;
+  _gregPending = null;
+  gregUpdateStatus();
+  gregRender();
+}
+
+// Enter finishes an open-ended pending neume (Climacus) once its minimum
+// click count is reached -- mirrors the "Fertig" button. Escape cancels
+// any pending multi-click neume outright. Both are no-ops without a
+// _gregPending, so this listener stays silent everywhere else in the app;
+// the INPUT/SELECT guard keeps it from hijacking Enter in text fields
+// (e.g. the syllable box) or a Select dropdown.
+document.addEventListener('keydown', e => {
+  if (!_gregPending) return;
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
+  if (e.key === 'Enter') {
+    if (NEUME_OPEN_ENDED.includes(_gregPending.neume) && _gregPending.pitches.length >= _gregPending._need) {
+      e.preventDefault();
+      gregFinishPendingNeume();
+    }
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    gregCancelPendingNeume();
+  }
+});
 
 // ── Entry list ───────────────────────────────────────────────────
 let _gregDragIdx = null;
@@ -2612,12 +2899,122 @@ function gregEditEntry(i) {
       const o=document.createElement('option'); o.value=v; o.textContent=l;
       if(v===(e.accidental||'')) o.selected=true; accSel.appendChild(o);
     });
-    const {wrap:moraW,cb:moraI}=chk('.mora',e.mora,'Mora (.)');
+    // Mora (.): unified N1..N4 model (2026-08-10, Runde 2 -- Nutzerwunsch:
+    // "der Standard-Mora-Hacken sollte ganz verschwinden, stattdessen
+    // Mora N1/N2/N3 gesetzt werden"). No separate ".mora"/"letzte Note"
+    // toggle anymore -- mora on the LAST note is simply the checkbox for
+    // that note's own position, exactly like any earlier note. Internally
+    // still maps onto the existing e.mora (last position) + e.moraExtra
+    // (earlier positions) fields on save -- buildSingleNeumeGABC's r(i)/
+    // dot logic is completely untouched, only this UI layer changed.
+    // Pre-filled from e.moraExtra if already explicitly set by THIS edit
+    // form on a previous save, else from e.notes (precise import data:
+    // which note positions carry n.mora===true) -- e.g. "fecit"'s Clivis,
+    // imported with mora on BOTH notes, now correctly shows N1 AND N2
+    // checked, not just N2.
+    //
+    // IMPORTANT: e.mora alone is NOT a reliable "already explicitly set by
+    // the user" signal -- makeNeumeEntry() ALWAYS sets it on import
+    // (`mora: notes.some(x => x.mora)`, never undefined), so checking
+    // `e.mora !== undefined` here would incorrectly treat every freshly
+    // imported entry as "already handled" and only ever show the LAST
+    // note's mora, silently discarding earlier notes' mora on the very
+    // first open+save. e.moraExtra, by contrast, is ONLY ever set by this
+    // same save handler below -- never by import -- so its presence is a
+    // reliable signal that e.mora/e.moraExtra (not e.notes) are the
+    // authoritative, already-consolidated source.
+    let initMora = [];
+    if (e.moraExtra !== undefined) {
+      const noteCount = (e.pitches||[]).length || 1;
+      if (e.mora) initMora.push(noteCount);
+      e.moraExtra.forEach(p => initMora.push(p));
+    } else if (e.notes && e.notes.length) {
+      e.notes.forEach((n,i) => { if (n.mora) initMora.push(i + 1); });
+    }
+    const moraW = document.createElement('span');
+    moraW.style.cssText = 'font-size:9px;color:#a8d878;display:inline-flex;align-items:center;gap:2px';
+    moraW.title = 'Mora (.) auf einer oder mehreren Noten dieses Neumes -- pro Note einzeln wählbar (z.B. beide Noten eines Podatus/einer Clivis)';
+    moraW.appendChild(document.createTextNode('Mora(.):'));
+    const moraCbs = [1,2,3,4].map(p => {
+      const lbl = document.createElement('label');
+      lbl.style.cssText = 'display:inline-flex;align-items:center;gap:1px';
+      const cb = document.createElement('input'); cb.type='checkbox'; cb.checked = initMora.includes(p);
+      lbl.appendChild(cb); lbl.appendChild(document.createTextNode('N'+p));
+      moraW.appendChild(lbl);
+      return cb;
+    });
+    // Enabled range tracks the ACTUAL note count currently shown in the
+    // "Töne" field (not just the neume type's nominal count) so it stays
+    // correct even if the user edits pitches directly before saving.
+    function updateMoraVis(){
+      const noteCount = pitI.value.split('').filter(c=>c.toLowerCase()>='a'&&c.toLowerCase()<='m').length || (NEUME_PITCHES[neuSel.value]||1);
+      moraCbs.forEach((cb,idx) => {
+        const enabled = (idx + 1) <= noteCount;
+        cb.disabled = !enabled;
+        cb.closest('label').style.opacity = enabled ? '1' : '0.35';
+        if (!enabled) cb.checked = false;
+      });
+    }
+    neuSel.addEventListener('change', updateMoraVis);
+    pitI.addEventListener('input', updateMoraVis);
+    updateMoraVis();
     const {wrap:iktW,cb:iktI}=chk("'iktus",e.iktus,"Iktus (')");
+    // Iktus position selector -- pre-filled from e.iktusPos if already
+    // set, else from e.notes[0].ictusPos (precise import data). Without
+    // this, opening+saving an imported entry with an explicit gabc "'1"/
+    // "'0" position silently reset it to exsurge's own per-neume default
+    // (usually the visible bug: an ictus rendered below instead of above).
+    let initIktusPos = e.iktusPos || '';
+    if (!initIktusPos && e.notes && e.notes.length) {
+      const iNote = e.notes.find(n => n.ictus);
+      if (iNote && iNote.ictusPos) initIktusPos = iNote.ictusPos;
+    }
+    const iktPosSel = document.createElement('select');
+    iktPosSel.title = 'Iktus-Position: oben oder unten erzwingen';
+    iktPosSel.style.cssText = 'font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px';
+    [['','Standard'],['above','oben'],['below','unten']].forEach(([v,t])=>{
+      const o=document.createElement('option');o.value=v;o.textContent=t;
+      if(initIktusPos===v) o.selected=true;
+      iktPosSel.appendChild(o);
+    });
     const {wrap:liqW,cb:liqI}=chk('liq',e.liquescent,'Liqueszenz');
     const {wrap:orisW,cb:orisI}=chk('orisc',e.oriscus,'Oriscus');
     const {wrap:strW,cb:strI}=chk('strph',e.strophicus,'Strophicus');
     const {wrap:presW,cb:presI}=chk('pres',e.pressus,'Pressus');
+    // Quilisma checkbox + position selector -- pre-filled from
+    // e.quilisma/e.quilismaPos if already set (previously edited), else
+    // derived from e.notes (precise import data), so simply opening and
+    // re-saving an imported entry that has a quilisma note doesn't
+    // silently destroy it. Necessary because e.pitches (used by the
+    // "Töne" field above) is ALWAYS plain lowercase letters with no shape
+    // info at all (see convertNote/makeNeumeEntry: pitch comes purely
+    // from staffPosToGabc(n.staffPosition), never from n.shape) -- so the
+    // Töne field can never show or preserve a quilisma on its own.
+    let initQuilisma = !!e.quilisma, initQuilismaPos = e.quilismaPos || 1;
+    if (e.quilisma === undefined && e.notes && e.notes.length) {
+      const qIdx = e.notes.findIndex(n => n.shape === 3); // 3 = NoteShape.Quilisma
+      if (qIdx >= 0) { initQuilisma = true; initQuilismaPos = qIdx + 1; }
+    }
+    const {wrap:quilW,cb:quilI}=chk('quilisma',initQuilisma,'Quilisma: gezackte Verzierungsnote (steht in echten Neumen meist auf einer Note VOR einem Aufstieg)');
+    const quilPosW = document.createElement('span');
+    quilPosW.style.cssText = 'font-size:9px;color:#6b8a60;display:inline-flex;align-items:center;gap:2px';
+    const quilPosSel = document.createElement('select');
+    quilPosSel.title = 'Quilisma-Position: auf welcher Note';
+    quilPosSel.style.cssText = 'font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px';
+    [['1','N1'],['2','N2'],['3','N3'],['4','N4']].forEach(([v,t])=>{
+      const o=document.createElement('option');o.value=v;o.textContent=t;
+      if(String(initQuilismaPos)===v) o.selected=true;
+      quilPosSel.appendChild(o);
+    });
+    function updateQuilPosVis(){
+      const applicable = QUILISMA_APPLICABLE.includes(neuSel.value);
+      quilPosW.style.display = (quilI.checked && applicable) ? 'inline-flex' : 'none';
+    }
+    neuSel.addEventListener('change', updateQuilPosVis);
+    quilI.addEventListener('change', updateQuilPosVis);
+    quilPosW.appendChild(document.createTextNode('auf'));
+    quilPosW.appendChild(quilPosSel);
+    updateQuilPosVis();
     // Word-end marker (No-Hyphen mode): marks this as last syllable of a word
     const weW = document.createElement('label');
     weW.style.cssText = 'font-size:9px;color:#c0a060;display:inline-flex;align-items:center;gap:2px;cursor:pointer';
@@ -2662,10 +3059,18 @@ function gregEditEntry(i) {
       e.pitches=pitI.value.split('').filter(c=>c.toLowerCase()>='a'&&c.toLowerCase()<='m');
       if(!e.pitches.length) e.pitches=['f'];
       e.accidental=accSel.value||null;
-      e.mora=moraI.checked; e.iktus=iktI.checked; e.episema=epI.checked;
+      // Derive e.mora (last note) / e.moraExtra (earlier notes) from the
+      // unified N1..N4 checkbox set -- "last" is whichever position equals
+      // the just-updated e.pitches.length, so buildSingleNeumeGABC's
+      // existing dot/r(i) logic (unchanged) keeps working exactly as before.
+      { const moraOn = [1,2,3,4].filter((p,idx)=>moraCbs[idx].checked);
+        e.mora = moraOn.includes(e.pitches.length);
+        e.moraExtra = moraOn.filter(p => p < e.pitches.length); }
+      e.iktus=iktI.checked; e.iktusPos=iktPosSel.value; e.episema=epI.checked;
       e.episemaPos=parseInt(epPosSel.value)||1;
       e.liquescent=liqI.checked; e.oriscus=orisI.checked;
       e.strophicus=strI.checked; e.pressus=presI.checked;
+      e.quilisma=quilI.checked; e.quilismaPos=parseInt(quilPosSel.value)||1;
       // Always store an explicit boolean here (never `undefined`). Storing
       // `undefined` for an unchecked box used to silently ERASE a real,
       // explicit `wordEnd:false` that GABC import had set for a mid-word
@@ -2697,7 +3102,7 @@ function gregEditEntry(i) {
     };
     const lbl = n => { const s=document.createElement('span'); s.textContent=n; s.style.cssText='font-size:9px;color:#6b8a60'; return s; };
     [lbl('Neume:'),neuSel,lbl(' Silbe:'),sylI,lbl(' Töne:'),pitI,lbl(' Vorz:'),accSel,
-     moraW,iktW,epW,epPosW,liqW,orisW,strW,presW,weW,save].forEach(n=>row.appendChild(n));
+     moraW,iktW,iktPosSel,epW,epPosW,liqW,orisW,strW,presW,quilW,quilPosW,weW,save].forEach(n=>row.appendChild(n));
   } else if (e.type === 'divisio') {
     const sel = document.createElement('select');
     sel.style.cssText = 'font-size:9px;background:#0a1406;color:#c8a060;border:1px solid #3a4a30;outline:none;padding:1px';
@@ -3008,7 +3413,6 @@ function gregAddLinebreak() {
   _gregPending=null;
   gregRefreshList();
 }
-function gregDeleteEntry(i) { gregPush(); gregEntries.splice(i,1); gregRefreshList(); }
 function gregUndo() {
   if(!gregHistory.length) { gregGst('Nichts rückgängig zu machen'); return; }
   gregRedoHistory.push(JSON.stringify(gregEntries));
@@ -3055,7 +3459,7 @@ const NEUME_DEFS = [
   {val:'quilisma', label:'Quilisma',  tones:1},
   {val:'podatus',  label:'Podatus',   tones:2},
   {val:'clivis',   label:'Clivis',    tones:2},
-  {val:'salicus',  label:'Salicus',   tones:2},
+  {val:'salicus',  label:'Salicus',   tones:3},
   {val:'torculus', label:'Torculus',  tones:3},
   {val:'porrectus',label:'Porrectus', tones:3},
   {val:'scandicus',label:'Scandicus', tones:3},
@@ -3075,66 +3479,13 @@ const NEUME_DEFS = [
   {val:'scandicus_flexus',   label:'Scand.Flex.',   tones:4},
 ];
 
-// Draw neume on a 48×40 canvas, col = fill/stroke color
-function drawNeumeCanvas(cv, val, col) {
-  const W=cv.width||36, H=cv.height||28, c=cv.getContext('2d');
-  c.clearRect(0,0,W,H);
-  // staff lines (4 lines)
-  c.strokeStyle='rgba('+hexToRgb(col)+',0.22)';
-  c.lineWidth=0.7;
-  const lh=7, staffTop=8;
-  for(let i=0;i<4;i++){c.beginPath();c.moveTo(2,staffTop+i*lh);c.lineTo(W-2,staffTop+i*lh);c.stroke();}
-  c.fillStyle=col; c.strokeStyle=col; c.lineWidth=1.5;
-  // Staff positions: sp=0 → y=staffTop+1.5*lh (between lines 3&4)
-  // Each line = lh/2 half-steps
-  const sp2y = sp => staffTop + 1.5*lh - sp*(lh/2);
-  const sq = (sp,x) => { const y=sp2y(sp); c.fillRect(x-3.5,y-3,7,6); };
-  const vStem = (sp,x) => { const y=sp2y(sp); c.beginPath();c.moveTo(x+3.5,y-3);c.lineTo(x+3.5,y-3-lh*2);c.stroke(); };
-  const slur = (sp1,x1,sp2,x2) => { const y1=sp2y(sp1),y2=sp2y(sp2); c.beginPath();c.moveTo(x1-3.5,y1-3);c.lineTo(x1-3.5,y1-3-4);c.lineTo(x2+3.5,y2);c.stroke(); };
-  const line = (x1,y1,x2,y2) => { c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke(); };
-
-  switch(val) {
-    case 'punctum':  sq(1,24); break;
-    case 'virga':    sq(1,20); vStem(1,20); break;
-    case 'quilisma':
-      c.lineWidth=1.2;
-      for(let i=0;i<3;i++){c.beginPath();c.arc(14+i*6,sp2y(1)+4,2.5,Math.PI,0,true);c.stroke();}
-      sq(1,32); break;
-    case 'podatus':  sq(0,18); sq(2,18); line(21.5,sp2y(0)-3,21.5,sp2y(2)+3); break;
-    case 'clivis':   slur(2,14,0,30); sq(2,14); sq(0,30); break;
-    case 'salicus':  sq(0,12); sq(2,26); vStem(2,26);
-      line(15.5,sp2y(0),22.5,sp2y(2)+3); break;
-    case 'torculus': sq(0,10); sq(2,22); sq(0,34);
-      line(13.5,sp2y(0),18.5,sp2y(2)+3); line(25.5,sp2y(2)-3,30.5,sp2y(0)); break;
-    case 'porrectus':
-      line(10,sp2y(2)-3,22,sp2y(0)+3); sq(0,22); sq(2,34);
-      line(25.5,sp2y(0),30.5,sp2y(2)+3); break;
-    case 'scandicus': sq(-1,10); sq(1,22); sq(3,34); vStem(3,34);
-      line(13.5,sp2y(-1),18.5,sp2y(1)+3); line(25.5,sp2y(1),30.5,sp2y(3)+3); break;
-    case 'climacus':  sq(2,16); sq(0,28); sq(-2,36); vStem(2,16);
-      line(19.5,sp2y(2)+3,24.5,sp2y(0)-3); line(31.5,sp2y(0)+3,32.5,sp2y(-2)-3); break;
-    case 'bistropha': // two small round notes
-      c.beginPath();c.arc(16,sp2y(1),3.5,0,Math.PI*2);c.fill();
-      c.beginPath();c.arc(28,sp2y(1),3.5,0,Math.PI*2);c.fill(); break;
-    case 'tristropha':
-      c.beginPath();c.arc(11,sp2y(1),3,0,Math.PI*2);c.fill();
-      c.beginPath();c.arc(22,sp2y(1),3,0,Math.PI*2);c.fill();
-      c.beginPath();c.arc(33,sp2y(1),3,0,Math.PI*2);c.fill(); break;
-  }
-}
-
-function hexToRgb(hex) {
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return r+','+g+','+b;
-}
-
 const NEUME_SVG_ICONS = {
   punctum: `<svg viewBox="16.5 16.0 24.0 16.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.05)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="39.5" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="39.5" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Punctum" transform="translate(17.5,0)" ><use xlink:href="#PunctumQuadratum" x="2.5" y="5" ></use></g></g></g></svg>`,
   virga: `<svg viewBox="16.5 13.0 24.0 26.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.05)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="39.5" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="39.5" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Virga" transform="translate(17.5,0)" ><use xlink:href="#PunctumQuadratum" x="2.5" y="5" ></use><rect x="4" y="5" width="1" height="13.5" fill="currentColor" class="neumeLine" ></rect></g></g></g></svg>`,
   quilisma: `<svg viewBox="16.5 21.0 24.0 16.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="Quilisma" class="glyph" transform="scale(0.05)" ><path d="M-50 34.938V-51c5.73 20.833 13.02 31.25 21.875 31.25 7.813 0 12.5-15.625 14.063-46.875 3.645 12.5 6.9 21.224 9.765 26.172s6.9 7.422 12.11 7.422c5.208 0 9.374-14.324 12.5-42.97 5.73 22.917 10.677 34.375 14.843 34.375 5.73 0 10.677-15.885 14.844-47.656v100c0 17.707-3.125 26.56-9.375 26.56-4.688 0-9.115-5.988-13.28-17.968-2.085 21.875-8.074 32.813-17.97 32.813-7.813 0-16.146-7.292-25-21.875-4.688 20.312-10.677 30.47-17.97 30.47-5.207 0-9.244-2.605-12.108-7.814C-48.568 47.698-50 41.708-50 34.938z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="39.5" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="39.5" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Punctum" transform="translate(17.5,0)" ><use xlink:href="#Quilisma" x="2.5" y="10" ></use></g></g></g></svg>`,
   podatus: `<svg viewBox="16.5 11.0 24.0 21.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="PodatusLower" class="glyph" transform="scale(0.05)" ><path d="M-4.688-30.28c22.396 0 34.636-.262 36.72-.782 5.728-1.563 8.593-5.21 8.593-10.938H50v97.656c0 2.604-1.302 4.167-3.906 4.688-5.21.52-21.355.78-48.438.78-23.958 0-38.54-.26-43.75-.78-2.604 0-3.906-1.302-3.906-3.906v-82.032c0-3.646 1.302-5.468 3.906-5.468h2.344c2.604.52 15.625.78 39.063.78z"/></g><g id="PodatusUpper" class="glyph" transform="scale(0.05)" ><path d="M-46.094-63.78c13.542 0 24.61 2.473 33.203 7.42C-4.298-51.41 0-43.99 0-34.093V62h-9.375c0-10.938-2.604-19.14-7.812-24.61-5.21-5.468-14.844-8.203-28.907-8.202-18.23 0-33.333 4.166-45.312 12.5v-75.782c0-19.79 15.104-29.687 45.312-29.687z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="39.5" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="39.5" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Podatus" transform="translate(17.5,0)" ><use xlink:href="#PodatusLower" x="2.5" y="5" ></use><use xlink:href="#PodatusUpper" x="5" y="0" ></use></g></g></g></svg>`,
   clivis: `<svg viewBox="16.5 11.0 24.0 21.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.05)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="39.5" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="39.5" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Clivis" transform="translate(17.5,0)" ><rect x="0" y="0" width="1" height="7.805408997969193" fill="currentColor" class="neumeLine" ></rect><use xlink:href="#PunctumQuadratum" x="2.5" y="0" ></use><use xlink:href="#PunctumQuadratum" x="7.5" y="5" ></use></g></g></g></svg>`,
-  salicus: `<svg viewBox="16.5 11.0 24.0 21.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.05)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="39.5" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="39.5" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Virga" transform="translate(17.5,0)" ><use xlink:href="#PunctumQuadratum" x="2.5" y="5" ></use><rect x="4" y="5" width="1" height="13.5" fill="currentColor" class="neumeLine" ></rect></g><g class="ChantNotationElement Punctum" transform="translate(25.625,0)" ><use xlink:href="#PunctumQuadratum" x="2.5" y="0" ></use></g></g></g></svg>`,
+  salicus: `<svg viewBox="16.5 6.0 28.5 26.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.05)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g><g id="OriscusAsc" class="glyph" transform="scale(0.05)" ><path d="M50 30.25c0 12.5-3.125 21.354-9.375 26.562-3.125 2.605-7.813 3.907-14.063 3.907-3.125 0-5.99-.522-8.593-1.564-2.605-1.04-5.6-2.474-8.986-4.297C5.6 53.035 2.734 51.603.39 50.56c-2.343-1.04-5.338-2.474-8.984-4.296-3.646-1.823-6.77-3.256-9.375-4.297-2.603-1.043-5.468-1.564-8.593-1.564-6.25 0-10.937 1.563-14.062 4.688C-46.875 50.824-50 59.677-50 71.656v-106.25c0-13.02 3.125-21.875 9.375-26.562 3.125-2.604 7.813-3.906 14.063-3.907 3.125 0 5.99.52 8.593 1.563 2.605 1.042 5.73 2.474 9.376 4.297 3.646 1.823 6.51 2.995 8.594 3.516l10.938 5.468c6.25 3.126 11.458 4.69 15.624 4.69 6.25 0 10.938-1.564 14.063-4.69C46.875-55.426 50-64.02 50-76V30.25z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="44.0" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="44.0" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Salicus" transform="translate(17.5,0)" ><use xlink:href="#PunctumQuadratum" x="2.5" y="5" ></use><use xlink:href="#OriscusAsc" x="9" y="0" ></use><use xlink:href="#PunctumQuadratum" x="15.5" y="-5" ></use><rect x="17" y="-5" width="1" height="13.5" fill="currentColor" class="neumeLine" ></rect></g></g></g></svg>`,
   torculus: `<svg viewBox="16.5 11.0 28.5 21.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.05)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="44.0" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="44.0" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Torculus" transform="translate(17.5,0)" ><use xlink:href="#PunctumQuadratum" x="2.5" y="5" ></use><use xlink:href="#PunctumQuadratum" x="7.5" y="0" ></use><use xlink:href="#PunctumQuadratum" x="12.5" y="5" ></use></g></g></g></svg>`,
   porrectus: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 3.0 38.0 40.0" width="56" height="38" style="display:block" ><g ><defs ><g id="Porrectus2" class="glyph" transform="scale(0.0625)" ><path d="M309.375 259.375c-50.52 0-110.938-22.396-181.25-67.188C48.437 141.667-10.938 94.272-50 50V-68.75C0-3.125 60.417 52.083 131.25 96.875c58.333 36.98 110.677 58.854 157.03 65.625h7.033c16.145 0 26.822-9.896 32.03-29.688v114.844c0 7.812-5.99 11.72-17.968 11.72z"/></g><g id="None" class="glyph" transform="scale(0.0625)" ><g></g></g><g id="PodatusUpper" class="glyph" transform="scale(0.0625)" ><path d="M-46.094-63.78c13.542 0 24.61 2.473 33.203 7.42C-4.298-51.41 0-43.99 0-34.093V62h-9.375c0-10.938-2.604-19.14-7.812-24.61-5.21-5.468-14.844-8.203-28.907-8.202-18.23 0-33.333 4.166-45.312 12.5v-75.782c0-19.79 15.104-29.687 45.312-29.687z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Porrectus" transform="translate(18.75,0)" ><rect x="0" y="6.25" width="1" height="16.00676124746149" fill="#000" class="neumeLine" ></rect><use xlink:href="#Porrectus2" x="3.125" y="6.25" ></use><use xlink:href="#None" x="23.58393669128418" y="18.75" ></use><use xlink:href="#PodatusUpper" x="23.58393669128418" y="12.5" ></use><text x="-0.125" y="30.461000442504883" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g></g></g></svg>`,
   scandicus: `<svg viewBox="16.5 6.0 26.0 26.0" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"  width="56" height="38" style="display:block"><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.05)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g><g id="PodatusLower" class="glyph" transform="scale(0.05)" ><path d="M-4.688-30.28c22.396 0 34.636-.262 36.72-.782 5.728-1.563 8.593-5.21 8.593-10.938H50v97.656c0 2.604-1.302 4.167-3.906 4.688-5.21.52-21.355.78-48.438.78-23.958 0-38.54-.26-43.75-.78-2.604 0-3.906-1.302-3.906-3.906v-82.032c0-3.646 1.302-5.468 3.906-5.468h2.344c2.604.52 15.625.78 39.063.78z"/></g><g id="PodatusUpper" class="glyph" transform="scale(0.05)" ><path d="M-46.094-63.78c13.542 0 24.61 2.473 33.203 7.42C-4.298-51.41 0-43.99 0-34.093V62h-9.375c0-10.938-2.604-19.14-7.812-24.61-5.21-5.468-14.844-8.203-28.907-8.202-18.23 0-33.333 4.166-45.312 12.5v-75.782c0-19.79 15.104-29.687 45.312-29.687z"/></g></defs><g class="chantLine" transform="translate(0,23.24380035400391)" ><line x1="16.5" y1="-5" x2="41.5" y2="-5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><line x1="16.5" y1="5" x2="41.5" y2="5" stroke="currentColor" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Scandicus" transform="translate(17.5,0)" ><use xlink:href="#PunctumQuadratum" x="2.5" y="5" ></use><use xlink:href="#PodatusLower" x="7.5" y="0" ></use><use xlink:href="#PodatusUpper" x="10" y="-4.999999999999999" ></use></g></g></g></svg>`,
@@ -3145,7 +3496,7 @@ const NEUME_SVG_ICONS = {
   distropha: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 31.5 16.0" width="56" height="38" style="display:block" ><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.0625)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Distropha" transform="translate(18.75,0)" ><use xlink:href="#PunctumQuadratum" x="3.125" y="-6.25" ></use><use xlink:href="#PunctumQuadratum" x="12.5" y="-6.25" ></use><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g></g></g></svg>`,
   bivirga: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 31.5 16.0" width="56" height="38" style="display:block" ><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.0625)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Bivirga" transform="translate(18.75,0)" ><use xlink:href="#PunctumQuadratum" x="3.125" y="-6.25" ></use><rect x="5.25" y="-6.25" width="1" height="16.875" fill="#000" class="neumeLine" ></rect><use xlink:href="#PunctumQuadratum" x="11.5" y="-6.25" ></use><rect x="13.625" y="-6.25" width="1" height="16.875" fill="#000" class="neumeLine" ></rect><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g></g></g></svg>`,
   trivirga: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 31.5 16.0" width="56" height="38" style="display:block" ><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.0625)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Trivirga" transform="translate(18.75,0)" ><use xlink:href="#PunctumQuadratum" x="3.125" y="-6.25" ></use><rect x="5.25" y="-6.25" width="1" height="16.875" fill="#000" class="neumeLine" ></rect><use xlink:href="#PunctumQuadratum" x="11.5" y="-6.25" ></use><rect x="13.625" y="-6.25" width="1" height="16.875" fill="#000" class="neumeLine" ></rect><use xlink:href="#PunctumQuadratum" x="19.875" y="-6.25" ></use><rect x="22" y="-6.25" width="1" height="16.875" fill="#000" class="neumeLine" ></rect><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g></g></g></svg>`,
-  puncta_inclinata: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 31.5 35.0" width="56" height="38" style="display:block" ><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.0625)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g><g id="PunctumInclinatum" class="glyph" transform="scale(0.0625)" ><path d="M0-75.78L50 0 0 75-50 0 0-75.78z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Climacus" transform="translate(18.75,0)" ><use xlink:href="#PunctumQuadratum" x="3.125" y="-6.25" ></use><rect x="5.25" y="-6.25" width="1" height="16.875" fill="#000" class="neumeLine" ></rect><use xlink:href="#PunctumInclinatum" x="9.9375" y="0" ></use><use xlink:href="#PunctumInclinatum" x="14.9375" y="6.25" ></use><use xlink:href="#PunctumInclinatum" x="19.9375" y="12.5" ></use><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g></g></g></svg>`,
+  puncta_inclinata: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 31.5 35.0" width="56" height="38" style="display:block" ><g ><defs ><g id="PunctumInclinatum" class="glyph" transform="scale(0.0625)" ><path d="M0-75.78L50 0 0 75-50 0 0-75.78z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement PunctaInclinata" transform="translate(18.75,0)" ><use xlink:href="#PunctumInclinatum" x="4.9375" y="-6.25" ></use><use xlink:href="#PunctumInclinatum" x="9.9375" y="0" ></use><use xlink:href="#PunctumInclinatum" x="14.9375" y="6.25" ></use><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g></g></g></svg>`,
   pes_subpunctis: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 31.5 35.0" width="56" height="38" style="display:block" ><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.0625)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g><g id="PodatusLower" class="glyph" transform="scale(0.0625)" ><path d="M-4.688-30.28c22.396 0 34.636-.262 36.72-.782 5.728-1.563 8.593-5.21 8.593-10.938H50v97.656c0 2.604-1.302 4.167-3.906 4.688-5.21.52-21.355.78-48.438.78-23.958 0-38.54-.26-43.75-.78-2.604 0-3.906-1.302-3.906-3.906v-82.032c0-3.646 1.302-5.468 3.906-5.468h2.344c2.604.52 15.625.78 39.063.78z"/></g><g id="PodatusUpper" class="glyph" transform="scale(0.0625)" ><path d="M-46.094-63.78c13.542 0 24.61 2.473 33.203 7.42C-4.298-51.41 0-43.99 0-34.093V62h-9.375c0-10.938-2.604-19.14-7.812-24.61-5.21-5.468-14.844-8.203-28.907-8.202-18.23 0-33.333 4.166-45.312 12.5v-75.782c0-19.79 15.104-29.687 45.312-29.687z"/></g><g id="PunctumInclinatum" class="glyph" transform="scale(0.0625)" ><path d="M0-75.78L50 0 0 75-50 0 0-75.78z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Scandicus" transform="translate(18.75,0)" ><use xlink:href="#PunctumQuadratum" x="3.125" y="12.5" ></use><use xlink:href="#PodatusLower" x="9.375" y="6.25" ></use><use xlink:href="#PodatusUpper" x="12.5" y="0" ></use><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g><g class="ChantNotationElement PunctaInclinata" transform="translate(34.375,0)" ><use xlink:href="#PunctumInclinatum" x="3.125" y="12.5" ></use></g></g></g></svg>`,
   pes_quassus: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 31.5 28.0" width="56" height="38" style="display:block" ><g ><defs ><g id="OriscusDes" class="glyph" transform="scale(0.0625)" ><path d="M-50 30.844v-106.25c0 11.458 3.125 20.052 9.375 25.78 3.125 3.126 7.813 4.69 14.063 4.688 4.687 0 13.41-3.255 26.17-9.765 12.762-6.51 21.746-9.766 26.954-9.766 6.25 0 10.938 1.303 14.063 3.907C46.875-55.874 50-47.02 50-34V72.25c0-11.98-3.125-20.833-9.375-26.563C37.5 42.563 32.812 41 26.562 41 21.875 41 13.023 44.385 0 51.156c-4.167 2.604-8.594 4.948-13.28 7.032-4.69 2.083-9.116 3.124-13.283 3.124-6.25 0-10.937-1.302-14.062-3.906C-46.875 52.198-50 43.344-50 30.844z"/></g><g id="PunctumQuadratum" class="glyph" transform="scale(0.0625)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Clivis" transform="translate(18.75,0)" ><use xlink:href="#OriscusDes" x="3.125" y="-6.25" ></use><rect x="5.25" y="-6.25" width="1" height="12.5" fill="#000" class="neumeLine" ></rect><use xlink:href="#PunctumQuadratum" x="8.375" y="6.25" ></use><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g></g></g></svg>`,
   torculus_resupinus: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 44.0 28.0" width="56" height="38" style="display:block" ><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.0625)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g><g id="Porrectus2" class="glyph" transform="scale(0.0625)" ><path d="M309.375 259.375c-50.52 0-110.938-22.396-181.25-67.188C48.437 141.667-10.938 94.272-50 50V-68.75C0-3.125 60.417 52.083 131.25 96.875c58.333 36.98 110.677 58.854 157.03 65.625h7.033c16.145 0 26.822-9.896 32.03-29.688v114.844c0 7.812-5.99 11.72-17.968 11.72z"/></g><g id="None" class="glyph" transform="scale(0.0625)" ><g></g></g><g id="PodatusUpper" class="glyph" transform="scale(0.0625)" ><path d="M-46.094-63.78c13.542 0 24.61 2.473 33.203 7.42C-4.298-51.41 0-43.99 0-34.093V62h-9.375c0-10.938-2.604-19.14-7.812-24.61-5.21-5.468-14.844-8.203-28.907-8.202-18.23 0-33.333 4.166-45.312 12.5v-75.782c0-19.79 15.104-29.687 45.312-29.687z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement TorculusResupinus" transform="translate(18.75,0)" ><use xlink:href="#PunctumQuadratum" x="3.125" y="6.25" ></use><rect x="5.25" y="-6.25" width="1" height="12.5" fill="#000" class="neumeLine" ></rect><use xlink:href="#Porrectus2" x="8.375" y="-6.25" ></use><use xlink:href="#None" x="28.83393669128418" y="6.25" ></use><use xlink:href="#PodatusUpper" x="28.83393669128418" y="0" ></use><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g></g></g></svg>`,
@@ -3153,64 +3504,6 @@ const NEUME_SVG_ICONS = {
   scandicus_flexus: `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" class="ChantScore" viewBox="16.5 5.0 31.5 35.0" width="56" height="38" style="display:block" ><g ><defs ><g id="PunctumQuadratum" class="glyph" transform="scale(0.0625)" ><path d="M0-60.906c33.333 0 50 9.635 50 28.906v94.53C39.062 51.595 22.396 46.126 0 46.126s-39.063 5.47-50 16.406V-32c0-19.27 16.667-28.906 50-28.906z"/></g></defs><g class="chantLine" transform="translate(0,19.375)" ><line x1="0" y1="-18.75" x2="120" y2="-18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="-6.25" x2="120" y2="-6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="6.25" x2="120" y2="6.25" stroke="#000" stroke-width="1" class="staffLine" ></line><line x1="0" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="1" class="staffLine" ></line><g class="ChantNotationElement Torculus" transform="translate(18.75,0)" ><use xlink:href="#PunctumQuadratum" x="3.125" y="6.25" ></use><rect x="5.25" y="-6.25" width="1" height="12.5" fill="#000" class="neumeLine" ></rect><use xlink:href="#PunctumQuadratum" x="8.375" y="-6.25" ></use><use xlink:href="#PunctumQuadratum" x="14.625" y="0" ></use><text x="-0.125" y="27.375" class="lyric" text-anchor="start" dominant-baseline="baseline" style="font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;font-size:16px;font-kerning:normal;" ><tspan >x</tspan></text></g><g class="ChantNotationElement Punctum" transform="translate(39.625,0)" ><use xlink:href="#PunctumQuadratum" x="3.125" y="12.5" ></use></g></g></g></svg>`,
 
 };
-
-// Legacy async cache (unused, icons are now prerendered)
-const _neumeIconCache = {};
-const NEUME_GABC = {
-  punctum:    '(c4) (+f)',
-  virga:      '(c4) (+fv)',
-  quilisma:   '(c4) (+fw)',
-  podatus:    '(c4) (+fg)',
-  clivis:     '(c4) (+gf)',
-  salicus:    '(c4) (+efg)',
-  torculus:   '(c4) (+fgf)',
-  porrectus:  '(c4) (+gfg)',
-  scandicus:  '(c4) (+efg)',
-  climacus:   '(c4) (+hvGF)',
-  bistropha:  '(c4) (+fs +fs)',
-  tristropha: '(c4) (+fs +fs +fs)',
-};
-
-function gregGetNeumeIcon(val, callback) {
-  if (_neumeIconCache[val]) { callback(_neumeIconCache[val]); return; }
-  const gabc = NEUME_GABC[val];
-  if (!gabc || typeof exsurge === 'undefined') { callback(null); return; }
-  try {
-    const ctxt2 = new exsurge.ChantContext();
-    ctxt2.autoColor = false;
-    ctxt2.glyphScaling = 1/16 * 0.7; // small icons
-    ctxt2.staffInterval = ctxt2.glyphPunctumWidth * ctxt2.glyphScaling;
-    const mappings = exsurge.Gabc.makeDefaultTextMappings();
-    const score = new exsurge.ChantScore(ctxt2, mappings, false);
-    exsurge.Gabc.parseChantNotations(gabc, score, ctxt2);
-    const width = 60;
-    score.performLayoutAsync(ctxt2, width, function() {
-      try {
-        const svgStr = score.createSvg(ctxt2);
-        const div = document.createElement('div');
-        div.innerHTML = svgStr;
-        const svgEl = div.querySelector('svg');
-        if (!svgEl) { callback(null); return; }
-        // Crop to content
-        const si = ctxt2.staffInterval;
-        const h = parseFloat(svgEl.getAttribute('height')) || 40;
-        const w = parseFloat(svgEl.getAttribute('width')) || 60;
-        // Set viewBox to crop whitespace
-        svgEl.setAttribute('viewBox', '0 -' + (si*2) + ' ' + w + ' ' + (h + si*2));
-        svgEl.setAttribute('width', '54');
-        svgEl.setAttribute('height', '32');
-        // Color all elements
-        svgEl.querySelectorAll('*').forEach(function(el) {
-          if (el.getAttribute('fill') && el.getAttribute('fill') !== 'none') el.setAttribute('fill', 'currentColor');
-          if (el.getAttribute('stroke') && el.getAttribute('stroke') !== 'none') el.setAttribute('stroke', 'currentColor');
-        });
-        const svgOut = div.innerHTML;
-        _neumeIconCache[val] = svgOut;
-        callback(svgOut);
-      } catch(e) { callback(null); }
-    });
-  } catch(e) { callback(null); }
-}
 
 // The prerendered NEUME_SVG_ICONS strings each carry their own <defs><g id="...">
 // glyph symbols (e.g. "PunctumQuadratum"), baked in at a FIXED small scale for
@@ -3248,7 +3541,7 @@ function gregBuildNeumeGrid() {
     const isOn = nd.val === curVal;
     const btn = document.createElement('button');
     btn.className = 'b' + (isOn ? ' on' : '');
-    btn.title = nd.label + ' (' + nd.tones + ' Ton' + (nd.tones>1?'e':'') + ')';
+    btn.title = nd.label + ' (' + (NEUME_OPEN_ENDED.includes(nd.val)?'mind. ':'') + nd.tones + ' Ton' + (nd.tones>1?'e':'') + ')';
     btn.style.cssText = 'padding:1px 0;width:45px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:1px;height:51px;overflow:hidden;color:'+(isOn?'#e0d4b0':'#6b8a60');
     // Icon: use prerendered SVG
     const iconDiv = document.createElement('div');
@@ -3268,7 +3561,9 @@ function gregBuildNeumeGrid() {
       if (sel) sel.value = nd.val;
       _gregPending = null;
       const hint = document.getElementById('greg-neume-hint');
-      if (hint) hint.textContent = '→ '+nd.tones+(nd.tones===1?' Klick':' Klicks')+' auf Notenlinie';
+      if (hint) hint.textContent = '→ '+gregToneHintText(nd);
+      gregUpdateQuilismaUI();
+      gregUpdateMoraUI();
       gregBuildNeumeGrid();
     };
     grid.appendChild(btn);
@@ -3277,7 +3572,17 @@ function gregBuildNeumeGrid() {
   const nd = NEUME_DEFS.find(n=>n.val===curVal)||NEUME_DEFS[0];
   const descNeumes = ['clivis','porrectus','climacus','puncta_inclinata','porrectus_flexus'];
   const orderHint = descNeumes.includes(curVal) ? ' (höchste Note zuerst!)' : '';
-  if (hint) hint.textContent = '→ '+nd.tones+(nd.tones===1?' Klick':' Klicks')+' auf Notenlinie'+orderHint;
+  if (hint) hint.textContent = '→ '+gregToneHintText(nd)+orderHint;
+}
+
+// Shared "N Klicks auf Notenlinie" hint text, aware of NEUME_OPEN_ENDED
+// (Climacus): its tones value (3) is only the minimum, so the hint makes
+// clear that further clicks keep adding notes.
+function gregToneHintText(nd) {
+  if (NEUME_OPEN_ENDED.includes(nd.val)) {
+    return 'mind. ' + nd.tones + ' Klicks auf Notenlinie (beliebig mehr möglich, dann Enter/"Fertig")';
+  }
+  return nd.tones + (nd.tones===1?' Klick':' Klicks') + ' auf Notenlinie';
 }
 
 // ── Accidentals ──────────────────────────────────────────────────
@@ -4105,6 +4410,680 @@ function gregPickPieceModal(pieces) {
 }
 
 
+// ════════════════════════════════════════════════════════════════════
+// OMR-KORREKTUR-SCHICHT (deterministische Bildverarbeitung statt reiner
+// Vision-Pixel-Ablesung fuer die Tonhoehen) — siehe eigenstaendiges Projekt
+// omr_pipeline.py (Python-Prototyp/Referenz-Implementierung) und
+// Session-Notizen NOTES_v20 bis NOTES_v28 in der Test-Bibliothek.
+//
+// Architektur (Nutzerentscheid): Vision liest wie bisher Silben, Neumentyp
+// (= Notenzahl pro Silbe) und Text — das kann sie gut. Diese Schicht nutzt
+// NUR die Notenzahl pro Silbe, um die exakte Tonhoehe GEOMETRISCH aus dem
+// Systembild nachzurechnen und Visions eigene (fehleranfaelligere)
+// Pixel-Ablesung der Tonhoehe zu ersetzen. Bei jedem Zweifel (Cluster-Zahl
+// passt nicht zur Silbenzahl, Bild laedt nicht, Buchstabe ausserhalb a-m):
+// Original unveraendert lassen — nie schlechter als reines Vision-Ergebnis.
+//
+// Bekannte Grenze (siehe omr_pipeline.py, Abschnitt "SESSION 9"): bei
+// zusammengesetzten Neumen mit stark kalligraphisch verzierter Form
+// (geschwungener Verbindungsstrich, Kerbe) oder bei zwei Notenkoepfen mit
+// EXAKT identischem x (kein Versatz) kann die Tonhoehen-ERKENNUNG bzw. die
+// Gesangs-REIHENFOLGE trotzdem falsch/vertauscht sein — das ist ein noch
+// offener Forschungspunkt (Task #7), kein Bug dieser Implementierung.
+//
+// Alle Funktionsnamen sind mit "omr" praefixiert, um Namenskollisionen mit
+// dem restlichen Notator-Code auszuschliessen.
+// ════════════════════════════════════════════════════════════════════
+
+function omrClusterByX(candidates, maxGap) {
+  if (!candidates.length) return [];
+  const byX = candidates.slice().sort((a, b) => a.x - b.x);
+  const clusters = [];
+  let cur = [byX[0]];
+  for (let i = 1; i < byX.length; i++) {
+    if (byX[i].x - cur[cur.length - 1].x <= maxGap) cur.push(byX[i]);
+    else { clusters.push(cur); cur = [byX[i]]; }
+  }
+  clusters.push(cur);
+  return clusters;
+}
+
+function omrClassifyNeumeOrder(resolvedNotes) {
+  // Session 21 fix (echte Fixture-Bibliothek): bei EXAKT gleichem x (ein
+  // Notenpaar, rein senkrecht uebereinander gedruckt, kein seitlicher
+  // Versatz) ist reines x-Sortieren keine Entscheidung, sondern reiner
+  // Zufall (Sortier-Stabilitaet der urspruenglichen Scan-Reihenfolge) --
+  // konkret beobachtet: "flé(fg)" (ein senkrecht gestapeltes Podatus, gegen
+  // die in Session 5/6 bereits pixelverifizierte Zeichenkette bestaetigt)
+  // kam dabei als "gf" statt "fg" heraus. Ein Notenpaar OHNE seitlichen
+  // Versatz ist in der Quadratnotation praktisch immer ein Podatus
+  // (aufsteigend, UNTERE Note zuerst) -- eine echte Clivis (absteigend)
+  // wird ueblicherweise gerade durch einen sichtbaren Versatz der zweiten
+  // Note nach rechts UNTEN von der Podatus-Form unterschieden (siehe auch
+  // die Faelle mit echtem x-Versatz weiter unten in dieser Funktion, die
+  // bereits vorher korrekt funktionierten). Bei echtem x-Versatz (auch nur
+  // 1-2px) bleibt das bisherige reine x-Sortieren unveraendert -- das war
+  // in allen bisher bekannten Faellen bereits korrekt.
+  return resolvedNotes.slice().sort((a, b) => {
+    if (a.x !== b.x) return a.x - b.x;
+    return b.y - a.y; // gleiches x: groesseres y (weiter unten) zuerst
+  });
+}
+
+function omrYToGabcLetter(yAbs, line2Y, line3Y) {
+  const halfStep = Math.abs(line2Y - line3Y) / 2.0;
+  const gY = (line2Y + line3Y) / 2.0;
+  const stepsFromG = Math.round((gY - yAbs) / halfStep);
+  const idx = 6 + stepsFromG;
+  const letters = "abcdefghijklmn";
+  return (idx >= 0 && idx < letters.length) ? letters[idx] : null;
+}
+
+function omrGrayFromRGBA(imageData) {
+  const { width, height, data } = imageData;
+  const gray = new Uint8ClampedArray(width * height);
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) gray[p] = (data[i] + data[i + 1] + data[i + 2]) / 3;
+  return { width, height, gray };
+}
+
+function omrCropGray(img, x0, y0, x1, y1) {
+  const w = x1 - x0, h = y1 - y0;
+  const out = new Uint8ClampedArray(w * h);
+  for (let y = 0; y < h; y++) {
+    const srcRow = (y + y0) * img.width, dstRow = y * w;
+    for (let x = 0; x < w; x++) out[dstRow + x] = img.gray[srcRow + x0 + x];
+  }
+  return { width: w, height: h, gray: out };
+}
+
+function omrThresholdBinaryInv(img, thresh) {
+  const { width, height, gray } = img;
+  const bin = new Uint8Array(width * height);
+  for (let i = 0; i < gray.length; i++) bin[i] = gray[i] < thresh ? 1 : 0;
+  return { width, height, bin };
+}
+
+function omrRemoveThinLines(binimg, maxLineThickness = 4) {
+  const { width, height, bin } = binimg;
+  const out = new Uint8Array(bin);
+  for (let col = 0; col < width; col++) {
+    let row = 0;
+    while (row < height) {
+      if (out[row * width + col] === 0) { row++; continue; }
+      const runStart = row;
+      while (row < height && out[row * width + col] !== 0) row++;
+      if (row - runStart <= maxLineThickness) for (let r = runStart; r < row; r++) out[r * width + col] = 0;
+    }
+  }
+  return { width, height, bin: out };
+}
+
+function omrConnectedComponentsWithStats(binimg, connectivity = 8) {
+  const { width, height, bin } = binimg;
+  const labels = new Int32Array(width * height);
+  const stats = [];
+  let nextLabel = 1;
+  const neighbors8 = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+  const neighbors4 = [[0,-1],[-1,0],[1,0],[0,1]];
+  const neighbors = connectivity === 8 ? neighbors8 : neighbors4;
+  const stack = new Int32Array(width * height);
+  for (let start = 0; start < width * height; start++) {
+    if (bin[start] === 0 || labels[start] !== 0) continue;
+    const label = nextLabel++;
+    let sp = 0;
+    stack[sp++] = start;
+    labels[start] = label;
+    let minX = start % width, maxX = minX, minY = (start / width) | 0, maxY = minY, area = 0;
+    while (sp > 0) {
+      const idx = stack[--sp];
+      const x = idx % width, y = (idx / width) | 0;
+      area++;
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+      for (const [dx, dy] of neighbors) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+        const nidx = ny * width + nx;
+        if (bin[nidx] !== 0 && labels[nidx] === 0) { labels[nidx] = label; stack[sp++] = nidx; }
+      }
+    }
+    stats.push({ label, x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1, area });
+  }
+  return { labels, width, height, stats };
+}
+
+function omrMatchNoteheads(img, template, bandBbox, threshold = 0.45) {
+  const [x0, y0, x1, y1] = bandBbox;
+  const band = omrCropGray(img, x0, y0, x1, y1);
+  const bw = band.width, bh = band.height, tw = template.width, th = template.height;
+  const tGray = template.gray;
+  let tMean = 0;
+  for (let i = 0; i < tGray.length; i++) tMean += tGray[i];
+  tMean /= tGray.length;
+  const tNorm = new Float64Array(tGray.length);
+  let tSumSq = 0;
+  for (let i = 0; i < tGray.length; i++) { tNorm[i] = tGray[i] - tMean; tSumSq += tNorm[i] * tNorm[i]; }
+  const resW = bw - tw + 1, resH = bh - th + 1;
+  const candidates = [];
+  for (let by = 0; by < resH; by++) {
+    for (let bx = 0; bx < resW; bx++) {
+      let iSum = 0;
+      for (let ty = 0; ty < th; ty++) {
+        const rowOff = (by + ty) * bw + bx;
+        for (let tx = 0; tx < tw; tx++) iSum += band.gray[rowOff + tx];
+      }
+      const iMean = iSum / (tw * th);
+      let num = 0, iSumSq = 0;
+      for (let ty = 0; ty < th; ty++) {
+        const rowOff = (by + ty) * bw + bx;
+        for (let tx = 0; tx < tw; tx++) {
+          const iVal = band.gray[rowOff + tx] - iMean;
+          num += iVal * tNorm[ty * tw + tx];
+          iSumSq += iVal * iVal;
+        }
+      }
+      const denom = Math.sqrt(iSumSq * tSumSq);
+      const score = denom > 1e-9 ? num / denom : 0;
+      if (score >= threshold) candidates.push({ score, x: bx, y: by });
+    }
+  }
+  candidates.sort((a, b) => b.score - a.score);
+  const picked = [];
+  const minDistX = tw * 0.6, minDistY = th * 0.55;
+  for (const c of candidates) {
+    let tooClose = false;
+    for (const p of picked) if (Math.abs(c.x - p.x) < minDistX && Math.abs(c.y - p.y) < minDistY) { tooClose = true; break; }
+    if (!tooClose) picked.push(c);
+  }
+  return picked.map(p => {
+    const gx = p.x + tw / 2 + x0, gy = p.y + th / 2 + y0;
+    const ink = omrMeasureLocalInk(img, gx, gy, tw, th);
+    return { score: p.score, x: gx, y: gy, fillRatio: ink ? ink.fillRatio : null, maxRunWidth: ink ? ink.maxRunWidth : null };
+  }).sort((a, b) => a.x - b.x);
+}
+
+function omrAutoDetectNoteheadGeometry(img, bandBbox, staffLines, fillThresh = 0.8) {
+  const [x0, y0, x1, y1] = bandBbox;
+  const band = omrCropGray(img, x0, y0, x1, y1);
+  const binimg = omrThresholdBinaryInv(band, 200);
+  const cleaned = omrRemoveThinLines(binimg, 4);
+  const { stats } = omrConnectedComponentsWithStats(cleaned, 8);
+  const gap = staffLines[1] - staffLines[0];
+  const lo = 0.35 * gap, hi = 0.8 * gap;
+  const cands = [];
+  for (const s of stats) {
+    const fillRatio = s.area / (s.w * s.h);
+    if (s.w >= lo && s.w <= hi && s.h >= lo && s.h <= hi && s.w / s.h >= 0.6 && s.w / s.h <= 1.6 && fillRatio >= fillThresh) cands.push(s);
+  }
+  if (!cands.length) return null;
+  const ws = cands.map(c => c.w).sort((a, b) => a - b);
+  const hs = cands.map(c => c.h).sort((a, b) => a - b);
+  const medW = ws[Math.floor(ws.length / 2)], medH = hs[Math.floor(hs.length / 2)];
+  let best = cands[0], bestDist = Infinity;
+  for (const c of cands) { const d = Math.abs(c.w - medW) + Math.abs(c.h - medH); if (d < bestDist) { bestDist = d; best = c; } }
+  const template = omrCropGray(band, best.x, best.y, best.x + best.w, best.y + best.h);
+  const fillRatio = best.area / (best.w * best.h);
+  return { template, w: best.w, h: best.h, fillRatio, bbox: [x0 + best.x, y0 + best.y, x0 + best.x + best.w, y0 + best.y + best.h], nCandidates: cands.length };
+}
+
+// Task #7 (Skelett-/Kurvenanalyse): misst, wie "notenkopf-foermig" das
+// Tinten-Muster in einem template-grossen Fenster um einen Kandidatenpunkt
+// tatsaechlich aussieht -- unabhaengig vom Korrelations-Score. Eine Virga
+// (Notenkopf + duenner Notenhals) kann am Notenhals einen zweiten,
+// schwaecheren Korrelations-Treffer erzeugen, der score-maessig manchmal
+// gar nicht so weit vom echten Notenkopf entfernt liegt -- aber ihr
+// tatsaechliches Tinten-Fussabdruck (Fuellgrad, breiteste zusammenhaengende
+// dunkle Zeile) bleibt IMMER weit unter dem eines echten, dicht gefuellten
+// Notenkopfs. Das macht diese Unterscheidung ohne jede Kenntnis der
+// erwarteten Gesamt-Notenzahl moeglich (siehe Kommentar in
+// omrGlobalResolveNotes).
+function omrMeasureLocalInk(img, x, y, tw, th) {
+  const x0 = Math.round(x - tw / 2), y0 = Math.round(y - th / 2);
+  const x1 = x0 + tw, y1 = y0 + th;
+  if (x0 < 0 || y0 < 0 || x1 > img.width || y1 > img.height) return null;
+  const win = omrCropGray(img, x0, y0, x1, y1);
+  const binimg = omrThresholdBinaryInv(win, 200);
+  let dark = 0;
+  for (let i = 0; i < binimg.bin.length; i++) dark += binimg.bin[i];
+  const fillRatio = dark / (tw * th);
+  let maxRun = 0;
+  for (let ry = 0; ry < th; ry++) {
+    let run = 0;
+    const rowOff = ry * tw;
+    for (let rx = 0; rx < tw; rx++) {
+      if (binimg.bin[rowOff + rx]) { run++; if (run > maxRun) maxRun = run; }
+      else run = 0;
+    }
+  }
+  return { fillRatio, maxRunWidth: maxRun };
+}
+
+function omrAutoFindNoteClusters(img, template, bandBbox, opts = {}) {
+  const anchorThreshold = opts.anchorThreshold != null ? opts.anchorThreshold : 0.75;
+  const fullThreshold = opts.fullThreshold != null ? opts.fullThreshold : 0.4;
+  const padFactor = opts.padFactor != null ? opts.padFactor : 1.5;
+  const tw = template.width;
+  const maxGap = opts.maxGap != null ? opts.maxGap : Math.round(tw * 1.35);
+  const anchors = omrMatchNoteheads(img, template, bandBbox, anchorThreshold);
+  if (!anchors.length) return { clusters: [], anchorRange: null };
+  const anchorMinX = Math.min(...anchors.map(a => a.x)), anchorMaxX = Math.max(...anchors.map(a => a.x));
+  const pad = tw * padFactor;
+  const full = omrMatchNoteheads(img, template, bandBbox, fullThreshold);
+  const filtered = full.filter(c => c.x >= anchorMinX - pad && c.x <= anchorMaxX + pad);
+  return { clusters: omrClusterByX(filtered, maxGap), anchorRange: [anchorMinX, anchorMaxX] };
+}
+
+function omrParseGabcSystemLine(line) {
+  const tokens = [];
+  const re = /([^\s(]*)\(([^)]*)\)/g;
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    const text = m[1], pitches = m[2];
+    const noteCount = (pitches.match(/[a-mA-M]/g) || []).length;
+    if (text.length > 0) tokens.push({ type: 'note', text, pitches, noteCount, matchIndex: m.index, matchLength: m[0].length });
+    else tokens.push({ type: 'bare', pitches, matchIndex: m.index, matchLength: m[0].length });
+  }
+  return tokens;
+}
+
+function omrReplacePitchesInLine(line, replacements) {
+  const tokens = omrParseGabcSystemLine(line);
+  const noteTokens = tokens.filter(t => t.type === 'note');
+  let out = line;
+  for (let i = noteTokens.length - 1; i >= 0; i--) {
+    const newPitches = replacements[i];
+    if (newPitches == null) continue;
+    const t = noteTokens[i];
+    out = out.slice(0, t.matchIndex) + t.text + '(' + newPitches + ')' + out.slice(t.matchIndex + t.matchLength);
+  }
+  return out;
+}
+
+function omrSubstituteLettersPreservingModifiers(original, newLetters) {
+  let li = 0, out = '';
+  for (const ch of original) {
+    if (/[a-mA-M]/.test(ch)) { const nl = newLetters[li++]; out += (ch === ch.toUpperCase()) ? nl.toUpperCase() : nl; }
+    else out += ch;
+  }
+  return out;
+}
+
+// Neue, SYSTEM-WEITE Aufloesung (Session 11): ersetzt die alte "Cluster-Zahl
+// == Silben-Zahl"-Alles-oder-nichts-Pruefung. Vision's SILBENTRENNUNG ist oft
+// falsch (z.B. "Cóndi" statt "Cón-di") — das aendert aber meist NICHT die
+// Gesamt-Notenzahl im System. Darum: statt pro Silbe zu pruefen, wird die
+// GESAMTZAHL erwarteter Noten (Summe ueber alle Silben-Tokens) gegen die
+// Gesamtzahl erkannter Notenkoepfe im GANZEN System verglichen. Ueberschuss
+// (= Konnektor-Artefakte bei zusammengesetzten Neumen) wird ueber alle
+// Mehrfach-Cluster hinweg per niedrigstem Score entfernt (nie die y-Extreme
+// eines Clusters, die sind fast sicher echte Noten). Die verbleibenden Punkte
+// werden dann nur noch nach x-Position sortiert und der Reihe nach auf die
+// Silben verteilt — robust auch wenn die Silben-TEXT-Grenzen falsch sind
+// (die bleiben dann zwar weiterhin falsch, aber die Tonhoehen stimmen).
+// Rueckgabe: { points, confidence } — confidence 0 = kein Ueberschuss (sicherste
+// Stufe, gar keine Entfernung noetig), 1 = Tier-1-Entfernung allein ausreichend
+// (sicher, positions-verifiziert), 2 = Tier-2 noetig (weniger sicher, siehe
+// Kommentar unten). NULL bei Fehlschlag. Der Aufrufer soll unter ALLEN
+// probierten Anker-Schwellen die mit der NIEDRIGSTEN confidence-Zahl waehlen,
+// nicht einfach die erste passende — siehe Kommentar in omrCorrectSystemLine.
+// Task #7: kombiniert den geometrischen Tinten-Fussabdruck eines Punkts
+// (siehe omrMeasureLocalInk) mit seinem Korrelations-Score zu einem
+// einzigen "wie sehr sieht das nach einem echten Notenkopf aus"-Wert.
+// Faellt sauber auf reinen Score zurueck, wenn keine Geometrie-Messung
+// vorliegt (z.B. synthetische Tests ohne echtes Bild dahinter) -- garantiert
+// unveraendertes Verhalten fuer jeden bestehenden Test, der nur {x,y,score}
+// kennt.
+function omrNoteheadLikeness(p, geo) {
+  if (p.fillRatio == null || !geo) return p.score;
+  const templateFill = geo.fillRatio != null ? geo.fillRatio : 0.8;
+  const fillLikeness = Math.min(1, p.fillRatio / templateFill);
+  const widthLikeness = geo.w ? Math.min(1, (p.maxRunWidth || 0) / geo.w) : 1;
+  // Geometrie dominiert bewusst (0.6+0.3=0.9) -- der Korrelations-Score
+  // dient nur noch als kleiner Tie-Breaker (0.1), da genau der Score allein
+  // eine Virga-Notenhals-Spitze fruehstens NICHT zuverlaessig von einem
+  // echten zweiten Notenkopf unterscheiden konnte (siehe Kommentar unten).
+  return fillLikeness * 0.6 + widthLikeness * 0.3 + p.score * 0.1;
+}
+
+function omrGlobalResolveNotes(clusters, totalExpected, geo) {
+  const standard = omrGlobalResolveNotesCore(clusters, totalExpected, geo);
+  // Zusaetzlicher, rein ADDITIVER Versuch (Session 21, gefunden ueber die
+  // reale OMR-Fixture-Bibliothek): der Notenschluessel am Systemanfang kann
+  // gelegentlich einen 3+-Punkte-Geister-Cluster erzeugen, bei dem KEINER
+  // der Punkte eine echte Note ist -- Tier 1 oben schuetzt aber IMMER die
+  // y-Extreme eines 3+-Clusters als "sicher real", was fuer einen Notenkopf-
+  // Cluster korrekt ist, fuer einen Notenschluessel-Geister-Cluster aber
+  // falsch. Symptom, konkret beobachtet: bei einem 3-Punkte-Geister-Cluster
+  // am Anfang plus 2 GENUINE 2-Noten-Neumen im selben System reichte Tier 1
+  // (nur 1 Punkt entfernbar) nicht aus, und Tier 2 entfernte faelschlich
+  // aus den echten 2-Noten-Neumen statt aus dem Geister-Cluster.
+  // Fix: zusaetzlich ausprobieren, was passiert, wenn der ALLERERSTE Cluster
+  // (per Konstruktion von omrClusterByX in x-Reihenfolge, siehe dort) einen
+  // Notenschluessel darstellt und KOMPLETT verworfen wird (nicht nur seine
+  // Mitte). Nur wenn das eine bessere (niedrigere) confidence als der
+  // Standardweg ergibt, wird es bevorzugt -- ein echter Notenschluessel
+  // verschwindet damit spurlos; eine echte 3+-Noten-Neume am Systemanfang
+  // bleibt dagegen unangetastet, weil deren komplettes Verwerfen der
+  // GESAMTZAHL sonst die Rohtrefferzahl unter das Erwartete druecken wuerde
+  // (excess < 0 fuer die uebrigen Cluster), was hier schlicht scheitert
+  // (liefert null) und damit automatisch beim Standardweg bleibt.
+  if (clusters.length >= 1 && clusters[0].length >= 3) {
+    const withoutFirst = omrGlobalResolveNotesCore(clusters.slice(1), totalExpected, geo);
+    if (withoutFirst && (!standard || withoutFirst.confidence < standard.confidence)) {
+      return withoutFirst;
+    }
+  }
+  return standard;
+}
+
+function omrGlobalResolveNotesCore(clusters, totalExpected, geo) {
+  let totalRaw = 0;
+  clusters.forEach(c => totalRaw += c.length);
+  const excess = totalRaw - totalExpected;
+  if (excess < 0) return null; // weniger Rohtreffer als benoetigt -> diese Schwelle scheitert
+  if (excess === 0) return { points: clusters.flat(), confidence: 0 };
+
+  // Session 12 — 2-STUFIGE Entfernung. Ein Cluster mit GENAU 2 Rohtreffern
+  // ist strukturell mehrdeutig: entweder ein echtes 2-Noten-Neume
+  // (Podatus/Clivis, BEIDE Punkte real) ODER eine "Virga rendert als 2
+  // Korrelations-Peaks"-Situation (siehe omr_pipeline.py Session 8, Punkt 1
+  // — dieselbe Mehrdeutigkeit war schon damals bekannt, wurde dort aber
+  // ueber einen PER-SILBE expected_count geloest; hier fehlt dieses Wissen,
+  // seit die Zaehlung system-weit statt pro Silbe laeuft). Ein erster
+  // Versuch, den schwaecheren Punkt IMMER als gleichwertigen, rein
+  // score-basierten Entfernungs-Kandidaten zu behandeln, verursachte eine
+  // ECHTE Regression (bei einem Test mit echten Bilddaten wurde dadurch
+  // eine echte 2-Noten-Neume faelschlich auf 1 Note reduziert, weil der
+  // globale Score-Rang irrtuemlich dort zugriff, obwohl die sichere Tier-1-
+  // Entfernung allein ausgereicht haette). Fix: 2-stufige Prioritaet —
+  // Tier 1 (Mitte-Punkte von 3+-Clustern, positions-verifiziert, sicher)
+  // wird IMMER zuerst genutzt; NUR wenn Tier 1 allein nicht ausreicht, wird
+  // zusaetzlich in Tier 2 (schwaecherer Punkt von 2er-Clustern, weniger
+  // sicher) gegriffen. So bleiben echte 2-Noten-Neumen unangetastet, solange
+  // die Ueberschuss-Menge sich schon aus den sicheren 3+-Clustern erklaeren
+  // laesst.
+  const certain = [];
+  const tier1Removable = [];
+  const twoPointGroups = [];
+  clusters.forEach((c) => {
+    if (c.length <= 1) {
+      certain.push(...c);
+    } else if (c.length === 2) {
+      const byLikeness = c.slice().sort((a, b) => omrNoteheadLikeness(b, geo) - omrNoteheadLikeness(a, geo));
+      twoPointGroups.push({ strong: byLikeness[0], weak: byLikeness[1] });
+    } else {
+      const byY = c.slice().sort((a, b) => a.y - b.y);
+      certain.push(byY[0], byY[byY.length - 1]);
+      tier1Removable.push(...byY.slice(1, byY.length - 1));
+    }
+  });
+
+  if (tier1Removable.length >= excess) {
+    // Sicherer Fall: Tier 1 allein erklaert den Ueberschuss — jeden
+    // 2er-Cluster unangetastet lassen (beide Punkte gelten als real).
+    tier1Removable.sort((a, b) => a.score - b.score);
+    const kept1 = tier1Removable.slice(excess);
+    const twoPointPoints = twoPointGroups.flatMap(g => [g.strong, g.weak]);
+    return { points: [...certain, ...twoPointPoints, ...kept1], confidence: 1 };
+  }
+
+  // Tier 1 allein reicht nicht — zusaetzlich in Tier 2 greifen (weniger
+  // sicher, siehe Kommentar oben).
+  const remainingExcess = excess - tier1Removable.length;
+  const weakCandidates = twoPointGroups.map(g => g.weak);
+  if (weakCandidates.length < remainingExcess) return null; // immer noch nicht genug -> Schwelle scheitert
+  weakCandidates.sort((a, b) => omrNoteheadLikeness(a, geo) - omrNoteheadLikeness(b, geo));
+  const keptWeak = weakCandidates.slice(remainingExcess);
+  const strongPoints = twoPointGroups.map(g => g.strong);
+  return { points: [...certain, ...strongPoints, ...keptWeak], confidence: 2 };
+}
+
+function omrComputeCorrectedPitchesFromOrderedList(orderedPoints, noteTokens, staffLines) {
+  const sorted = orderedPoints.slice().sort((a, b) => a.x - b.x);
+  let ptr = 0;
+  return noteTokens.map((t) => {
+    if (t.noteCount === 0) return null;
+    if (ptr + t.noteCount > sorted.length) return null; // sollte bei korrektem Gesamt-Abgleich nicht vorkommen
+    const group = sorted.slice(ptr, ptr + t.noteCount);
+    ptr += t.noteCount;
+    const ordered = omrClassifyNeumeOrder(group);
+    const letters = ordered.map(c => omrYToGabcLetter(c.y, staffLines[1], staffLines[2]));
+    if (letters.some(l => l == null)) return null;
+    return omrSubstituteLettersPreservingModifiers(t.pitches, letters);
+  });
+}
+
+// Laedt ein Base64-Bild (JPEG/PNG) ueber ein <img>+<canvas>, liefert
+// ImageData wie von canvas.getContext('2d').getImageData().
+function omrLoadImageFromBase64(b64, mediaType = 'image/jpeg') {
+  return new Promise((resolve, reject) => {
+    const imgEl = new Image();
+    imgEl.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = imgEl.naturalWidth;
+      canvas.height = imgEl.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imgEl, 0, 0);
+      try {
+        resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      } catch (e) {
+        reject(e);
+      } finally {
+        canvas.width = 0; canvas.height = 0;
+      }
+    };
+    imgEl.onerror = () => reject(new Error('Bild konnte nicht geladen werden'));
+    imgEl.src = 'data:' + mediaType + ';base64,' + b64;
+  });
+}
+
+async function omrCorrectSystemLine(line, systemItem, opts = {}) {
+  try {
+    const tokens = omrParseGabcSystemLine(line);
+    const noteTokens = tokens.filter(t => t.type === 'note');
+    if (!noteTokens.length) return { line, applied: false, reason: 'keine Silben mit Noten' };
+    if (systemItem.type !== 'crop' || !systemItem.lineYsInCrop) {
+      return { line, applied: false, reason: 'kein Notensystem-Ausschnitt (Übersichtsbild statt Crop)' };
+    }
+
+    const imageData = await omrLoadImageFromBase64(systemItem.b64, 'image/jpeg');
+    const img = omrGrayFromRGBA(imageData);
+    const staffLines = systemItem.lineYsInCrop;
+    const gap = staffLines[1] - staffLines[0];
+    const y0 = Math.max(0, Math.round(staffLines[0] - gap * 0.6));
+    const y1 = Math.min(img.height, Math.round(staffLines[3] + gap * 0.6));
+    // Spalten-Grenze (Uebersetzungsspalte) bewusst NICHT angewendet: auf
+    // einem einzelnen Systemausschnitt (statt der ganzen Seite mit
+    // mehreren Systemen) ist die Erkennung unzuverlässig — siehe
+    // omr_pipeline.py Docstring. Bekannte Einschraenkung fuer Dokumente
+    // mit seitlicher Uebersetzungsspalte, siehe NOTES_v27.md.
+    const band = [0, y0, img.width, y1];
+
+    const geo = omrAutoDetectNoteheadGeometry(img, band, staffLines);
+    if (!geo) {
+      console.log('OMR-Diagnose: kein Notenkopf-Template gefunden. Bild ' + img.width + 'x' + img.height +
+        ', Band [0,' + y0 + ',' + img.width + ',' + y1 + '], Notenlinien-Abstand=' + gap.toFixed(1) +
+        ', staffLines=' + JSON.stringify(staffLines));
+      return { line, applied: false, reason: 'kein Notenkopf-Template gefunden' };
+    }
+
+    // anchor_threshold ist dokumentabhaengig (siehe omr_pipeline.py, Session
+    // 8/9) — mehrere Werte durchprobieren. Statt (wie bisher) die Cluster-
+    // ANZAHL gegen die Silben-Token-Anzahl zu pruefen (scheitert bei falscher
+    // Vision-Silbentrennung fuer das GANZE System), wird jetzt die GESAMT-
+    // Notenzahl (Summe ueber alle Silben) gegen die Gesamtzahl erkannter
+    // Notenkoepfe verglichen — siehe omrGlobalResolveNotes() (Session 11).
+    //
+    // WICHTIG (Session 12): ALLE Schwellen werden durchprobiert und die mit
+    // der NIEDRIGSTEN confidence-Zahl gewaehlt (0=exakt, 1=Tier1 sicher,
+    // 2=Tier2 noetig) — NICHT einfach die erste passende in aufsteigender
+    // Reihenfolge. Grund: ein Clef-Geister-Cluster am Systemanfang besteht
+    // manchmal selbst aus 3 Rohtreffern, aber KEINER davon ist real — bei
+    // niedrigen Schwellen bleibt dieser Geister-Cluster im Bild und die
+    // "y-Extreme von 3+-Clustern sind sicher echt"-Annahme geht dafuer
+    // faelschlich auf (2 von 3 Geister-Punkten wuerden als "sicher real"
+    // durchgehen). Eine HOEHERE Schwelle schliesst den Geister-Cluster
+    // dagegen oft komplett aus (exakter Treffer, confidence=0) — das ist
+    // dann immer die bessere Wahl, auch wenn eine niedrigere Schwelle
+    // "zufaellig" auch eine (schlechtere) Loesung findet.
+    const totalExpected = noteTokens.reduce((s, t) => s + t.noteCount, 0);
+    const thresholdsToTry = opts.anchorThresholds || [0.7, 0.75, 0.8, 0.85, 0.9];
+    let best = null; // { points, confidence, usedThreshold }
+    const diagRows = [];
+    for (const at of thresholdsToTry) {
+      const r = omrAutoFindNoteClusters(img, geo.template, band, { anchorThreshold: at });
+      const totalRaw = r.clusters.reduce((s, c) => s + c.length, 0);
+      const resolved = omrGlobalResolveNotes(r.clusters, totalExpected, geo);
+      diagRows.push({ anchorThreshold: at, nClusters: r.clusters.length, totalRaw, totalExpected, anchorRange: r.anchorRange, confidence: resolved ? resolved.confidence : null });
+      if (resolved && (!best || resolved.confidence < best.confidence)) {
+        best = { points: resolved.points, confidence: resolved.confidence, usedThreshold: at };
+        if (resolved.confidence === 0) break; // exakter Treffer -- besser geht nicht, sofort abbrechen
+      }
+    }
+    if (!best) {
+      console.log('OMR-Diagnose (System nicht korrigiert): Bild ' + img.width + 'x' + img.height +
+        ', Template ' + geo.w + 'x' + geo.h + ' (aus ' + geo.nCandidates + ' Kandidaten), ' +
+        'Notenlinien-Abstand=' + gap.toFixed(1) + ', Silben-Tokens=' + noteTokens.length + ', erwartete Gesamt-Notenzahl=' + totalExpected + '.\n' +
+        'Je Schwelle: ' + JSON.stringify(diagRows));
+      return { line, applied: false, reason: `Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (${totalExpected})` };
+    }
+
+    const newPitchStrings = omrComputeCorrectedPitchesFromOrderedList(best.points, noteTokens, staffLines);
+    const correctedLine = omrReplacePitchesInLine(line, newPitchStrings);
+    // WICHTIG: die Korrektur ist NICHT chirurgisch — sie berechnet fuer JEDEN
+    // Silben-Token im System unbedingt eine neue Tonhoehe aus der Geometrie,
+    // unabhaengig davon, ob Visions urspruengliche Ablesung an dieser Stelle
+    // schon richtig war. nRecomputed zaehlt daher immer praktisch alle Tokens
+    // (sobald das System ueberhaupt angewendet wird) — das ist KEIN Mass
+    // dafuer, wie viele Silben vorher falsch waren. nActuallyDifferent
+    // zeigt zusaetzlich, bei wie vielen Tokens sich der Buchstabe von Visions
+    // Original tatsaechlich unterscheidet (diagnostisch, siehe NOTES_v36.md).
+    const nRecomputed = newPitchStrings.filter(p => p != null).length;
+    const nActuallyDifferent = newPitchStrings.filter((p, idx) => p != null && p !== noteTokens[idx].pitches).length;
+    return { line: correctedLine, applied: true, nChanged: nRecomputed, nActuallyDifferent, nTotal: noteTokens.length, usedThreshold: best.usedThreshold, confidence: best.confidence };
+  } catch (e) {
+    return { line, applied: false, reason: 'Fehler: ' + e.message };
+  }
+}
+
+// Session 15 — MEHRFACH-ABGLEICH gegen bestaetigte Vision-Instabilitaet:
+// ein Nutzertest zeigte, dass zwei Durchlaeufe DERSELBEN PDF-Datei nur in
+// ca. 46% der Notenpositionen uebereinstimmten — Vision liest (trotz
+// temperature=0) nicht zuverlaessig dieselbe Silben-Notenzahl bei jedem
+// Aufruf. Eine vollstaendig geometrie-basierte Notenzaehlung (OMR bestimmt
+// die Zahl komplett selbst, ohne Vision) wuerde auf dasselbe ungeloeste
+// Problem treffen wie Task #7 (Virga-Doppeltreffer vs. echte 2-Noten-Neume
+// laesst sich rein pixelbasiert nicht zuverlaessig unterscheiden, siehe
+// omr_pipeline.py — 3 Ansaetze dafuer sind bereits gescheitert). Praktischer
+// Kompromiss: Vision mehrfach unabhaengig aufrufen und die Gesamt-Notenzahl
+// je System per Median-Konsens waehlen (siehe pickConsensusLine unten) —
+// kein neues, unverifiziertes Geometrie-Heuristikproblem, sondern nutzt die
+// Zufallsstreuung mehrerer echter Vision-Antworten aus, um Ausreisser
+// herauszufiltern.
+const VISION_EXTRACTION_REPEATS = 3;
+
+async function runBatchAttempt(apiKeyLocal, batchBlocks, promptText, batchMaxTokens, batchLabel) {
+  // Ein einzelner Vision-Extraktions-Durchlauf fuer einen Batch. Gibt ein
+  // Array von (bereits von "System N:"-Label befreiten) Zeilen zurueck, eine
+  // pro im Antworttext gefundenem System, in Reihenfolge — oder null bei
+  // komplettem Fehlschlag dieses EINEN Durchlaufs.
+  try {
+    const batchResp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-api-key':apiKeyLocal, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: batchMaxTokens,
+        temperature: 0,
+        messages: [{ role: 'user', content: [...batchBlocks, { type: 'text', text: promptText }] }]
+      })
+    });
+    if (!batchResp.ok) {
+      console.log(batchLabel + ' HTTP error', batchResp.status, await batchResp.text().catch(() => ''));
+      return null;
+    }
+    const batchData = await batchResp.json();
+    const batchFullText = (batchData.content || []).filter(x => x.type === 'text').map(x => x.text).join('').trim();
+    const bMarker = batchFullText.indexOf('===GABC===');
+    let usedLines = [];
+    if (bMarker >= 0) {
+      const batchLines = batchFullText.slice(bMarker + '===GABC==='.length).trim();
+      usedLines = batchLines.split('\n');
+    } else {
+      usedLines = batchFullText.split('\n').filter(l => /^\s*System\s+#?\d+\s*:/i.test(l));
+      if (usedLines.length) console.log(batchLabel + ': kein "===GABC==="-Marker, aber ' + usedLines.length + ' "System N:"-Zeile(n) im Fliesstext gefunden und übernommen.');
+    }
+    if (!usedLines.length) {
+      console.log(batchLabel + ' response (no marker, no "System N:" lines found):', batchFullText);
+      return null;
+    }
+    return usedLines.map(line => line.replace(/^\s*System\s+#?\d+\s*:\s*/i, '').trim()).filter(l => l);
+  } catch (e) {
+    console.log(batchLabel + ' error:', e.message);
+    return null;
+  }
+}
+
+function pickConsensusLine(candidateLines) {
+  // candidateLines: GABC-Zeilen fuer DASSELBE System aus mehreren
+  // unabhaengigen Vision-Durchlaeufen. Waehlt diejenige, deren GESAMT-
+  // Notenzahl am naechsten am Median aller Kandidaten liegt — filtert damit
+  // einen einzelnen Ausreisser-Durchlauf heraus, ohne dass die Silben-
+  // Segmentierung zwischen den Kandidaten uebereinstimmen muss (das waere
+  // fuer eine echte Silbe-fuer-Silbe-Abstimmung noetig, aber angesichts
+  // unterschiedlicher Wort-/Silbentrennung zwischen Durchlaeufen nicht
+  // robust genug umsetzbar).
+  if (candidateLines.length === 1) return candidateLines[0];
+  const withCounts = candidateLines.map(line => {
+    const tokens = omrParseGabcSystemLine(line);
+    const total = tokens.filter(t => t.type === 'note').reduce((s, t) => s + t.noteCount, 0);
+    return { line, total };
+  });
+  const sortedTotals = withCounts.map(w => w.total).slice().sort((a, b) => a - b);
+  const median = sortedTotals[Math.floor(sortedTotals.length / 2)];
+  const exact = withCounts.filter(w => w.total === median);
+  exact.sort((a, b) => b.line.length - a.line.length); // Tie-Break: ausfuehrlichere Zeile bevorzugen
+  return exact[0].line;
+}
+
+// Orchestriert die Korrektur ueber ALLE Systeme eines Stuecks. lines und
+// items muessen synchron sein (lines[i] gehoert zu items[i]). Bei jeder
+// Diskrepanz (z.B. ein Batch hat weniger Zeilen geliefert als Systeme
+// angefragt wurden) wird NICHTS korrigiert — siehe Sicherheitsprinzip oben.
+async function omrCorrectAllSystems(lines, items, statusFn) {
+  if (lines.length !== items.length) {
+    if (statusFn) statusFn('OMR-Korrektur übersprungen: Zeilen-/System-Anzahl stimmt nicht überein (' + lines.length + ' vs. ' + items.length + ').');
+    return lines;
+  }
+  const correctedLines = [];
+  let nSystemsApplied = 0, nSyllablesChanged = 0, nSyllablesTotal = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const item = items[i];
+    if (!line.trim() || !item) { correctedLines.push(line); continue; }
+    const result = await omrCorrectSystemLine(line, item);
+    correctedLines.push(result.line);
+    if (result.applied) {
+      nSystemsApplied++;
+      nSyllablesChanged += result.nChanged;
+      nSyllablesTotal += result.nTotal;
+      // Session 15: Erfolg jetzt EBENFALLS geloggt (vorher nur Skip-Fälle) —
+      // sonst ist aus der Konsole allein nicht unterscheidbar, ob die
+      // Korrektur-Schicht ueberall erfolgreich lief oder komplett
+      // uebersprungen wurde, was einen echten Nutzertest unnötig erschwerte.
+      console.log('OMR-Korrektur für System ' + (i + 1) + ' angewendet: ' + result.nChanged + '/' + result.nTotal + ' Silben-Tonhöhen neu berechnet, davon ' + result.nActuallyDifferent + ' tatsächlich anders als Vision (Schwelle ' + result.usedThreshold + ', Sicherheitsstufe ' + result.confidence + ').');
+    } else {
+      console.log('OMR-Korrektur für System ' + (i + 1) + ' übersprungen: ' + result.reason);
+    }
+  }
+  if (statusFn) {
+    statusFn('OMR-Korrektur: ' + nSystemsApplied + ' von ' + lines.length + ' Systemen geometrisch nachgerechnet' +
+      (nSystemsApplied ? ' (' + nSyllablesChanged + '/' + nSyllablesTotal + ' Silben-Tonhöhen angepasst)' : '') + '.');
+  }
+  return correctedLines;
+}
+
+
 async function gregLoadPDF(input) {
   const file = input.files[0];
   if (!file) return;
@@ -4276,7 +5255,7 @@ async function gregLoadPDF(input) {
 List each separate chant PIECE across all the page(s) shown. For each piece give:
 - Its number/index (1, 2, ...)
 - The mode/annotation number, ONLY if this piece has one of its own. A hymn's mode/tone number is often printed SMALL, off to the side of its first system rather than directly above the music — e.g. a label like "Hymn. II" in the margin/corner, or a plain digit/Roman numeral near the start; look specifically there, not just at the music itself, and give your single best-guess reading (e.g. "2" or "II") rather than "?". BUT a versicle/response (℣./℟.) normally has NO mode/tone number of its own in the print — don't guess one, don't reuse the hymn's own number for it, and don't default to "1" just to fill the field; use an empty string "" for its mode in that case. Only fall back to a placeholder guess for a piece that would normally carry its own number (a hymn, an antiphon, etc.) but where the print is unclear.
-- The first word of text (incipit)
+- The incipit: the OPENING PHRASE of the text, several words long (roughly up to the first comma or 4-6 words, whichever comes first) — e.g. "Audi benigne Conditor", NOT just its first single word ("Audi"). This is used as a search key against an external chant catalog, so it must be specific enough to distinguish this piece from other pieces that happen to start with the same first word.
 - Which page(s) it appears on (1-based, e.g. [1] or [1,2])
 - The total number of staff systems (lines of music) that belong to it, counting every system from its own incipit through its own final double bar. Count CAREFULLY, one system at a time, in the order they appear across the page(s) — this number is the ONLY way multiple pieces sharing the same page get split apart correctly later (piece 1 gets the first N systems, piece 2 gets the next M, and so on in that same top-to-bottom order); an off-by-one here misassigns a whole system to the wrong piece.
 - Whether THIS piece begins with a large decorative drop-cap initial letter (a big ornamental capital, noticeably taller than the surrounding print, replacing the piece's very first letter) — true or false. Judge each piece by its OWN actual opening, don't assume: many hymns have one, but a short versicle/response directly underneath usually does NOT — look at what's really printed at that piece's own start, not at whether the piece above it had one.
@@ -4286,7 +5265,7 @@ IMPORTANT: a strophic hymn — one melody engraved once (or once per verse) with
 IMPORTANT: a hymn is very often followed directly underneath by a short VERSICLE AND RESPONSE pair (marked with ℣. and ℟., or "V." and "R.") — e.g. "℣. Angelis suis Deus mandavit / ℟. Ut custodiant te...". This is a DIFFERENT, separate piece from the hymn above it (different text, different chant) even though it has no decorative drop-cap or title of its own — list it as its own piece with its OWN correct system count (do not merge its systems into the hymn's count, and do not assign it 0). It IS still normal 4-line-staff notation like everything else here, just with an unusual musical feature: most or all of its notes sit on the exact SAME line (a monotone reciting tone) rather than moving up and down — that's expected and correct for this kind of text, not a sign you've miscounted or misread anything.
 
 Your ENTIRE response must be ONLY the JSON array below — no reasoning, no explanation, no markdown code fences, nothing before or after it. Respond ONLY as JSON array, e.g.: [{"index":1,"mode":"2","incipit":"Alleluia","pages":[1],"systems":6,"hasDropCap":true},{"index":2,"mode":"IV","incipit":"Alleluia","pages":[1,2],"systems":9,"hasDropCap":false}]
-Here is a THIRD example showing a hymn immediately followed by its versicle/response, to make both the empty-mode rule AND the drop-cap rule concrete (this is the common case, not a rare edge case — apply it every time this pattern appears): [{"index":1,"mode":"II","incipit":"Audi benigne","pages":[1],"systems":13,"hasDropCap":true},{"index":2,"mode":"","incipit":"Angelis suis","pages":[2],"systems":2,"hasDropCap":false}] — note piece 2's mode is the empty string "" (NOT "II" copied from piece 1), and piece 2's hasDropCap is false, because a versicle/response typically has neither its own mode number nor its own drop-cap in print, even when the hymn right above it has both.` }
+Here is a THIRD example showing a hymn immediately followed by its versicle/response, to make both the empty-mode rule AND the drop-cap rule concrete (this is the common case, not a rare edge case — apply it every time this pattern appears): [{"index":1,"mode":"II","incipit":"Audi benigne Conditor","pages":[1],"systems":13,"hasDropCap":true},{"index":2,"mode":"","incipit":"Angelis suis Deus","pages":[2],"systems":2,"hasDropCap":false}] — note piece 2's mode is the empty string "" (NOT "II" copied from piece 1), piece 2's hasDropCap is false (a versicle/response typically has neither its own mode number nor its own drop-cap in print, even when the hymn right above it has both), and BOTH incipits are several words long, not truncated to a single word.` }
           ]
         }]
       })
@@ -4397,26 +5376,58 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
     // person to confirm (with a link to the actual GregoBase page to
     // verify), exactly as requested; declining or finding no matches falls
     // straight through to the normal image-recognition pipeline below.
-    async function gregSearchGregoBase(incipit) {
-      // A file:// page (i.e. Notator opened by double-clicking the HTML
-      // file, rather than served over http/https) is, per browser
-      // security rules, ALWAYS blocked from cross-origin fetches by CORS —
-      // gregobase.selapa.net sends no Access-Control-Allow-Origin header
-      // for a "null" file:// origin, and no app code can work around that
-      // from the browser side. Confirmed via a real console log (Runde
-      // 52/53): every GregoBase lookup fails this way when run from
-      // file://, always with the exact same "blocked by CORS policy"
-      // error — that's expected, not a bug to chase, and there's no fix
-      // possible here short of serving the file over a real http(s)
-      // server (or a CORS proxy) instead. Failing fast with ONE clear
-      // message avoids repeating a doomed fetch per piece and an opaque
-      // browser-level CORS error in the console each time.
+    // GregoBase's exported GABC header uses its OWN keys (mode/office-part/
+// book/transcriber/...), none of which Notator's importer recognises (it
+// only understands annotation:/notator-subtitle:/name:/drop-cap:). Maps the
+// two the user wants surfaced: "mode" becomes the on-score annotation
+// (e.g. "2"), "book" becomes the subtitle. "office-part" is deliberately
+// ignored (not mapped to anything), per explicit request.
+function gregMapGregoBaseHeaderFields(gabcStr) {
+  if (!gabcStr.includes('%%')) return gabcStr;
+  const si = gabcStr.indexOf('%%');
+  const header = gabcStr.substring(0, si);
+  const body = gabcStr.substring(si);
+  const modeM = header.match(/^\s*mode\s*:\s*(.*?);?\s*$/im);
+  const bookM = header.match(/^\s*book\s*:\s*(.*?);?\s*$/im);
+  let extra = '';
+  if (modeM && modeM[1].trim()) extra += 'annotation: ' + modeM[1].trim() + ';\n';
+  if (bookM && bookM[1].trim()) extra += 'notator-subtitle: ' + bookM[1].trim() + ';\n';
+  // GregoBase's plain gabc export never includes "drop-cap: auto" even when
+  // the piece is printed with one (confirmed: this test piece's real page
+  // clearly shows a decorative "A" opening "Audi", but the downloaded gabc
+  // has no drop-cap header at all) — gregImportGABCString's bidirectional
+  // toggle (see its own comment, Runde 61 fix) would otherwise explicitly
+  // UNCHECK the box on every GregoBase import. Per explicit request, always
+  // request a drop-cap for GregoBase imports; easy to uncheck by hand for
+  // the rare piece that genuinely has none.
+  extra += 'drop-cap: auto;\n';
+  return header.trim() + '\n' + extra + body;
+}
+
+async function gregSearchGregoBase(incipit) {
+      // CORRECTION (Session 17): an earlier version of this comment assumed
+      // the CORS block only applied to file:// (a "null" origin). Real-world
+      // testing from a proper http://localhost server showed the SAME
+      // "blocked by CORS policy: No 'Access-Control-Allow-Origin' header"
+      // error — gregobase.selapa.net simply never sends that header for ANY
+      // foreign browser origin, not just file://. That's normal, correctly-
+      // behaving CORS on their end (they never opted their pages into
+      // cross-site JS fetches), not a bug and not something any client-side
+      // code or "just use a real server" trick can work around directly.
+      // The actual fix: Notator_starten.bat now launches notator_server.py
+      // instead of plain `python -m http.server` — it serves the files AND
+      // proxies these two GregoBase endpoints server-side (a Python-to-
+      // GregoBase request is not a browser fetch, so CORS never applies to
+      // it), returning the result to the page as an ordinary same-origin
+      // request. A file:// page still can't reach even that proxy (no
+      // server at all is running under file://), so the guard below stays.
       if (location.protocol === 'file:') {
-        throw new Error('GregoBase-Abgleich übersprungen: Datei läuft als file:// (per Doppelklick geöffnet) — Cross-Origin-Zugriffe sind dann vom Browser grundsätzlich blockiert (CORS), unabhängig vom Code hier. Nur über einen echten http(s)-Server erreichbar.');
+        throw new Error('GregoBase-Abgleich übersprungen: Datei läuft als file:// (per Doppelklick geöffnet) — bitte über Notator_starten.bat starten (echter lokaler Server inkl. GregoBase-Proxy, nötig weil gregobase.selapa.net keine direkten Browser-Zugriffe von fremden Seiten erlaubt).');
       }
       const firstLetter = incipit.normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0].toUpperCase();
       if (!/[A-Z]/.test(firstLetter)) return [];
-      const resp = await fetch('https://gregobase.selapa.net/incipit.php?letter=' + firstLetter);
+      const gbProxyBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://notator-gregobase-proxy.matthias-krohn.workers.dev';
+      const resp = await fetch(gbProxyBase + '/_gregobase_incipit?letter=' + firstLetter);
       if (!resp.ok) throw new Error('GregoBase HTTP ' + resp.status);
       const html = await resp.text();
       const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -4455,65 +5466,138 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
           matches.push({ id, title, source, url: 'https://gregobase.selapa.net/chant.php?id=' + id });
         }
       });
-      return matches.slice(0, 8); // cap — a long incipit list is unwieldy to pick from anyway
+      // Sort by relevance instead of leaving GregoBase's raw page order (which
+      // is alphabetical-by-letter, not by closeness to OUR incipit). This
+      // matters especially when the incipit is short (a single word, or a
+      // Vision-truncated one) — many unrelated titles can share just the
+      // first word (e.g. "Audi" matches "Audiam Domine" AND "Audi benigne
+      // Conditor" equally under plain startsWith). Exact normalized matches
+      // first, then whichever title's length is CLOSEST to the incipit's own
+      // length (a near-exact-length match is far more likely to be the same
+      // piece than one that's much longer or, unusually, shorter).
+      matches.sort((a, b) => {
+        const an = norm(a.title), bn = norm(b.title);
+        const aExact = an === incipitNorm ? 0 : 1;
+        const bExact = bn === incipitNorm ? 0 : 1;
+        if (aExact !== bExact) return aExact - bExact;
+        return Math.abs(an.length - incipitNorm.length) - Math.abs(bn.length - incipitNorm.length);
+      });
+      console.log('GregoBase-Suche für "' + incipit + '" (Buchstabe ' + firstLetter + '): ' + matches.length + ' Treffer nach Relevanz sortiert.');
+      // No cap here anymore — the modal itself paginates (see
+      // gregPickGregoBaseMatchModal's GREG_GB_PAGE_SIZE) so a long list is
+      // still browsable via "weitere Treffer laden" instead of silently
+      // hiding genuine matches beyond a fixed count.
+      return matches;
     }
 
     function gregPickGregoBaseMatchModal(matches) {
+      const GREG_GB_PAGE_SIZE = 8; // shown per page — matches the old hard cap, but more can be loaded on request
       return new Promise(resolve => {
         showModal('📚 Treffer in GregoBase gefunden', 'Für "' + chosen.incipit + '" wurden folgende Einträge in der öffentlichen GregoBase-Chorendatenbank gefunden — bei Übereinstimmung wird die dort bereits geprüfte GABC-Transkription direkt übernommen (zuverlässiger als Bilderkennung). Zum Prüfen anklicken, dann auswählen oder ablehnen.', []);
         const bEl = document.getElementById('modal-btns');
-        bEl.innerHTML = '';
         bEl.style.flexDirection = 'column';
         bEl.style.alignItems = 'stretch';
-        matches.forEach(m => {
-          const row = document.createElement('div');
-          row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0';
-          const link = document.createElement('a');
-          link.href = m.url; link.target = '_blank'; link.rel = 'noopener';
-          link.textContent = '🔗';
-          link.style.cssText = 'text-decoration:none;font-size:13px;flex-shrink:0';
-          link.title = 'In GregoBase ansehen (neuer Tab)';
-          const btn = document.createElement('button');
-          btn.className = 'b';
-          btn.style.cssText = 'flex:1;text-align:left';
-          btn.textContent = m.title + ' — ' + (m.source || 'unbekannte Quelle') + ' (#' + m.id + ')';
-          btn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve(m); };
-          row.appendChild(link); row.appendChild(btn);
-          bEl.appendChild(row);
-        });
+        let shown = 0;
+        const listEl = document.createElement('div');
+        bEl.appendChild(listEl);
+        const moreWrap = document.createElement('div');
+        bEl.appendChild(moreWrap);
+        function renderMoreRow() {
+          moreWrap.innerHTML = '';
+          const remaining = matches.length - shown;
+          if (remaining <= 0) return;
+          const moreBtn = document.createElement('button');
+          moreBtn.className = 'b';
+          moreBtn.style.cssText = 'font-style:italic';
+          moreBtn.textContent = 'Weitere ' + Math.min(remaining, GREG_GB_PAGE_SIZE) + ' von ' + remaining + ' Treffern laden…';
+          moreBtn.onclick = () => { renderNextPage(); };
+          moreWrap.appendChild(moreBtn);
+        }
+        function renderNextPage() {
+          const page = matches.slice(shown, shown + GREG_GB_PAGE_SIZE);
+          page.forEach(m => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0';
+            const link = document.createElement('a');
+            link.href = m.url; link.target = '_blank'; link.rel = 'noopener';
+            link.textContent = '🔗';
+            link.style.cssText = 'text-decoration:none;font-size:13px;flex-shrink:0';
+            link.title = 'In GregoBase ansehen (neuer Tab)';
+            const btn = document.createElement('button');
+            btn.className = 'b';
+            btn.style.cssText = 'flex:1;text-align:left';
+            btn.textContent = m.title + ' — ' + (m.source || 'unbekannte Quelle') + ' (#' + m.id + ')';
+            btn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve(m); };
+            row.appendChild(link); row.appendChild(btn);
+            listEl.appendChild(row);
+          });
+          shown += page.length;
+          renderMoreRow();
+        }
+        renderNextPage();
         const noneBtn = document.createElement('button');
         noneBtn.className = 'b';
         noneBtn.textContent = 'Keine davon — mit Bilderkennung fortfahren';
         noneBtn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve(null); };
         bEl.appendChild(noneBtn);
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'b';
+        cancelBtn.textContent = 'Abbrechen — weder GregoBase noch Bilderkennung';
+        cancelBtn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve('__CANCEL__'); };
+        bEl.appendChild(cancelBtn);
       });
     }
 
     try {
+      console.log('GregoBase-Abgleich für Stück ' + chosen.index + ' ("' + chosen.incipit + '") gestartet…');
       gregGst('Suche "' + chosen.incipit + '" in GregoBase…');
       const gbMatches = await gregSearchGregoBase(chosen.incipit);
       if (gbMatches.length) {
+        console.log('GregoBase: ' + gbMatches.length + ' Treffer angezeigt, warte auf Auswahl des Nutzers…');
         const picked = await gregPickGregoBaseMatchModal(gbMatches);
+        if (picked === '__CANCEL__') {
+          console.log('GregoBase: Nutzer hat komplett abgebrochen (weder Import noch Bilderkennung) für Stück ' + chosen.index + '.');
+          gregGst('Abgebrochen.');
+          return _pieceSucceeded;
+        }
         if (picked) {
+          console.log('GregoBase: Nutzer wählte #' + picked.id + ' ("' + picked.title + '", ' + picked.source + ') — starte Download…');
           gregGst('Lade GABC von GregoBase (#' + picked.id + ')…');
-          const dlResp = await fetch('https://gregobase.selapa.net/download.php?id=' + picked.id + '&format=gabc');
+          const gbProxyBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://notator-gregobase-proxy.matthias-krohn.workers.dev';
+          const dlResp = await fetch(gbProxyBase + '/_gregobase_download?id=' + picked.id + '&format=gabc&elem=1');
           if (!dlResp.ok) throw new Error('Download HTTP ' + dlResp.status);
-          const gbGabc = (await dlResp.text()).trim();
+          let gbGabc = (await dlResp.text()).trim();
+          console.log('GregoBase: Download erhalten, ' + gbGabc.length + ' Zeichen GABC.');
           if (gbGabc) {
+            // GregoBase's own header fields (mode/office-part/book/...) use
+            // different keys than Notator's own annotation/subtitle
+            // convention, so none of them are picked up by gregImportGABCString
+            // as-is (only "annotation:"/"notator-subtitle:"/"name:" are
+            // recognised there). Per explicit request: show "mode" as the
+            // on-score annotation (ignore "office-part" entirely), and put
+            // "book" into the subtitle field.
+            gbGabc = gregMapGregoBaseHeaderFields(gbGabc);
             const previousEntries = gregEntries;
             gregImportGABCString(gbGabc, { deferRender: true });
+            console.log('GregoBase: Import ergab ' + gregEntries.length + ' Einträge.');
             if (gregEntries.length > 400) { // sanity cap even for a trusted source — a malformed/huge download shouldn't render blindly either
               const proceed = await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Der GregoBase-Download ergibt ' + gregEntries.length + ' Einträge — ungewöhnlich viel. Trotzdem laden?');
-              if (!proceed) { gregEntries = previousEntries; gregGst('Abgebrochen.'); return _pieceSucceeded; }
+              if (!proceed) { gregEntries = previousEntries; gregGst('Abgebrochen.'); console.log('GregoBase: Import vom Nutzer abgelehnt (zu viele Einträge).'); return _pieceSucceeded; }
             }
             gregRefreshListNoRender();
             gregRender();
             gregGst('Aus GregoBase geladen: "' + picked.title + '" (' + picked.source + ', #' + picked.id + ') — ' + gregEntries.length + ' Einträge. Bitte trotzdem gegenprüfen.');
+            console.log('GregoBase: erfolgreich geladen, Bilderkennung wird übersprungen.');
             _pieceSucceeded = true;
             return _pieceSucceeded; // done — skip the whole AI image-recognition pipeline below
+          } else {
+            console.log('GregoBase: Download war leer — falle durch zur Bilderkennung.');
           }
+        } else {
+          console.log('GregoBase: Nutzer hat "Keine davon" gewählt oder Dialog abgebrochen — fahre mit Bilderkennung fort.');
         }
       } else {
+        console.log('GregoBase: keine Treffer für "' + chosen.incipit + '".');
         gregGst('Kein GregoBase-Treffer für "' + chosen.incipit + '" — fahre mit Bilderkennung fort…');
       }
     } catch (gbErr) {
@@ -4940,13 +6024,14 @@ Rules:
   - The FIRST characters of your entire reply must be "System ${startSysNum}:" — no preamble, no restating the staff-line coordinates back, no sentence like "Let me analyze..." or "Looking at the image...", not even one. Go straight from the image to pitch letters — this line IS your answer.
   - Do not narrate your reasoning anywhere in the response: no "let me", "looking at", "I can see", "the note appears to be", no re-deriving the pixel-to-letter table back at the model, no self-correction language ("wait", "actually", "let me reconsider", "hmm"). If you catch yourself about to write a sentence instead of a "System N: ..." line, stop and write the line instead — a confident single pass beats a narrated, careful one, and an unfinished narration that never reaches the answer is a complete failure, worse than an imperfect but complete guess.
   - Write each system's line ONCE. Do not revisit or rewrite a system once written — no "wait", "let me re-check", "actually". A best-effort single pass beats a perfect-but-incomplete one.
-  - Use the given pixel coordinates for each image directly: compare each note head's pixel row to the 4 given staff-line values. Most syllables in a hymn like this carry a SINGLE note (one square = one letter); write two letters in one parenthesis ONLY when two note heads are genuinely joined/stacked as one neume shape for one syllable — when unsure, prefer the single note you can see clearly over guessing a second one.
+  - Use the given pixel coordinates for each image directly: compare each note head's pixel row to the 4 given staff-line values. Getting the NUMBER of notes on a syllable right matters just as much as getting the pitch right — undercounting (missing a real second note head and writing only one letter) is EXACTLY AS WRONG as overcounting (inventing a second note that isn't there), so do not default to "just write one letter" as a safe fallback. Judge the count from the shape's WIDTH, not just from a single glance: a syllable carrying ONE note is roughly as wide as a single plain notehead square; a syllable carrying TWO joined/stacked notes (Podatus, Clivis, and similar compound neumes) is noticeably WIDER or TALLER than that — look for either a second distinct notehead-sized bump (possibly overlapping or connected by a short stroke to the first), or a shape whose vertical extent clearly spans more than one note head's height. If the glyph for a syllable looks distinctly bigger (wider or taller) than the plain single noteheads elsewhere in the same system, that is your cue to look again for a second note rather than settling for one.
   - SPACING IS SEMANTIC, read it carefully off the printed lyrics: two syllables of the SAME word get written back-to-back with NO space between them ("Au(hi)di(g)" for the two syllables of "Audi"); a space is used ONLY between two separate words ("di(g) be(gh)" — "di" ends one word, "be" starts the next). Copy the word breaks exactly as printed below the staff (hyphens in the print mark a syllable break WITHIN a word — no space in your output there either; a plain space in the print is a real word break — use a space there).
+  - A SEPARATE, common failure mode from the spacing rule above: don't collapse two DISTINCT syllables of a multi-syllable word into a single merged token just because they're close together and each carries only one or two notes. Every printed syllable (whether joined by a hyphen or simply printed edge-to-edge under its own note group) gets its OWN parenthesis — e.g. "Cón(f)di(e)tor,(f.)" (three syllables: Cón/di/tor), never "Cóndi(fe)tor,(f.)" (wrongly fusing the first two into one). If you see a hyphen between two syllable fragments, that IS two syllables, full stop — never merge them onto one note group even if the shape above them looks like a single small neume; count the note heads under EACH fragment separately and give each fragment its own "text(pitches)" group. When in doubt, prefer splitting a word into more (rather than fewer) syllable groups if the print shows more than one distinct piece of text under a stretch of notes.
   - Write syllables as plain text WITHOUT leading or trailing hyphen characters ("ri(f)um(f.)", never "-ri(f)-um(f.)") — the hyphen character itself is never written, word-vs-syllable spacing (previous rule) is what encodes it instead.
   - PRESERVE every accent mark exactly as printed (á é í ó ú, or a similar stress mark over a vowel) — write "Cónditor" not "Conditor", "benígne" not "benigne". These marks are printed on many multi-syllable words in texts like this one and are part of a faithful transcription, not optional decoration — if you can see a mark over a vowel, include it on that syllable; don't drop it even if you're also unsure of a note.
   - PRESERVE every comma and period printed IN THE LYRICS TEXT ITSELF exactly as printed, e.g. write "Audi," with its comma attached to the syllable it belongs to, and a period at a genuine sentence end ("Amen."). This text-level punctuation is a completely SEPARATE thing from the bar-line marks in the music staff described below — a comma printed under the staff next to a word does NOT by itself mean there is a bar mark in the music at that spot (see the bar-line rule below); don't let the presence of one make you invent the other. Judge each independently: transcribe the text punctuation straight from the lyrics line, and judge a bar mark only from an actual mark you can see in the staff itself.
   - If a verse number (e.g. "2.", "3.") appears near a bar, add it as its own bare token, e.g. "...um.(g.) (;) 2. Scru(f)..." — never merged into the next syllable.
-  - Bar lines — three types, and a SEPARATE thing from any comma/period printed in the lyrics text (see above; don't use text punctuation as your reason for adding or skipping one). For all three: don't invent one where the staff is genuinely plain, but DO check carefully rather than assuming absence — actively scan the space just above/between the note heads at each phrase break for a short vertical stroke, INCLUDING the small, easy-to-miss comma tick (it is the shortest and subtlest of the three, and commas are common in a hymn like this — don't let "I don't see an obvious tall mark" become "there's nothing here" without specifically checking for a short one too). Only count it as a bar if you can point to an actual stroke in the staff; the comma/period in the printed text is never that reason by itself.
+  - Bar lines — three types, and a SEPARATE thing from any comma/period printed in the lyrics text (see above; don't use text punctuation as your reason for adding or skipping one). For all three: don't invent one where the staff is genuinely plain, but DO check carefully rather than assuming absence — actively scan the space just above/between the note heads at each phrase break for a short vertical stroke, INCLUDING the small, easy-to-miss comma tick (it is the shortest and subtlest of the three, and commas are common in a hymn like this — don't let "I don't see an obvious tall mark" become "there's nothing here" without specifically checking for a short one too). Only count it as a bar if you can point to an actual stroke in the staff; the comma/period in the printed text is never that reason by itself. This check is a required SILENT visual step, separate from the "no narration" rule above — that rule only bans WRITING OUT your reasoning in the reply, it does not mean skipping the check itself; look at every phrase break before finalizing the line, you just never describe having done so. A system that runs several phrases (several commas/periods in the printed lyrics, or simply more than a few words) but comes out with ZERO bar marks anywhere in your answer is a strong warning sign that you defaulted to "none" without truly checking each break — go back over every phrase boundary in such a system specifically before settling on zero.
     (a) VERSE BOUNDARIES are structurally expected to have a bar, almost always a DOUBLE bar (::), typically right before a printed verse number ("2.", "3.", ...) or at the very end of the piece. If you see a verse number coming up, actively look for this double bar just before it and include it. The piece's OWN final bar (after its last word, e.g. after "Amen.") also gets a double bar — don't stop transcribing one token early and leave it off.
     (b) Mid-verse (no verse number nearby), judge which of the three types with ONE simple geometric test: compare the mark's own TOP and BOTTOM pixel-row to the 4 given staff-line pixel coordinates (topmost = line 1, bottom = line 4). Pixel-measured ground truth from real examples in this exact print shows comma and semicolon differ in BOTH where they START and where they END — not just "how deep" one mark goes:
         (,)=quarter bar/comma: SHORT. Starts clearly ABOVE line 1 and dips down into the staff, stopping at or just past the HALFWAY point of the gap between line 1 and line 2 (never reaching as far down as line 2 itself). Confined entirely to the top of the staff — total length is roughly one line-gap or less.
@@ -4962,57 +6047,44 @@ Rules:
 After all ${batch.length} system lines, output the line "===GABC===" on its own, followed by ONLY those system lines (one per line, nothing else, no markdown fences) and nothing after.`;
 
       const batchMaxTokens = Math.min(4000, Math.max(2000, batch.length * 500)); // raised from 3000/1200/400 in Runde 61 — reinstating the full bar-line rules (Runde 60) risked the same truncation failure mode already seen once with Step A's token cap
-      let batchOk = false;
-      try {
-        const batchResp = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type':'application/json', 'x-api-key':apiKey, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: batchMaxTokens,
-            temperature: 0, // Runde 63: see rationale at the Step-A call above — the user ran the same PDF twice and got noticeably different pitches AND divisio marks back; removing sampling randomness from the actual transcription call is the most direct fix for run-to-run instability
-            messages: [{ role: 'user', content: [...batchBlocks, { type: 'text', text: promptText }] }]
-          })
-        });
-        if (batchResp.ok) {
-          const batchData = await batchResp.json();
-          const batchFullText = (batchData.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('').trim();
-          const bMarker = batchFullText.indexOf('===GABC===');
-          let usedLines = [];
-          if (bMarker >= 0) {
-            const batchLines = batchFullText.slice(bMarker + '===GABC==='.length).trim();
-            usedLines = batchLines.split('\n');
-          } else {
-            // Resilience net (Runde 62): the model can ignore the "no
-            // narration" instruction and never emit the marker at all —
-            // rather than discard the whole batch (and abort every
-            // subsequent batch with it), scan the WHOLE raw response for
-            // any properly-formatted "System N: ..." lines wherever they
-            // occur and use those. Recovers a batch that narrated first
-            // but still eventually answered; does nothing for a batch
-            // that never produced a single formatted line (still a real
-            // failure in that case, just no longer silently total).
-            usedLines = batchFullText.split('\n').filter(l => /^\s*System\s+#?\d+\s*:/i.test(l));
-            if (usedLines.length) console.log('Batch ' + (b+1) + ': kein "===GABC==="-Marker, aber ' + usedLines.length + ' "System N:"-Zeile(n) im Fliesstext gefunden und übernommen.');
-          }
-          if (usedLines.length) {
-            // Strip the "System N:" labels and join — these are just
-            // syllable(pitch)... fragments once the label is removed.
-            usedLines.forEach(line => {
-              const stripped = line.replace(/^\s*System\s+#?\d+\s*:\s*/i, '').trim();
-              if (stripped) combinedBody += stripped + '\n';
-            });
-            batchOk = true;
-          } else {
-            console.log('Batch ' + (b+1) + ' response (no marker, no "System N:" lines found):', batchFullText);
-          }
-        } else {
-          console.log('Batch ' + (b+1) + ' HTTP error', batchResp.status, await batchResp.text().catch(()=>''));
-        }
-      } catch(e) {
-        console.log('Batch ' + (b+1) + ' error:', e.message);
+
+      // Session 15 — MEHRFACH-ABGLEICH: statt einem einzelnen Vision-Aufruf
+      // pro Batch werden jetzt VISION_EXTRACTION_REPEATS (3) unabhängige
+      // Durchläufe gemacht und die Gesamt-Notenzahl je System per
+      // Median-Konsens gewählt (siehe pickConsensusLine weiter oben) — ein
+      // Nutzertest bestätigte, dass ein EINZELNER Durchlauf bei diesem Modell
+      // trotz temperature=0 nicht zuverlässig dieselbe Silben-Notenzahl
+      // liefert (2 Durchläufe derselben Datei stimmten nur in ~46% der
+      // Notenpositionen überein). Kostet 3x mehr API-Zeit pro Batch, dafür
+      // deutlich stabilere Ergebnisse.
+      const attempts = [];
+      for (let rep = 0; rep < VISION_EXTRACTION_REPEATS; rep++) {
+        gregGst('Extrahiere Systeme ' + startSysNum + '–' + (startSysNum + batch.length - 1) + ' von ~' + systemItems.length + '… (Durchlauf ' + (rep + 1) + '/' + VISION_EXTRACTION_REPEATS + ' für Stabilitäts-Abgleich)');
+        const label = 'Batch ' + (b + 1) + ' Durchlauf ' + (rep + 1) + '/' + VISION_EXTRACTION_REPEATS;
+        const result = await runBatchAttempt(apiKey, batchBlocks, promptText, batchMaxTokens, label);
+        if (result) attempts.push(result);
       }
-      if (!batchOk) { anyBatchFailed = true; break; } // stop at first failed batch rather than leaving gaps
+
+      if (!attempts.length) {
+        anyBatchFailed = true;
+        break; // kein einziger Durchlauf hat funktioniert -- stop, wie bisher
+      }
+
+      // Pro System-POSITION innerhalb dieses Batches die Kandidaten aus allen
+      // erfolgreichen Durchläufen einsammeln (positionsbasiert -- setzt
+      // voraus, dass jeder Durchlauf seine "System N:"-Zeilen in derselben
+      // Reihenfolge liefert, was der bestehende Prompt so vorschreibt) und
+      // die Konsens-Zeile wählen.
+      const nSystemsInBatch = batch.length;
+      for (let si = 0; si < nSystemsInBatch; si++) {
+        const candidates = attempts.map(a => a[si]).filter(l => l != null);
+        if (!candidates.length) continue; // keiner der Durchläufe hatte an dieser Stelle eine Zeile
+        const chosen = candidates.length > 1 ? pickConsensusLine(candidates) : candidates[0];
+        combinedBody += chosen + '\n';
+        if (candidates.length > 1 && new Set(candidates).size > 1) {
+          console.log('System ' + (startSysNum + si) + ': ' + candidates.length + ' Durchläufe verglichen, Konsens gewählt: "' + chosen + '"');
+        }
+      }
     }
 
     if (!combinedBody.trim()) {
@@ -5022,6 +6094,25 @@ After all ${batch.length} system lines, output the line "===GABC===" on its own,
     }
     if (anyBatchFailed) {
       gregGst('Hinweis: nicht alle Systeme konnten extrahiert werden — nur der erfolgreiche Anfangsteil wird geladen.');
+    }
+
+    // OMR-Korrektur-Schicht (Task #12/#13): combinedBody hat an dieser
+    // Stelle genau eine Zeile pro erfolgreich extrahiertem System, in
+    // derselben Reihenfolge wie systemItems — bevor die Zeilen unten zu
+    // EINEM body-String verschmolzen werden, hier noch pro System die
+    // Tonhoehen geometrisch nachrechnen (Vision behaelt Silben/Text/
+    // Notenzahl, nur die Buchstaben a-m koennen sich aendern). Nutzt NUR
+    // die ersten Zeilen, die zu echten (erfolgreich extrahierten)
+    // systemItems gehoeren — bei anyBatchFailed ist combinedBody kuerzer
+    // als systemItems, darum wird hier auf die tatsaechliche Zeilenzahl
+    // zugeschnitten.
+    try {
+      const rawLines = combinedBody.split('\n').filter(l => l.trim());
+      const itemsForLines = systemItems.slice(0, rawLines.length);
+      const correctedLines = await omrCorrectAllSystems(rawLines, itemsForLines, gregGst);
+      combinedBody = correctedLines.join('\n') + '\n';
+    } catch (e) {
+      console.log('OMR-Korrektur-Schicht übersprungen (Fehler): ' + e.message);
     }
 
     // Assemble the final body OURSELVES: strip any clef tokens the model
@@ -5364,6 +6455,19 @@ function gregImportGABCString(gabcStr, opts) {
     s = s.replace(/<sp>aé<\/sp>/gi, 'ǽ');
     s = s.replace(/<sp>oe<\/sp>/gi, 'œ');
     s = s.replace(/<sp>([^<]+)<\/sp>/gi, '$1');
+    // Standard gabc special-character tags for italic/bold/small-caps/
+    // underline/colour/elision/euouae: Notator doesn't render distinct
+    // styling for these (yet), so — same approach as <sp> above — strip the
+    // tags and keep their plain inner text. Without this, a construct like
+    // {<e>ae</e>} (elision mark, e.g. imported from GregoBase's "Culpae")
+    // leaked through literally as "<e>ae</e>" in the rendered lyric.
+    // <eu>...</eu> (added 2026-08-01, Runde 59) marks the "Euouae" formula
+    // (seculorum Amen vowel-abbreviation "E u o u a e") per the gabc/
+    // Gregorio spec — in GregorioTeX it controls line-breaking/spacing
+    // around that text, a layout feature exsurge has no equivalent for, so
+    // treating it the same as the other unsupported styling tags (strip,
+    // keep the plain text) is the safest option here.
+    s = s.replace(/<\/?(?:i|b|sc|ul|c|e|eu)>/gi, '');
     s = s.replace(/\{([^}]*)\}/g, '$1');
     s = s.replace(/<clear>/gi, '');
     return s.trim();
@@ -5427,6 +6531,11 @@ function gregImportGABCString(gabcStr, opts) {
       liquescent: !!(n.liquescent && n.liquescent !== 0),
       mora: !!(n.morae && n.morae.length > 0),
       ictus: !!n.ictus,
+      // Ictus positionHint (1=Above, 2=Below, 0/undefined=exsurge default)
+      // -- previously only `ictus: !!n.ictus` was captured, silently
+      // discarding an explicit gabc "'1"/"'0" placement (added 2026-08-10,
+      // see gregEditEntry's iktusPos prefill + buildSingleNeumeGABC).
+      ictusPos: (n.ictus && n.ictus.positionHint === 1) ? 'above' : (n.ictus && n.ictus.positionHint === 2) ? 'below' : '',
       episema: !!(n.epismata && n.epismata.length > 0),
       accidental: accLetter || null
     };
@@ -5457,6 +6566,30 @@ function gregImportGABCString(gabcStr, opts) {
   // distinct neumes of the same syllable).
   function makeNeumeEntry(nt, syllable, hyphen, noGapBefore, italic, accLetter, accPitch) {
     const notes = (nt.notes || []).map((n, i) => convertNote(n, i === 0 ? accLetter : null));
+    // Real-world gabc sources don't always follow exsurge's OWN native mora
+    // convention (an independent dot placed directly after EACH note that
+    // should carry one, e.g. "f.e."). Some sources (confirmed 2026-08-13:
+    // GregoBase's "Signum magnum", e.g. "fe.." for a 2-note Clivis meant to
+    // have mora on BOTH notes) instead stack multiple consecutive dots on
+    // the LAST note. exsurge's own parser (createNoteFromData's "." case)
+    // interprets that completely differently: N stacked dots on one note
+    // become N separate, auto-offset (alternating above/below) Mora marks
+    // on that SAME note alone -- a purely visual collision-avoidance device
+    // -- never marks on the PRECEDING notes. Per explicit user decision: no
+    // matter which convention a given source follows, Notator should still
+    // recognize the INTENDED result (mora spread across notes) -- how it's
+    // represented internally, and how it's re-exported (Notator always
+    // re-emits the unambiguous "dot directly after each note" form, e.g.
+    // "f.e.", not the original "fe.." spelling -- a deliberate choice for
+    // round-trip stability, not a bug), is Notator's own affair. Detect: a
+    // note whose RAW exsurge note carries 2+ stacked morae -- extend
+    // "has mora" backward onto the (stacked-1) preceding notes too.
+    (nt.notes || []).forEach((n, i) => {
+      const stacked = (n.morae && n.morae.length) || 0;
+      for (let back = 1; back < stacked && (i - back) >= 0; back++) {
+        notes[i - back].mora = true;
+      }
+    });
     const typeName = nt.constructor.name.replace(/^_/, '');
     return {
       type: 'note',
@@ -5529,6 +6662,11 @@ function gregImportGABCString(gabcStr, opts) {
     const srcTrimmed = (m.source || '').trim();
     const hasLeadingAsterisk = /^\*/.test(srcTrimmed);
     let asteriskEmitted = false;
+    // Reset per mapping -- see the glued-directive/italic handling below
+    // (guards the srcTrimmed.includes('<i>') fallback from firing more
+    // than once per mapping, so an <i> tag consumed by one syllable can't
+    // also bleed onto later, unrelated syllables of the same mapping).
+    let italicConsumedInMapping = false;
 
     for (const nt of m.notations) {
       const cname = nt.constructor.name.replace(/^_/, '');
@@ -5568,7 +6706,64 @@ function gregImportGABCString(gabcStr, opts) {
 
       if (!nt.notes || !nt.notes.length) {
         if (nt.lyrics && nt.lyrics[0] && nt.lyrics[0].text) {
-          tokens.push({type:'special', text: cleanSyl(nt.lyrics[0].text)});
+          // exsurge distinguishes two very different zero-note cases that
+          // both end up here, and export must NOT treat them the same way:
+          //   - a standalone "text()" group (e.g. "<i>Ant.</i>()", used for
+          //     a rubric like an antiphon label that needs its OWN spacing
+          //     before the next real note) parses as its own "TextOnly"
+          //     notation — must round-trip back out WITH the empty "()",
+          //     or re-parsing merges it into the NEXT note's lyric instead
+          //     (confirmed via a real exsurge parse test: dropping the "()"
+          //     turned a correctly-standalone "Ant." into "Ant. U" sharing
+          //     one notehead with "Ubi"'s first syllable).
+          //   - bare text with NO parens at all (e.g. "<sp>V/</sp>." before
+          //     a versicle) never reaches this branch as its own notation in
+          //     the first place — exsurge already merges it into the next
+          //     real note's lyric during parsing, so nothing to distinguish
+          //     for that case; it flows through the normal note-token path.
+          // Read originalText (falls back to .text if unset), NOT .text
+          // directly -- since 2026-08-13's exsurge patch (generateSpansFromText
+          // now recognizes <i>/</i> as italic markup, same as native "_") also
+          // runs during PARSING (Lyric extends TextElement, whose constructor
+          // calls generateSpansFromText immediately) it silently consumes
+          // <i>/</i> out of .text at construction time, same as it already did
+          // for native "_" -- so checking .text here would never see the tag
+          // at all anymore. originalText is assigned directly from the raw
+          // constructor argument, independent of that scan, so it still
+          // reliably contains the literal <i>...</i> (mirrors the existing,
+          // already-verified originalText-based nativeItalicMatch check below).
+          const rawLyric = nt.lyrics[0].originalText || nt.lyrics[0].text;
+          // A TextOnly notation whose ENTIRE raw text is wrapped in <i>...</i>
+          // (e.g. GregoBase's "<i>Ant.</i>()") is exactly the same concept as
+          // Notator's own "ij."/"iij." buttons — italic, zero-note "Sonder"
+          // text — which already has full support end-to-end under
+          // type:'directive' (export wraps it in "<i>...</i>()" markup,
+          // sidebar shows it in italic). Reuse that existing,
+          // already-correct path instead of inventing separate italic
+          // handling for 'textonly'.
+          const italicWholeMatch = cname === 'TextOnly' ? rawLyric.match(/^<i>([\s\S]*)<\/i>$/i) : null;
+          // gabc's OWN native italic syntax "_..._()" (what Notator itself
+          // exports for type:'directive', see gregEntriesToBody) takes a
+          // DIFFERENT path through exsurge than "<i>...</i>": the
+          // underscores are consumed during parsing and leave no trace in
+          // lyric.text (rawLyric above is already plain "Ant."), so the
+          // <i>-based check above can never match it. Without this, a
+          // "directive" entry re-imported a SECOND time (e.g. the user's
+          // own previously-exported file, or a GregoBase file re-imported
+          // twice) silently lost its italic styling and degraded to
+          // type:'textonly'. lyric.originalText still retains the leading
+          // "_" (confirmed via a real exsurge parse test), which is enough
+          // to detect this case and route it through the same 'directive'
+          // path as the <i> case.
+          const nativeItalicMatch = !italicWholeMatch && cname === 'TextOnly' &&
+            nt.lyrics[0].originalText && /^_/.test(nt.lyrics[0].originalText);
+          if (italicWholeMatch) {
+            tokens.push({type: 'directive', text: cleanSyl(italicWholeMatch[1])});
+          } else if (nativeItalicMatch) {
+            tokens.push({type: 'directive', text: cleanSyl(rawLyric)});
+          } else {
+            tokens.push({type: (cname === 'TextOnly' ? 'textonly' : 'special'), text: cleanSyl(rawLyric)});
+          }
         } else if (hasLeadingAsterisk && !asteriskEmitted) {
           tokens.push({type:'special', text: '*'});
           asteriskEmitted = true;
@@ -5601,8 +6796,34 @@ function gregImportGABCString(gabcStr, opts) {
           asteriskEmitted = true;
         }
         const lyricType = lyric.lyricType;
-        let rawText = lyric.text;
+        // Same originalText-vs-.text reasoning as rawLyric above (2026-08-13):
+        // lyric.text has <i>/</i> already stripped by exsurge's own parse-time
+        // call to generateSpansFromText, so every <i>-detection regex below
+        // (gluedDirectiveMatch, the plain /<i>/ test) would silently never
+        // match if read from .text. originalText is untouched by that scan.
+        let rawText = lyric.originalText || lyric.text;
         let italic = false;
+        // GLUED-DIRECTIVE FIX (2026-08-10): a source like GregoBase's
+        // "<i>Ps.</i> Can(ehg)" (no "()" after the closing tag) has NO note
+        // group of its own for "Ps.", so exsurge's OWN parser glues its
+        // whole raw text onto the NEXT note-bearing syllable's lyric before
+        // Notator ever sees it -- by the time we get here, rawText is
+        // literally "<i>Ps.</i> Can", one single (wrong) lyric. Detect that
+        // specific shape -- a COMPLETE <i>...</i> span followed by more
+        // text -- and split it back into two separate entries: a proper
+        // standalone 'directive' (exactly like the "Ant."/"ij." buttons
+        // produce) for the italic part, and the REMAINING text as this
+        // syllable's own (non-italic) lyric. Confirmed via real-world
+        // "Signum magnum" GregoBase data: without this, "Ps." merges into
+        // "Can", AND (see italicConsumedInMapping below) the italic flag
+        // then also incorrectly bled onto "tá"/"te", the OTHER syllables
+        // of "Cantáte" -- not just the merged one.
+        const gluedDirectiveMatch = rawText.match(/^<i>([^<]+)<\/i>\s*(\S[\s\S]*)$/i);
+        if (gluedDirectiveMatch) {
+          tokens.push({type: 'directive', text: cleanSyl(gluedDirectiveMatch[1])});
+          rawText = gluedDirectiveMatch[2];
+          italicConsumedInMapping = true;
+        }
         // exsurge's lyric.text can literally include the <i>...</i> wrapper
         // (it does not always strip it the way it strips e.g. <sp>); detect
         // and remove it here, keeping the italic flag separately so the
@@ -5610,8 +6831,19 @@ function gregImportGABCString(gabcStr, opts) {
         if (/<i>/.test(rawText)) {
           italic = true;
           rawText = rawText.replace(/<i>/gi, '').replace(/<\/i>/gi, '');
-        } else if (srcTrimmed.includes('<i>')) {
+          italicConsumedInMapping = true;
+        } else if (!italicConsumedInMapping && srcTrimmed.includes('<i>')) {
+          // Fallback for the case where exsurge already stripped the tag
+          // from THIS notation's own lyric.text (observed to happen
+          // inconsistently) but the mapping's raw source still shows an
+          // <i> somewhere in it. Only trusted once per mapping (see
+          // italicConsumedInMapping) -- otherwise this same broad check
+          // re-fires for every remaining syllable of a multi-syllable word
+          // in the SAME mapping (e.g. "tá", "te" of "Cantáte"), incorrectly
+          // italicizing all of them just because an unrelated earlier "<i>"
+          // appeared anywhere in that mapping's source text.
           italic = true;
+          italicConsumedInMapping = true;
         }
         const hyphen = (lyricType === 1 || lyricType === 2);
         const wordEnd = (lyricType === 3 || lyricType === 0); // EndingSyllable or SingleSyllable
@@ -5649,11 +6881,33 @@ function gregImportGABCString(gabcStr, opts) {
   gregGst('GABC importiert: ' + gregEntries.length + ' Einträge');
 }
 
+// Runde 65: zeigt/versteckt das Original-PDF-Seitenpanel + seine Ziehleiste.
+// forceOpen=true/false erzwingt einen Zustand (z.B. beim automatischen
+// Öffnen nach dem Laden); ohne Argument wird umgeschaltet (Klick auf den
+// Toolbar-Knopf oder den Schliessen-Knopf im Panel selbst).
+function gregToggleOriginalPdf(forceOpen) {
+  const panel = document.getElementById('greg-pdf-panel');
+  const handle = document.getElementById('greg-pdf-drag-handle');
+  const toggleBtn = document.getElementById('greg-pdf-panel-toggle');
+  if (!panel) return;
+  const isOpen = panel.style.display === 'flex';
+  const show = forceOpen !== undefined ? forceOpen : !isOpen;
+  panel.style.display = show ? 'flex' : 'none';
+  if (handle) handle.style.display = show ? 'block' : 'none';
+  if (toggleBtn && _gregPdfDoc) toggleBtn.style.display = 'inline-block';
+}
+
 async function gregRenderPDFPage(pageNum) {
   if (!_gregPdfDoc) return;
   const page = await _gregPdfDoc.getPage(pageNum);
-  const container = document.getElementById('greg-canvas-wrap');
-  const availW = container ? container.clientWidth - 40 : 700;
+  // Runde 65: PDF wird nicht mehr als 35%-Geisterbild HINTER der Notation
+  // gerendert (weder Scan noch Notation waren so richtig lesbar), sondern in
+  // voller Deckkraft im eigenen, ausklappbaren Seitenpanel #greg-pdf-panel.
+  // Breite richtet sich entsprechend nach dem Panel statt nach
+  // greg-canvas-wrap. Siehe gregToggleOriginalPdf().
+  gregToggleOriginalPdf(true); // Panel automatisch öffnen, falls noch zu
+  const panel = document.getElementById('greg-pdf-panel');
+  const availW = panel ? Math.max(panel.clientWidth - 32, 200) : 320;
   const vp0 = page.getViewport({scale: 1});
   const scale = availW / vp0.width;
   const vp = page.getViewport({scale});
@@ -5668,17 +6922,12 @@ async function gregRenderPDFPage(pageNum) {
   ctx.clearRect(0, 0, vp.width, vp.height);
   await page.render({canvasContext: ctx, viewport: vp}).promise;
 
-  // Show nav
   const nav = document.getElementById('greg-pdf-nav');
   if (nav) { nav.style.display = 'flex'; }
   const lbl = document.getElementById('greg-pdf-page-lbl');
   if (lbl) lbl.textContent = 'S. ' + pageNum + '/' + _gregPdfDoc.numPages;
 
-  // Adjust svg-wrap min-height to match pdf
-  const wrap = document.getElementById('greg-svg-wrap');
-  if (wrap) wrap.style.minHeight = vp.height + 'px';
-
-  gregGst('PDF S.' + pageNum + '/' + _gregPdfDoc.numPages + ' — darüber notieren');
+  gregGst('PDF S.' + pageNum + '/' + _gregPdfDoc.numPages + ' im Original-Panel');
 }
 
 function gregPdfPage(delta) {
@@ -5693,8 +6942,9 @@ function gregClearPDF() {
   if (cv) { cv.style.display = 'none'; }
   const nav = document.getElementById('greg-pdf-nav');
   if (nav) { nav.style.display = 'none'; }
-  const wrap = document.getElementById('greg-svg-wrap');
-  if (wrap) wrap.style.minHeight = '200px';
+  gregToggleOriginalPdf(false);
+  const toggleBtn = document.getElementById('greg-pdf-panel-toggle');
+  if (toggleBtn) toggleBtn.style.display = 'none';
   gregGst('PDF entfernt');
 }
 
@@ -5843,6 +7093,7 @@ function gregExportPDF() {
           document.body.appendChild(tmp);
           const svgEl = tmp.querySelector('svg');
           if (!svgEl) { document.body.removeChild(tmp); doneCallback(null); return; }
+          gregNeutralizeRubricRed(svgEl);
           // Apply same title/annotation overlays as in browser render
           const savedCtxtRef = _gregCtxtRef;
           _gregCtxtRef = ctxt; // temporarily point to PDF ctxt for overlay functions
@@ -5946,6 +7197,27 @@ function gregExportPDF() {
     const w = parseFloat(svgEl.getAttribute('width')) || targetW;
     const h = parseFloat(svgEl.getAttribute('height')) || 400;
     const ns='http://www.w3.org/2000/svg';
+    // Bug (2026-07-22, Nutzerbericht per Screenshot): das "Vorsänger-V"
+    // (aus "V/." — exsurge rendert das automatisch mit font-family:'Exsurge
+    // Characters', siehe gregNeutralizeRubricRed()-Kommentar oben) erschien
+    // im PDF-Export als schlichtes "V" statt im dekorativen Glyph, obwohl es
+    // auf dem Bildschirm korrekt aussah. Ursache: @font-face für 'Exsurge
+    // Characters' wird von insertFontsInDoc() nur in <style id="exsurge-fonts">
+    // im HAUPT-document.head registriert — das serialisierte SVG hier wird
+    // aber als EIGENSTÄNDIGES Blob/Image geladen (siehe img.src=url unten),
+    // das keinen Zugriff auf document.head des Hauptdokuments hat, also
+    // fällt der Browser beim Rastern für dieses <text> auf eine Standard-
+    // schrift zurück, die für 'V' einfach ein normales V zeigt. Fix: dieselbe
+    // @font-face-Regel zusätzlich direkt IN dieses SVG einbetten (das Blob
+    // bringt sie dann selbst mit), statt sie nur global zu registrieren.
+    const fontStyleSrc = document.getElementById('exsurge-fonts');
+    if (fontStyleSrc && fontStyleSrc.textContent) {
+      const styleEl = document.createElementNS(ns, 'style');
+      styleEl.textContent = fontStyleSrc.textContent;
+      const defsEl = document.createElementNS(ns, 'defs');
+      defsEl.appendChild(styleEl);
+      svgEl.insertBefore(defsEl, svgEl.firstChild);
+    }
     const bg=document.createElementNS(ns,'rect');
     bg.setAttribute('x',0); bg.setAttribute('y',0);
     bg.setAttribute('width',w); bg.setAttribute('height',h);
@@ -6096,34 +7368,38 @@ function gregDownloadGABC() {
   gregGst('Gespeichert: ' + filename);
 }
 
-// ── Autosave (localStorage) ──────────────────────────────────────
+// ── Autosave (sessionStorage) ─────────────────────────────────────
 // Guards against the classic "hit F5, lose everything" accident: the app
 // runs as a single local HTML file with no server/account behind it, so
 // there's nowhere else a crash/reload/accidental-tab-close recovery could
-// come from. localStorage is scoped to this file's origin (or, for a
-// file:// document, effectively to this file on this machine/browser) and
-// persists across reloads and browser restarts, which is exactly what's
-// needed here — unlike Claude.ai's in-chat Artifacts sandbox (where
-// localStorage is unavailable), this is a real, independently-hosted/
-// downloaded HTML page running in the user's own browser, so it's fully
-// supported.
+// come from.
+// Uses sessionStorage (not localStorage) DELIBERATELY: sessionStorage is
+// scoped per TAB — it survives a reload/back-forward navigation of the
+// SAME tab (exactly the "hit F5" accident this protects against), but a
+// brand-new tab/window always starts with empty sessionStorage, even for
+// the identical file/URL. This was changed from localStorage on user
+// request (Runde 58): with localStorage, EVERY newly opened tab silently
+// inherited whatever was last edited in ANY tab, which was unwanted —
+// opening Notator fresh in a new tab should always start blank; only an
+// actual reload of an already-open tab should restore its own last state.
+// (Trade-off, accepted: closing a tab — not just reloading it — now also
+// clears its autosave, unlike before. Given the primary purpose is
+// reload-recovery, not cross-session persistence, this is the right
+// default.)
 // Bump NOTATOR_BUILD_ID every delivered version. This scopes the autosave
-// key per-file: localStorage is shared across ALL local file:// documents
-// in most browsers, so without this, opening a newer Notator html while an
-// older one was previously used silently pulled in the older file's cached
-// content (reported by user, Runde 56). Reloading THIS SAME file still
-// restores correctly (same build id -> same key); a genuinely different
-// file (different build id) now starts blank instead.
-const NOTATOR_BUILD_ID = '172';
+// key per-file: without it, reloading a DIFFERENT (older/newer) Notator
+// build in the same tab would incorrectly restore a previous build's
+// content (originally reported by user, Runde 56).
+const NOTATOR_BUILD_ID = '208';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
   try {
     const state = gregBuildStateObject();
-    localStorage.setItem(NOTATOR_AUTOSAVE_KEY, JSON.stringify({ savedAt: Date.now(), state }));
+    sessionStorage.setItem(NOTATOR_AUTOSAVE_KEY, JSON.stringify({ savedAt: Date.now(), state }));
   } catch (err) {
     // Best-effort only — e.g. Safari private browsing throws on setItem,
-    // or localStorage may be disabled/full. Silently skip; this must never
+    // or sessionStorage may be disabled/full. Silently skip; this must never
     // interrupt normal editing.
     console.warn('Autosave fehlgeschlagen:', err.message);
   }
@@ -6131,7 +7407,7 @@ function gregAutosaveNow() {
 
 // Debounced wrapper — called from gregRender(), which itself already runs
 // after most edits (some already debounced upstream, some not), so this
-// keeps localStorage writes to roughly once per pause in activity rather
+// keeps sessionStorage writes to roughly once per pause in activity rather
 // than on every single click/keystroke.
 function gregScheduleAutosave() {
   clearTimeout(window._gregAutosaveT);
@@ -6148,7 +7424,7 @@ function gregScheduleAutosave() {
 // gregScheduleAutosave() call, so it never traps the user on old content.
 function gregTryRestoreAutosave() {
   let raw;
-  try { raw = localStorage.getItem(NOTATOR_AUTOSAVE_KEY); } catch (err) { return; }
+  try { raw = sessionStorage.getItem(NOTATOR_AUTOSAVE_KEY); } catch (err) { return; }
   if (!raw) return;
   try {
     const saved = JSON.parse(raw);
@@ -6168,7 +7444,7 @@ function gregTryRestoreAutosave() {
 
 // ── Save / Load piece ────────────────────────────────────────────
 // Builds the full serializable state object — shared by the manual
-// "Speichern" (.notator download) and the localStorage autosave, so both
+// "Speichern" (.notator download) and the sessionStorage autosave, so both
 // stay in sync automatically as the format evolves.
 function gregBuildStateObject() {
   const title   = (document.getElementById('greg-title')||{value:''}).value;
@@ -6237,7 +7513,7 @@ function gregSavePiece() {
 
 // Applies a previously-built state object (see gregBuildStateObject) back
 // into the live app — shared by the manual "Öffnen" (.notator file) and by
-// the localStorage autosave restore, so both stay in sync automatically.
+// the sessionStorage autosave restore, so both stay in sync automatically.
 // closeEditFormFirst: also called from the autosave path, where no edit
 // form can possibly be open yet (nothing has rendered), so it's optional.
 function gregApplyLoadedState(state) {
@@ -6363,6 +7639,26 @@ function gregImportFromPanel() {
   });
 })();
 
+// Runde 65: Ziehleiste für das neue Original-PDF-Seitenpanel (rechts) — analog
+// zur bestehenden greg-drag-handle-Logik oben, nur mit umgekehrtem Vorzeichen
+// (Panel liegt rechts von seiner Ziehleiste, nicht links).
+(function(){
+  let dr=false,sx=0,sw=0;
+  document.addEventListener('mousedown',function(e){
+    if(e.target.id!=='greg-pdf-drag-handle')return;
+    dr=true;sx=e.clientX;sw=document.getElementById('greg-pdf-panel').offsetWidth;
+    document.body.style.cursor='col-resize';document.body.style.userSelect='none';e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dr)return;
+    document.getElementById('greg-pdf-panel').style.width=Math.max(200,Math.min(sw+(sx-e.clientX),window.innerWidth-400))+'px';
+    if (_gregPdfDoc) { clearTimeout(window._gregPdfDRT); window._gregPdfDRT=setTimeout(()=>gregRenderPDFPage(_gregPdfPage),120); }
+  });
+  document.addEventListener('mouseup',function(){
+    if(!dr)return;dr=false;document.body.style.cursor='';document.body.style.userSelect='';
+  });
+})();
+
 // ── Init ─────────────────────────────────────────────────────────
 setTimeout(function(){
   document.getElementById('greg-annotation')?.addEventListener('input',()=>{clearTimeout(window._gregAT);window._gregAT=setTimeout(gregRender,500);});
@@ -6372,6 +7668,7 @@ setTimeout(function(){
   document.getElementById('greg-dropcap')?.addEventListener('change',gregRender);
   // Neume grid (visual picker)
   gregBuildNeumeGrid();
+  gregUpdateMoraUI();
   gregTryRestoreAutosave(); // before the initial render, so it renders the restored content (if any)
   setTimeout(gregRender,200);
 },500);
@@ -8440,6 +9737,19 @@ var exsurge = (() => {
         this.spans.push(new TextSpan(text));
         return;
       }
+      // Recognize gabc's HTML-style italic markup <i>...</i> as equivalent
+      // to the native "_..._" toggle syntax scanned below (added
+      // 2026-08-10, Notator custom patch): real-world gabc sources
+      // (GregoBase, Source&Summit, ...) write rubrics like "<i>Ps.</i>".
+      // Without this, this markup scanner -- which previously recognized
+      // only "_", "*", "^", "%", and the "[ARVarv]/." rubric markers --
+      // passed the literal "<i>"/"</i>" characters straight through as
+      // ordinary visible text instead of toggling italics (root cause of a
+      // bug where "<i>Ps.</i>" rendered on the page as literal angle-
+      // bracket text). Both tags map onto the SAME toggle symbol as "_"
+      // (first occurrence opens, second closes) since gabc's <i>...</i> is
+      // always a simple, non-nested open/close pair.
+      text = text.replace(/<i>/gi, italicMarkup).replace(/<\/i>/gi, italicMarkup);
       var markupStack = [];
       var spanStartIndex = 0;
       var filterFrames = (frame, symbol) => frame.Symbol === symbol;
@@ -12066,6 +13376,94 @@ if(typeof window!=='undefined'){window.exsurge=exsurge;}else if(typeof globalThi
   });
 })();
 
+// Directives (Ant./Ps./ij./iij., exported as zero-note "text()" gabc
+// groups -- see gregEntriesToBody's directive branch) parse as a
+// TextOnly notation. TextOnly never explicitly sets its own
+// `trailingSpace` during parsing (see Notations.parseNotations: "if
+// (!data) return [new TextOnly()];" -- no trailingSpace assignment at
+// all), so it stays at exsurge's internal -1 sentinel, which the generic
+// ChantNotationElement layout fallback then resolves to
+// `ctxt2.intraNeumeSpacing * 4` -- a full word-gap-sized default. That's
+// what made "Ps./Ant." visually float with a big gap before the next
+// syllable (reported 2026-08-13), independent of whether the gabc source
+// glues them together or separates them with a space (confirmed by
+// reading exsurge's own spacing code: `ctxt.interSyllableSpacing`, the
+// "real" inter-word constant, is computed but never actually read
+// anywhere in the library -- every gap is driven by each notation's own
+// trailingSpace instead). Fix: shrink it directly, same technique as
+// patchDividerLeadingSpace above. NOT verified against a real rendered
+// screenshot in this sandbox (jsdom/ChantContext still hangs here) --
+// this value is a reasonable starting guess, not a measured match to
+// Source&Summit; report back after a real test if it still needs tuning.
+(function patchTextOnlyTrailingSpace() {
+  const cls = exsurge.TextOnly;
+  if (!cls) return;
+  const orig = cls.prototype.performLayout;
+  cls.prototype.performLayout = function(ctxt) {
+    orig.call(this, ctxt);
+    this.trailingSpace = ctxt.intraNeumeSpacing;
+  };
+})();
+
+// patchNeumeFinalNoteBoundsForSpacing (Session 63, 2026-08-16): fixes a
+// generic exsurge bug where a Mora/Episema/Ictus/acute-accent marking on a
+// NON-LAST note of a neume incorrectly widens the whole neume's
+// bounds.right() -- Neume.finishLayout() unions EVERY note's markings into
+// the neume's overall bounds regardless of which note they sit on. Since
+// the FOLLOWING neume's x-position is computed elsewhere as
+// `prev.bounds.right() + prev.trailingSpace`, a marking on an earlier note
+// can push the whole group's right edge outward even when trailingSpace is
+// explicitly 0 (glued via "!" in the gabc source). Confirmed by the user
+// via a real A/B screenshot test in "stellárum" (Signum Magnum, GABC
+// "rum(e.f!gwh!iv'1)"): removing the Mora from the first note of the
+// "!"-glued Podatus (ef) removed an otherwise unexplained gap before the
+// following Podatus (gwh), even though both neume-to-neume boundaries use
+// the identical "!" separator and should therefore look identical.
+// Fix: after the normal, UNMODIFIED finishLayout has run (so every glyph
+// is positioned exactly as before -- nothing here changes what gets
+// drawn), recompute what the neume's right edge would be using only the
+// notes themselves plus markings that sit on the LAST note (the note
+// whose own markings legitimately need clearance before the next neume).
+// If that's smaller than what finishLayout's union produced, pull
+// bounds.right() back to it. This can only SHRINK the reported bounds,
+// never grow them -- so a Mora/Episema/Ictus on the actual last note
+// (the common, correct case) is completely unaffected; only the specific
+// "marking sits on an earlier note and inflates the gap to the next
+// neume" bug is corrected. NOT verified against a real rendered
+// screenshot in this sandbox (jsdom/ChantContext still hangs on full
+// layout here, as in every previous session) -- verified instead via
+// careful reading of exsurge's own Rect/union/finishLayout code (Rect is
+// a plain {x,y,width,height} object, .right()=x+width, no getters/
+// setters, so directly narrowing .width is safe) and by confirming
+// Neume.finishLayout is the base class method shared by every neume
+// subclass (Podatus, Clivis, etc. only override positionMarkings(), not
+// finishLayout itself), so this applies uniformly. Please test in the
+// browser against the reported "stellárum" case and report back.
+(function patchNeumeFinalNoteBoundsForSpacing() {
+  const cls = exsurge.Neume;
+  if (!cls) return;
+  const orig = cls.prototype.finishLayout;
+  cls.prototype.finishLayout = function(ctxt) {
+    orig.call(this, ctxt);
+    if (!this.notes || !this.notes.length) return;
+    let coreRight = -Infinity;
+    for (const note of this.notes) {
+      if (note.bounds) coreRight = Math.max(coreRight, note.bounds.right());
+    }
+    const lastNote = this.notes[this.notes.length - 1];
+    const lastNoteMarkings = []
+      .concat(lastNote.morae || [])
+      .concat(lastNote.epismata || [])
+      .concat(lastNote.ictus ? [lastNote.ictus] : [])
+      .concat(lastNote.acuteAccent ? [lastNote.acuteAccent] : []);
+    for (const m of lastNoteMarkings) {
+      if (m && m.bounds) coreRight = Math.max(coreRight, m.bounds.right());
+    }
+    if (coreRight > -Infinity && coreRight < this.bounds.right()) {
+      this.bounds.width = coreRight - this.bounds.x;
+    }
+  };
+})();
 
 </script>
 <script>
@@ -12404,7 +13802,24 @@ async function exportGABCasPDF(){
   const svgEl = document.querySelector('#gabc-svg-wrap svg');
   if (!svgEl) { gst('Nichts zu exportieren - erst rendern'); return; }
   // Serialise SVG to image data via canvas
-  const svgData = new XMLSerializer().serializeToString(svgEl);
+  // Gleicher Fix wie in gregExportPDF()/svgStringToCanvas() (2026-07-22):
+  // ohne die @font-face-Regel für 'Exsurge Characters' direkt im
+  // serialisierten SVG mitzuliefern, rastert der Browser das "Vorsänger-V"
+  // (aus "V/.") beim eigenständigen Blob/Image-Laden mit einer Standard-
+  // schrift statt dem dekorativen Glyph — auf dem Bildschirm sieht es
+  // richtig aus, weil dort das globale <style id="exsurge-fonts"> greift,
+  // das dieses eigenständige SVG-Dokument aber nicht mitbekommt.
+  const svgElClone = svgEl.cloneNode(true);
+  const fontStyleSrcGabc = document.getElementById('exsurge-fonts');
+  if (fontStyleSrcGabc && fontStyleSrcGabc.textContent) {
+    const nsGabc = 'http://www.w3.org/2000/svg';
+    const styleElGabc = document.createElementNS(nsGabc, 'style');
+    styleElGabc.textContent = fontStyleSrcGabc.textContent;
+    const defsElGabc = document.createElementNS(nsGabc, 'defs');
+    defsElGabc.appendChild(styleElGabc);
+    svgElClone.insertBefore(defsElGabc, svgElClone.firstChild);
+  }
+  const svgData = new XMLSerializer().serializeToString(svgElClone);
   const svgBlob = new Blob([svgData], {type:'image/svg+xml;charset=utf-8'});
   const url = URL.createObjectURL(svgBlob);
   const img = new Image();
