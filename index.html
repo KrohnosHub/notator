@@ -96,6 +96,31 @@ input[type=file]{display:none}
   #greg-panel.greg-mobile-edit #greg-input-panel input,
   #greg-panel.greg-mobile-edit #greg-input-panel select,
   #greg-panel.greg-mobile-edit #greg-input-panel textarea{font-size:13px !important}
+
+  /* Echtes Scrollen der Eingabespalte im Bearbeiten-Modus (Nutzer-Feedback:
+     "ich kann nicht nach unten scrollen ... sehe nicht bis ganz unten zum
+     GABC-Code"). Ursache: #greg-input-panel ist selbst ein Flex-Container
+     (column) mit inline overflow:hidden -- dessen direkte Kind-Divs sind
+     dadurch automatisch Flex-Items mit initialem flex-shrink:1 und wurden
+     bei zu wenig Platz einfach zusammengequetscht statt dass die Spalte
+     scrollt. Fix: overflow-y:auto auf der Spalte selbst (!important nötig,
+     inline overflow:hidden) + flex-shrink:0 auf allen direkten Kindern
+     (!important nötig wg. teils inline flex:1), sodass jede Sektion ihre
+     natürliche Höhe behält und die Spalte als Ganzes vertikal scrollt. */
+  #greg-panel.greg-mobile-edit #greg-input-panel{overflow-y:auto !important}
+  #greg-panel.greg-mobile-edit #greg-input-panel > div{flex-shrink:0 !important}
+
+  /* Einträge-Liste (Nutzer-Feedback: "nur ein winziger Bereich sichtbar"):
+     ohne obigen Fix schrumpfte dieser Bereich (inline flex:1) auf seine
+     Mindesthöhe zusammen. Jetzt bekommt er stattdessen eine grosszügige,
+     eigenständig scrollbare Höhe, unabhängig vom Rest der Spalte. */
+  #greg-panel.greg-mobile-edit #greg-entries-wrap{flex:none !important;height:44vh !important;min-height:220px !important}
+
+  /* Grössere Tastflächen für die einzelnen Einträge (Zeilen werden per JS
+     mit eigener inline font-size/padding erzeugt -- !important nötig). */
+  #greg-panel.greg-mobile-edit #greg-entry-list > div{padding:7px 5px !important;font-size:13px !important;margin-bottom:3px !important}
+  #greg-panel.greg-mobile-edit #greg-entry-list button{font-size:14px !important;padding:5px 8px !important;min-width:28px !important}
+  #greg-panel.greg-mobile-edit #greg-entry-list input[type=checkbox]{width:18px !important;height:18px !important}
 }
 </style>
 </head>
@@ -375,28 +400,31 @@ input[type=file]{display:none}
         <span style="color:#3a4a30;margin:0 2px">|</span>
         <button class="b" onclick="gregAddSection()" style="font-size:10px;padding:2px 6px;background:#1a3a5a;color:#a0c0e0;border-color:#2a5a8a" title="Neuen Abschnitt hinzufügen">+ Abschnitt</button>
       </div>
-      <div style="padding:5px 8px;background:#151e10;border-bottom:1px solid #2a3820;display:flex;flex-direction:column;gap:4px">
-        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-          <span style="font-size:9px;color:#6b8a60;min-width:55px">Schlüssel</span>
-          <button class="b on" id="greg-clef-do" onclick="gregSetClef('do')" style="font-size:10px;padding:1px 5px">Do c3</button>
-          <button class="b" id="greg-clef-do4" onclick="gregSetClef('do4')" style="font-size:10px;padding:1px 5px">Do c4</button>
-          <button class="b" id="greg-clef-fa" onclick="gregSetClef('fa')" style="font-size:10px;padding:1px 5px">Fa f3</button>
-          <button class="b" id="greg-clef-fa4" onclick="gregSetClef('fa4')" style="font-size:10px;padding:1px 5px">Fa f4</button>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <span style="font-size:9px;color:#6b8a60;min-width:55px">Titel</span>
-          <input id="greg-title" type="text" placeholder="Liedtitel (optional)" style="flex:1;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
-        </div>
-        <div style="display:flex;gap:6px;align-items:flex-start">
-          <span style="font-size:9px;color:#6b8a60;min-width:55px;padding-top:2px">Untertitel</span>
-          <textarea id="greg-subtitle" placeholder="Text unter Titel (optional, Zeilenumbrüche möglich)" rows="2" style="flex:1;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none;resize:vertical;font-family:inherit;line-height:1.4"></textarea>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <span style="font-size:9px;color:#6b8a60;min-width:55px">Annotation</span>
-          <textarea id="greg-annotation" placeholder="z.B. II&#10;8 c" rows="2" style="width:70px;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none;resize:none;font-family:inherit;line-height:1.3" title="Mehrere Zeilen möglich (Enter für 2. Zeile)"></textarea>
-          <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:3px"><input id="greg-dropcap" type="checkbox" checked> Drop Cap</label>
-          <input id="greg-dropcap-letter" type="text" placeholder="Buchstabe" maxlength="1" title="Drop-Cap-Buchstabe ohne Noten (erzeugt X() vor erster Note)" style="width:55px;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
-          <button class="b" onclick="gregInsertDropCapLetter()" style="font-size:10px;padding:1px 5px" title="Drop Cap ohne Noten einfügen">+DC</button>
+      <div style="padding:4px 8px;background:#151e10;border-bottom:1px solid #2a3820">
+        <div style="font-size:9px;color:#6b8a60;margin-bottom:3px;font-variant:small-caps;cursor:pointer" onclick="gregToggleKopf()" id="greg-kopf-hdr">&#9998; Kopf-Bereich ▾</div>
+        <div id="greg-kopf-panel" style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:9px;color:#6b8a60;min-width:55px">Schlüssel</span>
+            <button class="b on" id="greg-clef-do" onclick="gregSetClef('do')" style="font-size:10px;padding:1px 5px">Do c3</button>
+            <button class="b" id="greg-clef-do4" onclick="gregSetClef('do4')" style="font-size:10px;padding:1px 5px">Do c4</button>
+            <button class="b" id="greg-clef-fa" onclick="gregSetClef('fa')" style="font-size:10px;padding:1px 5px">Fa f3</button>
+            <button class="b" id="greg-clef-fa4" onclick="gregSetClef('fa4')" style="font-size:10px;padding:1px 5px">Fa f4</button>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:9px;color:#6b8a60;min-width:55px">Titel</span>
+            <input id="greg-title" type="text" placeholder="Liedtitel (optional)" style="flex:1;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+          </div>
+          <div style="display:flex;gap:6px;align-items:flex-start">
+            <span style="font-size:9px;color:#6b8a60;min-width:55px;padding-top:2px">Untertitel</span>
+            <textarea id="greg-subtitle" placeholder="Text unter Titel (optional, Zeilenumbrüche möglich)" rows="2" style="flex:1;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none;resize:vertical;font-family:inherit;line-height:1.4"></textarea>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:9px;color:#6b8a60;min-width:55px">Annotation</span>
+            <textarea id="greg-annotation" placeholder="z.B. II&#10;8 c" rows="2" style="width:70px;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none;resize:none;font-family:inherit;line-height:1.3" title="Mehrere Zeilen möglich (Enter für 2. Zeile)"></textarea>
+            <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:3px"><input id="greg-dropcap" type="checkbox" checked> Drop Cap</label>
+            <input id="greg-dropcap-letter" type="text" placeholder="Buchstabe" maxlength="1" title="Drop-Cap-Buchstabe ohne Noten (erzeugt X() vor erster Note)" style="width:55px;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+            <button class="b" onclick="gregInsertDropCapLetter()" style="font-size:10px;padding:1px 5px" title="Drop Cap ohne Noten einfügen">+DC</button>
+          </div>
         </div>
       </div>
       <div style="padding:4px 8px;background:#0e1a0a;border-bottom:1px solid #2a3820">
@@ -501,7 +529,7 @@ input[type=file]{display:none}
         <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px" title="Quilisma: gezackte Verzierungsnote (steht in echten Neumen meist auf einer Note VOR einem Aufstieg, z.B. 1. Note eines Podatus)"><input type="checkbox" id="greg-quilisma" onchange="gregUpdateQuilismaUI()"> Quilisma</label>
         <span id="greg-quilisma-pos-w" style="font-size:9px;color:#6b8a60;display:none;align-items:center;gap:2px">auf <select id="greg-quilisma-pos" style="font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px"><option value="1">Note 1</option><option value="2">Note 2</option><option value="3">Note 3</option><option value="4">Note 4</option></select></span>
       </div>
-      <div style="flex:1;overflow-y:auto;padding:4px">
+      <div id="greg-entries-wrap" style="flex:1;overflow-y:auto;padding:4px">
         <div style="font-size:9px;color:#6b8a60;padding:2px 4px;font-variant:small-caps;letter-spacing:.05em">Einträge</div>
         <div id="greg-bulk-toolbar" style="display:none;position:sticky;top:0;z-index:5;align-items:center;gap:4px;padding:3px 4px;margin-bottom:3px;background:#1a2a3a;border:1px solid #3a5a6a;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>
         <div id="greg-entry-list" style="display:flex;flex-direction:column;gap:1px"></div>
@@ -7452,7 +7480,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '212';
+const NOTATOR_BUILD_ID = '213';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -13994,6 +14022,15 @@ function gregGetSizing() {
     vSpace:      v('gs-vspace', 1.0),
     neumeScale:  v('gs-neume', 1.3),
   };
+}
+
+function gregToggleKopf() {
+  const p = document.getElementById('greg-kopf-panel');
+  if (!p) return;
+  const open = p.style.display === 'none';
+  p.style.display = open ? 'flex' : 'none';
+  const hdr = document.getElementById('greg-kopf-hdr');
+  if (hdr) hdr.innerHTML = '&#9998; Kopf-Bereich ' + (open ? '▾' : '▸');
 }
 
 function gregToggleSizing() {
