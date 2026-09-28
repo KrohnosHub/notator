@@ -75,21 +75,27 @@ input[type=file]{display:none}
   #greg-mobile-bar{display:flex}
   #greg-drag-handle{display:none}
   #greg-pdf-drag-handle,#greg-pdf-panel{display:none}
-  #greg-canvas-wrap{padding:8px}
+  #greg-canvas-wrap{padding:8px !important}
   #tb,#main{display:none !important} /* alter Klick-Editor ist auf dem Handy nicht bedienbar */
 
-  /* Ansicht (Default): Eingabespalte aus, Notation an */
-  #greg-input-panel{display:none}
+  /* Ansicht (Default): Eingabespalte aus, Notation an. !important nötig,
+     da #greg-input-panel inline display:flex trägt (inline schlägt eine
+     ID-Regel ohne !important immer, unabhängig von deren Spezifität). */
+  #greg-input-panel{display:none !important}
 
-  /* Bearbeiten: Eingabespalte auf volle Breite, Notation aus */
-  #greg-panel.greg-mobile-edit #greg-canvas-wrap{display:none}
-  #greg-panel.greg-mobile-edit #greg-input-panel{display:flex !important;width:100% !important;min-width:0 !important;border-right:none}
+  /* Bearbeiten: Eingabespalte auf volle Breite, Notation aus. !important
+     nötig — beide Elemente tragen inline display:flex/border-right. */
+  #greg-panel.greg-mobile-edit #greg-canvas-wrap{display:none !important}
+  #greg-panel.greg-mobile-edit #greg-input-panel{display:flex !important;width:100% !important;min-width:0 !important;border-right:none !important}
 
-  /* Grössere Tastflächen in der Eingabespalte auf dem Handy */
+  /* Grössere Tastflächen in der Eingabespalte auf dem Handy. !important
+     bei Feldern nötig, da viele davon eine eigene inline font-size tragen
+     (z.B. der API-Key, die GABC-Textfelder) — ohne !important bliebe die
+     winzige Desktop-Schrift bestehen. */
   #greg-panel.greg-mobile-edit #greg-input-panel button.b{min-height:30px;font-size:12px;padding:4px 8px}
   #greg-panel.greg-mobile-edit #greg-input-panel input,
   #greg-panel.greg-mobile-edit #greg-input-panel select,
-  #greg-panel.greg-mobile-edit #greg-input-panel textarea{font-size:13px}
+  #greg-panel.greg-mobile-edit #greg-input-panel textarea{font-size:13px !important}
 }
 </style>
 </head>
@@ -7446,7 +7452,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '211';
+const NOTATOR_BUILD_ID = '212';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
