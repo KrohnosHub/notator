@@ -54,11 +54,17 @@ input[type=file]{display:none}
 .pf-ins{font-size:10px;padding:1px 5px;margin-top:2px;background:var(--parch2);border:1px solid var(--parch3);border-radius:2px;cursor:pointer;color:var(--ink2);display:inline-block}
 .pf-ins:hover{background:var(--parch3)}
 
-/* ── Mobile-Ansicht (Schritt 3) ──────────────────────────────────────
+/* ── Mobile-Ansicht (Schritt 3) & Mobile-Bearbeitung (Schritt 4) ──────
    Greift automatisch unter 700px Breite. Zeigt nur den "Noten-Editor"
-   (#greg-panel, der Standard-Tab mit Bibliothek/GregoBase/PDF-OCR) im
-   Lese-Layout: linke Eingabespalte ausgeblendet, stattdessen schmale
-   Mobile-Leiste mit Bibliothek-Zugriff; die Notation wird per CSS-
+   (#greg-panel, der Standard-Tab mit Bibliothek/GregoBase/PDF-OCR).
+   Zwei Modi, exklusiv (kein Platz für nebeneinander auf dem Handy):
+   Ansicht (Default) zeigt die auf Bildschirmbreite skalierte Notation;
+   Bearbeiten (Klasse .greg-mobile-edit auf #greg-panel, umgeschaltet
+   per gregMobileSetEditMode) zeigt stattdessen die Eingabespalte
+   (#greg-input-panel: Neumen-Grid, Eintragsliste, GABC-Import, GregoBase,
+   PDF-Lesen) auf voller Breite — bereits button-/touch-basiert, nicht
+   der alte klickbasierte Canvas-Editor (der bleibt auf dem Handy
+   grundsätzlich ausgeblendet). Die Notation selbst wird per CSS-
    Transform auf Bildschirmbreite skaliert (gregMobileApplyScale) statt
    die interne, für Layout-Stabilität sorgfältig austarierte Render-
    Breitenlogik anzufassen. */
@@ -67,11 +73,23 @@ input[type=file]{display:none}
 @media (max-width: 700px) {
   #hdr-tabs button#tab-greg, #hdr-tabs button#tab-gabc, #hdr-tabs button#tab-editor { display:none; }
   #greg-mobile-bar{display:flex}
-  #greg-input-panel{display:none}
   #greg-drag-handle{display:none}
   #greg-pdf-drag-handle,#greg-pdf-panel{display:none}
   #greg-canvas-wrap{padding:8px}
   #tb,#main{display:none !important} /* alter Klick-Editor ist auf dem Handy nicht bedienbar */
+
+  /* Ansicht (Default): Eingabespalte aus, Notation an */
+  #greg-input-panel{display:none}
+
+  /* Bearbeiten: Eingabespalte auf volle Breite, Notation aus */
+  #greg-panel.greg-mobile-edit #greg-canvas-wrap{display:none}
+  #greg-panel.greg-mobile-edit #greg-input-panel{display:flex !important;width:100% !important;min-width:0 !important;border-right:none}
+
+  /* Grössere Tastflächen in der Eingabespalte auf dem Handy */
+  #greg-panel.greg-mobile-edit #greg-input-panel button.b{min-height:30px;font-size:12px;padding:4px 8px}
+  #greg-panel.greg-mobile-edit #greg-input-panel input,
+  #greg-panel.greg-mobile-edit #greg-input-panel select,
+  #greg-panel.greg-mobile-edit #greg-input-panel textarea{font-size:13px}
 }
 </style>
 </head>
@@ -323,6 +341,7 @@ input[type=file]{display:none}
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;border-bottom:1px solid #3a4a30;flex-shrink:0">
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
     <span id="greg-mobile-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
     <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
@@ -7427,7 +7446,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '210';
+const NOTATOR_BUILD_ID = '211';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7754,6 +7773,7 @@ function gregLibLoadEntry(id) {
     gregLibCurrentId = rec.id;
     gregRefreshList();
     closeModal();
+    if (typeof gregMobileSetEditMode === 'function') gregMobileSetEditMode(false); // frisch geladenes Stück immer erst in der Ansicht zeigen
     gregGst('Aus Bibliothek geladen: "' + rec.title + '"');
     gregScheduleAutosave();
   }).catch(function(err) { gregGst('Ladefehler: ' + err.message); });
@@ -7953,6 +7973,24 @@ function gregMobileSyncTitle() {
   const el = document.getElementById('greg-mobile-title');
   const src = document.getElementById('greg-title');
   if (el) el.textContent = (src && src.value) ? src.value : 'Unbenanntes Stück';
+}
+
+// Schritt 4: Bearbeiten/Ansicht-Umschalter für die Mobile-Ansicht — zeigt
+// entweder die skalierte Notation (Ansicht) oder die Eingabespalte auf
+// voller Breite (Bearbeiten: Neumen-Grid, Eintragsliste, GABC-Import,
+// GregoBase, PDF-Lesen — dieselben Bedienelemente wie am PC, nur ohne
+// Nebeneinander-Layout, das auf dem Handy keinen Platz hat).
+function gregMobileSetEditMode(on) {
+  const panel = document.getElementById('greg-panel');
+  const btn = document.getElementById('greg-mobile-edit-toggle');
+  if (!panel) return;
+  panel.classList.toggle('greg-mobile-edit', !!on);
+  if (btn) btn.innerHTML = on ? '&#128065; Ansicht' : '&#9998; Bearbeiten';
+  if (!on) gregScheduleMobileScale(); // Notation war während des Bearbeitens display:none, Grösse neu messen
+}
+function gregMobileToggleEditMode() {
+  const panel = document.getElementById('greg-panel');
+  gregMobileSetEditMode(panel && !panel.classList.contains('greg-mobile-edit'));
 }
 
 function gregMobileInit() {
