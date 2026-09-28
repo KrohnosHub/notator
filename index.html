@@ -307,6 +307,8 @@ input[type=file]{display:none}
         <button class="b" onclick="gregClear()" style="font-size:10px;padding:2px 6px" title="Neues, leeres Stück beginnen (aktuelles Stück wird verworfen)">&#10005; Neu</button>
         <button class="b" onclick="document.getElementById('greg-load-in').click()" style="font-size:10px;padding:2px 6px" title="Stück laden (.notator)">&#128194; Öffnen</button>
         <input type="file" id="greg-load-in" accept=".notator,.json" style="display:none" onchange="gregLoadPiece(this)">
+        <button class="b" onclick="gregLibShowModal()" style="font-size:10px;padding:2px 6px" title="Im Browser gespeicherte Stücke ansehen/laden (unabhängig von .notator-Dateien)">&#128218; Bibliothek</button>
+        <input type="file" id="greg-lib-import-in" accept=".json" style="display:none" onchange="gregLibImportFile(this)">
         <button class="b" onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (benötigt API-Key rechts)">&#128196; PDF lesen</button>
         <input type="file" id="greg-pdf-in" accept=".pdf" style="display:none" onchange="gregLoadPDF(this)">
         <button id="greg-pdf-panel-toggle" class="b" onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:2px 6px;display:none" title="Original-PDF-Panel ein-/ausblenden">&#128196; Original</button>
@@ -314,6 +316,7 @@ input[type=file]{display:none}
       </div>
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" onclick="gregSavePiece()" style="font-size:10px;padding:2px 6px" title="Stück speichern (.notator)">&#128190; Speichern</button>
+        <button class="b" onclick="gregLibSaveCurrent()" style="font-size:10px;padding:2px 6px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Aktuelles Stück direkt im Browser (IndexedDB) ablegen/aktualisieren — kein Dateidialog nötig">&#128190; In Bibliothek</button>
         <button class="b" onclick="gregExportPDF()" style="font-size:10px;padding:2px 6px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Aktuelles Stück als PDF sichern">&#8595; PDF</button>
         <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext drucken</label>
         <span style="color:#3a4a30;margin:0 2px">|</span>
@@ -1345,6 +1348,10 @@ document.addEventListener('keydown',e=>{
 //  GREG EDITOR — Click-on-SVG-staff input → GABC → exsurge
 // ════════════════════════════════════════════════════════════════
 let gregEntries = [], gregHistory = [], gregRedoHistory = [], gregClefVal = 'c3';
+// id of the library entry the currently open piece was loaded from/last
+// saved to (null = never saved to the library yet in this session, so the
+// next "In Bibliothek speichern" creates a new entry instead of updating).
+let gregLibCurrentId = null;
 let _gregScore = null, _gregCtxtRef = null, _gregPending = null;
 
 const GREG_CLEF_MAP = {'do':'c3','do4':'c4','fa':'f3','fa4':'f4'};
@@ -7390,7 +7397,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '208';
+const NOTATOR_BUILD_ID = '209';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7593,6 +7600,281 @@ function gregLoadPiece(input) {
     }
   };
   reader.readAsText(file);
+}
+
+// ── Bibliothek (In-Browser-Speicher via IndexedDB) ──────────────────
+// Ergänzt gregSavePiece/gregLoadPiece (Datei-basiert, .notator-Download)
+// um eine zweite, geräte-lokale Ablage direkt im Browser — wichtig für den
+// GitHub-Pages-Betrieb, wo es kein lokales Dateisystem/keinen Server gibt.
+// Liegt NUR in diesem einen Browser auf diesem einen Gerät (IndexedDB
+// synchronisiert nicht zwischen Geräten/Browsern) — dafür gibt es
+// Export/Import als JSON-Datei weiter unten.
+const NOTATOR_LIB_DB_NAME = 'NotatorLibraryDB';
+const NOTATOR_LIB_STORE = 'pieces';
+let _gregLibDBPromise = null;
+
+function gregLibOpenDB() {
+  if (_gregLibDBPromise) return _gregLibDBPromise;
+  _gregLibDBPromise = new Promise(function(resolve, reject) {
+    if (!window.indexedDB) { reject(new Error('IndexedDB wird von diesem Browser nicht unterstützt.')); return; }
+    const req = indexedDB.open(NOTATOR_LIB_DB_NAME, 1);
+    req.onupgradeneeded = function(e) {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(NOTATOR_LIB_STORE)) {
+        db.createObjectStore(NOTATOR_LIB_STORE, { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    req.onsuccess = function(e) { resolve(e.target.result); };
+    req.onerror = function(e) { reject(e.target.error || new Error('IndexedDB-Fehler')); };
+  });
+  return _gregLibDBPromise;
+}
+
+function gregLibTx(mode) {
+  return gregLibOpenDB().then(function(db) {
+    return db.transaction(NOTATOR_LIB_STORE, mode).objectStore(NOTATOR_LIB_STORE);
+  });
+}
+
+function gregLibList() {
+  return gregLibTx('readonly').then(function(store) {
+    return new Promise(function(resolve, reject) {
+      const out = [];
+      const req = store.openCursor();
+      req.onsuccess = function(e) {
+        const cursor = e.target.result;
+        if (cursor) {
+          out.push({ id: cursor.value.id, title: cursor.value.title, savedAt: cursor.value.savedAt, updatedAt: cursor.value.updatedAt });
+          cursor.continue();
+        } else {
+          out.sort(function(a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
+          resolve(out);
+        }
+      };
+      req.onerror = function(e) { reject(e.target.error); };
+    });
+  });
+}
+
+function gregLibGet(id) {
+  return gregLibTx('readonly').then(function(store) {
+    return new Promise(function(resolve, reject) {
+      const req = store.get(id);
+      req.onsuccess = function(e) { resolve(e.target.result); };
+      req.onerror = function(e) { reject(e.target.error); };
+    });
+  });
+}
+
+function gregLibPut(record) {
+  return gregLibTx('readwrite').then(function(store) {
+    return new Promise(function(resolve, reject) {
+      const req = store.put(record);
+      req.onsuccess = function(e) { resolve(e.target.result); }; // returns the id
+      req.onerror = function(e) { reject(e.target.error); };
+    });
+  });
+}
+
+function gregLibDeleteEntry(id) {
+  return gregLibTx('readwrite').then(function(store) {
+    return new Promise(function(resolve, reject) {
+      const req = store.delete(id);
+      req.onsuccess = function() { resolve(); };
+      req.onerror = function(e) { reject(e.target.error); };
+    });
+  });
+}
+
+// Speichert das aktuell offene Stück in der Bibliothek. Wurde es zuvor
+// schon aus der Bibliothek geladen bzw. dorthin gespeichert (gregLibCurrentId
+// gesetzt), wird dieser Eintrag aktualisiert statt einen neuen anzulegen.
+function gregLibSaveCurrent() {
+  const state = gregBuildStateObject();
+  const now = Date.now();
+  // id/savedAt undefined => neuer Eintrag (autoIncrement vergibt die id,
+  // savedAt wird auf jetzt gesetzt); beide gesetzt => bestehenden Eintrag
+  // aktualisieren, ursprüngliches savedAt bleibt erhalten.
+  const finish = function(title, id, savedAt) {
+    const record = { title: title, savedAt: savedAt || now, updatedAt: now, state: state };
+    if (id !== undefined) record.id = id;
+    gregLibPut(record).then(function(newId) {
+      gregLibCurrentId = newId;
+      gregGst('In Bibliothek gespeichert: "' + title + '"');
+      if (document.getElementById('modal-bg').classList.contains('open')) gregLibShowModal(); // Liste aktualisieren, falls offen
+    }).catch(function(err) { gregGst('Bibliothek-Speicherfehler: ' + err.message); });
+  };
+  if (gregLibCurrentId != null) {
+    gregLibGet(gregLibCurrentId).then(function(existing) {
+      if (existing) { finish(existing.title, existing.id, existing.savedAt); return; }
+      finish(state.title || 'Unbenanntes Stück', undefined, undefined);
+    });
+  } else {
+    const title = prompt('Titel für die Bibliothek:', state.title || 'Unbenanntes Stück');
+    if (title === null) return; // abgebrochen
+    finish(title.trim() || 'Unbenanntes Stück', undefined, undefined);
+  }
+}
+
+function gregLibLoadEntry(id) {
+  gregLibGet(id).then(function(rec) {
+    if (!rec) { gregGst('Eintrag nicht gefunden (evtl. gelöscht).'); return; }
+    gregPush(); // Undo zurück zum vorherigen Stand erlauben
+    gregApplyLoadedState(rec.state);
+    gregLibCurrentId = rec.id;
+    gregRefreshList();
+    closeModal();
+    gregGst('Aus Bibliothek geladen: "' + rec.title + '"');
+    gregScheduleAutosave();
+  }).catch(function(err) { gregGst('Ladefehler: ' + err.message); });
+}
+
+function gregLibRenameEntry(id, currentTitle) {
+  const title = prompt('Neuer Titel:', currentTitle);
+  if (title === null || !title.trim()) return;
+  gregLibGet(id).then(function(rec) {
+    if (!rec) return;
+    rec.title = title.trim();
+    rec.updatedAt = Date.now();
+    return gregLibPut(rec);
+  }).then(function() { gregLibShowModal(); }).catch(function(err) { gregGst('Fehler: ' + err.message); });
+}
+
+function gregLibDeleteEntryConfirm(id, title) {
+  if (!confirm('"' + title + '" endgültig aus der Bibliothek löschen?')) return;
+  gregLibDeleteEntry(id).then(function() {
+    if (gregLibCurrentId === id) gregLibCurrentId = null;
+    gregLibShowModal();
+  }).catch(function(err) { gregGst('Löschfehler: ' + err.message); });
+}
+
+function gregLibExportAll() {
+  gregLibTx('readonly').then(function(store) {
+    return new Promise(function(resolve, reject) {
+      const out = [];
+      const req = store.openCursor();
+      req.onsuccess = function(e) {
+        const cursor = e.target.result;
+        if (cursor) { out.push(cursor.value); cursor.continue(); }
+        else resolve(out);
+      };
+      req.onerror = function(e) { reject(e.target.error); };
+    });
+  }).then(function(all) {
+    if (!all.length) { gregGst('Bibliothek ist leer — nichts zu exportieren.'); return; }
+    const payload = { notatorLibraryExport: true, exportedAt: new Date().toISOString(), pieces: all };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url; a.download = 'notator-bibliothek_' + stamp + '.json'; a.click();
+    URL.revokeObjectURL(url);
+    gregGst(all.length + ' Stück(e) exportiert.');
+  }).catch(function(err) { gregGst('Exportfehler: ' + err.message); });
+}
+
+function gregLibImportFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      const pieces = Array.isArray(data.pieces) ? data.pieces : (Array.isArray(data) ? data : null);
+      if (!pieces) throw new Error('Kein erkennbares Bibliotheks-Export-Format');
+      let imported = 0;
+      const importNext = function(idx) {
+        if (idx >= pieces.length) {
+          input.value = '';
+          gregGst(imported + ' Stück(e) importiert.');
+          gregLibShowModal();
+          return;
+        }
+        const p = pieces[idx];
+        if (p && p.state) {
+          // id weglassen -> autoIncrement vergibt eine neue, kollisionsfreie id;
+          // bestehende Bibliothekseinträge bleiben dadurch unangetastet.
+          gregLibPut({ title: p.title || 'Unbenanntes Stück', savedAt: p.savedAt || Date.now(), updatedAt: p.updatedAt || Date.now(), state: p.state })
+            .then(function() { imported++; importNext(idx + 1); })
+            .catch(function() { importNext(idx + 1); });
+        } else {
+          importNext(idx + 1);
+        }
+      };
+      importNext(0);
+    } catch (err) {
+      gregGst('Importfehler: "' + file.name + '" ist keine gültige Bibliotheks-Exportdatei. (' + err.message + ')');
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function gregLibFormatDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleDateString('de-CH') + ' ' + d.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' });
+}
+
+function gregLibShowModal() {
+  showModal('📚 Bibliothek', 'Im Browser gespeicherte Stücke (nur auf diesem Gerät/Browser — für Backup oder Umzug auf ein anderes Gerät unten Export/Import verwenden).', []);
+  const bEl = document.getElementById('modal-btns');
+  bEl.style.flexDirection = 'column';
+  bEl.style.alignItems = 'stretch';
+  bEl.innerHTML = '';
+
+  const topRow = document.createElement('div');
+  topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'b';
+  saveBtn.textContent = '💾 Aktuelles Stück speichern';
+  saveBtn.onclick = function() { gregLibSaveCurrent(); };
+  const exportBtn = document.createElement('button');
+  exportBtn.className = 'b';
+  exportBtn.textContent = '⬇ Export (JSON)';
+  exportBtn.onclick = function() { gregLibExportAll(); };
+  const importBtn = document.createElement('button');
+  importBtn.className = 'b';
+  importBtn.textContent = '⬆ Import (JSON)';
+  importBtn.onclick = function() { document.getElementById('greg-lib-import-in').click(); };
+  topRow.appendChild(saveBtn); topRow.appendChild(exportBtn); topRow.appendChild(importBtn);
+  bEl.appendChild(topRow);
+
+  const listEl = document.createElement('div');
+  bEl.appendChild(listEl);
+
+  gregLibList().then(function(items) {
+    if (!items.length) {
+      listEl.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Noch keine Stücke in der Bibliothek gespeichert.</p>';
+      return;
+    }
+    items.forEach(function(it) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:4px;margin:2px 0';
+      const openBtn = document.createElement('button');
+      openBtn.className = 'b';
+      openBtn.style.cssText = 'flex:1;text-align:left';
+      openBtn.textContent = it.title + '  —  ' + gregLibFormatDate(it.updatedAt || it.savedAt);
+      openBtn.onclick = function() { gregLibLoadEntry(it.id); };
+      const renameBtn = document.createElement('button');
+      renameBtn.className = 'b'; renameBtn.style.cssText = 'font-size:11px;padding:2px 5px';
+      renameBtn.textContent = '✎'; renameBtn.title = 'Umbenennen';
+      renameBtn.onclick = function() { gregLibRenameEntry(it.id, it.title); };
+      const delBtn = document.createElement('button');
+      delBtn.className = 'b'; delBtn.style.cssText = 'font-size:11px;padding:2px 5px;color:#c0605a';
+      delBtn.textContent = '🗑'; delBtn.title = 'Löschen';
+      delBtn.onclick = function() { gregLibDeleteEntryConfirm(it.id, it.title); };
+      row.appendChild(openBtn); row.appendChild(renameBtn); row.appendChild(delBtn);
+      listEl.appendChild(row);
+    });
+  });
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'b';
+  closeBtn.style.cssText = 'margin-top:8px';
+  closeBtn.textContent = 'Schliessen';
+  closeBtn.onclick = function() { closeModal(); bEl.style.flexDirection = ''; bEl.style.alignItems = ''; };
+  bEl.appendChild(closeBtn);
 }
 
 function gregToggleGABCImport() {
