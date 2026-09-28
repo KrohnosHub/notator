@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Notator</title>
 <style>
 :root{
@@ -52,6 +53,26 @@ input[type=file]{display:none}
 .pf-n{font-weight:600;color:var(--acc1);font-size:10px;margin-bottom:2px}
 .pf-ins{font-size:10px;padding:1px 5px;margin-top:2px;background:var(--parch2);border:1px solid var(--parch3);border-radius:2px;cursor:pointer;color:var(--ink2);display:inline-block}
 .pf-ins:hover{background:var(--parch3)}
+
+/* ── Mobile-Ansicht (Schritt 3) ──────────────────────────────────────
+   Greift automatisch unter 700px Breite. Zeigt nur den "Noten-Editor"
+   (#greg-panel, der Standard-Tab mit Bibliothek/GregoBase/PDF-OCR) im
+   Lese-Layout: linke Eingabespalte ausgeblendet, stattdessen schmale
+   Mobile-Leiste mit Bibliothek-Zugriff; die Notation wird per CSS-
+   Transform auf Bildschirmbreite skaliert (gregMobileApplyScale) statt
+   die interne, für Layout-Stabilität sorgfältig austarierte Render-
+   Breitenlogik anzufassen. */
+#greg-mobile-bar{display:none}
+#greg-mobile-scale-wrap{transform-origin:top left}
+@media (max-width: 700px) {
+  #hdr-tabs button#tab-greg, #hdr-tabs button#tab-gabc, #hdr-tabs button#tab-editor { display:none; }
+  #greg-mobile-bar{display:flex}
+  #greg-input-panel{display:none}
+  #greg-drag-handle{display:none}
+  #greg-pdf-drag-handle,#greg-pdf-panel{display:none}
+  #greg-canvas-wrap{padding:8px}
+  #tb,#main{display:none !important} /* alter Klick-Editor ist auf dem Handy nicht bedienbar */
+}
 </style>
 </head>
 <body>
@@ -59,7 +80,7 @@ input[type=file]{display:none}
 <div id="hdr">
   <h1>Not<em>a</em>tor</h1>
   <span style="font-size:10px;color:#6b7a60;margin-left:4px">Klassisch &amp; Gregorianisch</span>
-  <div style="margin-left:auto;display:flex;gap:4px">
+  <div id="hdr-tabs" style="margin-left:auto;display:flex;gap:4px">
     <button class="b" id="tab-greg" onclick="switchTab('greg')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#1a2018;color:#8b9a70;border-color:#3a5030">Greg-Editor</button>
     <button class="b" id="tab-gabc" onclick="switchTab('gabc')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#2a1a08;color:#8b9a70;border-color:#4a5a30">GABC-Eingabe</button>
     <button class="b" id="tab-editor" onclick="switchTab('editor')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#3d3420;color:#e0d4b0;border-color:#6b5030">Noten-Editor</button>
@@ -299,6 +320,11 @@ input[type=file]{display:none}
 
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+  <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;border-bottom:1px solid #3a4a30;flex-shrink:0">
+    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
+    <span id="greg-mobile-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
+  </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
     <div id="greg-input-panel" style="width:540px;min-width:200px;flex-shrink:0;background:#1a2414;border-right:1px solid #3a4a30;display:flex;flex-direction:column;overflow:hidden">
       <div style="padding:5px 8px 2px;background:#121c0e;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
@@ -477,11 +503,15 @@ input[type=file]{display:none}
     </div>
     <div id="greg-drag-handle" style="width:5px;flex-shrink:0;background:#2a3820;cursor:col-resize;position:relative;z-index:10;transition:background .15s" onmouseenter="this.style.background='#4a7a40'" onmouseleave="this.style.background='#2a3820'"></div>
     <div id="greg-canvas-wrap" style="flex:1;overflow:auto;background:#ffffff;padding:20px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start">
-      <div id="greg-svg-original-slot" style="position:relative;width:100%">
-        <div id="greg-svg-wrap" style="background:transparent;position:relative;z-index:1;padding:0;width:100%;min-height:200px;box-sizing:border-box"></div>
+      <div id="greg-mobile-scale-outer">
+        <div id="greg-mobile-scale-wrap">
+          <div id="greg-svg-original-slot" style="position:relative;width:100%">
+            <div id="greg-svg-wrap" style="background:transparent;position:relative;z-index:1;padding:0;width:100%;min-height:200px;box-sizing:border-box"></div>
+          </div>
+          <!-- Multi-section container: sections rendered as draggable divs -->
+          <div id="greg-sections-container" style="display:none;position:relative;width:100%;min-height:400px"></div>
+        </div>
       </div>
-      <!-- Multi-section container: sections rendered as draggable divs -->
-      <div id="greg-sections-container" style="display:none;position:relative;width:100%;min-height:400px"></div>
     </div>
     <!-- Runde 65: Original-PDF-Seitenpanel — ersetzt die frühere 35%-Geister-
          Canvas hinter der Notation (schlecht lesbar für beides). Zeigt die
@@ -7397,7 +7427,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '209';
+const NOTATOR_BUILD_ID = '210';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7877,6 +7907,78 @@ function gregLibShowModal() {
   bEl.appendChild(closeBtn);
 }
 
+// ── Mobile-Ansicht (Schritt 3) ───────────────────────────────────────
+// Skaliert die gerenderte Notation rein visuell (CSS transform) auf die
+// Bildschirmbreite, statt die interne, für Layout-Stabilität sorgfältig
+// austarierte Render-Breitenlogik (window._gregForcedCanvasWidth, siehe
+// gregRenderAllSections-Kommentare) anzufassen — ein CSS-Transform
+// skaliert alles (inkl. an Noten verankerter Freitext-Positionen) exakt
+// gleich mit und kann daher nichts an der internen Positionierung
+// verschieben. Wird per MutationObserver auf #greg-canvas-wrap ausgelöst
+// (statt an jeder einzelnen Render-Aufrufstelle verdrahtet zu werden) —
+// damit robust gegenüber Änderungen an der Render-Pipeline.
+function gregIsMobileViewport() {
+  return window.matchMedia('(max-width: 700px)').matches;
+}
+
+let _gregMobileScaleTimer = null;
+function gregScheduleMobileScale() {
+  clearTimeout(_gregMobileScaleTimer);
+  _gregMobileScaleTimer = setTimeout(gregMobileApplyScale, 120);
+}
+
+function gregMobileApplyScale() {
+  const outer = document.getElementById('greg-canvas-wrap');
+  const sizer = document.getElementById('greg-mobile-scale-outer');
+  const wrap = document.getElementById('greg-mobile-scale-wrap');
+  if (!outer || !sizer || !wrap) return;
+  if (!gregIsMobileViewport()) {
+    wrap.style.transform = '';
+    sizer.style.height = '';
+    return;
+  }
+  wrap.style.transform = 'none'; // vor dem Messen zurücksetzen
+  const naturalWidth = wrap.scrollWidth;
+  const naturalHeight = wrap.scrollHeight;
+  const available = outer.clientWidth;
+  if (!naturalWidth || !available) return;
+  const scale = Math.min(1, available / naturalWidth);
+  wrap.style.transform = 'scale(' + scale + ')';
+  sizer.style.height = Math.ceil(naturalHeight * scale) + 'px';
+}
+
+// Spiegelt den Titel in die Mobile-Leiste (dort ist #greg-input-panel mit
+// dem echten Titelfeld ausgeblendet).
+function gregMobileSyncTitle() {
+  const el = document.getElementById('greg-mobile-title');
+  const src = document.getElementById('greg-title');
+  if (el) el.textContent = (src && src.value) ? src.value : 'Unbenanntes Stück';
+}
+
+function gregMobileInit() {
+  const canvasWrap = document.getElementById('greg-canvas-wrap');
+  if (canvasWrap && window.MutationObserver) {
+    new MutationObserver(function() {
+      gregScheduleMobileScale();
+      gregMobileSyncTitle();
+    }).observe(canvasWrap, { childList: true, subtree: true, attributes: true });
+  }
+  const titleEl = document.getElementById('greg-title');
+  if (titleEl) titleEl.addEventListener('input', gregMobileSyncTitle);
+  window.addEventListener('resize', gregScheduleMobileScale);
+  window.addEventListener('orientationchange', gregScheduleMobileScale);
+  gregMobileSyncTitle();
+  gregScheduleMobileScale();
+  // Landet man auf dem Handy auf einer leeren Seite (kein Autosave aus
+  // einer vorherigen Sitzung), gleich die Bibliotheksliste zeigen statt
+  // eines leeren Editors — auf dem PC bleibt das Verhalten unverändert.
+  if (gregIsMobileViewport() && gregEntries.length === 0) {
+    setTimeout(function() {
+      if (gregEntries.length === 0) gregLibShowModal();
+    }, 400);
+  }
+}
+
 function gregToggleGABCImport() {
   const panel = document.getElementById('greg-gabc-import-panel');
   const visible = panel.style.display !== 'none';
@@ -7953,6 +8055,7 @@ setTimeout(function(){
   gregUpdateMoraUI();
   gregTryRestoreAutosave(); // before the initial render, so it renders the restored content (if any)
   setTimeout(gregRender,200);
+  setTimeout(gregMobileInit,700); // nach Autosave-Restore + erstem Render
 },500);
 </script>
 
