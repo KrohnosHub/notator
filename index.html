@@ -1561,6 +1561,26 @@ function buildSingleNeumeGABC(e) {
     if (moraExtraHere(i)) p += '.';
     return p;
   };
+  // Case-forcing variant of r(i): re-applies gregDefaultNoteCase's shape
+  // rule (punctum inclinatum = capitalized pitch letter) EVERY time GABC
+  // is built, instead of relying on the letter case already being correct
+  // in rp/e.pitches. Fixes a real bug (2026-09-29, user report): rp comes
+  // from e.pitches, which the entry-edit form (gregEditEntry) always reads
+  // and writes back as PLAIN lowercase letters (its "Töne" text field has
+  // no per-note shape control) -- so opening a pes_subpunctis/puncta_
+  // inclinata entry and saving it WITHOUT any change silently lost the
+  // capitalization, degrading the shape on next render (a Pes Subpunctis
+  // "ijIH" turned into plain "ijih", which exsurge then auto-classifies as
+  // an unrelated Torculus+Punctum shape -- confirmed via real GABC
+  // round-trip test, see notator_workflow_rules). Using gregDefaultNoteCase
+  // here instead of a separate hardcoded rule keeps creation-time and
+  // export-time casing as ONE single source of truth.
+  const rc = (i) => {
+    let p = gregDefaultNoteCase(e.neume, i, rp[i] || rp[0] || 'a');
+    if (quilismaHere(i)) p += 'w';
+    if (moraExtraHere(i)) p += '.';
+    return p;
+  };
 
   // Accidentals are NOT emitted inline here — emitParenGroup() always
   // prepends a standalone accidental group ("(ix)(hi)" GABC convention)
@@ -1616,15 +1636,16 @@ function buildSingleNeumeGABC(e) {
     case 'distropha':          return r(0) + r(0) + dot;
     case 'bivirga':            return r(0) + 'v' + r(0) + 'v' + dot;
     case 'trivirga':           return r(0) + 'v' + r(0) + 'v' + r(0) + 'v' + dot;
-    case 'puncta_inclinata':   return r(0) + r(1) + r(2) + dot;
+    case 'puncta_inclinata':   return rc(0) + rc(1) + rc(2) + dot;
     // Pes subpunctis = Podatus (r0,r1, normal punctum shape) + subpunctis
     // (r2,r3, punctum inclinatum shape = capitalized pitch letter, per GABC
     // convention: "a capitalized pitch letter represents a punctum
     // inclinatum"). Both subpunctis notes get capitalized, not just the
     // last one — verified against a real GABC source re-imported from
     // Source & Summit ("efED": lowercase Podatus e-f, then BOTH trailing
-    // subpunctis notes E-D capitalized).
-    case 'pes_subpunctis':     return r(0) + r(1) + r(2) + r(3) + dot;
+    // subpunctis notes E-D capitalized). Uses rc() (not r()) so this stays
+    // correct even after an edit-form save, see rc's own comment above.
+    case 'pes_subpunctis':     return r(0) + r(1) + rc(2) + rc(3) + dot;
     case 'pes_quassus':        return r(0) + 'o' + r(1) + dot;
     case 'torculus_resupinus': return r(0) + r(1) + r(2) + r(3) + dot;
     case 'porrectus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;
@@ -7524,7 +7545,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '214';
+const NOTATOR_BUILD_ID = '215';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
