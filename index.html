@@ -605,8 +605,25 @@ input[type=file]{display:none}
     <button class="b" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button>
     <span style="color:#3a4a30">|</span>
     <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
+    <button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Freitext einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Text</button>
+    <span style="color:#3a4a30">|</span>
+    <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)">Breite
+      <input type="range" id="cl-width" min="300" max="1600" step="10" oninput="clSetWidth(this.value)" style="width:110px;accent-color:#5a8a40"></label>
+    <span id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:70px"></span>
+    <button class="b" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button>
+    <span style="color:#3a4a30">|</span>
     <button class="b" onclick="clDownloadAbc()" style="font-size:11px;padding:3px 8px" title="Als ABC-Datei speichern (u.a. für MuseScore, EasyABC, abcjs)">&#8595; ABC</button>
-    <button class="b" onclick="clPrint()" style="font-size:11px;padding:3px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Drucken oder als PDF sichern">&#128424; Drucken / PDF</button>
+    <button class="b" onclick="clExportPDF()" style="font-size:11px;padding:3px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Als PDF sichern (A4, gleiche Ausgabe wie beim Choral)">&#8595; PDF</button>
+    <label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext drucken</label>
+    <span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
+  </div>
+  <div style="padding:4px 10px;background:#151e10;border-bottom:1px solid #2a3820;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+    <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Titel
+      <input id="cl-title" type="text" oninput="clHeadInput()" style="width:220px;font-size:11px;padding:2px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none"></label>
+    <label style="font-size:11px;color:#a8d878;display:flex;align-items:flex-start;gap:4px">Untertitel
+      <textarea id="cl-subtitle" rows="1" oninput="clHeadInput()" style="width:260px;font-size:11px;padding:2px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none;resize:vertical;font-family:inherit"></textarea></label>
+    <span id="cl-head-state" style="font-size:10px;color:#8b9a70;align-self:center"></span>
+    <button class="b" onclick="clHeadFromChant()" style="font-size:10px;padding:1px 6px;align-self:center" title="Titel und Untertitel wieder aus dem Choral übernehmen">&#8634; vom Choral</button>
   </div>
   <div id="cl-info" style="font-size:11px;color:#c0d890;padding:4px 10px;background:#151e10;border-bottom:1px solid #2a3820"></div>
   <div style="flex:1;display:flex;overflow:hidden;min-height:0">
@@ -1963,7 +1980,7 @@ function gregBuildGABC() {
   return header ? header + '%%\n' + body : body;
 }
 
-function gregGst(t) { const e=document.getElementById('greg-status'); if(e) e.textContent=t; }
+function gregGst(t) { const e=document.getElementById('greg-status'); if(e) e.textContent=t; const c=document.getElementById('cl-status'); if(c) c.textContent=t; }
 
 // ══════════════════════════════════════════════════════════════
 // ── MULTI-SECTION SYSTEM ─────────────────────────────────────
@@ -7368,7 +7385,7 @@ function gregExportPDF() {
         for (let i2 = 0; i2 < svgStrings.length; i2++) {
           if (svgStrings[i2]) pairs.push({ svg: svgStrings[i2], lineBoxes: svgLineBoxes[i2] || [] });
         }
-        assemblePDF(pairs);
+        gregAssemblePdf(pairs, 'gregorianisch.pdf');
       }
     });
   });
@@ -7378,12 +7395,25 @@ function gregExportPDF() {
   // kicking off all of them.
   if (!hadPermanentForcedWidthForPDF) window._gregForcedCanvasWidth = null;
 
+}
+
+// Gemeinsame PDF-Erzeugung (A4, Seitenumbruch nie mitten durch ein
+// Notensystem) -- herausgelöst aus gregExportPDF, damit der Choral- UND der
+// Orgel-Tab exakt dieselbe Ausgabe nutzen. pairList: [{svg: <SVG-String>,
+// lineBoxes: [{top,bottom}, ...] in SVG-Koordinaten}].
+function gregAssemblePdf(pairList, filename) {
+  const {jsPDF} = window.jspdf || {};
+  const A4_W_MM = 210, A4_H_MM = 297;
+  const PX_PER_MM = 96 / 25.4;
+  const pageWpx = A4_W_MM * PX_PER_MM;
+  const pageHpx = A4_H_MM * PX_PER_MM;
+  const marginPx = 24;
   function svgStringToCanvas(svgStr, cb) {
     const tmp = document.createElement('div');
     tmp.innerHTML = svgStr;
     const svgEl = tmp.querySelector('svg');
     if (!svgEl) { cb(null,0,0); return; }
-    const w = parseFloat(svgEl.getAttribute('width')) || targetW;
+    const w = parseFloat(svgEl.getAttribute('width')) || 800;
     const h = parseFloat(svgEl.getAttribute('height')) || 400;
     const ns='http://www.w3.org/2000/svg';
     // Bug (2026-07-22, Nutzerbericht per Screenshot): das "Vorsänger-V"
@@ -7411,6 +7441,7 @@ function gregExportPDF() {
     bg.setAttribute('x',0); bg.setAttribute('y',0);
     bg.setAttribute('width',w); bg.setAttribute('height',h);
     bg.setAttribute('fill','#ffffff');
+    bg.setAttribute('stroke','none'); // abcjs-SVGs vererben stroke=currentColor -> sonst schwarzer Rahmen im PDF
     svgEl.insertBefore(bg, svgEl.firstChild);
     const svgStr2='<?xml version="1.0" encoding="UTF-8"?>'+new XMLSerializer().serializeToString(svgEl);
     const blob=new Blob([svgStr2],{type:'image/svg+xml;charset=utf-8'});
@@ -7429,7 +7460,7 @@ function gregExportPDF() {
     img.src=url;
   }
 
-  function assemblePDF(pairList) {
+  (function assemblePDF(pairList) {
     if (!pairList.length) { gregGst('PDF-Fehler: keine Inhalte'); return; }
     const canvases = [];
     let ci = 0;
@@ -7515,11 +7546,11 @@ function gregExportPDF() {
         const hMm = sliceHpx / PX_PER_MM;
         pdf.addImage(png, 'PNG', marginMm, marginMm, wMm, hMm);
       }
-      pdf.save('gregorianisch.pdf');
+      pdf.save(filename || 'notator.pdf');
       gregGst('PDF exportiert (' + pageCount + ' Seite' + (pageCount>1?'n':'') + ')');
     }
     nextCanvas();
-  }
+  })(pairList);
 }
 
 
@@ -7579,7 +7610,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '216';
+const NOTATOR_BUILD_ID = '217';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7708,7 +7739,7 @@ function gregSavePiece() {
 // form can possibly be open yet (nothing has rendered), so it's optional.
 function gregApplyLoadedState(state) {
   gregCloseEditForm();
-  if (typeof clState !== 'undefined') clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null }, (state && state.classic) || {});
+  if (typeof clState !== 'undefined') { clState = Object.assign({}, (state && state.classic) || {}); clNormalizeState(); }
   // NOTE: this file may contain a saved `canvasWidth` from an older
   // version's "remember the page width" feature — deliberately IGNORED
   // here now. That feature was superseded by the render-pass-local
@@ -14089,7 +14120,7 @@ function clCleanText(t) {
 //         {k:'bar', t:'minima'|'minor'|'maior'|'finalis'}
 //         {k:'text', text}   (Silbe ohne Noten, z.B. "iij.", "Ant.", "*")
 function clParseGabc(gabc) {
-  const out = { title: '', annotation: '', mode: '', events: [] };
+  const out = { title: '', subtitle: '', annotation: '', mode: '', events: [] };
   let body = gabc;
   const hdrSplit = gabc.match(/^([\s\S]*?)\n?%%\s*\n?([\s\S]*)$/);
   if (hdrSplit && /:/.test(hdrSplit[1])) {
@@ -14099,6 +14130,7 @@ function clParseGabc(gabc) {
       if (!m) return;
       const key = m[1].toLowerCase(), val = m[2];
       if (key === 'name') out.title = clCleanText(val);
+      else if (key === 'notator-subtitle') out.subtitle = val.replace(/\\n/g, '\n');
       else if (key === 'annotation') out.annotation = out.annotation ? out.annotation + ' ' + val : val;
       else if (key === 'mode') out.mode = val;
     });
@@ -14329,7 +14361,39 @@ function clAbcEscapeLyric(t) {
   return String(t).replace(/[\\_*|%-]/g, m => '\\' + m).replace(/\s+/g, '~');
 }
 
-// opts: { targetPc (0-11 oder null = Original), octave (int), charsPerLine }
+// T:-Zeilen für Titel + (mehrzeiligen) Untertitel. abcjs zeigt die erste
+// T:-Zeile als Titel, jede weitere als Untertitel.
+function clAbcTitleLines(title, subtitle) {
+  const clean = t => String(t || '').replace(/[\r\n]+/g, ' ').replace(/%/g, '\\%').trim();
+  let out = '';
+  const subs = String(subtitle || '').split(/\n/).map(clean).filter(Boolean);
+  if (clean(title)) out += 'T:' + clean(title) + '\n';
+  else if (subs.length) out += 'T: \n';
+  subs.forEach(l => { out += 'T:' + l + '\n'; });
+  return out;
+}
+
+// Ersetzt die T:-Zeilen des ERSTEN Stücks in einem (ggf. von Hand
+// bearbeiteten) ABC-Text durch neue Titel/Untertitel.
+function clApplyHeaderToAbc(abc, title, subtitle) {
+  const tl = clAbcTitleLines(title, subtitle).replace(/\n$/, '');
+  const lines = abc.split('\n');
+  let tuneNo = 0;
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (/^X:/.test(l)) {
+      tuneNo++; out.push(l);
+      if (tuneNo === 1 && tl) out.push(tl); // nie eine Leerzeile einfügen (= Stückende in ABC)
+      continue;
+    }
+    if (tuneNo === 1 && /^T:/.test(l)) continue;
+    out.push(l);
+  }
+  return out.join('\n');
+}
+
+// opts: { targetPc (0-11 oder null = Original), octave (int), charsPerLine, headers:[{title,subtitle}] }
 // liefert { abc, liqChars:[startChar...], info }
 function clGabcToAbc(gabcList, opts) {
   opts = opts || {};
@@ -14427,8 +14491,10 @@ function clGabcToAbc(gabcList, opts) {
 
     // ABC-Text
     let head = 'X:' + (si + 1) + '\n';
-    const title = parsed.title || sec.title || '';
-    if (title) head += 'T:' + title + '\n';
+    const hdr = (opts.headers && opts.headers[si]) || null;
+    const title = hdr ? (hdr.title || '') : (sec.title || parsed.title || '');
+    const subtitle = hdr ? (hdr.subtitle || '') : (sec.subtitle !== undefined ? sec.subtitle : parsed.subtitle) || '';
+    head += clAbcTitleLines(title, subtitle);
     const ann = (parsed.annotation || '').trim();
     const cparts = [];
     if (ann) cparts.push('Ton ' + ann.replace(/;/g, ''));
@@ -14488,37 +14554,66 @@ function clGabcToAbc(gabcList, opts) {
 
 
 // ── 4. Rendern mit abcjs (inkl. verkleinerter Liqueszenz-Noten) ──
+// Jedes Stück (X:-Block, = Abschnitt) bekommt ein eigenes SVG -- abcjs
+// rendert in ein einzelnes Element sonst nur das erste Stück.
 function clRenderAbc(el, abc, liqChars, staffwidth) {
-  if (!window.ABCJS) { el.textContent = 'Notensatz-Bibliothek (abcjs) nicht geladen – Internetverbindung prüfen.'; return null; }
-  const tunes = ABCJS.renderAbc(el, abc, {
-    add_classes: true,
-    staffwidth: staffwidth || 740,
-    paddingleft: 10, paddingright: 10,
-    format: { titlefont: '"Palatino Linotype", Palatino, serif 18', composerfont: 'serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: 'serif 11 italic' },
+  if (!window.ABCJS) { el.textContent = 'Notensatz-Bibliothek (abcjs) nicht geladen – Internetverbindung prüfen.'; return []; }
+  el.innerHTML = '';
+  const starts = [];
+  const re = /^X:/gm; let m;
+  while ((m = re.exec(abc))) starts.push(m.index);
+  if (!starts.length) starts.push(0);
+  const all = [];
+  starts.forEach((st, ti) => {
+    const en = ti + 1 < starts.length ? starts[ti + 1] : abc.length;
+    const part = abc.slice(st, en);
+    const div = document.createElement('div');
+    div.className = 'cl-tune';
+    div.setAttribute('data-tune', ti);
+    div.style.position = 'relative';
+    el.appendChild(div);
+    const tunes = ABCJS.renderAbc(div, part, {
+      add_classes: true,
+      staffwidth: staffwidth || 740,
+      paddingleft: 10, paddingright: 10, paddingbottom: 20,
+      format: { titlefont: '"Palatino Linotype", Palatino, serif 18', subtitlefont: '"Palatino Linotype", Palatino, serif 13', composerfont: 'serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: 'serif 11 italic' },
+    });
+    const liq = new Set((liqChars || []).filter(c => c >= st && c < en).map(c => c - st));
+    if (liq.size) {
+      tunes.forEach(t => (t.lines || []).forEach(line => (line.staff || []).forEach(sf => (sf.voices || []).forEach(v => v.forEach(elem => {
+        if (elem.el_type !== 'note' || elem.rest) return;
+        let hit = false;
+        liq.forEach(c => { if (c >= elem.startChar && c < elem.endChar) hit = true; });
+        if (!hit || !elem.abselem || !elem.abselem.elemset) return;
+        elem.abselem.elemset.forEach(g => {
+          try {
+            const bb = g.getBBox();
+            const cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
+            g.setAttribute('transform', 'translate(' + cx + ',' + cy + ') scale(0.7) translate(' + (-cx) + ',' + (-cy) + ')');
+          } catch (e) {}
+        });
+      })))));
+    }
+    all.push(...tunes);
   });
-  const liq = new Set(liqChars || []);
-  if (liq.size) {
-    tunes.forEach(t => (t.lines || []).forEach(line => (line.staff || []).forEach(st => (st.voices || []).forEach(v => v.forEach(elem => {
-      if (elem.el_type !== 'note' || elem.rest) return;
-      let hit = false;
-      liq.forEach(c => { if (c >= elem.startChar && c < elem.endChar) hit = true; });
-      if (!hit || !elem.abselem || !elem.abselem.elemset) return;
-      elem.abselem.elemset.forEach(g => {
-        try {
-          const bb = g.getBBox();
-          const cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
-          g.setAttribute('transform', 'translate(' + cx + ',' + cy + ') scale(0.7) translate(' + (-cx) + ',' + (-cy) + ')');
-        } catch (e) {}
-      });
-    })))));
-  }
-  return tunes;
+  return all;
 }
 
 // ── 5. Bedienoberfläche des Orgel-Tabs ───────────────────────────
 const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-min.js';
-var clState = { targetPc: null, octave: 0, manualAbc: null };
-let clLast = null;          // letztes Konvertierungsergebnis {abc, liqChars, info}
+// Zustand der klassischen Fassung (wird mit dem Stück gespeichert):
+//  targetPc/octave: Transposition · manualAbc: von Hand bearbeiteter Notentext
+//  width: Layoutbreite in px (null = an Fenster anpassen)
+//  head: null = Titel/Untertitel folgen dem Choral; {title,subtitle} = eigene
+//        Fassung (ab der ersten Änderung im Orgel-Tab, danach keine
+//        automatische Übernahme mehr aus dem Choral)
+//  texts: Freitexte [{id, t (Stück-Index), x, y, text, size}] in SVG-Koordinaten
+var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, texts: [] };
+function clNormalizeState() {
+  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, width: null, head: null, texts: [] }, clState || {});
+  if (!Array.isArray(clState.texts)) clState.texts = [];
+}
+let clLast = null;
 let _clAbcjsLoading = false;
 
 function clEnsureAbcjs(cb) {
@@ -14534,21 +14629,32 @@ function clEnsureAbcjs(cb) {
   document.head.appendChild(s);
 }
 
-// Alle Abschnitte als GABC einsammeln (aktiver Abschnitt = Live-Daten)
+// Alle Abschnitte als GABC einsammeln (aktiver Abschnitt = Live-Daten),
+// samt Titel/Untertitel des Chorals.
 function clCollectGabc() {
   if (window._gregMultiSection && gregSections.length > 1) {
     if (typeof gregSectionFromUI === 'function') gregSectionFromUI();
-    return gregSections.map(sec => ({ gabc: gregBuildGABCFor(sec), title: sec.title || '' }));
+    return gregSections.map(sec => ({ gabc: gregBuildGABCFor(sec), title: sec.title || '', subtitle: sec.subtitle || '' }));
   }
   const t = (document.getElementById('greg-title') || { value: '' }).value;
-  return [{ gabc: gregBuildGABC(), title: t }];
+  const st = (document.getElementById('greg-subtitle') || { value: '' }).value;
+  return [{ gabc: gregBuildGABC(), title: t, subtitle: st }];
 }
 
 function clHasNotes(list) {
   return list.some(x => /\([^)]*[a-mA-M][^)]*\)/.test((x.gabc.split('%%').pop() || '').replace(/\((?:c|f)b?[1-5]\)/g, '')));
 }
 
+function clChantHead() {
+  const l = clCollectGabc();
+  return { title: l[0].title || '', subtitle: l[0].subtitle || '' };
+}
+function clEffectiveHead() {
+  return clState.head ? clState.head : clChantHead();
+}
+
 function clScoreWidth() {
+  if (clState.width) return clState.width;
   const wrap = document.getElementById('cl-score-wrap');
   // clientWidth enthält das Padding (2x12) des Wrappers; abcjs addiert
   // paddingleft/right (2x10) zur staffwidth -> Rest als Sicherheitsrand.
@@ -14560,7 +14666,8 @@ function clBuild() {
   const list = clCollectGabc();
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
-  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)) });
+  const headers = list.map((x, i) => i === 0 ? clEffectiveHead() : { title: x.title, subtitle: x.subtitle });
+  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers });
 }
 
 function clFillTargetSelect() {
@@ -14586,11 +14693,27 @@ function clFillTargetSelect() {
   }
 }
 
-function clRender() {
-  const el = document.getElementById('cl-score');
-  const info = document.getElementById('cl-info');
+function clSyncControls() {
   const octEl = document.getElementById('cl-oct');
   if (octEl) octEl.textContent = (clState.octave > 0 ? '+' : '') + clState.octave;
+  const wr = document.getElementById('cl-width');
+  const wv = document.getElementById('cl-width-val');
+  const w = clScoreWidth();
+  if (wr && document.activeElement !== wr) wr.value = w;
+  if (wv) wv.textContent = clState.width ? w + ' px' : 'Auto (' + w + ' px)';
+  const h = clEffectiveHead();
+  const ti = document.getElementById('cl-title'), su = document.getElementById('cl-subtitle');
+  if (ti && document.activeElement !== ti) ti.value = h.title || '';
+  if (su && document.activeElement !== su) su.value = h.subtitle || '';
+  const hs = document.getElementById('cl-head-state');
+  if (hs) hs.textContent = clState.head ? 'eigene Fassung (unabhängig vom Choral)' : 'wird vom Choral übernommen';
+}
+
+function clRender() {
+  clNormalizeState();
+  const el = document.getElementById('cl-score');
+  const info = document.getElementById('cl-info');
+  clSyncControls();
   if (!el) return;
   let abc, liq = [];
   if (clState.manualAbc) {
@@ -14611,10 +14734,15 @@ function clRender() {
   }
   const src = document.getElementById('cl-src');
   if (src && document.activeElement !== src) src.value = abc;
-  clRenderAbc(el, abc, liq, clScoreWidth());
+  const sw = clScoreWidth();
+  el.style.width = (sw + 40) + 'px';
+  clRenderAbc(el, abc, liq, sw);
+  clDrawTexts();
 }
 
 function clOpen() {
+  clNormalizeState();
+  const cs = document.getElementById('cl-status'); if (cs) cs.textContent = '';
   clEnsureAbcjs(() => { clFillTargetSelect(); clRender(); });
 }
 
@@ -14625,15 +14753,51 @@ function clRegenerate() {
   clRender();
 }
 
-function clSetTarget(v) {
-  clState.targetPc = parseInt(v, 10);
+function clConfirmDropManual() {
+  if (!clState.manualAbc) return true;
+  if (!confirm('Grundton/Oktave neu setzen erzeugt die Noten neu aus dem Choral – deine Handänderungen im Quelltext gehen dabei verloren. Fortfahren?')) return false;
   clState.manualAbc = null;
+  return true;
+}
+
+function clSetTarget(v) {
+  if (!clConfirmDropManual()) { clFillTargetSelect(); return; }
+  clState.targetPc = parseInt(v, 10);
   clRender();
 }
 
 function clSetOctave(delta) {
+  if (!clConfirmDropManual()) return;
   clState.octave = Math.max(-2, Math.min(2, clState.octave + delta));
-  clState.manualAbc = null;
+  clRender();
+}
+
+// ── Layoutbreite (steuert Zeilenumbruch UND Druckgrösse: das PDF skaliert
+//    die Seite auf A4-Breite, d.h. breiter = kleinere Noten, mehr pro Zeile)
+let _clWidthTimer = null;
+function clSetWidth(v) {
+  clState.width = Math.max(300, Math.min(2000, parseInt(v, 10) || 740));
+  clSyncControls();
+  clearTimeout(_clWidthTimer);
+  _clWidthTimer = setTimeout(clRender, 120);
+}
+function clWidthAuto() { clState.width = null; clRender(); }
+
+// ── Titel / Untertitel der klassischen Fassung ─────────────────────
+let _clHeadTimer = null;
+function clHeadInput() {
+  const ti = document.getElementById('cl-title'), su = document.getElementById('cl-subtitle');
+  // Erste Änderung im Orgel-Tab koppelt die Fassung dauerhaft vom Choral ab.
+  clState.head = { title: ti ? ti.value : '', subtitle: su ? su.value : '' };
+  if (clState.manualAbc) clState.manualAbc = clApplyHeaderToAbc(clState.manualAbc, clState.head.title, clState.head.subtitle);
+  clSyncControls();
+  clearTimeout(_clHeadTimer);
+  _clHeadTimer = setTimeout(clRender, 300);
+}
+function clHeadFromChant() {
+  if (!confirm('Titel und Untertitel wieder aus dem Choral übernehmen? Deine eigene Fassung wird dabei ersetzt.')) return;
+  clState.head = null;
+  if (clState.manualAbc) { const h = clChantHead(); clState.manualAbc = clApplyHeaderToAbc(clState.manualAbc, h.title, h.subtitle); }
   clRender();
 }
 
@@ -14662,34 +14826,163 @@ function clCurrentAbc() {
   return clState.manualAbc || (clLast && clLast.abc) || '';
 }
 
+function clFileBase() {
+  const h = clEffectiveHead();
+  return ((h.title || '').trim() || 'Stueck').replace(/[\\/:*?"<>|]+/g, '_');
+}
+
 function clDownloadAbc() {
   const abc = clCurrentAbc();
   if (!abc) return;
-  const title = ((document.getElementById('greg-title') || { value: '' }).value.trim() || 'Stueck').replace(/[^a-zA-Z0-9äöüÄÖÜ_ -]/g, '_');
   const blob = new Blob([abc], { type: 'text/vnd.abc;charset=utf-8' });
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = title + '.abc'; a.click();
+  a.href = URL.createObjectURL(blob); a.download = clFileBase() + '.abc'; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-function clPrint() {
-  const el = document.getElementById('cl-score');
-  if (!el || !el.querySelector('svg')) return;
-  const w = window.open('', '_blank');
-  if (!w) { alert('Pop-up wurde blockiert – bitte Pop-ups für diese Seite erlauben.'); return; }
-  const title = (document.getElementById('greg-title') || { value: '' }).value || 'Notator';
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + title.replace(/</g, '&lt;') +
-    '</title><style>@page{size:A4;margin:14mm}body{margin:0;background:#fff}svg{width:100%;height:auto;display:block;page-break-inside:avoid}</style></head><body>' +
-    el.innerHTML + '</body></html>');
-  w.document.close();
-  w.focus();
-  setTimeout(() => w.print(), 300);
+// ── Freitext ─────────────────────────────────────────────────────
+const CL_SVGNS = 'http://www.w3.org/2000/svg';
+function clTuneSvg(t) {
+  const d = document.querySelector('#cl-score .cl-tune[data-tune="' + t + '"]');
+  return d ? d.querySelector('svg') : null;
+}
+function clSvgPoint(svg, clientX, clientY) {
+  const pt = svg.createSVGPoint(); pt.x = clientX; pt.y = clientY;
+  const m = svg.getScreenCTM();
+  return m ? pt.matrixTransform(m.inverse()) : { x: 0, y: 0 };
+}
+function clSvgHeight(svg) {
+  const vb = svg.viewBox && svg.viewBox.baseVal;
+  return (vb && vb.height) || parseFloat(svg.getAttribute('height')) || svg.getBBox().height;
+}
+
+function clDrawTexts() {
+  document.querySelectorAll('#cl-score text.cl-text').forEach(n => n.remove());
+  clState.texts.forEach(tx => {
+    const svg = clTuneSvg(tx.t || 0) || clTuneSvg(0);
+    if (!svg) return;
+    const el = document.createElementNS(CL_SVGNS, 'text');
+    el.setAttribute('class', 'cl-text');
+    el.setAttribute('data-id', tx.id);
+    el.setAttribute('x', tx.x); el.setAttribute('y', tx.y);
+    el.setAttribute('font-family', '"Palatino Linotype", Palatino, serif');
+    el.setAttribute('font-size', tx.size || 14);
+    el.setAttribute('font-style', 'italic');
+    el.setAttribute('font-weight', 'normal');
+    el.setAttribute('fill', '#7a3b1e');
+    el.setAttribute('stroke', 'none'); // abcjs-SVG-Wurzel hat stroke=currentColor
+    el.style.cursor = 'move';
+    el.style.userSelect = 'none';
+    String(tx.text).split('\n').forEach((line, i) => {
+      const sp = document.createElementNS(CL_SVGNS, 'tspan');
+      sp.setAttribute('x', tx.x);
+      if (i > 0) sp.setAttribute('dy', '1.2em');
+      sp.textContent = line;
+      el.appendChild(sp);
+    });
+    el.addEventListener('pointerdown', ev => clTextDragStart(ev, tx, el, svg));
+    el.addEventListener('dblclick', ev => { ev.preventDefault(); clEditText(tx.id); });
+    el.appendChild(document.createElementNS(CL_SVGNS, 'title')).textContent = 'Ziehen zum Verschieben · Doppelklick zum Bearbeiten/Löschen';
+    svg.appendChild(el);
+  });
+}
+
+function clTextDragStart(ev, tx, el, svg) {
+  ev.preventDefault();
+  const p0 = clSvgPoint(svg, ev.clientX, ev.clientY);
+  const ox = tx.x, oy = tx.y;
+  const h = clSvgHeight(svg);
+  const w = parseFloat(svg.getAttribute('width')) || 800;
+  let tw = 0; try { tw = el.getBBox().width; } catch (e) {}
+  el.setPointerCapture && el.setPointerCapture(ev.pointerId);
+  const move = e => {
+    const p = clSvgPoint(svg, e.clientX, e.clientY);
+    tx.x = Math.round(Math.max(2, Math.min(w - tw - 2, ox + p.x - p0.x)));
+    tx.y = Math.round(Math.max(10, Math.min(h - 4, oy + p.y - p0.y)));
+    el.setAttribute('x', tx.x); el.setAttribute('y', tx.y);
+    el.querySelectorAll('tspan').forEach(sp => sp.setAttribute('x', tx.x));
+  };
+  const up = () => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); };
+  el.addEventListener('pointermove', move);
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+}
+
+function clAddText() {
+  const text = window.prompt('Freitext eingeben (\\n für Zeilenumbruch):', '');
+  if (!text || !text.trim()) return;
+  // Mitte des sichtbaren Bereichs im passenden Stück-SVG
+  const wrap = document.getElementById('cl-score-wrap');
+  const r = wrap.getBoundingClientRect();
+  const cy = r.top + Math.min(r.height / 2, 120), cx = r.left + Math.min(r.width / 2, 300);
+  let t = 0, svg = clTuneSvg(0);
+  document.querySelectorAll('#cl-score .cl-tune').forEach(d => {
+    const b = d.getBoundingClientRect();
+    if (cy >= b.top && cy <= b.bottom) { t = parseInt(d.getAttribute('data-tune'), 10); svg = d.querySelector('svg'); }
+  });
+  if (!svg) return;
+  const p = clSvgPoint(svg, cx, cy);
+  clState.texts.push({ id: 'ct' + Date.now(), t, x: Math.round(p.x), y: Math.round(p.y), text: text.replace(/\\n/g, '\n'), size: 14 });
+  clDrawTexts();
+}
+
+function clEditText(id) {
+  const tx = clState.texts.find(x => x.id === id);
+  if (!tx) return;
+  const v = window.prompt('Freitext bearbeiten (leer lassen = löschen, \\n = Zeilenumbruch):', tx.text.replace(/\n/g, '\\n'));
+  if (v === null) return;
+  if (!v.trim()) clState.texts = clState.texts.filter(x => x.id !== id);
+  else tx.text = v.replace(/\\n/g, '\n');
+  clDrawTexts();
+}
+
+// ── PDF-Export: identische Pipeline wie beim Choral (gregAssemblePdf) ──
+function clExportPDF() {
+  const {jsPDF} = window.jspdf || {};
+  if (!jsPDF) {
+    gregGst('jsPDF lädt…');
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', function() { clExportPDF(); });
+    return;
+  }
+  const printTexts = !!(document.getElementById('cl-pdf-print-texts') || {}).checked;
+  const tunesEls = Array.from(document.querySelectorAll('#cl-score .cl-tune'));
+  const pairs = [];
+  tunesEls.forEach(d => {
+    const svg = d.querySelector('svg');
+    if (!svg) return;
+    // Zeilen-Zonen (Notensystem + Text) -> Seitenumbruch nie mittendurch
+    const zones = {};
+    svg.querySelectorAll('[class*="abcjs-l"]').forEach(n => {
+      const m = String(n.getAttribute('class') || '').match(/abcjs-l(\d+)/);
+      if (!m) return;
+      try {
+        const bb = n.getBBox();
+        if (!bb.height && !bb.width) return;
+        const z = zones[m[1]] || (zones[m[1]] = { top: Infinity, bottom: -Infinity });
+        z.top = Math.min(z.top, bb.y); z.bottom = Math.max(z.bottom, bb.y + bb.height);
+      } catch (e) {}
+    });
+    const lineBoxes = Object.values(zones).filter(z => isFinite(z.top));
+    if (printTexts) svg.querySelectorAll('text.cl-text').forEach(t => { try { const bb = t.getBBox(); lineBoxes.push({ top: bb.y, bottom: bb.y + bb.height }); } catch (e) {} });
+    const clone = svg.cloneNode(true);
+    clone.querySelectorAll('text.cl-text').forEach(t => { if (!printTexts) t.remove(); else { t.setAttribute('fill', '#000'); t.querySelectorAll('title').forEach(x => x.remove()); } });
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    const w = (vb && vb.width) || svg.getBoundingClientRect().width;
+    const h = (vb && vb.height) || svg.getBoundingClientRect().height;
+    clone.setAttribute('width', w); clone.setAttribute('height', h);
+    clone.setAttribute('xmlns', CL_SVGNS);
+    clone.removeAttribute('style');
+    pairs.push({ svg: new XMLSerializer().serializeToString(clone), lineBoxes });
+  });
+  if (!pairs.length) { gregGst('PDF: keine Noten vorhanden'); return; }
+  gregGst('PDF wird erstellt…');
+  gregAssemblePdf(pairs, clFileBase() + '_Orgel.pdf');
 }
 
 let _clResizeTimer = null;
 window.addEventListener('resize', () => {
   const p = document.getElementById('classic-panel');
-  if (!p || p.style.display === 'none') return;
+  if (!p || p.style.display === 'none' || clState.width) return;
   clearTimeout(_clResizeTimer);
   _clResizeTimer = setTimeout(clRender, 250);
 });
