@@ -387,6 +387,7 @@ input[type=file]{display:none}
         <input type="file" id="greg-lib-import-in" accept=".json" style="display:none" onchange="gregLibImportFile(this)">
         <button class="b" onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (benötigt API-Key rechts)">&#128196; PDF lesen</button>
         <input type="file" id="greg-pdf-in" accept=".pdf" style="display:none" onchange="gregLoadPDF(this)">
+        <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:10px;padding:2px 6px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
         <button id="greg-pdf-panel-toggle" class="b" onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:2px 6px;display:none" title="Original-PDF-Panel ein-/ausblenden">&#128196; Original</button>
         <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird nicht gespeichert" style="width:150px;font-size:9px;padding:1px 4px;background:#0a1406;color:#6b8a60;border:1px solid #2a3820;outline:none">
       </div>
@@ -5174,6 +5175,220 @@ async function omrCorrectAllSystems(lines, items, statusFn) {
 }
 
 
+// GregoBase's exported GABC header uses its OWN keys (mode/office-part/
+// book/transcriber/...), none of which Notator's importer recognises (it
+// only understands annotation:/notator-subtitle:/name:/drop-cap:). Maps the
+// two the user wants surfaced: "mode" becomes the on-score annotation
+// (e.g. "2"), "book" becomes the subtitle. "office-part" is deliberately
+// ignored (not mapped to anything), per explicit request.
+function gregMapGregoBaseHeaderFields(gabcStr) {
+  if (!gabcStr.includes('%%')) return gabcStr;
+  const si = gabcStr.indexOf('%%');
+  const header = gabcStr.substring(0, si);
+  const body = gabcStr.substring(si);
+  const modeM = header.match(/^\s*mode\s*:\s*(.*?);?\s*$/im);
+  const bookM = header.match(/^\s*book\s*:\s*(.*?);?\s*$/im);
+  let extra = '';
+  if (modeM && modeM[1].trim()) extra += 'annotation: ' + modeM[1].trim() + ';\n';
+  if (bookM && bookM[1].trim()) extra += 'notator-subtitle: ' + bookM[1].trim() + ';\n';
+  // GregoBase's plain gabc export never includes "drop-cap: auto" even when
+  // the piece is printed with one (confirmed: this test piece's real page
+  // clearly shows a decorative "A" opening "Audi", but the downloaded gabc
+  // has no drop-cap header at all) — gregImportGABCString's bidirectional
+  // toggle (see its own comment, Runde 61 fix) would otherwise explicitly
+  // UNCHECK the box on every GregoBase import. Per explicit request, always
+  // request a drop-cap for GregoBase imports; easy to uncheck by hand for
+  // the rare piece that genuinely has none.
+  extra += 'drop-cap: auto;\n';
+  return header.trim() + '\n' + extra + body;
+}
+
+async function gregSearchGregoBase(incipit) {
+  // CORRECTION (Session 17): an earlier version of this comment assumed
+  // the CORS block only applied to file:// (a "null" origin). Real-world
+  // testing from a proper http://localhost server showed the SAME
+  // "blocked by CORS policy: No 'Access-Control-Allow-Origin' header"
+  // error — gregobase.selapa.net simply never sends that header for ANY
+  // foreign browser origin, not just file://. That's normal, correctly-
+  // behaving CORS on their end (they never opted their pages into
+  // cross-site JS fetches), not a bug and not something any client-side
+  // code or "just use a real server" trick can work around directly.
+  // The actual fix: Notator_starten.bat now launches notator_server.py
+  // instead of plain `python -m http.server` — it serves the files AND
+  // proxies these two GregoBase endpoints server-side (a Python-to-
+  // GregoBase request is not a browser fetch, so CORS never applies to
+  // it), returning the result to the page as an ordinary same-origin
+  // request. A file:// page still can't reach even that proxy (no
+  // server at all is running under file://), so the guard below stays.
+  if (location.protocol === 'file:') {
+    throw new Error('GregoBase-Abgleich übersprungen: Datei läuft als file:// (per Doppelklick geöffnet) — bitte über Notator_starten.bat starten (echter lokaler Server inkl. GregoBase-Proxy, nötig weil gregobase.selapa.net keine direkten Browser-Zugriffe von fremden Seiten erlaubt).');
+  }
+  const firstLetter = incipit.normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0].toUpperCase();
+  if (!/[A-Z]/.test(firstLetter)) return [];
+  const gbProxyBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://notator-gregobase-proxy.matthias-krohn.workers.dev';
+  const resp = await fetch(gbProxyBase + '/_gregobase_incipit?letter=' + firstLetter);
+  if (!resp.ok) throw new Error('GregoBase HTTP ' + resp.status);
+  const html = await resp.text();
+  const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const incipitNorm = norm(incipit);
+  const matches = [];
+  // Parsed via the browser's own HTML parser rather than a hand-written
+  // regex — a hand-written regex has to guess the exact raw tag
+  // structure (attribute order, quote style, whitespace), and an
+  // earlier version of this that was built by eyeballing a markdown-
+  // converted preview of the page (not the real HTML) turned out not
+  // to match at all, silently returning zero matches for every real
+  // search. DOMParser sidesteps that entirely: whatever the actual
+  // markup is, the browser parses it the same way it would for
+  // display, and querySelectorAll finds every real link reliably.
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const seenIds = new Set();
+  doc.querySelectorAll('a[href*="chant.php?id="]').forEach(a => {
+    const idMatch = (a.getAttribute('href') || '').match(/id=(\d+)/);
+    if (!idMatch) return;
+    const id = idMatch[1];
+    if (seenIds.has(id)) return;
+    const title = (a.textContent || '').trim();
+    if (!title) return;
+    // The source name typically follows the link as plain text in
+    // parentheses, e.g. "</a> (Solesmes)" — walk a couple of sibling
+    // nodes forward to find it, tolerant of whatever's actually there.
+    let trailing = '';
+    let node = a.nextSibling;
+    for (let i = 0; i < 4 && node; i++, node = node.nextSibling) {
+      trailing += node.textContent || '';
+    }
+    const srcMatch = trailing.match(/\(([^)]*)\)/);
+    const source = srcMatch ? srcMatch[1] : '';
+    if (norm(title).startsWith(incipitNorm) || incipitNorm.startsWith(norm(title))) {
+      seenIds.add(id);
+      matches.push({ id, title, source, url: 'https://gregobase.selapa.net/chant.php?id=' + id });
+    }
+  });
+  // Sort by relevance instead of leaving GregoBase's raw page order (which
+  // is alphabetical-by-letter, not by closeness to OUR incipit). This
+  // matters especially when the incipit is short (a single word, or a
+  // Vision-truncated one) — many unrelated titles can share just the
+  // first word (e.g. "Audi" matches "Audiam Domine" AND "Audi benigne
+  // Conditor" equally under plain startsWith). Exact normalized matches
+  // first, then whichever title's length is CLOSEST to the incipit's own
+  // length (a near-exact-length match is far more likely to be the same
+  // piece than one that's much longer or, unusually, shorter).
+  matches.sort((a, b) => {
+    const an = norm(a.title), bn = norm(b.title);
+    const aExact = an === incipitNorm ? 0 : 1;
+    const bExact = bn === incipitNorm ? 0 : 1;
+    if (aExact !== bExact) return aExact - bExact;
+    return Math.abs(an.length - incipitNorm.length) - Math.abs(bn.length - incipitNorm.length);
+  });
+  console.log('GregoBase-Suche für "' + incipit + '" (Buchstabe ' + firstLetter + '): ' + matches.length + ' Treffer nach Relevanz sortiert.');
+  // No cap here anymore — the modal itself paginates (see
+  // gregPickGregoBaseMatchModal's GREG_GB_PAGE_SIZE) so a long list is
+  // still browsable via "weitere Treffer laden" instead of silently
+  // hiding genuine matches beyond a fixed count.
+  return matches;
+}
+
+function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel) {
+  const GREG_GB_PAGE_SIZE = 8; // shown per page — matches the old hard cap, but more can be loaded on request
+  return new Promise(resolve => {
+    showModal('📚 Treffer in GregoBase gefunden', 'Für "' + incipit + '" wurden folgende Einträge in der öffentlichen GregoBase-Chorendatenbank gefunden — bei Übereinstimmung wird die dort bereits geprüfte GABC-Transkription direkt übernommen (zuverlässiger als Bilderkennung). Zum Prüfen anklicken, dann auswählen oder ablehnen.', []);
+    const bEl = document.getElementById('modal-btns');
+    bEl.style.flexDirection = 'column';
+    bEl.style.alignItems = 'stretch';
+    let shown = 0;
+    const listEl = document.createElement('div');
+    bEl.appendChild(listEl);
+    const moreWrap = document.createElement('div');
+    bEl.appendChild(moreWrap);
+    function renderMoreRow() {
+      moreWrap.innerHTML = '';
+      const remaining = matches.length - shown;
+      if (remaining <= 0) return;
+      const moreBtn = document.createElement('button');
+      moreBtn.className = 'b';
+      moreBtn.style.cssText = 'font-style:italic';
+      moreBtn.textContent = 'Weitere ' + Math.min(remaining, GREG_GB_PAGE_SIZE) + ' von ' + remaining + ' Treffern laden…';
+      moreBtn.onclick = () => { renderNextPage(); };
+      moreWrap.appendChild(moreBtn);
+    }
+    function renderNextPage() {
+      const page = matches.slice(shown, shown + GREG_GB_PAGE_SIZE);
+      page.forEach(m => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0';
+        const link = document.createElement('a');
+        link.href = m.url; link.target = '_blank'; link.rel = 'noopener';
+        link.textContent = '🔗';
+        link.style.cssText = 'text-decoration:none;font-size:13px;flex-shrink:0';
+        link.title = 'In GregoBase ansehen (neuer Tab)';
+        const btn = document.createElement('button');
+        btn.className = 'b';
+        btn.style.cssText = 'flex:1;text-align:left';
+        btn.textContent = m.title + ' — ' + (m.source || 'unbekannte Quelle') + ' (#' + m.id + ')';
+        btn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve(m); };
+        row.appendChild(link); row.appendChild(btn);
+        listEl.appendChild(row);
+      });
+      shown += page.length;
+      renderMoreRow();
+    }
+    renderNextPage();
+    const noneBtn = document.createElement('button');
+    noneBtn.className = 'b';
+    noneBtn.textContent = noneBtnLabel || 'Keine davon — mit Bilderkennung fortfahren';
+    noneBtn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve(null); };
+    bEl.appendChild(noneBtn);
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'b';
+    cancelBtn.textContent = 'Abbrechen';
+    cancelBtn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve('__CANCEL__'); };
+    bEl.appendChild(cancelBtn);
+  });
+}
+
+// Eigenständiger "Song importieren"-Button (Runde 2026-09-29, Nutzerwunsch):
+// bisher war der GregoBase-Abgleich nur ein Zwischenschritt innerhalb von
+// "PDF lesen" (gregLoadPDF) -- dafür musste immer erst ein PDF ausgewählt
+// werden, nur damit der Titel daraus gelesen und bei GregoBase abgefragt
+// wird. Diese Funktion macht genau den GregoBase-Teil (Titel eingeben ->
+// suchen -> Treffer bestätigen -> GABC laden -> importieren) direkt
+// aufrufbar, ganz ohne PDF. Nutzt bewusst dieselben, aus gregLoadPDF
+// herausgelösten Hilfsfunktionen (gregSearchGregoBase/
+// gregMapGregoBaseHeaderFields/gregPickGregoBaseMatchModal) statt eigener
+// Kopien, damit ein künftiger Fix an der GregoBase-Anbindung automatisch
+// für beide Wege gilt.
+async function gregImportSongFromGregoBase() {
+  const incipit = (window.prompt('Titel / Textanfang (Incipit) des Stücks, wird in GregoBase gesucht:', '') || '').trim();
+  if (!incipit) return;
+  try {
+    gregGst('Suche "' + incipit + '" in GregoBase…');
+    const matches = await gregSearchGregoBase(incipit);
+    if (!matches.length) { gregGst('Kein GregoBase-Treffer für "' + incipit + '".'); return; }
+    const picked = await gregPickGregoBaseMatchModal(matches, incipit, 'Keine davon — abbrechen');
+    if (!picked || picked === '__CANCEL__') { gregGst('Abgebrochen.'); return; }
+    gregGst('Lade GABC von GregoBase (#' + picked.id + ')…');
+    const gbProxyBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://notator-gregobase-proxy.matthias-krohn.workers.dev';
+    const dlResp = await fetch(gbProxyBase + '/_gregobase_download?id=' + picked.id + '&format=gabc&elem=1');
+    if (!dlResp.ok) throw new Error('Download HTTP ' + dlResp.status);
+    let gbGabc = (await dlResp.text()).trim();
+    if (!gbGabc) { gregGst('GregoBase-Download war leer.'); return; }
+    gbGabc = gregMapGregoBaseHeaderFields(gbGabc);
+    const previousEntries = gregEntries;
+    gregImportGABCString(gbGabc, { deferRender: true });
+    if (gregEntries.length > 400) { // gleiche Sicherheitsgrenze wie beim PDF-Weg
+      const proceed = await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Der GregoBase-Download ergibt ' + gregEntries.length + ' Einträge — ungewöhnlich viel. Trotzdem laden?');
+      if (!proceed) { gregEntries = previousEntries; gregGst('Abgebrochen.'); return; }
+    }
+    gregRefreshListNoRender();
+    gregRender();
+    gregGst('Aus GregoBase geladen: "' + picked.title + '" (' + picked.source + ', #' + picked.id + ') — ' + gregEntries.length + ' Einträge. Bitte trotzdem gegenprüfen.');
+  } catch (err) {
+    gregGst('GregoBase-Fehler: ' + err.message);
+    console.error('gregImportSongFromGregoBase:', err);
+  }
+}
+
 async function gregLoadPDF(input) {
   const file = input.files[0];
   if (!file) return;
@@ -5466,177 +5681,6 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
     // person to confirm (with a link to the actual GregoBase page to
     // verify), exactly as requested; declining or finding no matches falls
     // straight through to the normal image-recognition pipeline below.
-    // GregoBase's exported GABC header uses its OWN keys (mode/office-part/
-// book/transcriber/...), none of which Notator's importer recognises (it
-// only understands annotation:/notator-subtitle:/name:/drop-cap:). Maps the
-// two the user wants surfaced: "mode" becomes the on-score annotation
-// (e.g. "2"), "book" becomes the subtitle. "office-part" is deliberately
-// ignored (not mapped to anything), per explicit request.
-function gregMapGregoBaseHeaderFields(gabcStr) {
-  if (!gabcStr.includes('%%')) return gabcStr;
-  const si = gabcStr.indexOf('%%');
-  const header = gabcStr.substring(0, si);
-  const body = gabcStr.substring(si);
-  const modeM = header.match(/^\s*mode\s*:\s*(.*?);?\s*$/im);
-  const bookM = header.match(/^\s*book\s*:\s*(.*?);?\s*$/im);
-  let extra = '';
-  if (modeM && modeM[1].trim()) extra += 'annotation: ' + modeM[1].trim() + ';\n';
-  if (bookM && bookM[1].trim()) extra += 'notator-subtitle: ' + bookM[1].trim() + ';\n';
-  // GregoBase's plain gabc export never includes "drop-cap: auto" even when
-  // the piece is printed with one (confirmed: this test piece's real page
-  // clearly shows a decorative "A" opening "Audi", but the downloaded gabc
-  // has no drop-cap header at all) — gregImportGABCString's bidirectional
-  // toggle (see its own comment, Runde 61 fix) would otherwise explicitly
-  // UNCHECK the box on every GregoBase import. Per explicit request, always
-  // request a drop-cap for GregoBase imports; easy to uncheck by hand for
-  // the rare piece that genuinely has none.
-  extra += 'drop-cap: auto;\n';
-  return header.trim() + '\n' + extra + body;
-}
-
-async function gregSearchGregoBase(incipit) {
-      // CORRECTION (Session 17): an earlier version of this comment assumed
-      // the CORS block only applied to file:// (a "null" origin). Real-world
-      // testing from a proper http://localhost server showed the SAME
-      // "blocked by CORS policy: No 'Access-Control-Allow-Origin' header"
-      // error — gregobase.selapa.net simply never sends that header for ANY
-      // foreign browser origin, not just file://. That's normal, correctly-
-      // behaving CORS on their end (they never opted their pages into
-      // cross-site JS fetches), not a bug and not something any client-side
-      // code or "just use a real server" trick can work around directly.
-      // The actual fix: Notator_starten.bat now launches notator_server.py
-      // instead of plain `python -m http.server` — it serves the files AND
-      // proxies these two GregoBase endpoints server-side (a Python-to-
-      // GregoBase request is not a browser fetch, so CORS never applies to
-      // it), returning the result to the page as an ordinary same-origin
-      // request. A file:// page still can't reach even that proxy (no
-      // server at all is running under file://), so the guard below stays.
-      if (location.protocol === 'file:') {
-        throw new Error('GregoBase-Abgleich übersprungen: Datei läuft als file:// (per Doppelklick geöffnet) — bitte über Notator_starten.bat starten (echter lokaler Server inkl. GregoBase-Proxy, nötig weil gregobase.selapa.net keine direkten Browser-Zugriffe von fremden Seiten erlaubt).');
-      }
-      const firstLetter = incipit.normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0].toUpperCase();
-      if (!/[A-Z]/.test(firstLetter)) return [];
-      const gbProxyBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://notator-gregobase-proxy.matthias-krohn.workers.dev';
-      const resp = await fetch(gbProxyBase + '/_gregobase_incipit?letter=' + firstLetter);
-      if (!resp.ok) throw new Error('GregoBase HTTP ' + resp.status);
-      const html = await resp.text();
-      const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-      const incipitNorm = norm(incipit);
-      const matches = [];
-      // Parsed via the browser's own HTML parser rather than a hand-written
-      // regex — a hand-written regex has to guess the exact raw tag
-      // structure (attribute order, quote style, whitespace), and an
-      // earlier version of this that was built by eyeballing a markdown-
-      // converted preview of the page (not the real HTML) turned out not
-      // to match at all, silently returning zero matches for every real
-      // search. DOMParser sidesteps that entirely: whatever the actual
-      // markup is, the browser parses it the same way it would for
-      // display, and querySelectorAll finds every real link reliably.
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const seenIds = new Set();
-      doc.querySelectorAll('a[href*="chant.php?id="]').forEach(a => {
-        const idMatch = (a.getAttribute('href') || '').match(/id=(\d+)/);
-        if (!idMatch) return;
-        const id = idMatch[1];
-        if (seenIds.has(id)) return;
-        const title = (a.textContent || '').trim();
-        if (!title) return;
-        // The source name typically follows the link as plain text in
-        // parentheses, e.g. "</a> (Solesmes)" — walk a couple of sibling
-        // nodes forward to find it, tolerant of whatever's actually there.
-        let trailing = '';
-        let node = a.nextSibling;
-        for (let i = 0; i < 4 && node; i++, node = node.nextSibling) {
-          trailing += node.textContent || '';
-        }
-        const srcMatch = trailing.match(/\(([^)]*)\)/);
-        const source = srcMatch ? srcMatch[1] : '';
-        if (norm(title).startsWith(incipitNorm) || incipitNorm.startsWith(norm(title))) {
-          seenIds.add(id);
-          matches.push({ id, title, source, url: 'https://gregobase.selapa.net/chant.php?id=' + id });
-        }
-      });
-      // Sort by relevance instead of leaving GregoBase's raw page order (which
-      // is alphabetical-by-letter, not by closeness to OUR incipit). This
-      // matters especially when the incipit is short (a single word, or a
-      // Vision-truncated one) — many unrelated titles can share just the
-      // first word (e.g. "Audi" matches "Audiam Domine" AND "Audi benigne
-      // Conditor" equally under plain startsWith). Exact normalized matches
-      // first, then whichever title's length is CLOSEST to the incipit's own
-      // length (a near-exact-length match is far more likely to be the same
-      // piece than one that's much longer or, unusually, shorter).
-      matches.sort((a, b) => {
-        const an = norm(a.title), bn = norm(b.title);
-        const aExact = an === incipitNorm ? 0 : 1;
-        const bExact = bn === incipitNorm ? 0 : 1;
-        if (aExact !== bExact) return aExact - bExact;
-        return Math.abs(an.length - incipitNorm.length) - Math.abs(bn.length - incipitNorm.length);
-      });
-      console.log('GregoBase-Suche für "' + incipit + '" (Buchstabe ' + firstLetter + '): ' + matches.length + ' Treffer nach Relevanz sortiert.');
-      // No cap here anymore — the modal itself paginates (see
-      // gregPickGregoBaseMatchModal's GREG_GB_PAGE_SIZE) so a long list is
-      // still browsable via "weitere Treffer laden" instead of silently
-      // hiding genuine matches beyond a fixed count.
-      return matches;
-    }
-
-    function gregPickGregoBaseMatchModal(matches) {
-      const GREG_GB_PAGE_SIZE = 8; // shown per page — matches the old hard cap, but more can be loaded on request
-      return new Promise(resolve => {
-        showModal('📚 Treffer in GregoBase gefunden', 'Für "' + chosen.incipit + '" wurden folgende Einträge in der öffentlichen GregoBase-Chorendatenbank gefunden — bei Übereinstimmung wird die dort bereits geprüfte GABC-Transkription direkt übernommen (zuverlässiger als Bilderkennung). Zum Prüfen anklicken, dann auswählen oder ablehnen.', []);
-        const bEl = document.getElementById('modal-btns');
-        bEl.style.flexDirection = 'column';
-        bEl.style.alignItems = 'stretch';
-        let shown = 0;
-        const listEl = document.createElement('div');
-        bEl.appendChild(listEl);
-        const moreWrap = document.createElement('div');
-        bEl.appendChild(moreWrap);
-        function renderMoreRow() {
-          moreWrap.innerHTML = '';
-          const remaining = matches.length - shown;
-          if (remaining <= 0) return;
-          const moreBtn = document.createElement('button');
-          moreBtn.className = 'b';
-          moreBtn.style.cssText = 'font-style:italic';
-          moreBtn.textContent = 'Weitere ' + Math.min(remaining, GREG_GB_PAGE_SIZE) + ' von ' + remaining + ' Treffern laden…';
-          moreBtn.onclick = () => { renderNextPage(); };
-          moreWrap.appendChild(moreBtn);
-        }
-        function renderNextPage() {
-          const page = matches.slice(shown, shown + GREG_GB_PAGE_SIZE);
-          page.forEach(m => {
-            const row = document.createElement('div');
-            row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0';
-            const link = document.createElement('a');
-            link.href = m.url; link.target = '_blank'; link.rel = 'noopener';
-            link.textContent = '🔗';
-            link.style.cssText = 'text-decoration:none;font-size:13px;flex-shrink:0';
-            link.title = 'In GregoBase ansehen (neuer Tab)';
-            const btn = document.createElement('button');
-            btn.className = 'b';
-            btn.style.cssText = 'flex:1;text-align:left';
-            btn.textContent = m.title + ' — ' + (m.source || 'unbekannte Quelle') + ' (#' + m.id + ')';
-            btn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve(m); };
-            row.appendChild(link); row.appendChild(btn);
-            listEl.appendChild(row);
-          });
-          shown += page.length;
-          renderMoreRow();
-        }
-        renderNextPage();
-        const noneBtn = document.createElement('button');
-        noneBtn.className = 'b';
-        noneBtn.textContent = 'Keine davon — mit Bilderkennung fortfahren';
-        noneBtn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve(null); };
-        bEl.appendChild(noneBtn);
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'b';
-        cancelBtn.textContent = 'Abbrechen — weder GregoBase noch Bilderkennung';
-        cancelBtn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve('__CANCEL__'); };
-        bEl.appendChild(cancelBtn);
-      });
-    }
 
     try {
       console.log('GregoBase-Abgleich für Stück ' + chosen.index + ' ("' + chosen.incipit + '") gestartet…');
@@ -5644,7 +5688,7 @@ async function gregSearchGregoBase(incipit) {
       const gbMatches = await gregSearchGregoBase(chosen.incipit);
       if (gbMatches.length) {
         console.log('GregoBase: ' + gbMatches.length + ' Treffer angezeigt, warte auf Auswahl des Nutzers…');
-        const picked = await gregPickGregoBaseMatchModal(gbMatches);
+        const picked = await gregPickGregoBaseMatchModal(gbMatches, chosen.incipit);
         if (picked === '__CANCEL__') {
           console.log('GregoBase: Nutzer hat komplett abgebrochen (weder Import noch Bilderkennung) für Stück ' + chosen.index + '.');
           gregGst('Abgebrochen.');
@@ -7480,7 +7524,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '213';
+const NOTATOR_BUILD_ID = '214';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
