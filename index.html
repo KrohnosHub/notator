@@ -7012,6 +7012,12 @@ function gregImportGABCString(gabcStr, opts) {
         // (gluedDirectiveMatch, the plain /<i>/ test) would silently never
         // match if read from .text. originalText is untouched by that scan.
         let rawText = lyric.originalText || lyric.text;
+        // Fix 2026-09-30 (Selbsttest "Alleluia Pfingsten", Nutzer-Report
+        // "* * ter"): der führende "*" wurde oben bereits als eigener
+        // 'special'-Eintrag übernommen -- exsurge lässt ihn aber (anders als
+        // bei Directive-Notationen) im Silbentext stehen ("* ter"). Ohne
+        // Abschneiden exportierte Notator den Stern darum doppelt.
+        if (hasLeadingAsterisk) rawText = rawText.replace(/^\s*\*\s*/, '');
         let italic = false;
         // GLUED-DIRECTIVE FIX (2026-08-10): a source like GregoBase's
         // "<i>Ps.</i> Can(ehg)" (no "()" after the closing tag) has NO note
@@ -7614,7 +7620,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '218';
+const NOTATOR_BUILD_ID = '219';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7741,8 +7747,24 @@ function gregSavePiece() {
 // the sessionStorage autosave restore, so both stay in sync automatically.
 // closeEditFormFirst: also called from the autosave path, where no edit
 // form can possibly be open yet (nothing has rendered), so it's optional.
+// Bereinigt Stücke, die vor Build 219 mit dem Doppel-Stern-Fehler
+// importiert und gespeichert wurden ('special' "*" + Silbe "* ter").
+function gregFixDoubleAsterisk(entries) {
+  if (!Array.isArray(entries)) return;
+  for (let i = 0; i < entries.length - 1; i++) {
+    const a = entries[i], b = entries[i + 1];
+    if (a && a.type === 'special' && (a.text || '').trim() === '*' && b && b.type === 'note' && /^\s*\*\s*/.test(b.syllable || '')) {
+      b.syllable = b.syllable.replace(/^\s*\*\s*/, '');
+    }
+  }
+}
+
 function gregApplyLoadedState(state) {
   gregCloseEditForm();
+  if (state) {
+    gregFixDoubleAsterisk(state.entries);
+    (state.sections || []).forEach(sec => gregFixDoubleAsterisk(sec && sec.entries));
+  }
   if (typeof clState !== 'undefined') { clState = Object.assign({}, (state && state.classic) || {}); clNormalizeState(); }
   // NOTE: this file may contain a saved `canvasWidth` from an older
   // version's "remember the page width" feature — deliberately IGNORED
@@ -14365,6 +14387,9 @@ function clAbcEscapeLyric(t) {
   return String(t).replace(/[\\_*|%-]/g, m => '\\' + m).replace(/\s+/g, '~');
 }
 
+// Unsichtbare Markerzeichen für die Platzierung notenloser Texte
+const CL_MARK_SYL = '\u2060', CL_MARK_BAR = '\u200B';
+
 // T:-Zeilen für Titel + (mehrzeiligen) Untertitel. abcjs zeigt die erste
 // T:-Zeile als Titel, jede weitere als Untertitel.
 function clAbcTitleLines(title, subtitle) {
@@ -14531,11 +14556,22 @@ function clGabcToAbc(gabcList, opts) {
         // Platzhalterbreite (abcjs: y<n>, ca. 8 px je Einheit) so gross, dass
         // der Text weder mit der vorigen noch der folgenden Silbe kollidiert
         // (Silbentext steht mittig unter seiner Note).
-        const neighbourChars = u.kind === 'syl' ? (u.text || '').length : lastLyricLen;
-        const annTxt = (u.ann || []).map((a, ai) => {
-          const px = a.length * 7.5 + (ai === 0 ? neighbourChars * 4 : 0) + 10;
-          return '"_' + a.replace(/"/g, "'") + '"y' + Math.max(1, Math.round(px / 8));
-        }).join(' ');
+        // Position wie im Choralsatz: vor einer Silbe (z.B. "Ant.") steht der
+        // Text direkt links vor dem Silbentext; vor einem Trennstrich (z.B.
+        // "iij.") mittig unter dem Strich. Die Art wird per unsichtbarem
+        // Markerzeichen an clPlaceLyricAnnotations() übergeben.
+        const annJoined = (u.ann || []).join(' ').replace(/"/g, "'");
+        let annTxt = '', annAfter = '';
+        if (annJoined) {
+          const tw = annJoined.length * 7.5;
+          if (u.kind === 'syl') {
+            annTxt = '"_' + CL_MARK_SYL + annJoined + '"y' + Math.max(1, Math.round((tw + 12) / 8));
+          } else {
+            const px = tw / 2 + lastLyricLen * 4 + 6;
+            annTxt = '"_' + CL_MARK_BAR + annJoined + '"y' + Math.max(1, Math.round(px / 8));
+            annAfter = ' y' + Math.max(1, Math.round((tw / 2 + 6) / 8));
+          }
+        }
         if (u.kind === 'syl') {
           music += ' ';
           if (annTxt) music += annTxt + ' ';
@@ -14568,6 +14604,7 @@ function clGabcToAbc(gabcList, opts) {
           if (annTxt) music += ' ' + annTxt;
           if (u.t === 'minima' && !u.final) music += ' !breath!y';
           else { music += ' ' + (u.final ? '|]' : u.t === 'minor' ? '|' : '||'); measureAcc = {}; }
+          if (annAfter && !u.final) music += annAfter;
         } else if (u.kind === 'ann') {
           music += ' ' + annTxt;
         }
@@ -14634,21 +14671,45 @@ function clRenderAbc(el, abc, liqChars, staffwidth) {
 // der Textzeile desselben Systems und gibt ihnen dieselbe Schrift wie der
 // gesungene Text -- so stehen sie wie im Choralsatz direkt im Text.
 function clPlaceLyricAnnotations(svg) {
-  const lyricByLine = {};
+  const lineOf = el => { const m = String(el.getAttribute('class') || '').match(/abcjs-l(\d+)/); return m ? m[1] : null; };
+  const lyricsByLine = {}, barsByLine = {};
   svg.querySelectorAll('text.abcjs-lyric').forEach(t => {
-    const m = String(t.getAttribute('class')).match(/abcjs-l(\d+)/);
-    if (m && !(m[1] in lyricByLine) && t.textContent.trim()) lyricByLine[m[1]] = t;
+    const l = lineOf(t); if (l === null || !t.textContent.trim()) return;
+    (lyricsByLine[l] = lyricsByLine[l] || []).push(t);
   });
+  svg.querySelectorAll('.abcjs-bar').forEach(bEl => {
+    const l = lineOf(bEl); if (l === null) return;
+    (barsByLine[l] = barsByLine[l] || []).push(bEl);
+  });
+  const bbox = el => { try { return el.getBBox(); } catch (e) { return null; } };
+  const setX = (a, x, anchor) => {
+    a.setAttribute('x', x); a.setAttribute('text-anchor', anchor);
+    a.querySelectorAll('tspan').forEach(sp => { if (sp.hasAttribute('x')) sp.setAttribute('x', x); });
+  };
   svg.querySelectorAll('text.abcjs-annotation').forEach(a => {
-    const m = String(a.getAttribute('class')).match(/abcjs-l(\d+)/);
-    const ly = m && lyricByLine[m[1]];
-    if (!ly) return;
+    const l = lineOf(a);
+    const lys = l !== null ? lyricsByLine[l] : null;
+    if (!lys || !lys.length) return;
+    const ly = lys[0];
     const y = ly.getAttribute('y');
     a.setAttribute('y', y);
     a.querySelectorAll('tspan').forEach(sp => { if (sp.hasAttribute('y')) sp.setAttribute('y', y); });
     ['font-family', 'font-size', 'font-weight'].forEach(k => { if (ly.getAttribute(k)) a.setAttribute(k, ly.getAttribute(k)); });
     a.setAttribute('font-style', 'normal');
     a.setAttribute('dominant-baseline', ly.getAttribute('dominant-baseline') || 'auto');
+    const txt = a.textContent || '';
+    const ab = bbox(a); if (!ab) return;
+    if (txt.indexOf(CL_MARK_SYL) >= 0) {
+      // direkt vor die nächste Silbe rechts davon
+      let best = null;
+      lys.forEach(t => { const tb = bbox(t); if (tb && tb.x >= ab.x - 2 && (!best || tb.x < best.x)) best = tb; });
+      if (best) setX(a, best.x - 5, 'end');
+    } else if (txt.indexOf(CL_MARK_BAR) >= 0) {
+      // mittig unter den nächsten Trennstrich rechts davon
+      let best = null;
+      (barsByLine[l] || []).forEach(bEl => { const bb = bbox(bEl); if (bb && bb.x >= ab.x - 2 && (!best || bb.x < best.x)) best = bb; });
+      if (best) setX(a, best.x + best.width / 2, 'middle');
+    }
   });
 }
 
