@@ -622,6 +622,10 @@ input[type=file]{display:none}
       <input id="cl-title" type="text" oninput="clHeadInput()" style="width:220px;font-size:11px;padding:2px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none"></label>
     <label style="font-size:11px;color:#a8d878;display:flex;align-items:flex-start;gap:4px">Untertitel
       <textarea id="cl-subtitle" rows="1" oninput="clHeadInput()" style="width:260px;font-size:11px;padding:2px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none;resize:vertical;font-family:inherit"></textarea></label>
+    <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px" title="Kopfzeile links (z.B. Ton/Modus) – leer lassen zum Ausblenden">Links
+      <input id="cl-left" type="text" oninput="clSideInput()" style="width:110px;font-size:11px;padding:2px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none"></label>
+    <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px" title="Kopfzeile rechts (z.B. Transposition, Registrierung) – leer lassen zum Ausblenden">Rechts
+      <input id="cl-right" type="text" oninput="clSideInput()" style="width:200px;font-size:11px;padding:2px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none"></label>
     <span id="cl-head-state" style="font-size:10px;color:#8b9a70;align-self:center"></span>
     <button class="b" onclick="clHeadFromChant()" style="font-size:10px;padding:1px 6px;align-self:center" title="Titel und Untertitel wieder aus dem Choral übernehmen">&#8634; vom Choral</button>
   </div>
@@ -7610,7 +7614,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '217';
+const NOTATOR_BUILD_ID = '218';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14373,10 +14377,19 @@ function clAbcTitleLines(title, subtitle) {
   return out;
 }
 
+function clAbcSideLines(left, right) {
+  const clean = t => String(t || '').replace(/[\r\n]+/g, ' ').replace(/%/g, '\\%').trim();
+  let out = '';
+  if (clean(left)) out += 'R:' + clean(left) + '\n';
+  if (clean(right)) out += 'C:' + clean(right) + '\n';
+  return out;
+}
+
 // Ersetzt die T:-Zeilen des ERSTEN Stücks in einem (ggf. von Hand
 // bearbeiteten) ABC-Text durch neue Titel/Untertitel.
-function clApplyHeaderToAbc(abc, title, subtitle) {
-  const tl = clAbcTitleLines(title, subtitle).replace(/\n$/, '');
+function clApplyHeaderToAbc(abc, title, subtitle, left, right) {
+  const sides = (left !== undefined || right !== undefined);
+  const tl = (clAbcTitleLines(title, subtitle) + (sides ? clAbcSideLines(left, right) : '')).replace(/\n$/, '');
   const lines = abc.split('\n');
   let tuneNo = 0;
   const out = [];
@@ -14387,7 +14400,7 @@ function clApplyHeaderToAbc(abc, title, subtitle) {
       if (tuneNo === 1 && tl) out.push(tl); // nie eine Leerzeile einfügen (= Stückende in ABC)
       continue;
     }
-    if (tuneNo === 1 && /^T:/.test(l)) continue;
+    if (tuneNo === 1 && (/^T:/.test(l) || (sides && /^[RC]:/.test(l)))) continue;
     out.push(l);
   }
   return out.join('\n');
@@ -14495,21 +14508,37 @@ function clGabcToAbc(gabcList, opts) {
     const title = hdr ? (hdr.title || '') : (sec.title || parsed.title || '');
     const subtitle = hdr ? (hdr.subtitle || '') : (sec.subtitle !== undefined ? sec.subtitle : parsed.subtitle) || '';
     head += clAbcTitleLines(title, subtitle);
-    const ann = (parsed.annotation || '').trim();
-    const cparts = [];
-    if (ann) cparts.push('Ton ' + ann.replace(/;/g, ''));
-    if (targetPc !== origPc) cparts.push('transp. ' + info.finalisOrig + '→' + info.finalisTarget);
-    if (cparts.length) head += 'C:' + cparts.join(' · ') + '\n';
+    // Kopfzeile unter dem (Unter-)Titel: links (R:) z.B. "Ton 8", rechts
+    // (C:) z.B. Transpositionshinweis -- abcjs setzt beide auf EINE Zeile
+    // (links-/rechtsbündig), damit kollidieren sie nie mit Titel/Noten.
+    const ann = (parsed.annotation || '').trim().replace(/;/g, '');
+    const autoLeft = ann ? 'Ton ' + ann : '';
+    const autoRight = (si === 0 && targetPc !== origPc) ? 'transponiert ' + info.finalisOrig + ' → ' + info.finalisTarget : '';
+    const left = (hdr && hdr.left != null) ? hdr.left : autoLeft;
+    const right = (hdr && hdr.right != null) ? hdr.right : autoRight;
+    if (si === 0) { info.autoLeft = autoLeft; info.autoRight = autoRight; }
+    head += clAbcSideLines(left, right);
     head += 'M:none\nL:1/8\nK:' + abcKey + ' clef=treble\n';
     let body = '';
     lines.forEach(ln => {
       let music = '', lyr = [];
       let measureAcc = {}; // "D" -> alt (Zeilenanfang = neue Messung)
+      let lastLyricLen = 0;
       ln.forEach(u => {
-        const annTxt = (u.ann || []).map(a => '"^' + a.replace(/"/g, "'") + '"').join('');
+        // Notenlose Texte (iij., Ant., * ...) als Unter-Beschriftung auf einem
+        // unsichtbaren Platzhalter; clPlaceLyricAnnotations() schiebt sie nach
+        // dem Rendern exakt auf die Grundlinie der Textzeile.
+        // Platzhalterbreite (abcjs: y<n>, ca. 8 px je Einheit) so gross, dass
+        // der Text weder mit der vorigen noch der folgenden Silbe kollidiert
+        // (Silbentext steht mittig unter seiner Note).
+        const neighbourChars = u.kind === 'syl' ? (u.text || '').length : lastLyricLen;
+        const annTxt = (u.ann || []).map((a, ai) => {
+          const px = a.length * 7.5 + (ai === 0 ? neighbourChars * 4 : 0) + 10;
+          return '"_' + a.replace(/"/g, "'") + '"y' + Math.max(1, Math.round(px / 8));
+        }).join(' ');
         if (u.kind === 'syl') {
           music += ' ';
-          if (annTxt) music += annTxt;
+          if (annTxt) music += annTxt + ' ';
           const multi = u.notes.length > 1;
           if (multi) music += '(';
           u.notes.forEach((nt, k) => {
@@ -14534,12 +14563,13 @@ function clGabcToAbc(gabcList, opts) {
           else lyr.push('*');
           for (let k = 1; k < u.notes.length; k++) lyr.push(u.hyphen || !u.text ? '*' : '_');
           u._notesRef = u.notes;
+          lastLyricLen = u.notes.length > 1 ? 0 : (u.text || '').length;
         } else if (u.kind === 'bar') {
-          if (annTxt) music += ' ' + annTxt + 'y';
+          if (annTxt) music += ' ' + annTxt;
           if (u.t === 'minima' && !u.final) music += ' !breath!y';
           else { music += ' ' + (u.final ? '|]' : u.t === 'minor' ? '|' : '||'); measureAcc = {}; }
         } else if (u.kind === 'ann') {
-          music += ' ' + annTxt + 'y';
+          music += ' ' + annTxt;
         }
       });
       const lineStart = abcAll.length + head.length + body.length - (music.length - music.trimStart().length);
@@ -14576,7 +14606,7 @@ function clRenderAbc(el, abc, liqChars, staffwidth) {
       add_classes: true,
       staffwidth: staffwidth || 740,
       paddingleft: 10, paddingright: 10, paddingbottom: 20,
-      format: { titlefont: '"Palatino Linotype", Palatino, serif 18', subtitlefont: '"Palatino Linotype", Palatino, serif 13', composerfont: 'serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: 'serif 11 italic' },
+      format: { titlefont: '"Palatino Linotype", Palatino, serif 18', subtitlefont: '"Palatino Linotype", Palatino, serif 13', composerfont: '"Palatino Linotype", Palatino, serif 11 italic', infofont: '"Palatino Linotype", Palatino, serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: '"Palatino Linotype", Palatino, serif 13' },
     });
     const liq = new Set((liqChars || []).filter(c => c >= st && c < en).map(c => c - st));
     if (liq.size) {
@@ -14594,9 +14624,32 @@ function clRenderAbc(el, abc, liqChars, staffwidth) {
         });
       })))));
     }
+    div.querySelectorAll('svg').forEach(clPlaceLyricAnnotations);
     all.push(...tunes);
   });
   return all;
+}
+
+// Verschiebt Unter-Beschriftungen (iij., ij., Ant. …) auf die Grundlinie
+// der Textzeile desselben Systems und gibt ihnen dieselbe Schrift wie der
+// gesungene Text -- so stehen sie wie im Choralsatz direkt im Text.
+function clPlaceLyricAnnotations(svg) {
+  const lyricByLine = {};
+  svg.querySelectorAll('text.abcjs-lyric').forEach(t => {
+    const m = String(t.getAttribute('class')).match(/abcjs-l(\d+)/);
+    if (m && !(m[1] in lyricByLine) && t.textContent.trim()) lyricByLine[m[1]] = t;
+  });
+  svg.querySelectorAll('text.abcjs-annotation').forEach(a => {
+    const m = String(a.getAttribute('class')).match(/abcjs-l(\d+)/);
+    const ly = m && lyricByLine[m[1]];
+    if (!ly) return;
+    const y = ly.getAttribute('y');
+    a.setAttribute('y', y);
+    a.querySelectorAll('tspan').forEach(sp => { if (sp.hasAttribute('y')) sp.setAttribute('y', y); });
+    ['font-family', 'font-size', 'font-weight'].forEach(k => { if (ly.getAttribute(k)) a.setAttribute(k, ly.getAttribute(k)); });
+    a.setAttribute('font-style', 'normal');
+    a.setAttribute('dominant-baseline', ly.getAttribute('dominant-baseline') || 'auto');
+  });
 }
 
 // ── 5. Bedienoberfläche des Orgel-Tabs ───────────────────────────
@@ -14608,9 +14661,11 @@ const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-
 //        Fassung (ab der ersten Änderung im Orgel-Tab, danach keine
 //        automatische Übernahme mehr aus dem Choral)
 //  texts: Freitexte [{id, t (Stück-Index), x, y, text, size}] in SVG-Koordinaten
-var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, texts: [] };
+//  left/right: Kopfzeile links ("Ton 8") / rechts (Transpositionshinweis …);
+//        null = automatisch, sonst eigener Text (auch leer = ausgeblendet)
+var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] };
 function clNormalizeState() {
-  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, width: null, head: null, texts: [] }, clState || {});
+  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] }, clState || {});
   if (!Array.isArray(clState.texts)) clState.texts = [];
 }
 let clLast = null;
@@ -14666,7 +14721,7 @@ function clBuild() {
   const list = clCollectGabc();
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
-  const headers = list.map((x, i) => i === 0 ? clEffectiveHead() : { title: x.title, subtitle: x.subtitle });
+  const headers = list.map((x, i) => i === 0 ? Object.assign({}, clEffectiveHead(), { left: clState.left, right: clState.right }) : { title: x.title, subtitle: x.subtitle });
   return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers });
 }
 
@@ -14705,6 +14760,10 @@ function clSyncControls() {
   const ti = document.getElementById('cl-title'), su = document.getElementById('cl-subtitle');
   if (ti && document.activeElement !== ti) ti.value = h.title || '';
   if (su && document.activeElement !== su) su.value = h.subtitle || '';
+  const inf = clLast && clLast.info;
+  const le = document.getElementById('cl-left'), ri = document.getElementById('cl-right');
+  if (le && document.activeElement !== le) le.value = clState.left != null ? clState.left : ((inf && inf.autoLeft) || '');
+  if (ri && document.activeElement !== ri) ri.value = clState.right != null ? clState.right : ((inf && inf.autoRight) || '');
   const hs = document.getElementById('cl-head-state');
   if (hs) hs.textContent = clState.head ? 'eigene Fassung (unabhängig vom Choral)' : 'wird vom Choral übernommen';
 }
@@ -14737,6 +14796,7 @@ function clRender() {
   const sw = clScoreWidth();
   el.style.width = (sw + 40) + 'px';
   clRenderAbc(el, abc, liq, sw);
+  clSyncControls();
   clDrawTexts();
 }
 
@@ -14794,9 +14854,20 @@ function clHeadInput() {
   clearTimeout(_clHeadTimer);
   _clHeadTimer = setTimeout(clRender, 300);
 }
+// Kopfzeile links/rechts: ab der ersten Änderung eigener Text (keine
+// automatische Aktualisierung mehr, z.B. beim Transponieren).
+function clSideInput() {
+  const le = document.getElementById('cl-left'), ri = document.getElementById('cl-right');
+  clState.left = le ? le.value : '';
+  clState.right = ri ? ri.value : '';
+  if (clState.manualAbc) { const h = clEffectiveHead(); clState.manualAbc = clApplyHeaderToAbc(clState.manualAbc, h.title, h.subtitle, clState.left, clState.right); }
+  clearTimeout(_clHeadTimer);
+  _clHeadTimer = setTimeout(clRender, 300);
+}
+
 function clHeadFromChant() {
-  if (!confirm('Titel und Untertitel wieder aus dem Choral übernehmen? Deine eigene Fassung wird dabei ersetzt.')) return;
-  clState.head = null;
+  if (!confirm('Titel, Untertitel und Kopfzeile wieder automatisch aus dem Choral übernehmen? Deine eigene Fassung wird dabei ersetzt.')) return;
+  clState.head = null; clState.left = null; clState.right = null;
   if (clState.manualAbc) { const h = clChantHead(); clState.manualAbc = clApplyHeaderToAbc(clState.manualAbc, h.title, h.subtitle); }
   clRender();
 }
