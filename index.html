@@ -132,7 +132,7 @@ input[type=file]{display:none}
   <div id="hdr-tabs" style="margin-left:auto;display:flex;gap:4px">
     <button class="b" id="tab-greg" onclick="switchTab('greg')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#1a2018;color:#8b9a70;border-color:#3a5030">Greg-Editor</button>
     <button class="b" id="tab-gabc" onclick="switchTab('gabc')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#2a1a08;color:#8b9a70;border-color:#4a5a30">GABC-Eingabe</button>
-    <button class="b" id="tab-editor" onclick="switchTab('editor')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#3d3420;color:#e0d4b0;border-color:#6b5030">Noten-Editor</button>
+    <button class="b" id="tab-editor" onclick="switchTab('editor')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#3d3420;color:#e0d4b0;border-color:#6b5030" title="Choral in klassische Orgelnoten übertragen und transponieren">Orgel (klassisch)</button>
   </div>
 </div>
 <div id="tb">
@@ -372,6 +372,7 @@ input[type=file]{display:none}
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;border-bottom:1px solid #3a4a30;flex-shrink:0">
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
     <span id="greg-mobile-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button class="b" onclick="switchTab('editor')" style="font-size:11px;padding:3px 8px" title="Klassische Orgelnoten">&#127929;</button>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
     <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
   </div>
@@ -588,6 +589,39 @@ input[type=file]{display:none}
     </div>
   </div>
   <div id="greg-status" style="font-size:10px;color:#8b9a70;padding:3px 10px;background:#121c0e;border-top:1px solid #3a4a30">Bereit — Neume wählen, Silbe eingeben, dann auf Notenlinie klicken</div>
+</div>
+
+<!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
+<div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
+  <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+    <button class="b" onclick="switchTab('greg')" style="font-size:11px;padding:3px 8px" title="Zurück zum Choral-Editor">&#8592; Choral</button>
+    <button class="b" onclick="clRegenerate()" style="font-size:11px;padding:3px 8px" title="Klassische Fassung neu aus dem aktuellen Choral erzeugen">&#8635; Aus Choral übernehmen</button>
+    <span style="color:#3a4a30">|</span>
+    <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Grundton
+      <select id="cl-target" onchange="clSetTarget(this.value)" style="font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:2px"></select></label>
+    <span style="font-size:11px;color:#a8d878">Oktave</span>
+    <button class="b" onclick="clSetOctave(-1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave tiefer">&minus;</button>
+    <span id="cl-oct" style="font-size:11px;color:#c0d890;min-width:18px;text-align:center">0</span>
+    <button class="b" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button>
+    <span style="color:#3a4a30">|</span>
+    <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
+    <button class="b" onclick="clDownloadAbc()" style="font-size:11px;padding:3px 8px" title="Als ABC-Datei speichern (u.a. für MuseScore, EasyABC, abcjs)">&#8595; ABC</button>
+    <button class="b" onclick="clPrint()" style="font-size:11px;padding:3px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Drucken oder als PDF sichern">&#128424; Drucken / PDF</button>
+  </div>
+  <div id="cl-info" style="font-size:11px;color:#c0d890;padding:4px 10px;background:#151e10;border-bottom:1px solid #2a3820"></div>
+  <div style="flex:1;display:flex;overflow:hidden;min-height:0">
+    <div id="cl-score-wrap" style="flex:1;overflow:auto;background:#fff;padding:12px">
+      <div id="cl-score"></div>
+    </div>
+    <div id="cl-src-panel" style="display:none;width:380px;max-width:50%;flex-direction:column;border-left:1px solid #3a4a30;background:#151e10">
+      <div style="font-size:10px;color:#8aab70;padding:6px 8px;line-height:1.4">ABC-Quelltext – von Hand anpassbar (alle Notenwerte, Pausen, Vorzeichen, Bögen, Dynamik …). Wird beim nächsten „Aus Choral übernehmen“, bei Grundton- oder Oktavwechsel überschrieben.</div>
+      <textarea id="cl-src" spellcheck="false" style="flex:1;margin:0 8px;font-family:monospace;font-size:12px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:6px;resize:none"></textarea>
+      <div style="display:flex;gap:6px;padding:6px 8px">
+        <button class="b" onclick="clApplySource()" style="font-size:11px;padding:3px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35">&#10003; Anwenden</button>
+        <span id="cl-src-msg" style="font-size:10px;color:#e0a060;align-self:center"></span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="statusbar">
@@ -7545,7 +7579,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '215';
+const NOTATOR_BUILD_ID = '216';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7629,7 +7663,8 @@ function gregBuildStateObject() {
     dropCap: dc, dropCapLetter: dcLetter,
     clef: clefKey,
     canvasWidth,
-    entries: JSON.parse(JSON.stringify(gregEntries))
+    entries: JSON.parse(JSON.stringify(gregEntries)),
+    classic: (typeof clState !== 'undefined') ? JSON.parse(JSON.stringify(clState)) : null
   };
 }
 
@@ -7673,6 +7708,7 @@ function gregSavePiece() {
 // form can possibly be open yet (nothing has rendered), so it's optional.
 function gregApplyLoadedState(state) {
   gregCloseEditForm();
+  if (typeof clState !== 'undefined') clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null }, (state && state.classic) || {});
   // NOTE: this file may contain a saved `canvasWidth` from an older
   // version's "remember the page width" feature — deliberately IGNORED
   // here now. That feature was superseded by the render-pass-local
@@ -14003,8 +14039,665 @@ function setGABCTab(mode) {
 }
 
 // ── TAB SWITCHING (editor ↔ GABC) ──────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// ── KLASSISCHE ÜBERTRAGUNG (Choral → moderne Notation, ABC/abcjs) ──
+// ══════════════════════════════════════════════════════════════
+// Übertragungsregeln (recherchiert, Solesmes-Praxis, vgl. "Guide to
+// Singing Chant", CC Watershed; WIMA-Einführung zur Übertragung):
+//  - Grundwert Punctum = 1 Puls = Achtel (L:1/8), keine Taktart (M:none).
+//  - Punctum mora (.) verdoppelt den Wert -> Viertel (.. -> +2).
+//  - Wiederholte Töne gleicher Höhe ohne Trennung (Bi-/Tristropha,
+//    Bi-/Trivirga, Pressus) = EIN Ton mit summierter Dauer (2/3 Pulse).
+//  - Horizontales Episem = leichte Dehnung, KEINE Verdopplung -> Tenuto.
+//  - Quilisma: die VORANGEHENDE Note wird leicht gedehnt -> Tenuto dort;
+//    die Quilisma-Note selbst ist eine normale Note.
+//  - Liqueszenz: kleine Note mit normalem Wert.
+//  - b molle (x) gilt bis Wortende oder zum nächsten Trennstrich; y hebt auf.
+//  - Divisio minima -> Atemzeichen, minor -> Taktstrich, maior ->
+//    Doppelstrich, finalis -> Doppelstrich (am Schluss Schlussstrich).
+//  - Noten einer Silbe werden gebalkt und bei Melisma mit Bogen verbunden.
+// Tonhöhe: Do-Schlüssel-Linie = C, Fa-Schlüssel-Linie = F; Oktavlage wird
+// automatisch so gewählt, dass die Melodie mittig im Violinschlüssel liegt.
+// Transposition: Finalis (Schlusston) -> gewählter Zielgrundton, mit
+// korrekter Buchstaben-Schreibung (Intervall aus Stufen + Halbtönen);
+// Vorzeichnung = transponierte Ausgangsvorzeichnung (Modus bleibt erhalten).
+
+const CL_LETTERS = ['C','D','E','F','G','A','B'];
+const CL_NAT_PC  = [0,2,4,5,7,9,11];
+const CL_FIFTHS  = [0,2,4,-1,1,3,5]; // Quintenzirkel-Position der Stammtöne
+const CL_MODE_NAMES = ['ion','dor','phr','lyd','mix','aeo','loc'];
+const CL_MODE_DE = ['ionisch','dorisch','phrygisch','lydisch','mixolydisch','äolisch','lokrisch'];
+
+function clMod(a, n) { return ((a % n) + n) % n; }
+
+// Diatonische Nummer D = Oktave*7 + Stufe (C=0 … B=6); pc = Tonhöhenklasse
+function clPcOf(step, alt) { return clMod(CL_NAT_PC[clMod(step, 7)] + alt, 12); }
+
+function clCleanText(t) {
+  return String(t || '')
+    .replace(/<\/?(?:i|b|ul|c|sc|tt|v|e|nlba|clear|pr|alt|eu)[^>]*>/gi, '')
+    .replace(/<sp>([^<]*)<\/sp>/gi, '$1')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[{}]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ── 1. GABC parsen ──────────────────────────────────────────────
+// Ergebnis: { title, annotation, mode, events[] }
+// events: {k:'note', D, alt, dur, ten, liq, quil, sylStart, text, wordEnd, hyphen}
+//         {k:'bar', t:'minima'|'minor'|'maior'|'finalis'}
+//         {k:'text', text}   (Silbe ohne Noten, z.B. "iij.", "Ant.", "*")
+function clParseGabc(gabc) {
+  const out = { title: '', annotation: '', mode: '', events: [] };
+  let body = gabc;
+  const hdrSplit = gabc.match(/^([\s\S]*?)\n?%%\s*\n?([\s\S]*)$/);
+  if (hdrSplit && /:/.test(hdrSplit[1])) {
+    body = hdrSplit[2];
+    hdrSplit[1].split(/\n/).forEach(line => {
+      const m = line.match(/^\s*([\w-]+)\s*:\s*(.*?);?\s*$/);
+      if (!m) return;
+      const key = m[1].toLowerCase(), val = m[2];
+      if (key === 'name') out.title = clCleanText(val);
+      else if (key === 'annotation') out.annotation = out.annotation ? out.annotation + ' ' + val : val;
+      else if (key === 'mode') out.mode = val;
+    });
+  }
+  body = body.replace(/%[^\n]*/g, ''); // Kommentare
+
+  // Schlüssel-Zustand
+  let clefType = 'c', clefLine = 3, clefFlat = false;
+  const clefD = () => (clefType === 'c' ? 4 * 7 + 0 : 4 * 7 + 3) - (clefType === 'f' ? 7 : 0);
+  const letterIdx = ch => ch.toLowerCase().charCodeAt(0) - 97; // a=0 … m=12
+  const DofLetter = ch => clefD() + (letterIdx(ch) - (1 + 2 * clefLine));
+
+  let activeAcc = {};       // D -> alt  (b molle / Auflösung / Kreuz)
+  const accReset = () => { activeAcc = {}; };
+  const altFor = D => {
+    if (D in activeAcc) return activeAcc[D];
+    if (clefFlat && clMod(D, 7) === 6) return -1; // Schlüssel mit b (cb3/cb4)
+    return 0;
+  };
+
+  let pendingText = '';        // notenlose Silbe, wird der nächsten Silbe vorangestellt
+  let pendingTextHyphen = false;
+  let lastNoteEv = null;
+
+  const groupRe = /([^()]*)\(([^)]*)\)/g;
+  let m, firstGroup = true;
+  const sylls = [];
+  while ((m = groupRe.exec(body))) sylls.push({ raw: m[1], notes: m[2] });
+
+  // Wortgrenzen: Silbe beginnt neues Wort, wenn ihr Text mit Leerraum
+  // beginnt (oder erste Silbe). Wortende = nächste Silbe beginnt neues Wort.
+  sylls.forEach((s, i) => {
+    s.newWord = firstGroup || /^\s/.test(s.raw) || s.raw === '';
+    firstGroup = false;
+    s.text = clCleanText(s.raw);
+  });
+  for (let i = 0; i < sylls.length; i++) {
+    // nächste Silbe MIT Text bestimmt, ob das Wort weitergeht
+    let j = i + 1;
+    while (j < sylls.length && !sylls[j].text && sylls[j].raw === '') j++;
+    sylls[i].wordContinues = j < sylls.length && sylls[j].text !== '' && !/^\s/.test(sylls[j].raw);
+  }
+
+  sylls.forEach(s => {
+    if (s.text && s.newWord) accReset();
+    const n = s.notes;
+    let i = 0;
+    let sylNotesStart = true;
+    let sepSinceLast = true;     // Trennung zum vorigen Ton (für Tonwiederholungs-Verschmelzung)
+    let prevInGroup = null;
+    let hadNote = false;
+    const textHere = s.text;
+
+    const startSyllableIfNeeded = ev => {
+      if (!sylNotesStart) return;
+      sylNotesStart = false;
+      if (textHere || pendingText) {
+        let txt = textHere;
+        if (pendingText) txt = pendingText + (pendingTextHyphen ? '-' : ' ') + textHere;
+        pendingText = '';
+        ev.sylStart = true;
+        ev.text = txt;
+        ev.hyphen = s.wordContinues;
+      }
+    };
+
+    while (i < n.length) {
+      const c = n[i];
+      const rest = n.slice(i);
+      // Schlüssel
+      const cm = rest.match(/^(c|f)(b?)([1-5])/);
+      if (cm && (i === 0 || /[\s:;,]/.test(n[i - 1]))) {
+        clefType = cm[1]; clefFlat = cm[2] === 'b'; clefLine = parseInt(cm[3], 10);
+        i += cm[0].length; continue;
+      }
+      // Divisiones
+      const dm = rest.match(/^(::|:|;|,|`)(\??'?[0-9]*)/);
+      if (dm) {
+        const t = dm[1] === '::' ? 'finalis' : dm[1] === ':' ? 'maior' : dm[1] === ';' ? 'minor' : 'minima';
+        if (textHere && !hadNote && sylNotesStart) { out.events.push({ k: 'text', text: pendingText ? pendingText + ' ' + textHere : textHere }); pendingText = ''; sylNotesStart = false; }
+        out.events.push({ k: 'bar', t });
+        accReset();
+        sepSinceLast = true; prevInGroup = null;
+        i += dm[0].length; continue;
+      }
+      // Klammer-Attribute [..]
+      if (c === '[') { const e = n.indexOf(']', i); i = e < 0 ? n.length : e + 1; continue; }
+      if (c === '/' || c === ' ') { sepSinceLast = true; i++; continue; }
+      if (c === '!') { i++; continue; }
+      if (c === 'z' || c === 'Z') { i++; if (n[i] === '0' || n[i] === '+' || n[i] === '-') i++; continue; }
+      if (/[a-mA-M]/.test(c)) {
+        const nx = n[i + 1] || '';
+        // Vorzeichen-Deklaration (z.B. "ix" = b auf i)
+        if (nx === 'x' || nx === 'y' || nx === '#') {
+          const D = DofLetter(c);
+          activeAcc[D] = nx === 'x' ? -1 : nx === '#' ? 1 : 0;
+          i += 2;
+          while (n[i] === '?' || n[i] === '#' && nx === '#') i++;
+          continue;
+        }
+        if (nx === '+') { i += 2; continue; } // Custos
+        // Note mit Modifikatoren
+        const D = DofLetter(c);
+        let j = i + 1;
+        let mora = 0, ten = false, liq = false, quil = false, strophaLike = false;
+        while (j < n.length) {
+          const d = n[j];
+          if (d === '.') { mora++; j++; }
+          else if (d === '_') { ten = true; j++; while (/[0-5]/.test(n[j] || '')) j++; }
+          else if (d === "'") { j++; while (/[01]/.test(n[j] || '')) j++; }
+          else if (d === '~' || d === '<' || d === '>') { liq = true; j++; }
+          else if (d === 'w' || d === 'W') { quil = true; j++; }
+          else if (d === 's' || d === 'v' || d === 'V') { strophaLike = true; j++; }
+          else if (/[oOrRq=@\-]/.test(d)) { j++; while (/[0-9]/.test(n[j] || '')) j++; }
+          else if (/[0-9]/.test(d)) { j++; }
+          else if (d === '[') { const e = n.indexOf(']', j); j = e < 0 ? n.length : e + 1; }
+          else break;
+        }
+        i = j;
+        const alt = altFor(D);
+        // Tonwiederholung ohne Trennung -> verschmelzen (Stropha, Pressus, Bivirga)
+        if (prevInGroup && !sepSinceLast && prevInGroup.D === D && prevInGroup.alt === alt && !prevInGroup.liq) {
+          prevInGroup.dur += 1 + mora;
+          if (ten) prevInGroup.ten = true;
+          if (liq) prevInGroup.liq = true;
+          sepSinceLast = false;
+          continue;
+        }
+        if (quil && prevInGroup) prevInGroup.ten = true;
+        const ev = { k: 'note', D, alt, dur: 1 + mora, ten, liq };
+        startSyllableIfNeeded(ev);
+        out.events.push(ev);
+        prevInGroup = ev; lastNoteEv = ev; hadNote = true;
+        sepSinceLast = false;
+        continue;
+      }
+      i++; // unbekanntes Zeichen überspringen
+    }
+    // Silbe ganz ohne Noten und ohne Divisio -> an nächste Silbe hängen
+    // (Rubriken wie <i>Ant.</i> bleiben eigenständige Beschriftung; eine
+    // gewöhnliche notenlose Silbe -- z.B. das elidierte "i" in "e-lé-i-son"
+    // -- wird dem Text der nächsten Silbe vorangestellt.)
+    if (!hadNote && sylNotesStart && textHere) {
+      if (/<i>|<sp>/i.test(s.raw)) {
+        out.events.push({ k: 'text', text: pendingText ? pendingText + ' ' + textHere : textHere }); pendingText = '';
+      } else {
+        pendingText = pendingText ? pendingText + (pendingTextHyphen ? '-' : ' ') + textHere : textHere;
+        pendingTextHyphen = s.wordContinues;
+      }
+    }
+    if (!s.wordContinues && hadNote) accReset();
+  });
+  return out;
+}
+
+// ── 2. Transposition ──────────────────────────────────────────
+// Intervall = (diatonische Stufen d, Halbtöne semi) von Finalis -> Ziel.
+function clSpellTranspose(D, alt, d, semi) {
+  const nD = D + d;
+  const natDiff = (Math.floor(nD / 7) * 12 + CL_NAT_PC[clMod(nD, 7)]) - (Math.floor(D / 7) * 12 + CL_NAT_PC[clMod(D, 7)]);
+  return { D: nD, alt: alt + (semi - natDiff) };
+}
+
+function clFinalis(parsed) {
+  for (let i = parsed.events.length - 1; i >= 0; i--) {
+    const e = parsed.events[i];
+    if (e.k === 'note') return { D: e.D, alt: e.alt };
+  }
+  return { D: 4 * 7 + 1, alt: 0 };
+}
+
+// Tonart-Info zur Finalis inkl. Ausgangsvorzeichnung (0 oder 1 b bei cb-Schlüssel)
+function clBaseKeyFifths(gabc) {
+  const body = gabc.includes('%%') ? gabc.slice(gabc.indexOf('%%') + 2) : gabc;
+  const m = body.match(/\(\s*(c|f)(b?)[1-5]/);
+  return m && m[2] === 'b' ? -1 : 0;
+}
+
+function clModeIndex(finalisStep, baseFifths) {
+  // Tonika der Dur-Tonart mit dieser Vorzeichnung
+  const tonicStep = baseFifths === -1 ? 3 : 0; // F oder C
+  return clMod(finalisStep - tonicStep, 7);
+}
+
+function clKeyName(step, alt) {
+  return CL_LETTERS[clMod(step, 7)] + (alt > 0 ? '♯'.repeat(alt) : alt < 0 ? '♭'.repeat(-alt) : '');
+}
+
+// Liefert für eine Ziel-Tonhöhenklasse die beste Schreibweise des Zielgrundtons
+// (Vorzeichnung mit höchstens 7, möglichst wenigen Vorzeichen).
+function clBestTarget(targetPc, finalis, baseFifths) {
+  const modeIdx = clModeIndex(clMod(finalis.D, 7), baseFifths);
+  const modeFifthOffset = CL_FIFTHS[clMod(finalis.D, 7)] + 7 * finalis.alt - baseFifths; // Finalis relativ zur Vorzeichnung
+  let best = null;
+  for (let step = 0; step < 7; step++) {
+    for (let alt = -2; alt <= 2; alt++) {
+      if (clPcOf(step, alt) !== targetPc) continue;
+      const finFifths = CL_FIFTHS[step] + 7 * alt;
+      const sigFifths = finFifths - modeFifthOffset; // Vorzeichnung (+ = ♯, − = ♭)
+      if (Math.abs(sigFifths) > 7) continue;
+      const score = Math.abs(sigFifths) * 10 + Math.abs(alt) * 3 + (sigFifths > 0 ? 1 : 0);
+      if (!best || score < best.score) best = { step, alt, sigFifths, score, modeIdx };
+    }
+  }
+  return best;
+}
+
+// ── 3. ABC erzeugen ───────────────────────────────────────────
+function clAbcPitch(D, alt, accMark) {
+  const oct = Math.floor(D / 7), L = CL_LETTERS[clMod(D, 7)];
+  let acc = '';
+  if (accMark) acc = alt === 0 ? '=' : alt > 0 ? '^'.repeat(alt) : '_'.repeat(-alt);
+  let name;
+  if (oct >= 5) name = L.toLowerCase() + "'".repeat(oct - 5);
+  else name = L + ','.repeat(4 - oct);
+  return acc + name;
+}
+
+function clAbcLen(p) {
+  if (p === 1) return [''];
+  if ([2, 3, 4, 6, 8, 12, 16].includes(p)) return [String(p)];
+  const parts = []; let r = p;
+  for (const v of [16, 12, 8, 6, 4, 3, 2, 1]) while (r >= v) { parts.push(v === 1 ? '' : String(v)); r -= v; }
+  return parts;
+}
+
+function clAbcEscapeLyric(t) {
+  return String(t).replace(/[\\_*|%-]/g, m => '\\' + m).replace(/\s+/g, '~');
+}
+
+// opts: { targetPc (0-11 oder null = Original), octave (int), charsPerLine }
+// liefert { abc, liqChars:[startChar...], info }
+function clGabcToAbc(gabcList, opts) {
+  opts = opts || {};
+  const tunes = [];
+  const liqChars = [];
+  let abcAll = '';
+  let info = null;
+  // Intervall aus erstem Abschnitt
+  const firstParsed = clParseGabc(gabcList[0].gabc);
+  const fin = clFinalis(firstParsed);
+  const baseFifths = clBaseKeyFifths(gabcList[0].gabc);
+  const origPc = clPcOf(clMod(fin.D, 7), fin.alt);
+  const targetPc = (opts.targetPc === null || opts.targetPc === undefined) ? origPc : opts.targetPc;
+  const tgt = clBestTarget(targetPc, fin, baseFifths) || { step: clMod(fin.D, 7), alt: fin.alt, sigFifths: baseFifths, modeIdx: clModeIndex(clMod(fin.D, 7), baseFifths) };
+  let d = clMod(tgt.step - clMod(fin.D, 7), 7);
+  let semi = clMod(clPcOf(tgt.step, tgt.alt) - origPc, 12);
+  // Aufwärts vs. abwärts: kleinste Bewegung wählen (Oktave korrigiert Auto-Oktave ohnehin)
+  if (d > 3) { d -= 7; semi -= 12; }
+  const sigFifths = tgt.sigFifths;
+  // Tonart-Vorzeichnung pro Stufe
+  const keyAlt = [0, 0, 0, 0, 0, 0, 0];
+  const SHARP_ORDER = [3, 0, 4, 1, 5, 2, 6], FLAT_ORDER = [6, 2, 5, 1, 4, 0, 3];
+  if (sigFifths > 0) for (let k = 0; k < sigFifths; k++) keyAlt[SHARP_ORDER[k]] = 1;
+  if (sigFifths < 0) for (let k = 0; k < -sigFifths; k++) keyAlt[FLAT_ORDER[k]] = -1;
+  const keyTonic = clKeyName(tgt.step, tgt.alt);
+  // K: bewusst als Dur-Tonart mit identischer Vorzeichnung (nicht als
+  // Modusname) -- so ist garantiert, dass die von abcjs gezeichnete
+  // Vorzeichnung exakt der hier berechneten (keyAlt) entspricht.
+  const abcKey = ['Cb','Gb','Db','Ab','Eb','Bb','F','C','G','D','A','E','B','F#','C#'][sigFifths + 7];
+  info = {
+    finalisOrig: clKeyName(clMod(fin.D, 7), fin.alt),
+    finalisTarget: keyTonic,
+    modeName: CL_MODE_DE[tgt.modeIdx],
+    sigFifths,
+    sigText: sigFifths === 0 ? 'keine Vorzeichen' : Math.abs(sigFifths) + (sigFifths > 0 ? '♯' : '♭'),
+    semitones: semi,
+  };
+
+  gabcList.forEach((sec, si) => {
+    const parsed = si === 0 ? firstParsed : clParseGabc(sec.gabc);
+    const notes = parsed.events.filter(e => e.k === 'note').map(e => clSpellTranspose(e.D, e.alt, d, semi));
+    // Auto-Oktave: Mittelwert möglichst nahe an H4 (Mitte Violinschlüssel)
+    let shift = 0;
+    if (notes.length) {
+      const avg = notes.reduce((a, n) => a + n.D, 0) / notes.length;
+      shift = Math.round((4 * 7 + 6 - avg) / 7) * 7;
+    }
+    shift += 7 * (opts.octave || 0);
+    // Silben-Einheiten bilden
+    const units = []; // {music:'', lyrics:[], isBreakOk, width}
+    let cur = null;
+    let pendingAnn = [];
+    let ni = 0;
+    const flush = () => { if (cur) { units.push(cur); cur = null; } };
+    parsed.events.forEach((e, idx) => {
+      if (e.k === 'note') {
+        const tp = notes[ni++];
+        const pitch = { D: tp.D + shift, alt: tp.alt };
+        if (e.sylStart || !cur || cur.kind !== 'syl') {
+          flush();
+          cur = { kind: 'syl', notes: [], text: e.sylStart ? e.text : null, hyphen: !!e.hyphen, ann: pendingAnn };
+          pendingAnn = [];
+        }
+        cur.notes.push({ pitch, dur: e.dur, ten: e.ten, liq: e.liq });
+      } else if (e.k === 'bar') {
+        flush();
+        units.push({ kind: 'bar', t: e.t, ann: pendingAnn });
+        pendingAnn = [];
+      } else if (e.k === 'text') {
+        pendingAnn.push(e.text);
+      }
+    });
+    flush();
+    if (pendingAnn.length) units.push({ kind: 'ann', ann: pendingAnn });
+    // letzte Divisio am Ende -> Schlussstrich
+    for (let k = units.length - 1; k >= 0; k--) {
+      if (units[k].kind === 'bar') { units[k].final = true; break; }
+      if (units[k].kind === 'syl') { units.push({ kind: 'bar', t: 'finalis', final: true, ann: [] }); break; }
+    }
+
+    // Zeilen umbrechen
+    const cap = opts.charsPerLine || 60;
+    const lines = [];
+    let line = [], w = 0;
+    units.forEach((u, k) => {
+      let uw = 0;
+      if (u.kind === 'syl') uw = Math.max(u.notes.reduce((a, n) => a + (n.dur >= 2 ? 2.2 : 1.8), 0), (u.text || '').length * 0.9) + 1;
+      else uw = u.t === 'minima' ? 1 : 2;
+      if (w + uw > cap && line.length && u.kind === 'syl') {
+        lines.push(line); line = []; w = 0;
+      }
+      line.push(u); w += uw;
+    });
+    if (line.length) lines.push(line);
+
+    // ABC-Text
+    let head = 'X:' + (si + 1) + '\n';
+    const title = parsed.title || sec.title || '';
+    if (title) head += 'T:' + title + '\n';
+    const ann = (parsed.annotation || '').trim();
+    const cparts = [];
+    if (ann) cparts.push('Ton ' + ann.replace(/;/g, ''));
+    if (targetPc !== origPc) cparts.push('transp. ' + info.finalisOrig + '→' + info.finalisTarget);
+    if (cparts.length) head += 'C:' + cparts.join(' · ') + '\n';
+    head += 'M:none\nL:1/8\nK:' + abcKey + ' clef=treble\n';
+    let body = '';
+    lines.forEach(ln => {
+      let music = '', lyr = [];
+      let measureAcc = {}; // "D" -> alt (Zeilenanfang = neue Messung)
+      ln.forEach(u => {
+        const annTxt = (u.ann || []).map(a => '"^' + a.replace(/"/g, "'") + '"').join('');
+        if (u.kind === 'syl') {
+          music += ' ';
+          if (annTxt) music += annTxt;
+          const multi = u.notes.length > 1;
+          if (multi) music += '(';
+          u.notes.forEach((nt, k) => {
+            const key = String(nt.pitch.D);
+            const shown = key in measureAcc ? measureAcc[key] : keyAlt[clMod(nt.pitch.D, 7)];
+            const needAcc = shown !== nt.pitch.alt;
+            if (needAcc) measureAcc[key] = nt.pitch.alt;
+            const parts = clAbcLen(nt.dur);
+            let s = '';
+            if (nt.ten) s += '!tenuto!';
+            parts.forEach((p, pi) => {
+              if (pi > 0) s += '-';
+              const pitchStr = clAbcPitch(nt.pitch.D, nt.pitch.alt, needAcc && pi === 0);
+              if (nt.liq && pi === 0) nt._liqOffset = music.length + s.length;
+              s += pitchStr + p;
+            });
+            music += s;
+          });
+          if (multi) music += ')';
+          // Lyrics: erste Note = Silbe, weitere Noten = "_" (Silbe gehalten)
+          if (u.text) lyr.push(clAbcEscapeLyric(u.text) + (u.hyphen ? '-' : ''));
+          else lyr.push('*');
+          for (let k = 1; k < u.notes.length; k++) lyr.push(u.hyphen || !u.text ? '*' : '_');
+          u._notesRef = u.notes;
+        } else if (u.kind === 'bar') {
+          if (annTxt) music += ' ' + annTxt + 'y';
+          if (u.t === 'minima' && !u.final) music += ' !breath!y';
+          else { music += ' ' + (u.final ? '|]' : u.t === 'minor' ? '|' : '||'); measureAcc = {}; }
+        } else if (u.kind === 'ann') {
+          music += ' ' + annTxt + 'y';
+        }
+      });
+      const lineStart = abcAll.length + head.length + body.length - (music.length - music.trimStart().length);
+      ln.forEach(u => (u._notesRef || []).forEach(nt => { if (nt._liqOffset !== undefined) liqChars.push(lineStart + nt._liqOffset); }));
+      body += music.trim() + '\n';
+      body += 'w: ' + lyr.join(' ') + '\n';
+    });
+    abcAll += head + body + '\n';
+  });
+  return { abc: abcAll, liqChars, info };
+}
+
+
+// ── 4. Rendern mit abcjs (inkl. verkleinerter Liqueszenz-Noten) ──
+function clRenderAbc(el, abc, liqChars, staffwidth) {
+  if (!window.ABCJS) { el.textContent = 'Notensatz-Bibliothek (abcjs) nicht geladen – Internetverbindung prüfen.'; return null; }
+  const tunes = ABCJS.renderAbc(el, abc, {
+    add_classes: true,
+    staffwidth: staffwidth || 740,
+    paddingleft: 10, paddingright: 10,
+    format: { titlefont: '"Palatino Linotype", Palatino, serif 18', composerfont: 'serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: 'serif 11 italic' },
+  });
+  const liq = new Set(liqChars || []);
+  if (liq.size) {
+    tunes.forEach(t => (t.lines || []).forEach(line => (line.staff || []).forEach(st => (st.voices || []).forEach(v => v.forEach(elem => {
+      if (elem.el_type !== 'note' || elem.rest) return;
+      let hit = false;
+      liq.forEach(c => { if (c >= elem.startChar && c < elem.endChar) hit = true; });
+      if (!hit || !elem.abselem || !elem.abselem.elemset) return;
+      elem.abselem.elemset.forEach(g => {
+        try {
+          const bb = g.getBBox();
+          const cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
+          g.setAttribute('transform', 'translate(' + cx + ',' + cy + ') scale(0.7) translate(' + (-cx) + ',' + (-cy) + ')');
+        } catch (e) {}
+      });
+    })))));
+  }
+  return tunes;
+}
+
+// ── 5. Bedienoberfläche des Orgel-Tabs ───────────────────────────
+const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-min.js';
+var clState = { targetPc: null, octave: 0, manualAbc: null };
+let clLast = null;          // letztes Konvertierungsergebnis {abc, liqChars, info}
+let _clAbcjsLoading = false;
+
+function clEnsureAbcjs(cb) {
+  if (window.ABCJS) { cb(); return; }
+  const el = document.getElementById('cl-score');
+  if (el) el.textContent = 'Lade Notensatz-Bibliothek …';
+  if (_clAbcjsLoading) { setTimeout(() => clEnsureAbcjs(cb), 200); return; }
+  _clAbcjsLoading = true;
+  const s = document.createElement('script');
+  s.src = CL_ABCJS_URL;
+  s.onload = () => { _clAbcjsLoading = false; cb(); };
+  s.onerror = () => { _clAbcjsLoading = false; if (el) el.textContent = 'Notensatz-Bibliothek konnte nicht geladen werden (Internetverbindung?).'; };
+  document.head.appendChild(s);
+}
+
+// Alle Abschnitte als GABC einsammeln (aktiver Abschnitt = Live-Daten)
+function clCollectGabc() {
+  if (window._gregMultiSection && gregSections.length > 1) {
+    if (typeof gregSectionFromUI === 'function') gregSectionFromUI();
+    return gregSections.map(sec => ({ gabc: gregBuildGABCFor(sec), title: sec.title || '' }));
+  }
+  const t = (document.getElementById('greg-title') || { value: '' }).value;
+  return [{ gabc: gregBuildGABC(), title: t }];
+}
+
+function clHasNotes(list) {
+  return list.some(x => /\([^)]*[a-mA-M][^)]*\)/.test((x.gabc.split('%%').pop() || '').replace(/\((?:c|f)b?[1-5]\)/g, '')));
+}
+
+function clScoreWidth() {
+  const wrap = document.getElementById('cl-score-wrap');
+  // clientWidth enthält das Padding (2x12) des Wrappers; abcjs addiert
+  // paddingleft/right (2x10) zur staffwidth -> Rest als Sicherheitsrand.
+  const w = wrap ? wrap.clientWidth - 24 - 20 - 16 : 740;
+  return Math.max(280, Math.min(w, 1100));
+}
+
+function clBuild() {
+  const list = clCollectGabc();
+  if (!clHasNotes(list)) return null;
+  const sw = clScoreWidth();
+  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)) });
+}
+
+function clFillTargetSelect() {
+  const sel = document.getElementById('cl-target');
+  if (!sel) return;
+  const list = clCollectGabc();
+  sel.innerHTML = '';
+  if (!clHasNotes(list)) return;
+  const parsed = clParseGabc(list[0].gabc);
+  const fin = clFinalis(parsed);
+  const base = clBaseKeyFifths(list[0].gabc);
+  const origPc = clPcOf(clMod(fin.D, 7), fin.alt);
+  for (let k = 0; k < 12; k++) {
+    const pc = clMod(origPc + k, 12);
+    const t = clBestTarget(pc, fin, base);
+    if (!t) continue;
+    const o = document.createElement('option');
+    o.value = pc;
+    const sig = t.sigFifths === 0 ? 'ohne Vorz.' : Math.abs(t.sigFifths) + (t.sigFifths > 0 ? '♯' : '♭');
+    o.textContent = clKeyName(t.step, t.alt) + ' ' + CL_MODE_DE[t.modeIdx] + ' (' + sig + ')' + (pc === origPc ? ' – Original' : '');
+    if ((clState.targetPc === null && pc === origPc) || clState.targetPc === pc) o.selected = true;
+    sel.appendChild(o);
+  }
+}
+
+function clRender() {
+  const el = document.getElementById('cl-score');
+  const info = document.getElementById('cl-info');
+  const octEl = document.getElementById('cl-oct');
+  if (octEl) octEl.textContent = (clState.octave > 0 ? '+' : '') + clState.octave;
+  if (!el) return;
+  let abc, liq = [];
+  if (clState.manualAbc) {
+    abc = clState.manualAbc;
+    if (info) info.innerHTML = '<span style="color:#e0a060">Von Hand bearbeitete Fassung</span> – „Aus Choral übernehmen“ erzeugt sie neu aus dem Choral (Handänderungen gehen dabei verloren).';
+  } else {
+    clLast = clBuild();
+    if (!clLast) {
+      el.innerHTML = '<div style="color:#6b5e3e;font:14px serif;padding:20px">Noch keine Noten vorhanden – zuerst im Choral-Editor ein Stück erfassen, laden oder importieren.</div>';
+      if (info) info.textContent = '';
+      return;
+    }
+    abc = clLast.abc; liq = clLast.liqChars;
+    const inf = clLast.info;
+    if (info) info.textContent = 'Schlusston ' + inf.finalisOrig + ' (' + inf.modeName + ')' +
+      (inf.semitones ? ' → transponiert auf ' + inf.finalisTarget : '') + ' · Vorzeichnung: ' + inf.sigText +
+      ' · Achtel = Grundschlag, Viertel = Mora/Tonwiederholung, Strich = Episem, kleine Note = Liqueszenz';
+  }
+  const src = document.getElementById('cl-src');
+  if (src && document.activeElement !== src) src.value = abc;
+  clRenderAbc(el, abc, liq, clScoreWidth());
+}
+
+function clOpen() {
+  clEnsureAbcjs(() => { clFillTargetSelect(); clRender(); });
+}
+
+function clRegenerate() {
+  if (clState.manualAbc && !confirm('Die von Hand bearbeitete Fassung wird durch eine neu aus dem Choral erzeugte ersetzt. Fortfahren?')) return;
+  clState.manualAbc = null;
+  clFillTargetSelect();
+  clRender();
+}
+
+function clSetTarget(v) {
+  clState.targetPc = parseInt(v, 10);
+  clState.manualAbc = null;
+  clRender();
+}
+
+function clSetOctave(delta) {
+  clState.octave = Math.max(-2, Math.min(2, clState.octave + delta));
+  clState.manualAbc = null;
+  clRender();
+}
+
+function clToggleSource() {
+  const p = document.getElementById('cl-src-panel');
+  if (!p) return;
+  const open = p.style.display === 'none';
+  p.style.display = open ? 'flex' : 'none';
+  setTimeout(clRender, 50);
+}
+
+function clApplySource() {
+  const src = document.getElementById('cl-src');
+  const msg = document.getElementById('cl-src-msg');
+  if (!src || !window.ABCJS) return;
+  clState.manualAbc = src.value;
+  clRender();
+  try {
+    const tunes = ABCJS.parseOnly(src.value);
+    const warn = [].concat(...tunes.map(t => t.warnings || []));
+    if (msg) msg.textContent = warn.length ? warn.length + ' Hinweis(e): ' + String(warn[0]).replace(/<[^>]+>/g, '') : 'Übernommen.';
+  } catch (e) { if (msg) msg.textContent = 'Fehler: ' + e.message; }
+}
+
+function clCurrentAbc() {
+  return clState.manualAbc || (clLast && clLast.abc) || '';
+}
+
+function clDownloadAbc() {
+  const abc = clCurrentAbc();
+  if (!abc) return;
+  const title = ((document.getElementById('greg-title') || { value: '' }).value.trim() || 'Stueck').replace(/[^a-zA-Z0-9äöüÄÖÜ_ -]/g, '_');
+  const blob = new Blob([abc], { type: 'text/vnd.abc;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = title + '.abc'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function clPrint() {
+  const el = document.getElementById('cl-score');
+  if (!el || !el.querySelector('svg')) return;
+  const w = window.open('', '_blank');
+  if (!w) { alert('Pop-up wurde blockiert – bitte Pop-ups für diese Seite erlauben.'); return; }
+  const title = (document.getElementById('greg-title') || { value: '' }).value || 'Notator';
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + title.replace(/</g, '&lt;') +
+    '</title><style>@page{size:A4;margin:14mm}body{margin:0;background:#fff}svg{width:100%;height:auto;display:block;page-break-inside:avoid}</style></head><body>' +
+    el.innerHTML + '</body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 300);
+}
+
+let _clResizeTimer = null;
+window.addEventListener('resize', () => {
+  const p = document.getElementById('classic-panel');
+  if (!p || p.style.display === 'none') return;
+  clearTimeout(_clResizeTimer);
+  _clResizeTimer = setTimeout(clRender, 250);
+});
+
 function switchTab(tab) {
   const editorEls=['tb','main'];
+  const clp=document.getElementById('classic-panel');
+  if(clp) clp.style.display='none';
   const gp=document.getElementById('gabc-panel');
   const grp=document.getElementById('greg-panel');
   const be=document.getElementById('tab-editor');
@@ -14025,8 +14718,11 @@ function switchTab(tab) {
     if(bgr){bgr.style.background='#2a3820';bgr.style.color='#e0d4b0';}
     setTimeout(gregRender, 150);
   } else {
-    editorEls.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='';});
+    // Der alte Klick-Noten-Editor (#tb/#main) wird nicht mehr angezeigt;
+    // stattdessen die klassische Orgel-Fassung (abcjs-Notensatz).
+    if(clp) clp.style.cssText='display:flex;flex:1;overflow:hidden;flex-direction:column;background:#1a2414';
     be.style.background='#3d3420';be.style.color='#e0d4b0';
+    clOpen();
   }
 }
 
