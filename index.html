@@ -7620,7 +7620,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '219';
+const NOTATOR_BUILD_ID = '220';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14661,10 +14661,37 @@ function clRenderAbc(el, abc, liqChars, staffwidth) {
         });
       })))));
     }
-    div.querySelectorAll('svg').forEach(clPlaceLyricAnnotations);
+    div.querySelectorAll('svg').forEach(sv => { clPlaceLyricAnnotations(sv); clTightenHeader(sv); });
     all.push(...tunes);
   });
   return all;
+}
+
+// abcjs lässt zwischen Kopfbereich (Titel/Untertitel/Kopfzeile) und dem
+// ersten Notensystem sehr viel Luft (~80 px). Der Kopfblock wird darum nach
+// unten an die Musik herangerückt (Abstand CL_HEADER_GAP) und der frei
+// gewordene Streifen oben per viewBox abgeschnitten. Die Musik selbst behält
+// ihre Koordinaten (wichtig für Freitext-Positionen und PDF-Seitenumbruch).
+const CL_HEADER_GAP = 24; // px, ergibt im PDF ca. 0,6–0,9 cm je nach Breite
+function clTightenHeader(svg) {
+  const meta = svg.querySelector('g.abcjs-meta-top');
+  if (!meta) return;
+  let hb;
+  try { const b = meta.getBBox(); if (!b.height) return; hb = b.y + b.height; } catch (e) { return; }
+  let top = Infinity;
+  Array.from(svg.children).forEach(c => {
+    if (c === meta || /^(style|title|defs)$/i.test(c.tagName)) return;
+    try { const b = c.getBBox(); if (b.height || b.width) top = Math.min(top, b.y); } catch (e) {}
+  });
+  if (!isFinite(top)) return;
+  const delta = Math.floor(top - hb - CL_HEADER_GAP);
+  if (delta <= 2) return;
+  const w = parseFloat(svg.getAttribute('width')) || svg.getBoundingClientRect().width;
+  const h = parseFloat(svg.getAttribute('height')) || svg.getBoundingClientRect().height;
+  meta.setAttribute('transform', 'translate(0,' + delta + ')');
+  svg.setAttribute('viewBox', '0 ' + delta + ' ' + w + ' ' + (h - delta));
+  svg.setAttribute('width', w);
+  svg.setAttribute('height', h - delta);
 }
 
 // Verschiebt Unter-Beschriftungen (iij., ij., Ant. …) auf die Grundlinie
@@ -15024,13 +15051,14 @@ function clTextDragStart(ev, tx, el, svg) {
   const p0 = clSvgPoint(svg, ev.clientX, ev.clientY);
   const ox = tx.x, oy = tx.y;
   const h = clSvgHeight(svg);
+  const vy = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.y) || 0;
   const w = parseFloat(svg.getAttribute('width')) || 800;
   let tw = 0; try { tw = el.getBBox().width; } catch (e) {}
   el.setPointerCapture && el.setPointerCapture(ev.pointerId);
   const move = e => {
     const p = clSvgPoint(svg, e.clientX, e.clientY);
     tx.x = Math.round(Math.max(2, Math.min(w - tw - 2, ox + p.x - p0.x)));
-    tx.y = Math.round(Math.max(10, Math.min(h - 4, oy + p.y - p0.y)));
+    tx.y = Math.round(Math.max(vy + 10, Math.min(vy + h - 4, oy + p.y - p0.y)));
     el.setAttribute('x', tx.x); el.setAttribute('y', tx.y);
     el.querySelectorAll('tspan').forEach(sp => sp.setAttribute('x', tx.x));
   };
@@ -15094,8 +15122,10 @@ function clExportPDF() {
         z.top = Math.min(z.top, bb.y); z.bottom = Math.max(z.bottom, bb.y + bb.height);
       } catch (e) {}
     });
+    const vy0 = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.y) || 0;
     const lineBoxes = Object.values(zones).filter(z => isFinite(z.top));
     if (printTexts) svg.querySelectorAll('text.cl-text').forEach(t => { try { const bb = t.getBBox(); lineBoxes.push({ top: bb.y, bottom: bb.y + bb.height }); } catch (e) {} });
+    lineBoxes.forEach(z => { z.top -= vy0; z.bottom -= vy0; });
     const clone = svg.cloneNode(true);
     clone.querySelectorAll('text.cl-text').forEach(t => { if (!printTexts) t.remove(); else { t.setAttribute('fill', '#000'); t.querySelectorAll('title').forEach(x => x.remove()); } });
     const vb = svg.viewBox && svg.viewBox.baseVal;
