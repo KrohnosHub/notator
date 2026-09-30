@@ -605,6 +605,8 @@ input[type=file]{display:none}
     <button class="b" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button>
     <span style="color:#3a4a30">|</span>
     <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
+    <button class="b" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button>
+    <button class="b" onclick="clResetChords()" style="font-size:11px;padding:3px 8px" title="Von Hand gewählte Akkorde zurücksetzen">&#8634; Akkorde</button>
     <button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Freitext einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Text</button>
     <span style="color:#3a4a30">|</span>
     <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)">Breite
@@ -7620,7 +7622,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '220';
+const NOTATOR_BUILD_ID = '221';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14431,12 +14433,183 @@ function clApplyHeaderToAbc(abc, title, subtitle, left, right) {
   return out.join('\n');
 }
 
-// opts: { targetPc (0-11 oder null = Original), octave (int), charsPerLine, headers:[{title,subtitle}] }
+// ── 6. Begleitsatz: modale, vierstimmige Harmonisierung ────────────
+// Regeln (modale Choralbegleitung, vgl. Solesmes/Nova Organi Harmonia):
+//  - nur leitereigene Dur-/Molldreiklänge (keine verminderten/übermässigen,
+//    keine Leittonalterationen); ein b der Melodie gilt auch für den Satz
+//  - Akkordwechsel nur an Schwerpunkten: Wortanfang, Beginn eines Melismas,
+//    nach einem Trennstrich/Atemzeichen, spätestens alle 8 Pulse
+//  - der Akkord muss den ersten Melodieton des Abschnitts enthalten; übrige
+//    Melodietöne dürfen Durchgänge sein (lange Töne sollten passen)
+//  - Schlussakkord auf der Finalis in Grundstellung, Phrasenschlüsse in
+//    Grundstellung, Sextakkorde sonst sparsam
+//  - Stimmführung: kleinste Bewegung, keine Stimmkreuzung, Alt immer unter
+//    der Melodie, Abstände S–A/A–T höchstens Oktave, keine Quint-/
+//    Oktavparallelen; liegende Töne werden übergebunden
+// Optimierung per dynamischer Programmierung über alle Abschnitte.
+const CL_DE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'H'];
+function clSemi(D, alt) { return Math.floor(D / 7) * 12 + CL_NAT_PC[clMod(D, 7)] + alt; }
+function clGermanNote(step, alt) {
+  step = clMod(step, 7);
+  const b = CL_DE_NAMES[step];
+  if (alt === 0) return b;
+  if (alt > 0) return b + 'is'.repeat(alt);
+  if (alt === -1) return step === 6 ? 'B' : step === 2 ? 'Es' : step === 5 ? 'As' : b + 'es';
+  return b + 'eses';
+}
+function clChordName(ch) {
+  const n = clGermanNote(ch.root, ch.alts[0]);
+  return ch.minor ? n.toLowerCase() + '-Moll' : n + '-Dur';
+}
+
+// Akkordkandidaten eines Abschnitts (Dreiklang auf jeder Stufe der lokalen Leiter)
+function clSegChords(seg, keyAlt, onlyFirst) {
+  // Lokale Leiter: Vorzeichnung + Alterationen der Melodie in diesem Abschnitt;
+  // der erste (tragende) Melodieton hat Vorrang (z.B. H und B im selben Abschnitt).
+  const scale = keyAlt.slice();
+  if (!onlyFirst) seg.notes.slice(1).forEach(n => { scale[clMod(n.pitch.D, 7)] = n.pitch.alt; });
+  const s0 = seg.notes[0].pitch;
+  scale[clMod(s0.D, 7)] = s0.alt;
+  const out = [];
+  for (let r = 0; r < 7; r++) {
+    const steps = [r, clMod(r + 2, 7), clMod(r + 4, 7)];
+    const alts = steps.map(st => scale[st]);
+    const pcs = steps.map((st, i) => clPcOf(st, alts[i]));
+    const third = clMod(pcs[1] - pcs[0], 12), fifth = clMod(pcs[2] - pcs[0], 12);
+    if (fifth !== 7 || (third !== 3 && third !== 4)) continue;
+    if (!pcs.includes(clPcOf(clMod(s0.D, 7), s0.alt))) continue;
+    out.push({ root: r, steps, alts, pcs, minor: third === 3 });
+  }
+  if (!out.length && !onlyFirst) return clSegChords(seg, keyAlt, true);
+  return out;
+}
+
+function clVoicings(seg, ch, inv) {
+  const melS = seg.notes.map(n => clSemi(n.pitch.D, n.pitch.alt));
+  const s0 = melS[0], minMel = Math.min(...melS);
+  const tone = D => { const st = clMod(D, 7); const i = ch.steps.indexOf(st); return i < 0 ? null : { D, alt: ch.alts[i], i, s: clSemi(D, ch.alts[i]) }; };
+  const bassStep = ch.steps[inv];
+  const res = [];
+  const sIdx = ch.pcs.indexOf(clPcOf(clMod(seg.notes[0].pitch.D, 7), seg.notes[0].pitch.alt));
+  for (let bD = 14; bD <= 29; bD++) {
+    if (clMod(bD, 7) !== bassStep) continue;
+    const B = tone(bD); if (!B) continue;
+    for (let tD = 19; tD <= 33; tD++) {
+      const T = tone(tD); if (!T || T.s <= B.s || T.s - B.s > 19) continue;
+      for (let aD = 23; aD <= 38; aD++) {
+        const A = tone(aD); if (!A || A.s <= T.s || A.s - T.s > 12) continue;
+        if (A.s >= minMel || s0 - A.s > 12) continue;
+        const idx = [sIdx, A.i, T.i, B.i];
+        if (!idx.includes(0) || !idx.includes(1)) continue;
+        let c = 0;
+        if (!idx.includes(2)) c += 0.8;
+        if (idx.filter(x => x === 1).length > 1) c += 1.5;
+        c += 0.04 * Math.abs(s0 - A.s - 5);
+        c += 0.02 * Math.abs(T.s - (A.s + B.s) / 2);
+        res.push({ A, T, B, c });
+      }
+    }
+  }
+  res.sort((a, b) => a.c - b.c);
+  return res.slice(0, 10);
+}
+
+// segs: [{notes:[{pitch,dur}], pulses, endBar, final, key}]
+// ctx: {keyAlt, finalisStep, overrides:{key: degree}}
+function clHarmonize(segs, ctx) {
+  if (!segs.length) return;
+  const states = segs.map((seg, si) => {
+    let chords = clSegChords(seg, ctx.keyAlt);
+    seg.candidates = chords;
+    const ov = ctx.overrides && ctx.overrides[seg.key];
+    if (ov !== undefined && ov !== null) {
+      const want = clMod(ctx.finalisStep + ov, 7);
+      const f = chords.filter(c => c.root === want);
+      if (f.length) chords = f;
+    }
+    const isLast = si === segs.length - 1;
+    const phraseEnd = isLast || seg.endBar === 'maior' || seg.endBar === 'finalis' || seg.endBar === 'minor';
+    const st = [];
+    chords.forEach(ch => {
+      let hc = 0;
+      const chordPcs = ch.pcs;
+      seg.notes.slice(1).forEach(n => { if (!chordPcs.includes(clPcOf(clMod(n.pitch.D, 7), n.pitch.alt))) hc += n.dur >= 2 ? 3 : 0.6; });
+      if (isLast && ch.root !== ctx.finalisStep) hc += 20;
+      if (si === 0 && ch.root !== ctx.finalisStep) hc += 1;
+      // Phrasenschluss an Doppel-/Schlussstrich: Finalis-Akkord deutlich bevorzugt
+      if (phraseEnd && !isLast && ch.root !== ctx.finalisStep) hc += (seg.endBar === 'minor' ? 0.6 : 2.5);
+      [0, 1].forEach(inv => {
+        if (inv && phraseEnd) return;
+        let vs = clVoicings(seg, ch, inv);
+        vs.forEach(v => st.push({ ch, inv, v, cost: hc + v.c + (inv ? 1.2 : 0) }));
+      });
+    });
+    if (!st.length) {
+      // Notlösung (z.B. Melodie ausserhalb der Stimmlagen): Pausen statt Akkord,
+      // damit die Optimierung über die übrigen Abschnitte nicht abbricht.
+      st.push({ ch: null, inv: 0, v: { A: null, T: null, B: null, c: 0 }, cost: 30 });
+    }
+    return st;
+  });
+  // DP
+  const best = states.map(st => st.map(() => ({ cost: Infinity, prev: -1 })));
+  states[0].forEach((s, i) => { best[0][i].cost = s.cost; });
+  for (let k = 1; k < segs.length; k++) {
+    const pSeg = segs[k - 1], cSeg = segs[k];
+    const spPrev = clSemi(pSeg.notes[pSeg.notes.length - 1].pitch.D, pSeg.notes[pSeg.notes.length - 1].pitch.alt);
+    const sCur = clSemi(cSeg.notes[0].pitch.D, cSeg.notes[0].pitch.alt);
+    states[k].forEach((s, i) => {
+      let bc = Infinity, bp = -1;
+      states[k - 1].forEach((p, j) => {
+        const pc = best[k - 1][j].cost;
+        if (pc === Infinity) return;
+        const t = pc + clTransCost(p, s, spPrev, sCur);
+        if (t < bc) { bc = t; bp = j; }
+      });
+      best[k][i].cost = bc + s.cost; best[k][i].prev = bp;
+    });
+  }
+  let k = segs.length - 1;
+  let bi = -1, bv = Infinity;
+  best[k].forEach((b, i) => { if (b.cost < bv) { bv = b.cost; bi = i; } });
+  for (; k >= 0 && bi >= 0; k--) {
+    const s = states[k][bi];
+    segs[k].chord = s.ch; segs[k].inv = s.inv; segs[k].voicing = s.v;
+    bi = best[k][bi].prev;
+  }
+}
+
+function clTransCost(p, s, spPrev, sCur) {
+  let c = 0;
+  if (!p.ch || !s.ch) return 2;
+  if (p.ch.root === s.ch.root) c += 0.3;
+  else {
+    const iv = clMod(s.ch.root - p.ch.root, 7);
+    c += (iv === 3 || iv === 4) ? 0 : (iv === 2 || iv === 5) ? 0.4 : 0.9;
+  }
+  const pv = p.v, cv = s.v;
+  if (!pv.A || !cv.A) return c + 2;
+  const P = [spPrev, pv.A.s, pv.T.s, pv.B.s], C = [sCur, cv.A.s, cv.T.s, cv.B.s];
+  c += 0.12 * (Math.abs(C[1] - P[1]) + Math.abs(C[2] - P[2])) + 0.05 * Math.abs(C[3] - P[3]);
+  if (Math.abs(C[1] - P[1]) > 7) c += 1;
+  if (Math.abs(C[2] - P[2]) > 7) c += 1;
+  for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) {
+    const d1 = clMod(P[i] - P[j], 12), d2 = clMod(C[i] - C[j], 12);
+    const mi = C[i] - P[i], mj = C[j] - P[j];
+    if (d1 === d2 && (d1 === 0 || d1 === 7) && mi !== 0 && mj !== 0 && Math.sign(mi) === Math.sign(mj)) c += 10;
+  }
+  return c;
+}
+
+// opts: { targetPc (0-11 oder null = Original), octave (int), charsPerLine, headers:[{title,subtitle}],
+//         accomp (bool: Begleitsatz), chordOverrides ({segKey: Stufe relativ zur Finalis}) }
 // liefert { abc, liqChars:[startChar...], info }
 function clGabcToAbc(gabcList, opts) {
   opts = opts || {};
   const tunes = [];
   const liqChars = [];
+  const segRanges = []; // Klickbereiche je Begleitsatz-Abschnitt {start,end,key}
+  const segInfo = {};   // key -> {candidates:[{deg,name}], current, currentName}
   let abcAll = '';
   let info = null;
   // Intervall aus erstem Abschnitt
@@ -14527,6 +14700,51 @@ function clGabcToAbc(gabcList, opts) {
     });
     if (line.length) lines.push(line);
 
+    // Begleitsatz: Abschnitte (Akkordwechsel an Schwerpunkten) bilden + harmonisieren
+    const segs = [];
+    if (opts.accomp) {
+      let cur = null, prevHyphen = false;
+      // Schlusston einer Phrase (vor Divisio minor/maior/finalis oder am Ende)
+      // bekommt einen eigenen Akkord, wenn er lang ist oder das Stück beendet
+      // -- nur so kann der Schluss auf dem Finalis-Akkord stehen.
+      const flat = [].concat(...lines);
+      for (let q = 0; q < flat.length; q++) {
+        const u = flat[q];
+        if (u.kind !== 'syl') continue;
+        let r = q + 1; while (r < flat.length && flat[r].kind === 'ann') r++;
+        const nx = flat[r];
+        const endsHere = !nx || (nx.kind === 'bar' && nx.t !== 'minima');
+        if (endsHere) { const ln = u.notes[u.notes.length - 1]; if (ln.dur >= 2 || !nx || nx.final) ln._cadence = true; }
+      }
+      lines.forEach((ln, li) => {
+        let lineStart = true;
+        ln.forEach(u => {
+          if (u.kind === 'bar') { if (cur) { cur.endBar = u.t; cur.final = !!u.final; } cur = null; return; }
+          if (u.kind !== 'syl') return;
+          const wordStart = !!u.text && !prevHyphen;
+          u.notes.forEach((nt, k) => {
+            const boundary = !cur || lineStart || (k === 0 && (wordStart || u.notes.length > 1)) || cur.pulses >= 8 || nt._cadence;
+            if (boundary) { cur = { notes: [], pulses: 0, line: li, key: si + ':' + segs.length }; segs.push(cur); }
+            cur.notes.push(nt); cur.pulses += nt.dur; nt._seg = cur;
+            lineStart = false;
+          });
+          if (u.text) prevHyphen = !!u.hyphen;
+        });
+      });
+      clHarmonize(segs, { keyAlt, finalisStep: tgt.step, overrides: opts.chordOverrides || {} });
+      segs.forEach((sg, i) => {
+        const nx = segs[i + 1];
+        sg.tieNext = !!(nx && !sg.endBar && nx.line === sg.line);
+        sg.next = nx;
+        segInfo[sg.key] = {
+          candidates: (sg.candidates || []).map(c => ({ deg: clMod(c.root - tgt.step, 7), name: clChordName(c) })),
+          current: sg.chord ? clMod(sg.chord.root - tgt.step, 7) : null,
+          currentName: sg.chord ? clChordName(sg.chord) + (sg.inv ? ' (Sextakkord)' : '') : '',
+          overridden: !!(opts.chordOverrides && opts.chordOverrides[sg.key] != null),
+        };
+      });
+    }
+
     // ABC-Text
     let head = 'X:' + (si + 1) + '\n';
     const hdr = (opts.headers && opts.headers[si]) || null;
@@ -14543,12 +14761,36 @@ function clGabcToAbc(gabcList, opts) {
     const right = (hdr && hdr.right != null) ? hdr.right : autoRight;
     if (si === 0) { info.autoLeft = autoLeft; info.autoRight = autoRight; }
     head += clAbcSideLines(left, right);
-    head += 'M:none\nL:1/8\nK:' + abcKey + ' clef=treble\n';
+    head += 'M:none\nL:1/8\n';
+    if (opts.accomp) {
+      head += '%%score {(S A) | (T B)}\nV:S clef=treble stem=up\nV:A clef=treble stem=down\nV:T clef=bass stem=up\nV:B clef=bass stem=down\n';
+    }
+    head += 'K:' + abcKey + ' clef=treble\n';
     let body = '';
     lines.forEach(ln => {
       let music = '', lyr = [];
       let measureAcc = {}; // "D" -> alt (Zeilenanfang = neue Messung)
       let lastLyricLen = 0;
+      const low = { A: '', T: '', B: '' }, lowAcc = { A: {}, T: {}, B: {} }, lowRanges = { A: [], T: [], B: [] }, sRanges = [];
+      const spacerOnly = str => (String(str).replace(/"[^"]*"/g, '').match(/y\d*/g) || []).map(x => ' ' + x).join('');
+      const addLow = str => { if (opts.accomp) ['A', 'T', 'B'].forEach(v => { low[v] += str; }); };
+      const emitLow = (sg) => {
+        const vc = sg.voicing || {};
+        ['A', 'T', 'B'].forEach(v => {
+          const n = vc[v];
+          if (!n) { low[v] += ' x' + (sg.pulses > 1 ? sg.pulses : ''); return; }
+          const key = String(n.D);
+          const shown = key in lowAcc[v] ? lowAcc[v][key] : keyAlt[clMod(n.D, 7)];
+          const needAcc = shown !== n.alt;
+          if (needAcc) lowAcc[v][key] = n.alt;
+          const nn = sg.next && sg.next.voicing && sg.next.voicing[v];
+          const tie = sg.tieNext && nn && nn.D === n.D && nn.alt === n.alt;
+          const parts = clAbcLen(sg.pulses);
+          const start = low[v].length + 1;
+          low[v] += ' ' + parts.map((pp, pi) => clAbcPitch(n.D, n.alt, needAcc && pi === 0) + pp).join('-') + (tie ? '-' : '');
+          lowRanges[v].push({ s: start, e: low[v].length, key: sg.key });
+        });
+      };
       ln.forEach(u => {
         // Notenlose Texte (iij., Ant., * ...) als Unter-Beschriftung auf einem
         // unsichtbaren Platzhalter; clPlaceLyricAnnotations() schiebt sie nach
@@ -14574,10 +14816,12 @@ function clGabcToAbc(gabcList, opts) {
         }
         if (u.kind === 'syl') {
           music += ' ';
-          if (annTxt) music += annTxt + ' ';
+          if (annTxt) { music += annTxt + ' '; addLow(spacerOnly(annTxt)); }
           const multi = u.notes.length > 1;
           if (multi) music += '(';
           u.notes.forEach((nt, k) => {
+            if (opts.accomp && nt._seg && nt._seg.notes[0] === nt) emitLow(nt._seg);
+            const noteStart = music.length;
             const key = String(nt.pitch.D);
             const shown = key in measureAcc ? measureAcc[key] : keyAlt[clMod(nt.pitch.D, 7)];
             const needAcc = shown !== nt.pitch.alt;
@@ -14592,6 +14836,7 @@ function clGabcToAbc(gabcList, opts) {
               s += pitchStr + p;
             });
             music += s;
+            if (nt._seg) sRanges.push({ s: noteStart, e: music.length, key: nt._seg.key });
           });
           if (multi) music += ')';
           // Lyrics: erste Note = Silbe, weitere Noten = "_" (Silbe gehalten)
@@ -14601,29 +14846,45 @@ function clGabcToAbc(gabcList, opts) {
           u._notesRef = u.notes;
           lastLyricLen = u.notes.length > 1 ? 0 : (u.text || '').length;
         } else if (u.kind === 'bar') {
-          if (annTxt) music += ' ' + annTxt;
-          if (u.t === 'minima' && !u.final) music += ' !breath!y';
-          else { music += ' ' + (u.final ? '|]' : u.t === 'minor' ? '|' : '||'); measureAcc = {}; }
-          if (annAfter && !u.final) music += annAfter;
+          if (annTxt) { music += ' ' + annTxt; addLow(spacerOnly(annTxt)); }
+          if (u.t === 'minima' && !u.final) { music += ' !breath!y'; addLow(' y'); }
+          else {
+            const bs = ' ' + (u.final ? '|]' : u.t === 'minor' ? '|' : '||');
+            music += bs; measureAcc = {}; addLow(bs);
+            lowAcc.A = {}; lowAcc.T = {}; lowAcc.B = {};
+          }
+          if (annAfter && !u.final) { music += annAfter; addLow(annAfter); }
         } else if (u.kind === 'ann') {
-          music += ' ' + annTxt;
+          music += ' ' + annTxt; addLow(spacerOnly(annTxt));
         }
       });
-      const lineStart = abcAll.length + head.length + body.length - (music.length - music.trimStart().length);
+      const sPrefix = opts.accomp ? '[V:S] ' : '';
+      const lead = music.length - music.trimStart().length;
+      const lineStart = abcAll.length + head.length + body.length + sPrefix.length - lead;
       ln.forEach(u => (u._notesRef || []).forEach(nt => { if (nt._liqOffset !== undefined) liqChars.push(lineStart + nt._liqOffset); }));
-      body += music.trim() + '\n';
+      sRanges.forEach(r => segRanges.push({ start: lineStart + r.s, end: lineStart + r.e, key: r.key }));
+      body += sPrefix + music.trim() + '\n';
       body += 'w: ' + lyr.join(' ') + '\n';
+      if (opts.accomp) {
+        ['A', 'T', 'B'].forEach(v => {
+          const pre = '[V:' + v + '] ';
+          const ld = low[v].length - low[v].trimStart().length;
+          const base = abcAll.length + head.length + body.length + pre.length - ld;
+          lowRanges[v].forEach(r => segRanges.push({ start: base + r.s, end: base + r.e, key: r.key }));
+          body += pre + (low[v].trim() || 'y') + '\n';
+        });
+      }
     });
     abcAll += head + body + '\n';
   });
-  return { abc: abcAll, liqChars, info };
+  return { abc: abcAll, liqChars, info, segRanges, segInfo };
 }
 
 
 // ── 4. Rendern mit abcjs (inkl. verkleinerter Liqueszenz-Noten) ──
 // Jedes Stück (X:-Block, = Abschnitt) bekommt ein eigenes SVG -- abcjs
 // rendert in ein einzelnes Element sonst nur das erste Stück.
-function clRenderAbc(el, abc, liqChars, staffwidth) {
+function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick) {
   if (!window.ABCJS) { el.textContent = 'Notensatz-Bibliothek (abcjs) nicht geladen – Internetverbindung prüfen.'; return []; }
   el.innerHTML = '';
   const starts = [];
@@ -14641,6 +14902,7 @@ function clRenderAbc(el, abc, liqChars, staffwidth) {
     el.appendChild(div);
     const tunes = ABCJS.renderAbc(div, part, {
       add_classes: true,
+      clickListener: onNoteClick ? function(abcelem, tuneNumber, classes, analysis, drag, ev) { onNoteClick(st + (abcelem.startChar || 0), ev); } : undefined,
       staffwidth: staffwidth || 740,
       paddingleft: 10, paddingright: 10, paddingbottom: 20,
       format: { titlefont: '"Palatino Linotype", Palatino, serif 18', subtitlefont: '"Palatino Linotype", Palatino, serif 13', composerfont: '"Palatino Linotype", Palatino, serif 11 italic', infofont: '"Palatino Linotype", Palatino, serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: '"Palatino Linotype", Palatino, serif 13' },
@@ -14661,7 +14923,8 @@ function clRenderAbc(el, abc, liqChars, staffwidth) {
         });
       })))));
     }
-    div.querySelectorAll('svg').forEach(sv => { clPlaceLyricAnnotations(sv); clTightenHeader(sv); });
+    const grand = /%%score/.test(part);
+    div.querySelectorAll('svg').forEach(sv => { clPlaceLyricAnnotations(sv, grand); clTightenHeader(sv); });
     all.push(...tunes);
   });
   return all;
@@ -14697,7 +14960,7 @@ function clTightenHeader(svg) {
 // Verschiebt Unter-Beschriftungen (iij., ij., Ant. …) auf die Grundlinie
 // der Textzeile desselben Systems und gibt ihnen dieselbe Schrift wie der
 // gesungene Text -- so stehen sie wie im Choralsatz direkt im Text.
-function clPlaceLyricAnnotations(svg) {
+function clPlaceLyricAnnotations(svg, grand) {
   const lineOf = el => { const m = String(el.getAttribute('class') || '').match(/abcjs-l(\d+)/); return m ? m[1] : null; };
   const lyricsByLine = {}, barsByLine = {};
   svg.querySelectorAll('text.abcjs-lyric').forEach(t => {
@@ -14735,7 +14998,9 @@ function clPlaceLyricAnnotations(svg) {
       // mittig unter den nächsten Trennstrich rechts davon
       let best = null;
       (barsByLine[l] || []).forEach(bEl => { const bb = bbox(bEl); if (bb && bb.x >= ab.x - 2 && (!best || bb.x < best.x)) best = bb; });
-      if (best) setX(a, best.x + best.width / 2, 'middle');
+      // Im Orgelsatz läuft der Taktstrich durch die Textzeile -> Text
+      // rechtsbündig direkt vor den Strich statt mittig darunter.
+      if (best) { if (grand) setX(a, best.x - 4, 'end'); else setX(a, best.x + best.width / 2, 'middle'); }
     }
   });
 }
@@ -14749,12 +15014,21 @@ const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-
 //        Fassung (ab der ersten Änderung im Orgel-Tab, danach keine
 //        automatische Übernahme mehr aus dem Choral)
 //  texts: Freitexte [{id, t (Stück-Index), x, y, text, size}] in SVG-Koordinaten
+//  accomp: Begleitsatz an/aus · chordOverrides: {Abschnitt: Akkordstufe rel. zur Finalis}
+//  manualAbcAcc: handbearbeiteter Quelltext der Fassung MIT Begleitsatz
 //  left/right: Kopfzeile links ("Ton 8") / rechts (Transpositionshinweis …);
 //        null = automatisch, sonst eigener Text (auch leer = ausgeblendet)
 var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] };
 function clNormalizeState() {
-  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] }, clState || {});
+  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: false, chordOverrides: {} }, clState || {});
   if (!Array.isArray(clState.texts)) clState.texts = [];
+  if (!clState.chordOverrides || typeof clState.chordOverrides !== 'object') clState.chordOverrides = {};
+}
+// Handbearbeiteter Quelltext wird je Fassung (mit/ohne Begleitsatz) getrennt geführt
+function clMK() { return clState.accomp ? 'manualAbcAcc' : 'manualAbc'; }
+function clToggleAccomp() {
+  clState.accomp = !clState.accomp;
+  clRender();
 }
 let clLast = null;
 let _clAbcjsLoading = false;
@@ -14810,7 +15084,7 @@ function clBuild() {
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
   const headers = list.map((x, i) => i === 0 ? Object.assign({}, clEffectiveHead(), { left: clState.left, right: clState.right }) : { title: x.title, subtitle: x.subtitle });
-  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers });
+  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, chordOverrides: clState.chordOverrides });
 }
 
 function clFillTargetSelect() {
@@ -14837,6 +15111,8 @@ function clFillTargetSelect() {
 }
 
 function clSyncControls() {
+  const ab = document.getElementById('cl-accomp-btn');
+  if (ab) { ab.innerHTML = clState.accomp ? '&#127929; Begleitsatz: an' : '&#127929; Begleitsatz: aus'; ab.style.background = clState.accomp ? '#2a4a6a' : ''; ab.style.color = clState.accomp ? '#fff' : ''; }
   const octEl = document.getElementById('cl-oct');
   if (octEl) octEl.textContent = (clState.octave > 0 ? '+' : '') + clState.octave;
   const wr = document.getElementById('cl-width');
@@ -14863,8 +15139,8 @@ function clRender() {
   clSyncControls();
   if (!el) return;
   let abc, liq = [];
-  if (clState.manualAbc) {
-    abc = clState.manualAbc;
+  if (clState[clMK()]) {
+    abc = clState[clMK()];
     if (info) info.innerHTML = '<span style="color:#e0a060">Von Hand bearbeitete Fassung</span> – „Aus Choral übernehmen“ erzeugt sie neu aus dem Choral (Handänderungen gehen dabei verloren).';
   } else {
     clLast = clBuild();
@@ -14877,13 +15153,13 @@ function clRender() {
     const inf = clLast.info;
     if (info) info.textContent = 'Schlusston ' + inf.finalisOrig + ' (' + inf.modeName + ')' +
       (inf.semitones ? ' → transponiert auf ' + inf.finalisTarget : '') + ' · Vorzeichnung: ' + inf.sigText +
-      ' · Achtel = Grundschlag, Viertel = Mora/Tonwiederholung, Strich = Episem, kleine Note = Liqueszenz';
+      (clState.accomp ? ' · Begleitsatz: Akkord durch Klick auf eine Note ändern' : ' · Achtel = Grundschlag, Viertel = Mora/Tonwiederholung, Strich = Episem, kleine Note = Liqueszenz');
   }
   const src = document.getElementById('cl-src');
   if (src && document.activeElement !== src) src.value = abc;
   const sw = clScoreWidth();
   el.style.width = (sw + 40) + 'px';
-  clRenderAbc(el, abc, liq, sw);
+  clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clState.accomp && clLast) ? clChordClick : null);
   clSyncControls();
   clDrawTexts();
 }
@@ -14895,16 +15171,16 @@ function clOpen() {
 }
 
 function clRegenerate() {
-  if (clState.manualAbc && !confirm('Die von Hand bearbeitete Fassung wird durch eine neu aus dem Choral erzeugte ersetzt. Fortfahren?')) return;
-  clState.manualAbc = null;
+  if (clState[clMK()] && !confirm('Die von Hand bearbeitete Fassung wird durch eine neu aus dem Choral erzeugte ersetzt. Fortfahren?')) return;
+  clState[clMK()] = null;
   clFillTargetSelect();
   clRender();
 }
 
 function clConfirmDropManual() {
-  if (!clState.manualAbc) return true;
+  if (!clState[clMK()]) return true;
   if (!confirm('Grundton/Oktave neu setzen erzeugt die Noten neu aus dem Choral – deine Handänderungen im Quelltext gehen dabei verloren. Fortfahren?')) return false;
-  clState.manualAbc = null;
+  clState[clMK()] = null;
   return true;
 }
 
@@ -14937,7 +15213,7 @@ function clHeadInput() {
   const ti = document.getElementById('cl-title'), su = document.getElementById('cl-subtitle');
   // Erste Änderung im Orgel-Tab koppelt die Fassung dauerhaft vom Choral ab.
   clState.head = { title: ti ? ti.value : '', subtitle: su ? su.value : '' };
-  if (clState.manualAbc) clState.manualAbc = clApplyHeaderToAbc(clState.manualAbc, clState.head.title, clState.head.subtitle);
+  if (clState[clMK()]) clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], clState.head.title, clState.head.subtitle);
   clSyncControls();
   clearTimeout(_clHeadTimer);
   _clHeadTimer = setTimeout(clRender, 300);
@@ -14948,7 +15224,7 @@ function clSideInput() {
   const le = document.getElementById('cl-left'), ri = document.getElementById('cl-right');
   clState.left = le ? le.value : '';
   clState.right = ri ? ri.value : '';
-  if (clState.manualAbc) { const h = clEffectiveHead(); clState.manualAbc = clApplyHeaderToAbc(clState.manualAbc, h.title, h.subtitle, clState.left, clState.right); }
+  if (clState[clMK()]) { const h = clEffectiveHead(); clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], h.title, h.subtitle, clState.left, clState.right); }
   clearTimeout(_clHeadTimer);
   _clHeadTimer = setTimeout(clRender, 300);
 }
@@ -14956,7 +15232,7 @@ function clSideInput() {
 function clHeadFromChant() {
   if (!confirm('Titel, Untertitel und Kopfzeile wieder automatisch aus dem Choral übernehmen? Deine eigene Fassung wird dabei ersetzt.')) return;
   clState.head = null; clState.left = null; clState.right = null;
-  if (clState.manualAbc) { const h = clChantHead(); clState.manualAbc = clApplyHeaderToAbc(clState.manualAbc, h.title, h.subtitle); }
+  if (clState[clMK()]) { const h = clChantHead(); clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], h.title, h.subtitle); }
   clRender();
 }
 
@@ -14972,7 +15248,7 @@ function clApplySource() {
   const src = document.getElementById('cl-src');
   const msg = document.getElementById('cl-src-msg');
   if (!src || !window.ABCJS) return;
-  clState.manualAbc = src.value;
+  clState[clMK()] = src.value;
   clRender();
   try {
     const tunes = ABCJS.parseOnly(src.value);
@@ -14982,7 +15258,7 @@ function clApplySource() {
 }
 
 function clCurrentAbc() {
-  return clState.manualAbc || (clLast && clLast.abc) || '';
+  return clState[clMK()] || (clLast && clLast.abc) || '';
 }
 
 function clFileBase() {
@@ -14997,6 +15273,47 @@ function clDownloadAbc() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = clFileBase() + '.abc'; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ── Akkord per Klick ändern ──────────────────────────────────────
+function clChordClick(absChar, ev) {
+  if (!clLast || !clLast.segRanges) return;
+  const r = clLast.segRanges.find(x => absChar >= x.start && absChar < x.end);
+  if (!r) return;
+  const inf = clLast.segInfo[r.key];
+  if (!inf) return;
+  clCloseChordMenu();
+  const m = document.createElement('div');
+  m.id = 'cl-chord-menu';
+  m.style.cssText = 'position:fixed;z-index:1000;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;min-width:170px';
+  const x = (ev && ev.clientX) || 100, y = (ev && ev.clientY) || 100;
+  m.style.left = Math.min(x + 6, window.innerWidth - 200) + 'px';
+  m.style.top = Math.min(y + 6, window.innerHeight - 260) + 'px';
+  const h = document.createElement('div');
+  h.textContent = 'Akkord: ' + inf.currentName;
+  h.style.cssText = 'font-weight:bold;margin-bottom:4px;color:#e0d4b0';
+  m.appendChild(h);
+  const mk = (label, onClick, active) => {
+    const bt = document.createElement('button');
+    bt.className = 'b'; bt.textContent = label;
+    bt.style.cssText = 'display:block;width:100%;text-align:left;margin:2px 0;font-size:12px;padding:3px 6px' + (active ? ';background:#3d6b35;color:#fff' : '');
+    bt.onclick = () => { clCloseChordMenu(); onClick(); };
+    m.appendChild(bt);
+  };
+  inf.candidates.forEach(c => mk(c.name, () => { clState.chordOverrides[r.key] = c.deg; clRender(); }, inf.overridden && c.deg === inf.current));
+  mk('↺ Automatisch', () => { delete clState.chordOverrides[r.key]; clRender(); }, !inf.overridden);
+  document.body.appendChild(m);
+  setTimeout(() => document.addEventListener('mousedown', clMenuOutside), 0);
+}
+function clMenuOutside(e) { const m = document.getElementById('cl-chord-menu'); if (m && !m.contains(e.target)) clCloseChordMenu(); }
+function clCloseChordMenu() {
+  const m = document.getElementById('cl-chord-menu'); if (m) m.remove();
+  document.removeEventListener('mousedown', clMenuOutside);
+}
+function clResetChords() {
+  if (!Object.keys(clState.chordOverrides).length) return;
+  if (!confirm('Alle von Hand gewählten Akkorde verwerfen und den Begleitsatz neu automatisch erzeugen?')) return;
+  clState.chordOverrides = {}; clRender();
 }
 
 // ── Freitext ─────────────────────────────────────────────────────
