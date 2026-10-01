@@ -7622,7 +7622,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '221';
+const NOTATOR_BUILD_ID = '222';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7879,26 +7879,6 @@ function gregLibTx(mode) {
   });
 }
 
-function gregLibList() {
-  return gregLibTx('readonly').then(function(store) {
-    return new Promise(function(resolve, reject) {
-      const out = [];
-      const req = store.openCursor();
-      req.onsuccess = function(e) {
-        const cursor = e.target.result;
-        if (cursor) {
-          out.push({ id: cursor.value.id, title: cursor.value.title, savedAt: cursor.value.savedAt, updatedAt: cursor.value.updatedAt });
-          cursor.continue();
-        } else {
-          out.sort(function(a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
-          resolve(out);
-        }
-      };
-      req.onerror = function(e) { reject(e.target.error); };
-    });
-  });
-}
-
 function gregLibGet(id) {
   return gregLibTx('readonly').then(function(store) {
     return new Promise(function(resolve, reject) {
@@ -7932,68 +7912,130 @@ function gregLibDeleteEntry(id) {
 // Speichert das aktuell offene Stück in der Bibliothek. Wurde es zuvor
 // schon aus der Bibliothek geladen bzw. dorthin gespeichert (gregLibCurrentId
 // gesetzt), wird dieser Eintrag aktualisiert statt einen neuen anzulegen.
-function gregLibSaveCurrent() {
-  const state = gregBuildStateObject();
-  const now = Date.now();
-  // id/savedAt undefined => neuer Eintrag (autoIncrement vergibt die id,
-  // savedAt wird auf jetzt gesetzt); beide gesetzt => bestehenden Eintrag
-  // aktualisieren, ursprüngliches savedAt bleibt erhalten.
-  const finish = function(title, id, savedAt) {
-    const record = { title: title, savedAt: savedAt || now, updatedAt: now, state: state };
-    if (id !== undefined) record.id = id;
-    gregLibPut(record).then(function(newId) {
-      gregLibCurrentId = newId;
-      gregGst('In Bibliothek gespeichert: "' + title + '"');
-      if (document.getElementById('modal-bg').classList.contains('open')) gregLibShowModal(); // Liste aktualisieren, falls offen
-    }).catch(function(err) { gregGst('Bibliothek-Speicherfehler: ' + err.message); });
-  };
-  if (gregLibCurrentId != null) {
-    gregLibGet(gregLibCurrentId).then(function(existing) {
-      if (existing) { finish(existing.title, existing.id, existing.savedAt); return; }
-      finish(state.title || 'Unbenanntes Stück', undefined, undefined);
+// ── Google-Drive-Ablage (Hauptablage der Bibliothek) ───────────────
+// Gesänge liegen als .notator-Dateien in Drive (Liturgie / Notator). Die
+// IndexedDB-Bibliothek dient nur noch als Offline-Kopie/Zwischenspeicher:
+// Einträge mit pending=true sind lokal neuer als in Drive und werden beim
+// nächsten Öffnen der Bibliothek (mit Anmeldung) automatisch hochgeladen.
+// Anmeldung: Google Identity Services (OAuth-Token-Client, nur im Browser,
+// kein Server). Bereich "drive", weil der Zielordner nicht von Notator
+// selbst angelegt wurde (mit "drive.file" wäre er unsichtbar).
+const NOTATOR_GDRIVE_FOLDER_ID = '144wHwMFQUFhNxcpun6CO9fXtewhFcLe3';
+const NOTATOR_GOOGLE_CLIENT_ID = '';
+const GD_SCOPE = 'https://www.googleapis.com/auth/drive';
+const GD_TOKEN_KEY = 'notatorGdToken';
+let _gdTokenClient = null, _gdGisLoading = null;
+
+function gdClientId() {
+  let ls = '';
+  try { ls = localStorage.getItem('notatorGoogleClientId') || ''; } catch (e) {}
+  return (NOTATOR_GOOGLE_CLIENT_ID || ls || '').trim();
+}
+function gdConfigured() { return !!gdClientId(); }
+
+function gdLoadGis() {
+  if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+  if (_gdGisLoading) return _gdGisLoading;
+  _gdGisLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => { _gdGisLoading = null; reject(new Error('Google-Anmeldedienst nicht erreichbar')); };
+    document.head.appendChild(s);
+  });
+  return _gdGisLoading;
+}
+
+function gdCachedToken() {
+  try {
+    const t = JSON.parse(sessionStorage.getItem(GD_TOKEN_KEY) || 'null');
+    if (t && t.token && t.exp > Date.now() + 60000) return t.token;
+  } catch (e) {}
+  return null;
+}
+function gdHasToken() { return !!gdCachedToken(); }
+function gdClearToken() { try { sessionStorage.removeItem(GD_TOKEN_KEY); } catch (e) {} }
+
+// interactive=true: darf ein Google-Anmeldefenster öffnen (nur aus einem
+// Klick heraus aufrufen, sonst blockiert der Browser das Popup).
+function gdGetToken(interactive) {
+  const cached = gdCachedToken();
+  if (cached) return Promise.resolve(cached);
+  if (!interactive) return Promise.reject(new Error('Nicht bei Google angemeldet'));
+  if (!gdConfigured()) return Promise.reject(new Error('Google Drive ist noch nicht eingerichtet (Client-ID fehlt)'));
+  return gdLoadGis().then(() => new Promise((resolve, reject) => {
+    if (!_gdTokenClient) {
+      _gdTokenClient = google.accounts.oauth2.initTokenClient({ client_id: gdClientId(), scope: GD_SCOPE, callback: () => {} });
+    }
+    _gdTokenClient.callback = resp => {
+      if (resp.error) { reject(new Error('Google-Anmeldung: ' + resp.error)); return; }
+      try { sessionStorage.setItem(GD_TOKEN_KEY, JSON.stringify({ token: resp.access_token, exp: Date.now() + (resp.expires_in || 3600) * 1000 })); } catch (e) {}
+      resolve(resp.access_token);
+    };
+    _gdTokenClient.error_callback = err => reject(new Error('Google-Anmeldung abgebrochen' + (err && err.type ? ' (' + err.type + ')' : '')));
+    _gdTokenClient.requestAccessToken({ prompt: '' });
+  }));
+}
+
+function gdFetch(url, opts, interactive) {
+  return gdGetToken(interactive).then(token => {
+    const o = Object.assign({}, opts || {});
+    o.headers = Object.assign({}, o.headers || {}, { Authorization: 'Bearer ' + token });
+    return fetch(url, o).then(r => {
+      if (r.status === 401) { gdClearToken(); throw new Error('Google-Anmeldung abgelaufen – bitte neu verbinden'); }
+      if (!r.ok) return r.text().then(t => { throw new Error('Drive-Fehler ' + r.status + ': ' + t.slice(0, 160)); });
+      return r;
     });
-  } else {
-    const title = prompt('Titel für die Bibliothek:', state.title || 'Unbenanntes Stück');
-    if (title === null) return; // abgebrochen
-    finish(title.trim() || 'Unbenanntes Stück', undefined, undefined);
-  }
+  });
 }
 
-function gregLibLoadEntry(id) {
-  gregLibGet(id).then(function(rec) {
-    if (!rec) { gregGst('Eintrag nicht gefunden (evtl. gelöscht).'); return; }
-    gregPush(); // Undo zurück zum vorherigen Stand erlauben
-    gregApplyLoadedState(rec.state);
-    gregLibCurrentId = rec.id;
-    gregRefreshList();
-    closeModal();
-    if (typeof gregMobileSetEditMode === 'function') gregMobileSetEditMode(false); // frisch geladenes Stück immer erst in der Ansicht zeigen
-    gregGst('Aus Bibliothek geladen: "' + rec.title + '"');
-    gregScheduleAutosave();
-  }).catch(function(err) { gregGst('Ladefehler: ' + err.message); });
+function gdList(interactive) {
+  const q = encodeURIComponent("'" + NOTATOR_GDRIVE_FOLDER_ID + "' in parents and trashed = false and name contains '.notator'");
+  return gdFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&orderBy=modifiedTime desc&pageSize=1000&fields=files(id,name,modifiedTime)', {}, interactive)
+    .then(r => r.json()).then(j => (j.files || []).filter(f => /\.notator$/i.test(f.name)));
 }
 
-function gregLibRenameEntry(id, currentTitle) {
-  const title = prompt('Neuer Titel:', currentTitle);
-  if (title === null || !title.trim()) return;
-  gregLibGet(id).then(function(rec) {
-    if (!rec) return;
-    rec.title = title.trim();
-    rec.updatedAt = Date.now();
-    return gregLibPut(rec);
-  }).then(function() { gregLibShowModal(); }).catch(function(err) { gregGst('Fehler: ' + err.message); });
+function gdDownload(id, interactive) {
+  return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id) + '?alt=media', {}, interactive).then(r => r.json());
 }
 
-function gregLibDeleteEntryConfirm(id, title) {
-  if (!confirm('"' + title + '" endgültig aus der Bibliothek löschen?')) return;
-  gregLibDeleteEntry(id).then(function() {
-    if (gregLibCurrentId === id) gregLibCurrentId = null;
-    gregLibShowModal();
-  }).catch(function(err) { gregGst('Löschfehler: ' + err.message); });
+// Legt an (id leer) oder überschreibt (id gesetzt); liefert die Datei-ID.
+function gdUpload(name, stateObj, id, interactive) {
+  const meta = id ? { name } : { name, parents: [NOTATOR_GDRIVE_FOLDER_ID], mimeType: 'application/json' };
+  const boundary = 'notator' + Date.now();
+  const body = '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(meta) +
+    '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + JSON.stringify(stateObj, null, 2) + '\r\n--' + boundary + '--';
+  const url = 'https://www.googleapis.com/upload/drive/v3/files' + (id ? '/' + encodeURIComponent(id) : '') + '?uploadType=multipart&fields=id,name,modifiedTime';
+  return gdFetch(url, { method: id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'multipart/related; boundary=' + boundary }, body }, interactive)
+    .then(r => r.json()).then(j => j.id);
 }
 
-function gregLibExportAll() {
-  gregLibTx('readonly').then(function(store) {
+function gdRename(id, name, interactive) {
+  return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) }, interactive);
+}
+// "Löschen" = in den Drive-Papierkorb (dort 30 Tage wiederherstellbar)
+function gdTrash(id, interactive) {
+  return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trashed: true }) }, interactive);
+}
+
+function gdFileName(title) {
+  return (String(title || 'Unbenanntes Stück').trim().replace(/[\\/:*?"<>|]+/g, '_') || 'Unbenanntes Stück') + '.notator';
+}
+function gdTitleFromName(name) { return String(name || '').replace(/\.notator$/i, ''); }
+
+function gdSetupDialog() {
+  const cur = gdClientId();
+  const v = prompt('Google-Client-ID für Notator eingeben (aus der Google Cloud Console, endet auf .apps.googleusercontent.com).\nWird nur in diesem Browser gespeichert.', cur);
+  if (v === null) return;
+  try { localStorage.setItem('notatorGoogleClientId', v.trim()); } catch (e) {}
+  _gdTokenClient = null;
+  gdClearToken();
+  gregLibShowModal();
+}
+
+function gregLibAll() {
+  return gregLibTx('readonly').then(function(store) {
     return new Promise(function(resolve, reject) {
       const out = [];
       const req = store.openCursor();
@@ -8004,7 +8046,169 @@ function gregLibExportAll() {
       };
       req.onerror = function(e) { reject(e.target.error); };
     });
-  }).then(function(all) {
+  });
+}
+
+function gregLibList() {
+  return gregLibAll().then(function(all) {
+    const out = all.map(function(v) { return { id: v.id, title: v.title, savedAt: v.savedAt, updatedAt: v.updatedAt, driveId: v.driveId || null, pending: !!v.pending }; });
+    out.sort(function(a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
+    return out;
+  });
+}
+
+function gregLibFindByDriveId(driveId) {
+  return gregLibAll().then(function(all) { return all.find(function(r) { return r.driveId === driveId; }) || null; });
+}
+
+// Lädt einen lokalen Eintrag nach Drive hoch (neu oder Überschreiben) und
+// markiert ihn als synchron. interactive: darf das Anmeldefenster öffnen.
+function gregLibPushToDrive(rec, interactive) {
+  const doUpload = function(targetId) {
+    return gdUpload(gdFileName(rec.title), rec.state, targetId, interactive).then(function(newId) {
+      rec.driveId = newId; rec.pending = false;
+      return gregLibPut(rec).then(function() { return rec; });
+    });
+  };
+  if (rec.driveId) return doUpload(rec.driveId);
+  // Neu: gleichnamige Datei im Drive-Ordner? -> überschreiben nur nach Rückfrage
+  return gdList(interactive).then(function(files) {
+    const same = files.find(function(f) { return f.name.toLowerCase() === gdFileName(rec.title).toLowerCase(); });
+    if (same) {
+      if (confirm('In Google Drive gibt es bereits "' + same.name + '". Überschreiben?\n(Abbrechen = als neue Datei mit Zusatz speichern)')) return doUpload(same.id);
+      rec.title = rec.title + ' (' + new Date().toLocaleDateString('de-CH') + ')';
+    }
+    return doUpload(null);
+  });
+}
+
+// Speichert das aktuell offene Stück: zuerst lokal (Offline-Kopie), dann in
+// Google Drive. Wurde es schon aus der Bibliothek geladen bzw. dorthin
+// gespeichert (gregLibCurrentId), wird derselbe Eintrag/dieselbe Datei
+// aktualisiert.
+function gregLibSaveCurrent() {
+  const state = gregBuildStateObject();
+  const now = Date.now();
+  const finish = function(base) {
+    const record = Object.assign({}, base || {}, { updatedAt: now, state: state, pending: true });
+    if (!record.savedAt) record.savedAt = now;
+    gregLibPut(record).then(function(newId) {
+      record.id = newId;
+      gregLibCurrentId = newId;
+      if (!gdConfigured()) {
+        gregGst('In Bibliothek gespeichert (nur lokal – Google Drive noch nicht eingerichtet): "' + record.title + '"');
+        if (document.getElementById('modal-bg').classList.contains('open')) gregLibShowModal();
+        return;
+      }
+      gregGst('Speichere "' + record.title + '" in Google Drive …');
+      gregLibPushToDrive(record, true).then(function() {
+        gregGst('In Google Drive gespeichert: "' + gdFileName(record.title) + '"');
+        if (document.getElementById('modal-bg').classList.contains('open')) gregLibShowModal();
+      }).catch(function(err) {
+        gregGst('Lokal gespeichert, Drive-Upload fehlgeschlagen (' + err.message + ') – wird beim nächsten Öffnen der Bibliothek nachgeholt.');
+        if (document.getElementById('modal-bg').classList.contains('open')) gregLibShowModal();
+      });
+    }).catch(function(err) { gregGst('Bibliothek-Speicherfehler: ' + err.message); });
+  };
+  if (gregLibCurrentId != null) {
+    gregLibGet(gregLibCurrentId).then(function(existing) {
+      if (existing) { finish(existing); return; }
+      const t = prompt('Titel für die Bibliothek:', state.title || 'Unbenanntes Stück');
+      if (t === null) return;
+      finish({ title: t.trim() || 'Unbenanntes Stück' });
+    });
+  } else {
+    const title = prompt('Titel für die Bibliothek:', state.title || 'Unbenanntes Stück');
+    if (title === null) return; // abgebrochen
+    finish({ title: title.trim() || 'Unbenanntes Stück' });
+  }
+}
+
+function gregLibApplyRecord(rec, sourceLabel) {
+  gregPush(); // Undo zurück zum vorherigen Stand erlauben
+  gregApplyLoadedState(rec.state);
+  gregLibCurrentId = rec.id;
+  gregRefreshList();
+  closeModal();
+  if (typeof gregMobileSetEditMode === 'function') gregMobileSetEditMode(false); // frisch geladenes Stück immer erst in der Ansicht zeigen
+  gregGst('Geladen (' + sourceLabel + '): "' + rec.title + '"');
+  gregScheduleAutosave();
+}
+
+function gregLibLoadEntry(id) {
+  gregLibGet(id).then(function(rec) {
+    if (!rec) { gregGst('Eintrag nicht gefunden (evtl. gelöscht).'); return; }
+    gregLibApplyRecord(rec, rec.pending ? 'lokale Kopie, noch nicht in Drive' : 'lokale Kopie');
+  }).catch(function(err) { gregGst('Ladefehler: ' + err.message); });
+}
+
+// Öffnet eine Drive-Datei; aktualisiert/erstellt dabei die lokale Kopie.
+// Hat die lokale Kopie ungespeicherte (pending) Änderungen, wird nachgefragt.
+function gregLibLoadDrive(file) {
+  gregGst('Lade "' + file.name + '" aus Google Drive …');
+  Promise.all([gdDownload(file.id, true), gregLibFindByDriveId(file.id)]).then(function(res) {
+    const state = res[0], local = res[1];
+    if (!state || !state.entries && !state.sections) throw new Error('keine gültige Notator-Datei');
+    if (local && local.pending && !confirm('Die lokale Kopie von "' + local.title + '" enthält Änderungen, die noch nicht in Drive sind.\nOK = Drive-Version laden (lokale Änderungen verwerfen), Abbrechen = lokale Version laden.')) {
+      gregLibApplyRecord(local, 'lokale Kopie'); return;
+    }
+    const rec = Object.assign({}, local || {}, { title: gdTitleFromName(file.name), state: state, driveId: file.id, pending: false, updatedAt: Date.parse(file.modifiedTime) || Date.now() });
+    if (!rec.savedAt) rec.savedAt = rec.updatedAt;
+    return gregLibPut(rec).then(function(id) { rec.id = id; gregLibApplyRecord(rec, 'Google Drive'); });
+  }).catch(function(err) { gregGst('Drive-Ladefehler: ' + err.message); });
+}
+
+function gregLibRenameEntry(id, currentTitle) {
+  const title = prompt('Neuer Titel:', currentTitle);
+  if (title === null || !title.trim()) return;
+  gregLibGet(id).then(function(rec) {
+    if (!rec) return;
+    rec.title = title.trim();
+    rec.updatedAt = Date.now();
+    return gregLibPut(rec).then(function() {
+      if (rec.driveId && gdConfigured()) return gdRename(rec.driveId, gdFileName(rec.title), true);
+    });
+  }).then(function() { gregLibShowModal(); }).catch(function(err) { gregGst('Fehler: ' + err.message); gregLibShowModal(); });
+}
+
+function gregLibRenameDrive(file) {
+  const title = prompt('Neuer Titel:', gdTitleFromName(file.name));
+  if (title === null || !title.trim()) return;
+  gdRename(file.id, gdFileName(title), true).then(function() {
+    return gregLibFindByDriveId(file.id).then(function(local) { if (local) { local.title = title.trim(); return gregLibPut(local); } });
+  }).then(function() { gregLibShowModal(); }).catch(function(err) { gregGst('Fehler: ' + err.message); });
+}
+
+function gregLibDeleteEntryConfirm(id, title) {
+  if (!confirm('Lokale Kopie von "' + title + '" löschen?')) return;
+  gregLibDeleteEntry(id).then(function() {
+    if (gregLibCurrentId === id) gregLibCurrentId = null;
+    gregLibShowModal();
+  }).catch(function(err) { gregGst('Löschfehler: ' + err.message); });
+}
+
+function gregLibDeleteDrive(file) {
+  if (!confirm('"' + file.name + '" in Google Drive löschen?\n(Die Datei kommt in den Drive-Papierkorb und ist dort 30 Tage wiederherstellbar.)')) return;
+  gdTrash(file.id, true).then(function() {
+    return gregLibFindByDriveId(file.id).then(function(local) {
+      if (local) { if (gregLibCurrentId === local.id) gregLibCurrentId = null; return gregLibDeleteEntry(local.id); }
+    });
+  }).then(function() { gregLibShowModal(); }).catch(function(err) { gregGst('Löschfehler: ' + err.message); });
+}
+
+// Alle lokal geänderten (pending) Einträge nach Drive hochladen
+function gregLibSyncPending(interactive) {
+  return gregLibAll().then(function(all) {
+    const pend = all.filter(function(r) { return r.pending && r.state; });
+    let ok = 0;
+    return pend.reduce(function(p, rec) {
+      return p.then(function() { return gregLibPushToDrive(rec, interactive).then(function() { ok++; }).catch(function() {}); });
+    }, Promise.resolve()).then(function() { return { total: pend.length, ok: ok }; });
+  });
+}
+
+function gregLibExportAll() {
+  gregLibAll().then(function(all) {
     if (!all.length) { gregGst('Bibliothek ist leer — nichts zu exportieren.'); return; }
     const payload = { notatorLibraryExport: true, exportedAt: new Date().toISOString(), pieces: all };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -8038,7 +8242,7 @@ function gregLibImportFile(input) {
         if (p && p.state) {
           // id weglassen -> autoIncrement vergibt eine neue, kollisionsfreie id;
           // bestehende Bibliothekseinträge bleiben dadurch unangetastet.
-          gregLibPut({ title: p.title || 'Unbenanntes Stück', savedAt: p.savedAt || Date.now(), updatedAt: p.updatedAt || Date.now(), state: p.state })
+          gregLibPut({ title: p.title || 'Unbenanntes Stück', savedAt: p.savedAt || Date.now(), updatedAt: p.updatedAt || Date.now(), state: p.state, pending: true })
             .then(function() { imported++; importNext(idx + 1); })
             .catch(function() { importNext(idx + 1); });
         } else {
@@ -8061,64 +8265,108 @@ function gregLibFormatDate(ts) {
 }
 
 function gregLibShowModal() {
-  showModal('📚 Bibliothek', 'Im Browser gespeicherte Stücke (nur auf diesem Gerät/Browser — für Backup oder Umzug auf ein anderes Gerät unten Export/Import verwenden).', []);
+  const driveOn = gdConfigured();
+  const signed = driveOn && gdHasToken();
+  showModal('📚 Bibliothek',
+    driveOn ? 'Gesänge in Google Drive (Liturgie › Notator). Eine lokale Kopie bleibt im Browser für den Offline-Betrieb.'
+            : 'Google Drive ist noch nicht eingerichtet – Stücke werden vorerst nur in diesem Browser gespeichert.', []);
   const bEl = document.getElementById('modal-btns');
   bEl.style.flexDirection = 'column';
   bEl.style.alignItems = 'stretch';
   bEl.innerHTML = '';
+  if (driveOn) gdLoadGis().catch(function() {});
 
+  const mkBtn = function(label, onClick, css, title) {
+    const b = document.createElement('button');
+    b.className = 'b'; b.textContent = label; if (css) b.style.cssText = css; if (title) b.title = title;
+    b.onclick = onClick; return b;
+  };
   const topRow = document.createElement('div');
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
-  const saveBtn = document.createElement('button');
-  saveBtn.className = 'b';
-  saveBtn.textContent = '💾 Aktuelles Stück speichern';
-  saveBtn.onclick = function() { gregLibSaveCurrent(); };
-  const exportBtn = document.createElement('button');
-  exportBtn.className = 'b';
-  exportBtn.textContent = '⬇ Export (JSON)';
-  exportBtn.onclick = function() { gregLibExportAll(); };
-  const importBtn = document.createElement('button');
-  importBtn.className = 'b';
-  importBtn.textContent = '⬆ Import (JSON)';
-  importBtn.onclick = function() { document.getElementById('greg-lib-import-in').click(); };
-  topRow.appendChild(saveBtn); topRow.appendChild(exportBtn); topRow.appendChild(importBtn);
+  topRow.appendChild(mkBtn('💾 Aktuelles Stück speichern', function() { gregLibSaveCurrent(); }));
+  if (driveOn && !signed) topRow.appendChild(mkBtn('🔑 Mit Google Drive verbinden', function() {
+    gdGetToken(true).then(function() { gregLibShowModal(); }).catch(function(err) { gregGst(err.message); });
+  }, 'background:#2a4a6a;color:#fff;border-color:#2a4a6a'));
+  if (driveOn) {
+    const a = document.createElement('a');
+    a.href = 'https://drive.google.com/drive/folders/' + NOTATOR_GDRIVE_FOLDER_ID; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = '↗ Ordner in Drive'; a.style.cssText = 'font-size:11px;align-self:center;margin-left:4px';
+    topRow.appendChild(a);
+  }
   bEl.appendChild(topRow);
 
+  const status = document.createElement('div');
+  status.style.cssText = 'font-size:11px;color:var(--ink2);margin-bottom:4px';
+  bEl.appendChild(status);
   const listEl = document.createElement('div');
+  listEl.style.cssText = 'max-height:52vh;overflow-y:auto';
   bEl.appendChild(listEl);
 
-  gregLibList().then(function(items) {
-    if (!items.length) {
-      listEl.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Noch keine Stücke in der Bibliothek gespeichert.</p>';
+  const row = function(label, onOpen, onRename, onDelete, badge) {
+    const r = document.createElement('div');
+    r.style.cssText = 'display:flex;align-items:center;gap:4px;margin:2px 0';
+    const ob = mkBtn(label, onOpen, 'flex:1;text-align:left');
+    if (badge) { const s = document.createElement('span'); s.textContent = '  ' + badge; s.style.cssText = 'font-size:10px;color:#a06030'; ob.appendChild(s); }
+    r.appendChild(ob);
+    if (onRename) r.appendChild(mkBtn('✎', onRename, 'font-size:11px;padding:2px 5px', 'Umbenennen'));
+    if (onDelete) r.appendChild(mkBtn('🗑', onDelete, 'font-size:11px;padding:2px 5px;color:#c0605a', 'Löschen'));
+    listEl.appendChild(r);
+  };
+  const heading = function(t) {
+    const h = document.createElement('div');
+    h.textContent = t; h.style.cssText = 'font-size:11px;font-weight:bold;margin:8px 0 2px;color:var(--ink2)';
+    listEl.appendChild(h);
+  };
+  const renderLocal = function(items, onlyUnsynced) {
+    const show = onlyUnsynced ? items.filter(function(it) { return it.pending || !it.driveId; }) : items;
+    if (!show.length) return;
+    if (driveOn) heading(onlyUnsynced ? 'Nur lokal / noch nicht in Drive' : 'Lokale Kopien (offline)');
+    show.forEach(function(it) {
+      row(it.title + '  —  ' + gregLibFormatDate(it.updatedAt || it.savedAt),
+        function() { gregLibLoadEntry(it.id); },
+        function() { gregLibRenameEntry(it.id, it.title); },
+        function() { gregLibDeleteEntryConfirm(it.id, it.title); },
+        driveOn && (it.pending || !it.driveId) ? '⏫ nicht in Drive' : '');
+    });
+  };
+
+  gregLibList().then(function(localItems) {
+    if (!driveOn || !signed) {
+      if (driveOn) status.textContent = 'Nicht mit Google Drive verbunden – angezeigt werden die lokalen Kopien.';
+      if (!localItems.length) listEl.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Noch keine Stücke gespeichert.</p>';
+      renderLocal(localItems, false);
       return;
     }
-    items.forEach(function(it) {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:4px;margin:2px 0';
-      const openBtn = document.createElement('button');
-      openBtn.className = 'b';
-      openBtn.style.cssText = 'flex:1;text-align:left';
-      openBtn.textContent = it.title + '  —  ' + gregLibFormatDate(it.updatedAt || it.savedAt);
-      openBtn.onclick = function() { gregLibLoadEntry(it.id); };
-      const renameBtn = document.createElement('button');
-      renameBtn.className = 'b'; renameBtn.style.cssText = 'font-size:11px;padding:2px 5px';
-      renameBtn.textContent = '✎'; renameBtn.title = 'Umbenennen';
-      renameBtn.onclick = function() { gregLibRenameEntry(it.id, it.title); };
-      const delBtn = document.createElement('button');
-      delBtn.className = 'b'; delBtn.style.cssText = 'font-size:11px;padding:2px 5px;color:#c0605a';
-      delBtn.textContent = '🗑'; delBtn.title = 'Löschen';
-      delBtn.onclick = function() { gregLibDeleteEntryConfirm(it.id, it.title); };
-      row.appendChild(openBtn); row.appendChild(renameBtn); row.appendChild(delBtn);
-      listEl.appendChild(row);
+    status.textContent = 'Lade Liste aus Google Drive …';
+    // erst ausstehende lokale Änderungen hochladen, dann Drive-Liste zeigen
+    gregLibSyncPending(false).then(function(sync) {
+      return Promise.all([gdList(false), gregLibList()]).then(function(res) {
+        const files = res[0], locals = res[1];
+        status.textContent = files.length + ' Gesang/Gesänge in Google Drive' + (sync.total ? ' · ' + sync.ok + ' von ' + sync.total + ' lokalen Änderung(en) hochgeladen' : '');
+        if (!files.length) { const p = document.createElement('p'); p.style.cssText = 'font-size:11px;color:var(--ink2)'; p.textContent = 'Der Drive-Ordner ist noch leer.'; listEl.appendChild(p); }
+        files.forEach(function(f) {
+          const loc = locals.find(function(l) { return l.driveId === f.id; });
+          row(gdTitleFromName(f.name) + '  —  ' + gregLibFormatDate(Date.parse(f.modifiedTime)),
+            function() { gregLibLoadDrive(f); },
+            function() { gregLibRenameDrive(f); },
+            function() { gregLibDeleteDrive(f); },
+            loc && loc.pending ? '⏫ lokale Änderung' : '');
+        });
+        renderLocal(locals, true);
+      });
+    }).catch(function(err) {
+      status.textContent = 'Google Drive nicht erreichbar (' + err.message + ') – angezeigt werden die lokalen Kopien.';
+      renderLocal(localItems, false);
     });
   });
 
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'b';
-  closeBtn.style.cssText = 'margin-top:8px';
-  closeBtn.textContent = 'Schliessen';
-  closeBtn.onclick = function() { closeModal(); bEl.style.flexDirection = ''; bEl.style.alignItems = ''; };
-  bEl.appendChild(closeBtn);
+  const bottom = document.createElement('div');
+  bottom.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-top:8px';
+  bottom.appendChild(mkBtn('⬇ Export (JSON)', function() { gregLibExportAll(); }, 'font-size:11px'));
+  bottom.appendChild(mkBtn('⬆ Import (JSON)', function() { document.getElementById('greg-lib-import-in').click(); }, 'font-size:11px'));
+  bottom.appendChild(mkBtn('⚙ Drive einrichten', function() { gdSetupDialog(); }, 'font-size:11px', 'Google-Client-ID eintragen/ändern'));
+  bottom.appendChild(mkBtn('Schliessen', function() { closeModal(); bEl.style.flexDirection = ''; bEl.style.alignItems = ''; }, 'margin-left:auto'));
+  bEl.appendChild(bottom);
 }
 
 // ── Mobile-Ansicht (Schritt 3) ───────────────────────────────────────
