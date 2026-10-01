@@ -7622,7 +7622,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '223';
+const NOTATOR_BUILD_ID = '224';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -8199,7 +8199,7 @@ function gregLibDeleteDrive(file) {
 // Alle lokal geänderten (pending) Einträge nach Drive hochladen
 function gregLibSyncPending(interactive) {
   return gregLibAll().then(function(all) {
-    const pend = all.filter(function(r) { return r.pending && r.state; });
+    const pend = all.filter(function(r) { return (r.pending || !r.driveId) && r.state; }); // inkl. ältere, rein lokale Einträge (vor Drive-Anbindung)
     let ok = 0;
     return pend.reduce(function(p, rec) {
       return p.then(function() { return gregLibPushToDrive(rec, interactive).then(function() { ok++; }).catch(function() {}); });
