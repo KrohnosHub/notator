@@ -7556,6 +7556,10 @@ function gregAssemblePdf(pairList, filename) {
         const marginMm = marginPx / PX_PER_MM;
         const wMm = targetW / PX_PER_MM;
         const hMm = sliceHpx / PX_PER_MM;
+        // Seite explizit weiss hinterlegen: manche (mobile) PDF-Betrachter
+        // zeigen transparente Bereiche sonst dunkel an.
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, A4_W_MM, A4_H_MM, 'F');
         pdf.addImage(png, 'PNG', marginMm, marginMm, wMm, hMm);
       }
       pdf.save(filename || 'notator.pdf');
@@ -7622,7 +7626,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '224';
+const NOTATOR_BUILD_ID = '225';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -15669,6 +15673,15 @@ function clExportPDF() {
     loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', function() { clExportPDF(); });
     return;
   }
+  // Auf schmalen Bildschirmen (Handy) mit automatischer Breite würde das
+  // PDF die Bildschirmbreite übernehmen (riesige Noten, viele Seiten).
+  // Dann für den Export einmalig in Standard-Druckbreite neu setzen.
+  if (!clState.width && !clExportPDF._printPass && clScoreWidth() < 700) {
+    clExportPDF._printPass = true;
+    clState.width = 740; clRender();
+    try { clExportPDF(); } finally { clExportPDF._printPass = false; clState.width = null; setTimeout(clRender, 50); }
+    return;
+  }
   const printTexts = !!(document.getElementById('cl-pdf-print-texts') || {}).checked;
   const tunesEls = Array.from(document.querySelectorAll('#cl-score .cl-tune'));
   const pairs = [];
@@ -15694,11 +15707,17 @@ function clExportPDF() {
     const clone = svg.cloneNode(true);
     clone.querySelectorAll('text.cl-text').forEach(t => { if (!printTexts) t.remove(); else { t.setAttribute('fill', '#000'); t.querySelectorAll('title').forEach(x => x.remove()); } });
     const vb = svg.viewBox && svg.viewBox.baseVal;
-    const w = (vb && vb.width) || svg.getBoundingClientRect().width;
-    const h = (vb && vb.height) || svg.getBoundingClientRect().height;
+    const w = parseFloat(svg.getAttribute('width')) || (vb && vb.width) || svg.getBoundingClientRect().width;
+    const h = parseFloat(svg.getAttribute('height')) || (vb && vb.height) || svg.getBoundingClientRect().height;
     clone.setAttribute('width', w); clone.setAttribute('height', h);
+    // weisser Hintergrund über die komplette viewBox (inkl. versetztem Ursprung)
+    const bgr = document.createElementNS(CL_SVGNS, 'rect');
+    bgr.setAttribute('x', (vb && vb.x) || 0); bgr.setAttribute('y', (vb && vb.y) || 0);
+    bgr.setAttribute('width', w); bgr.setAttribute('height', h);
+    bgr.setAttribute('fill', '#ffffff'); bgr.setAttribute('stroke', 'none');
+    clone.insertBefore(bgr, clone.firstChild);
+    clone.setAttribute('color', '#000000'); clone.setAttribute('style', 'color:#000;background:#fff');
     clone.setAttribute('xmlns', CL_SVGNS);
-    clone.removeAttribute('style');
     pairs.push({ svg: new XMLSerializer().serializeToString(clone), lineBoxes });
   });
   if (!pairs.length) { gregGst('PDF: keine Noten vorhanden'); return; }
