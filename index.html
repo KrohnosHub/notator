@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
+     Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
+     Internet, Chrome "Auto-Dark") die Seite selbständig um: Noten erscheinen
+     weiss auf grau, und sogar das per Canvas erzeugte PDF übernimmt das. -->
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
 <title>Notator</title>
 <style>
 :root{
@@ -14,6 +20,21 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
+:root{color-scheme:light only}
+/* Eigene Regel für den Dunkelmodus: Browser, die eine Seite nur dann NICHT
+   zwangsweise abdunkeln, wenn sie selbst prefers-color-scheme behandelt
+   (Samsung Internet), sehen hier, dass Notator das tut -- Notenflächen
+   bleiben bewusst weiss mit schwarzer Schrift. */
+@media (prefers-color-scheme: dark) {
+  #greg-canvas-wrap, #cl-score-wrap, #gabc-canvas-wrap { background:#ffffff !important; color:#000000 !important; }
+}
+.nt-pseudo-fs{position:fixed !important;inset:0 !important;z-index:9999 !important;width:auto !important;height:auto !important;background:#fff !important;overflow:auto !important}
+#nt-fs-exit{position:fixed;top:8px;right:8px;z-index:10001;font-size:13px;padding:5px 10px;background:#1a2414;color:#e0d4b0;border:1px solid #5a8a40;border-radius:3px;opacity:.85}
+/* Choral: Anzeigeansicht am PC = Eingabespalte ausblenden */
+#greg-panel.greg-view #greg-input-panel, #greg-panel.greg-view #greg-drag-handle{display:none !important}
+/* Orgel: Menü einklappen / Anzeigeansicht */
+#classic-panel.cl-menu-collapsed #cl-toolbar, #classic-panel.cl-menu-collapsed #cl-headrow, #classic-panel.cl-menu-collapsed #cl-info, #classic-panel.cl-view #cl-src-panel{display:none !important}
+#classic-panel.cl-view text.cl-text{pointer-events:none}
 body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
 #shell{display:flex;flex-direction:column;height:100vh}
 #hdr{background:#1a1209;padding:6px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
@@ -68,7 +89,7 @@ input[type=file]{display:none}
    Transform auf Bildschirmbreite skaliert (gregMobileApplyScale) statt
    die interne, für Layout-Stabilität sorgfältig austarierte Render-
    Breitenlogik anzufassen. */
-#greg-mobile-bar{display:none}
+#greg-mobile-bar{display:flex}
 #greg-mobile-scale-wrap{transform-origin:top left}
 @media (max-width: 700px) {
   #hdr-tabs button#tab-greg, #hdr-tabs button#tab-gabc, #hdr-tabs button#tab-editor { display:none; }
@@ -374,6 +395,7 @@ input[type=file]{display:none}
     <span id="greg-mobile-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" onclick="switchTab('editor')" style="font-size:11px;padding:3px 8px" title="Klassische Orgelnoten">&#127929;</button>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
+    <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
     <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
@@ -593,8 +615,14 @@ input[type=file]{display:none}
 
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
-  <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+  <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-shrink:0">
     <button class="b" onclick="switchTab('greg')" style="font-size:11px;padding:3px 8px" title="Zurück zum Choral-Editor">&#8592; Choral</button>
+    <span id="cl-vb-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
+    <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
+    <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
+  </div>
+  <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
     <button class="b" onclick="clRegenerate()" style="font-size:11px;padding:3px 8px" title="Klassische Fassung neu aus dem aktuellen Choral erzeugen">&#8635; Aus Choral übernehmen</button>
     <span style="color:#3a4a30">|</span>
     <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Grundton
@@ -619,7 +647,7 @@ input[type=file]{display:none}
     <label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext drucken</label>
     <span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
   </div>
-  <div style="padding:4px 10px;background:#151e10;border-bottom:1px solid #2a3820;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+  <div id="cl-headrow" style="padding:4px 10px;background:#151e10;border-bottom:1px solid #2a3820;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
     <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Titel
       <input id="cl-title" type="text" oninput="clHeadInput()" style="width:220px;font-size:11px;padding:2px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none"></label>
     <label style="font-size:11px;color:#a8d878;display:flex;align-items:flex-start;gap:4px">Untertitel
@@ -7626,7 +7654,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '225';
+const NOTATOR_BUILD_ID = '226';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -8134,7 +8162,7 @@ function gregLibApplyRecord(rec, sourceLabel) {
   gregLibCurrentId = rec.id;
   gregRefreshList();
   closeModal();
-  if (typeof gregMobileSetEditMode === 'function') gregMobileSetEditMode(false); // frisch geladenes Stück immer erst in der Ansicht zeigen
+  if (typeof gregMobileSetEditMode === 'function' && gregIsMobileViewport()) gregMobileSetEditMode(false); // Handy: frisch geladenes Stück erst in der Ansicht zeigen
   gregGst('Geladen (' + sourceLabel + '): "' + rec.title + '"');
   gregScheduleAutosave();
 }
@@ -8430,9 +8458,14 @@ function gregMobileSetEditMode(on) {
   const panel = document.getElementById('greg-panel');
   const btn = document.getElementById('greg-mobile-edit-toggle');
   if (!panel) return;
-  panel.classList.toggle('greg-mobile-edit', !!on);
-  if (btn) btn.innerHTML = on ? '&#128065; Ansicht' : '&#9998; Bearbeiten';
+  const wasView = panel.classList.contains('greg-view');
+  panel.classList.toggle('greg-mobile-edit', !!on); // Handy: Eingabespalte statt Notation
+  panel.classList.toggle('greg-view', !on);         // PC: Eingabespalte aus-/einblenden
+  if (btn) btn.innerHTML = on ? '&#128065; Anzeige' : '&#9998; Bearbeiten';
   if (!on) gregScheduleMobileScale(); // Notation war während des Bearbeitens display:none, Grösse neu messen
+  // Am PC ändert sich die Notenbreite -> neu setzen
+  if (!gregIsMobileViewport() && wasView !== !on && typeof gregRender === 'function') setTimeout(gregRender, 60);
+  try { localStorage.setItem('notatorGregView', on ? 'edit' : 'view'); } catch (e) {}
 }
 function gregMobileToggleEditMode() {
   const panel = document.getElementById('greg-panel');
@@ -8452,6 +8485,9 @@ function gregMobileInit() {
   window.addEventListener('resize', gregScheduleMobileScale);
   window.addEventListener('orientationchange', gregScheduleMobileScale);
   gregMobileSyncTitle();
+  // Ansicht/Bearbeiten: Handy startet in der Anzeige, PC im zuletzt gewählten Modus (Standard: Bearbeiten)
+  let gv = null; try { gv = localStorage.getItem('notatorGregView'); } catch (e) {}
+  gregMobileSetEditMode(gregIsMobileViewport() ? false : gv !== 'view');
   gregScheduleMobileScale();
   // Landet man auf dem Handy auf einer leeren Seite (kein Autosave aus
   // einer vorherigen Sitzung), gleich die Bibliotheksliste zeigen statt
@@ -15411,14 +15447,71 @@ function clRender() {
   if (src && document.activeElement !== src) src.value = abc;
   const sw = clScoreWidth();
   el.style.width = (sw + 40) + 'px';
-  clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clState.accomp && clLast) ? clChordClick : null);
+  clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clState.accomp && clLast && !clUi().view) ? clChordClick : null);
+  clApplyUi();
   clSyncControls();
   clDrawTexts();
 }
 
+// ── Anzeige/Bearbeiten, Menü, (geräte-lokal gespeichert) ──
+function clUi() {
+  let u = null; try { u = JSON.parse(localStorage.getItem('notatorClUi') || 'null'); } catch (e) {}
+  if (!u) u = { view: gregIsMobileViewport(), menu: !gregIsMobileViewport() };
+  return u;
+}
+function clSaveUi(u) { try { localStorage.setItem('notatorClUi', JSON.stringify(u)); } catch (e) {} }
+function clApplyUi() {
+  const u = clUi(), p = document.getElementById('classic-panel');
+  if (!p) return;
+  p.classList.toggle('cl-view', !!u.view);
+  p.classList.toggle('cl-menu-collapsed', !!u.view || !u.menu);
+  const mb = document.getElementById('cl-mode-btn'), nb = document.getElementById('cl-menu-btn');
+  if (mb) mb.innerHTML = u.view ? '&#9998; Bearbeiten' : '&#128065; Anzeige';
+  if (nb) { nb.style.display = u.view ? 'none' : ''; nb.innerHTML = u.menu ? '&#9650; Menü' : '&#9660; Menü'; }
+  const t = document.getElementById('cl-vb-title');
+  if (t) { const h = clEffectiveHead(); t.textContent = h.title || 'Unbenanntes Stück'; }
+}
+function clToggleView() { const u = clUi(); u.view = !u.view; if (!u.view) u.menu = true; clSaveUi(u); clApplyUi(); clRender(); }
+function clToggleMenu() { const u = clUi(); u.menu = !u.menu; clSaveUi(u); clApplyUi(); if (!clState.width) clRender(); }
+
+// ── Vollbild für die Notenfläche (Choral und Orgel) ──
+function ntFsElement() { return document.fullscreenElement || document.webkitFullscreenElement || document.querySelector('.nt-pseudo-fs'); }
+function ntAfterFs() {
+  const fs = ntFsElement();
+  let ex = document.getElementById('nt-fs-exit');
+  if (fs) {
+    if (!ex) { ex = document.createElement('button'); ex.id = 'nt-fs-exit'; ex.textContent = '✕ Vollbild beenden'; ex.onclick = ntExitFullscreen; }
+    fs.appendChild(ex);
+  } else if (ex) ex.remove();
+  setTimeout(function() {
+    const cp = document.getElementById('classic-panel');
+    if (cp && cp.style.display !== 'none' && typeof clRender === 'function') clRender();
+    const gp = document.getElementById('greg-panel');
+    if (gp && gp.style.display !== 'none') { if (!gregIsMobileViewport() && typeof gregRender === 'function') gregRender(); gregScheduleMobileScale(); }
+  }, 150);
+}
+function ntExitFullscreen() {
+  const ps = document.querySelector('.nt-pseudo-fs');
+  if (ps) { ps.classList.remove('nt-pseudo-fs'); ntAfterFs(); return; }
+  const ex = document.exitFullscreen || document.webkitExitFullscreen;
+  if (ex) ex.call(document);
+}
+function ntToggleFullscreen(id) {
+  if (ntFsElement()) { ntExitFullscreen(); return; }
+  const el = document.getElementById(id);
+  if (!el) return;
+  const pseudo = function() { el.classList.add('nt-pseudo-fs'); ntAfterFs(); };
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!req) { pseudo(); return; }
+  try { const pr = req.call(el); if (pr && pr.catch) pr.catch(pseudo); } catch (e) { pseudo(); }
+}
+document.addEventListener('fullscreenchange', ntAfterFs);
+document.addEventListener('webkitfullscreenchange', ntAfterFs);
+
 function clOpen() {
   clNormalizeState();
   const cs = document.getElementById('cl-status'); if (cs) cs.textContent = '';
+  clApplyUi();
   clEnsureAbcjs(() => { clFillTargetSelect(); clRender(); });
 }
 
