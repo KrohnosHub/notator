@@ -50,7 +50,6 @@ body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
 #hdr{background:#1a1209;padding:6px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
 #hdr h1{font-family:var(--fh);font-size:16px;font-weight:400;color:#e0d4b0;letter-spacing:.06em}
 #hdr h1 em{color:#c47a3e;font-style:italic}
-#tb{background:var(--parch2);border-bottom:1px solid var(--parch3);padding:4px 7px;display:flex;flex-wrap:wrap;gap:2px;align-items:center;flex-shrink:0}
 .tg{display:flex;gap:2px;align-items:center;padding-right:6px;border-right:1px solid var(--parch3);margin-right:1px}
 .tg:last-child{border-right:none}
 .tl{font-size:9px;color:var(--ink3);font-variant:small-caps;letter-spacing:.04em;margin-right:2px;white-space:nowrap}
@@ -61,18 +60,12 @@ button.b.on2{background:var(--acc2);color:#fff;border-color:var(--acc2)}
 button.b.on3{background:var(--acc3);color:#fff;border-color:var(--acc3)}
 select.b{height:22px}
 input[type=file]{display:none}
-#main{display:flex;flex:1;overflow:hidden}
-#sidebar{width:180px;flex-shrink:0;background:var(--parch);border-right:1px solid var(--parch3);overflow-y:auto;display:flex;flex-direction:column}
 .sb-s{padding:7px;border-bottom:1px solid var(--parch3)}
 .sb-t{font-size:9px;font-variant:small-caps;color:var(--ink3);letter-spacing:.05em;margin-bottom:4px}
 .sb-b{width:100%;text-align:left;margin-bottom:2px;font-size:11px;padding:2px 6px}
 .pi{font-size:11px;padding:2px 6px;cursor:pointer;border-radius:3px;margin-bottom:2px;color:var(--ink2)}
 .pi:hover{background:var(--parch2)}
 .pi.cur{background:var(--acc1);color:#fff}
-#canv-wrap{flex:1;overflow:auto;background:#2a2318;display:flex;align-items:flex-start;justify-content:center;padding:14px}
-#score-canvas{background:var(--parch);display:block;cursor:crosshair;box-shadow:0 4px 24px rgba(0,0,0,.4);border:1px solid var(--parch3)}
-#statusbar{font-size:10px;color:#9a8060;background:#1a1209;padding:3px 10px;border-top:1px solid #3d3420;flex-shrink:0;min-height:18px;display:flex;align-items:center}
-#sb-cur{margin-left:auto;opacity:.7}
 #modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
 #modal-bg.open{display:flex}
 #modal{background:var(--parch);border-radius:6px;padding:20px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.5)}
@@ -107,7 +100,6 @@ input[type=file]{display:none}
   #greg-drag-handle{display:none}
   #greg-pdf-drag-handle,#greg-pdf-panel{display:none}
   #greg-canvas-wrap{padding:8px !important}
-  #tb,#main{display:none !important} /* alter Klick-Editor ist auf dem Handy nicht bedienbar */
 
   /* Ansicht (Default): Eingabespalte aus, Notation an. !important nötig,
      da #greg-input-panel inline display:flex trägt (inline schlägt eine
@@ -165,174 +157,6 @@ input[type=file]{display:none}
     <button class="b" id="tab-greg" onclick="switchTab('greg')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#1a2018;color:#8b9a70;border-color:#3a5030">Greg-Editor</button>
     <button class="b" id="tab-gabc" onclick="switchTab('gabc')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#2a1a08;color:#8b9a70;border-color:#4a5a30">GABC-Eingabe</button>
     <button class="b" id="tab-editor" onclick="switchTab('editor')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#3d3420;color:#e0d4b0;border-color:#6b5030" title="Choral in klassische Orgelnoten übertragen und transponieren">Orgel (klassisch)</button>
-  </div>
-</div>
-<div id="tb">
-  <div class="tg">
-    <span class="tl">Modus</span>
-    <button class="b on" id="btn-classic" onclick="setMode('classic')">Klassisch</button>
-    <button class="b" id="btn-greg" onclick="setMode('gregorian')">Gregorianisch</button>
-  </div>
-  <div class="tg" id="ct1">
-    <span class="tl">Notenwert</span>
-    <button class="b on" id="nv1" onclick="setDur(1,'nv1')" title="Ganze">1</button>
-    <button class="b" id="nv2" onclick="setDur(2,'nv2')" title="Halbe">1/2</button>
-    <button class="b" id="nv4" onclick="setDur(4,'nv4')" title="Viertel">1/4</button>
-    <button class="b" id="nv8" onclick="setDur(8,'nv8')" title="Achtel">1/8</button>
-    <button class="b" id="nv16" onclick="setDur(16,'nv16')" title="Sechzehntel">1/16</button>
-    <button class="b" id="nvdot" onclick="toggleDot()">.</button>
-  </div>
-  <div class="tg" id="ct2">
-    <span class="tl">Vorzeichen</span>
-    <button class="b" id="as" onclick="setAcc('sharp')">#</button>
-    <button class="b" id="af" onclick="setAcc('flat')">b</button>
-    <button class="b" id="an" onclick="setAcc('natural')">n</button>
-    <button class="b on" id="a0" onclick="setAcc(null)">-</button>
-  </div>
-  <div class="tg" id="ct3">
-    <span class="tl">Typ</span>
-    <button class="b" id="btn-rest" onclick="toggleRest()">Pause</button>
-    <button class="b" id="btn-tie" onclick="toggleTie()">Bogen</button>
-    <button class="b" onclick="addBarline()">| Takt</button>
-  </div>
-  <div class="tg" id="ct4">
-    <span class="tl">Taktart</span>
-    <select class="b" id="ts" onchange="redraw()">
-      <option value="">— keine —</option>
-      <option>4/4</option><option>3/4</option><option>2/4</option>
-      <option>6/8</option><option>2/2</option><option>3/8</option>
-      <option>9/8</option><option>12/8</option>
-    </select>
-  </div>
-  <div class="tg" id="ct6">
-    <span class="tl">Tonart</span>
-    <select class="b" id="keysig" onchange="setKeySig(this.value)">
-      <option value="">— keine —</option>
-      <optgroup label="Dur">
-        <option value="C_maj">C-Dur (0)</option>
-        <option value="G_maj">G-Dur (1#)</option>
-        <option value="D_maj">D-Dur (2#)</option>
-        <option value="A_maj">A-Dur (3#)</option>
-        <option value="E_maj">E-Dur (4#)</option>
-        <option value="B_maj">H-Dur (5#)</option>
-        <option value="Fs_maj">Fis-Dur (6#)</option>
-        <option value="F_maj">F-Dur (1b)</option>
-        <option value="Bb_maj">B-Dur (2b)</option>
-        <option value="Eb_maj">Es-Dur (3b)</option>
-        <option value="Ab_maj">As-Dur (4b)</option>
-        <option value="Db_maj">Des-Dur (5b)</option>
-        <option value="Gb_maj">Ges-Dur (6b)</option>
-      </optgroup>
-      <optgroup label="Moll">
-        <option value="a_min">a-Moll (0)</option>
-        <option value="e_min">e-Moll (1#)</option>
-        <option value="b_min">h-Moll (2#)</option>
-        <option value="fs_min">fis-Moll (3#)</option>
-        <option value="cs_min">cis-Moll (4#)</option>
-        <option value="gs_min">gis-Moll (5#)</option>
-        <option value="ds_min">dis-Moll (6#)</option>
-        <option value="d_min">d-Moll (1b)</option>
-        <option value="g_min">g-Moll (2b)</option>
-        <option value="c_min">c-Moll (3b)</option>
-        <option value="f_min">f-Moll (4b)</option>
-        <option value="bb_min">b-Moll (5b)</option>
-        <option value="eb_min">es-Moll (6b)</option>
-      </optgroup>
-    </select>
-  </div>
-  <div class="tg" id="ct5">
-    <span class="tl">Dynamik</span>
-    <select class="b" id="dyn" onchange="setDynamic(this.value)">
-      <option value="">-</option>
-      <option>pp</option><option>p</option><option>mp</option>
-      <option>mf</option><option>f</option><option>ff</option><option>sf</option>
-    </select>
-  </div>
-  <div class="tg" id="gt1" style="display:none">
-    <span class="tl">Schlüssel</span>
-    <button class="b on" id="gc-do" onclick="setGregClef('do')">Do-Schlüssel</button>
-    <button class="b" id="gc-fa" onclick="setGregClef('fa')">Fa-Schlüssel</button>
-  </div>
-  <div class="tg" id="gt1b" style="display:none">
-    <span class="tl">Kirchentonart</span>
-    <select class="b" id="gmode" onchange="setGregMode(this.value)">
-      <option value="">— keine —</option>
-      <option value="0">1 Dorisch</option>
-      <option value="1">2 Hypodorisch</option>
-      <option value="2">3 Phrygisch</option>
-      <option value="3">4 Hypophrygisch</option>
-      <option value="4">5 Lydisch</option>
-      <option value="5">6 Hypolydisch</option>
-      <option value="6">7 Mixolydisch</option>
-      <option value="7">8 Hypomixolydisch</option>
-    </select>
-    <label style="font-size:10px;color:var(--ink2);display:flex;align-items:center;gap:3px;cursor:pointer">
-      <input type="checkbox" id="gmode-print" onchange="redraw()" style="cursor:pointer"> Drucken
-    </label>
-  </div>
-  <div class="tg" id="gt2" style="display:none">
-    <span class="tl">Neume</span>
-    <button class="b on" id="nm-virga" onclick="setNeume('virga')">Virga</button>
-    <button class="b" id="nm-punctum" onclick="setNeume('punctum')">Punctum</button>
-    <button class="b" id="nm-podatus" onclick="setNeume('podatus')">Podatus</button>
-    <button class="b" id="nm-clivis" onclick="setNeume('clivis')">Clivis</button>
-    <button class="b" id="nm-torculus" onclick="setNeume('torculus')">Torculus</button>
-    <button class="b" id="nm-porrectus" onclick="setNeume('porrectus')">Porrectus</button>
-    <button class="b" id="nm-quilisma" onclick="setNeume('quilisma')">Quilisma</button>
-    <button class="b" id="nm-salicus" onclick="setNeume('salicus')">Salicus</button>
-    <button class="b" id="nm-climacus" onclick="setNeume('climacus')">Climacus</button>
-    <button class="b" id="nm-scandicus" onclick="setNeume('scandicus')">Scandicus</button>
-  </div>
-  <div class="tg" id="gt3" style="display:none">
-    <span class="tl">Psalmton</span>
-    <button class="b" onclick="togglePsalmPanel()">Formeln</button>
-  </div>
-  <div class="tg" style="margin-left:auto">
-    <button class="b" onclick="playScore()">&#9654; Play</button>
-    <button class="b" onclick="stopPlay()">&#9632;</button>
-    <button class="b" onclick="undoLast()">&#8617; Undo</button>
-    <button class="b" onclick="clearPage()">&#10005;</button>
-  </div>
-  <div class="tg">
-    <button class="b" onclick="addPage()">+ Seite</button>
-    <button class="b" onclick="insertTemplate('treble')">G-Vorlage</button>
-    <button class="b" onclick="insertTemplate('bass')">B-Vorlage</button>
-    <button class="b" onclick="insertTemplate('grand')">Gr. System</button>
-  </div>
-  <div class="tg">
-    <label style="font-size:10px;color:var(--ink3);cursor:pointer">
-      <button class="b" onclick="document.getElementById('pdf-in').click()">PDF lesen</button>
-    </label>
-    <input type="file" id="pdf-in" accept=".pdf" onchange="loadPDF(this)">
-    <button class="b on2" onclick="exportPDF()">&#8595; PDF</button>
-    <button class="b" onclick="exportSVG()">&#8595; SVG</button>
-    <button class="b" onclick="saveProject()">&#8595; Proj.</button>
-    <button class="b" onclick="document.getElementById('json-in').click()">&#128194; Laden</button>
-    <input type="file" id="json-in" accept=".json" onchange="loadProject(this)">
-  </div>
-</div>
-<div id="main">
-  <div id="sidebar">
-    <div class="sb-s">
-      <div class="sb-t">Seiten</div>
-      <div id="page-list"></div>
-    </div>
-    <div class="sb-s" id="psalm-sec" style="display:none">
-      <div class="sb-t">Psalmton-Formeln</div>
-      <div id="psalm-panel"></div>
-    </div>
-    <div class="sb-s" id="sb-mi">
-      <div class="sb-t">Tonart-Info</div>
-      <div class="mi" id="mode-info">-</div>
-    </div>
-    <div class="sb-s">
-      <div class="sb-t">Ausgew&#228;hlt</div>
-      <div class="mi" id="sel-info">Nichts</div>
-      <button class="b sb-b" id="del-sel" onclick="deleteSelected()" style="display:none;margin-top:3px">L&#246;schen</button>
-    </div>
-  </div>
-  <div id="canv-wrap">
-    <canvas id="score-canvas"></canvas>
   </div>
 </div>
 <div id="gabc-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
@@ -689,10 +513,6 @@ input[type=file]{display:none}
   </div>
 </div>
 
-<div id="statusbar">
-  <span id="sb-msg">Bereit</span>
-  <span id="sb-cur"></span>
-</div>
 <div id="modal-bg">
   <div id="modal">
     <h2 id="modal-title"></h2>
@@ -702,776 +522,9 @@ input[type=file]{display:none}
 </div>
 </div>
 <script>
-// ── STATE ──────────────────────────────────────────────────────────
-const C=document.getElementById('score-canvas'),cx=C.getContext('2d');
-const PW=900,PH=1200; // A4 proportions in px
-let mode='classic',curDur=1,curAcc=null,isRest=false,isTie=false,isDot=false;
-let curNeume='virga',curGregMode=0,curDynamic='';
-let selIdx=-1;
-let audioCtx=null,oscNodes=[];
-let history=[];
-let curPage=0;
-// pages: array of {notes:[...], barlines:[...], timeSig, mode}
-let pages=[newPage()];
-
-function newPage(){return{notes:[],barlines:[],timeSig:'4/4',mode:'classic',gregMode:0};}
-
-// ── CONSTANTS ──────────────────────────────────────────────────────
-const SX=80,SW=PW-100; // staff x-start, width — SX gives room for clef on staff
-const GREG_CLEF_W=42; // width of gregorian clef on staff, notes start after this
-const SY_C=240,LS=14; // classic staff Y, line spacing
-const SY_G=280,GLS=16; // greg staff Y, greg line spacing
-const NOTE_NAMES=['C','D','E','F','G','A','B'];
-
-const GREG_MODES=[
-  {name:'Dorisch',    lat:'Protus authenticus',  fin:'D',rec:'A',acc:'',col:'#7a3b1e'},
-  {name:'Hypodorisch',lat:'Protus plagalis',     fin:'A',rec:'F',acc:'',col:'#7a3b1e'},
-  {name:'Phrygisch',  lat:'Deuterus authenticus',fin:'E',rec:'C',acc:'',col:'#3d6b35'},
-  {name:'Hypophrygisch',lat:'Deuterus plagalis', fin:'B',rec:'A',acc:'',col:'#3d6b35'},
-  {name:'Lydisch',    lat:'Tritus authenticus',  fin:'F',rec:'C',acc:'b',col:'#2d4a7a'},
-  {name:'Hypolydisch',lat:'Tritus plagalis',     fin:'C',rec:'A',acc:'b',col:'#2d4a7a'},
-  {name:'Mixolydisch',lat:'Tetrardus authenticus',fin:'G',rec:'D',acc:'',col:'#7a6b2e'},
-  {name:'Hypomixolydisch',lat:'Tetrardus plagalis',fin:'D',rec:'C',acc:'',col:'#7a6b2e'},
-];
-
-// Psalm tone formulas: intonation-tenor-mediatio-terminatio
-const PSALM_TONES=[
-  {tone:'1 (Dorisch)',   init:'D-F-G',   tenor:'A',med:'G-F',   term:'E-D'},
-  {tone:'2 (Hypodorisch)',init:'D-E',   tenor:'F',med:'E-D',   term:'C-D'},
-  {tone:'3 (Phrygisch)', init:'E-F-G', tenor:'C',med:'B-A',   term:'G-E'},
-  {tone:'4 (Hypophrygisch)',init:'E-F',tenor:'A',med:'G-A',   term:'G-E'},
-  {tone:'5 (Lydisch)',   init:'F-A',   tenor:'C',med:'A-G',   term:'G-F'},
-  {tone:'6 (Hypolydisch)',init:'F-G',  tenor:'A',med:'G-F',   term:'G-A'},
-  {tone:'7 (Mixolydisch)',init:'G-A-B',tenor:'D',med:'C-B',   term:'A-G'},
-  {tone:'8 (Hypomixolydisch)',init:'G-A',tenor:'C',med:'B-C', term:'D-C'},
-];
-
-// ── HELPERS ────────────────────────────────────────────────────────
-function pg(){return pages[curPage];}
-function st(t){document.getElementById('sb-msg').textContent=t;}
-function push(){history.push(JSON.stringify(pages));}
-
-function stepToY(step){return SY_C+LS*2-step*(LS/2);}
-function yToStep(y){return Math.round((SY_C+LS*2-y)/(LS/2));}
-function gregLineToY(l){return SY_G+GLS*1.5-l*(GLS/2);}
-function yToGregLine(y){return Math.round((SY_G+GLS*1.5-y)/(GLS/2));}
-
-function stepToName(step){
-  const ni=((step%7)+7)%7, oct=4+Math.floor(step/7);
-  return NOTE_NAMES[ni]+oct;
-}
-function noteFreq(step,acc){
-  const ni=((step%7)+7)%7, oct=4+Math.floor(step/7);
-  const semi={'C':0,'D':2,'E':4,'F':5,'G':7,'A':9,'B':11}[NOTE_NAMES[ni]];
-  const as={'sharp':1,'flat':-1,'natural':0}[acc]||0;
-  return 440*Math.pow(2,(12*(oct+1)+semi+as-69)/12);
-}
-
-// ── TOOLBAR SETTERS ────────────────────────────────────────────────
-function setMode(m){
-  mode=m;
-  document.getElementById('btn-classic').className='b'+(m==='classic'?' on':'');
-  document.getElementById('btn-greg').className='b'+(m==='gregorian'?' on':'');
-  const cIds=['ct1','ct2','ct3','ct4','ct5','ct6'];
-  const gIds=['gt1','gt1b','gt2','gt3'];
-  cIds.forEach(id=>document.getElementById(id).style.display=m==='classic'?'':'none');
-  gIds.forEach(id=>document.getElementById(id).style.display=m==='gregorian'?'':'none');
-  updateModeInfo();redraw();
-}
-function setDur(d,bid){
-  curDur=d;
-  ['nv1','nv2','nv4','nv8','nv16'].forEach(id=>document.getElementById(id).className='b'+(id===bid?' on':''));
-}
-function toggleDot(){isDot=!isDot;document.getElementById('nvdot').className='b'+(isDot?' on':'');}
-function setAcc(a){
-  curAcc=a;
-  ['as','af','an','a0'].forEach(id=>{
-    const map={as:'sharp',af:'flat',an:'natural',a0:null};
-    document.getElementById(id).className='b'+(map[id]===a?' on':'');
-  });
-}
-function toggleRest(){isRest=!isRest;document.getElementById('btn-rest').className='b'+(isRest?' on':'');}
-function toggleTie(){isTie=!isTie;document.getElementById('btn-tie').className='b'+(isTie?' on':'');}
-function setNeume(n){
-  curNeume=n;
-  ['virga','punctum','podatus','clivis','torculus','porrectus','quilisma','salicus','climacus','scandicus']
-    .forEach(nm=>document.getElementById('nm-'+nm).className='b'+(nm===n?' on':''));
-}
-function setGregMode(v){
-  curGregMode=v===''?null:+v;updateModeInfo();redraw();
-}
-let gregClef='do';
-function setGregClef(c){
-  gregClef=c;
-  document.getElementById('gc-do').className='b'+(c==='do'?' on':'');
-  document.getElementById('gc-fa').className='b'+(c==='fa'?' on':'');
-  redraw();
-}
-let curKeySig='';
-function setKeySig(v){
-  curKeySig=v;redraw();
-  if(v) st('Tonart: '+v.replace('_',' ').replace('maj','Dur').replace('min','Moll'));
-}
-
-// Key signature definitions: sharps/flats on staff positions (step from middle C)
-// Steps: C=0,D=1,E=2,F=3,G=4,A=5,B=6 (octave offsets applied)
-const KEY_SIGS={
-  // sharps: F# C# G# D# A# E# B#
-  'G_maj': {sharps:['F'],flats:[]},
-  'D_maj': {sharps:['F','C'],flats:[]},
-  'A_maj': {sharps:['F','C','G'],flats:[]},
-  'E_maj': {sharps:['F','C','G','D'],flats:[]},
-  'B_maj': {sharps:['F','C','G','D','A'],flats:[]},
-  'Fs_maj':{sharps:['F','C','G','D','A','E'],flats:[]},
-  // flats: B♭ E♭ A♭ D♭ G♭ C♭
-  'F_maj': {sharps:[],flats:['B']},
-  'Bb_maj':{sharps:[],flats:['B','E']},
-  'Eb_maj':{sharps:[],flats:['B','E','A']},
-  'Ab_maj':{sharps:[],flats:['B','E','A','D']},
-  'Db_maj':{sharps:[],flats:['B','E','A','D','G']},
-  'Gb_maj':{sharps:[],flats:['B','E','A','D','G','C']},
-  'C_maj': {sharps:[],flats:[]},
-  // minors (same key sig as relative major)
-  'a_min': {sharps:[],flats:[]},
-  'e_min': {sharps:['F'],flats:[]},
-  'b_min': {sharps:['F','C'],flats:[]},
-  'fs_min':{sharps:['F','C','G'],flats:[]},
-  'cs_min':{sharps:['F','C','G','D'],flats:[]},
-  'gs_min':{sharps:['F','C','G','D','A'],flats:[]},
-  'ds_min':{sharps:['F','C','G','D','A','E'],flats:[]},
-  'd_min': {sharps:[],flats:['B']},
-  'g_min': {sharps:[],flats:['B','E']},
-  'c_min': {sharps:[],flats:['B','E','A']},
-  'f_min': {sharps:[],flats:['B','E','A','D']},
-  'bb_min':{sharps:[],flats:['B','E','A','D','G']},
-  'eb_min':{sharps:[],flats:['B','E','A','D','G','C']},
-};
-function setDynamic(v){curDynamic=v;}
-
-function updateModeInfo(){
-  const el=document.getElementById('mode-info');
-  if(mode==='gregorian'){
-    if(curGregMode===null){
-      el.innerHTML='Gregorianisch<br>Schlüssel: '+(gregClef==='do'?'Do (C)':'Fa (F)')+'<br><i style="color:var(--ink3)">Keine Tonart gewählt</i>';
-    } else {
-      const m=GREG_MODES[curGregMode];
-      el.innerHTML=`<b>${m.name}</b><br>${m.lat}<br>Finalis: <b>${m.fin}</b><br>Tenor: <b>${m.rec}</b>${m.acc?'<br>Vorzeichen: '+m.acc:''}`;
-    }
-    document.getElementById('sb-mi').style.display='';
-  } else {
-    const ks=curKeySig||'';
-    el.textContent='Klassisch'+(ks?' | '+ks.replace('_',' ').replace('maj','Dur').replace('min','Moll'):'');
-  }
-}
-</script>
-<script>
-// ── DRAW ENGINE ────────────────────────────────────────────────────
-function redraw(){
-  const p=pg();
-  C.width=PW;C.height=PH;
-  cx.fillStyle='#faf6e8';cx.fillRect(0,0,PW,PH);
-  cx.fillStyle='#f2ecd6';cx.fillRect(0,0,PW,18);
-  cx.fillStyle='#8b7355';cx.font='10px system-ui';
-  cx.fillText('Seite '+(curPage+1)+' / '+pages.length+'  |  Modus: '+(mode==='classic'?'Klassisch':'Gregorianisch'),8,12);
-
-  if(mode==='classic'){
-    drawClassicStaff();
-    p.barlines.forEach(b=>drawBarline(b.x));
-    p.notes.forEach((n,i)=>{
-      if(n.mode!=='classic') return;
-      const sel=i===selIdx;
-      if(n.rest) drawRest(n.x,n.y,n.dur,sel);
-      else drawClassicNote(n,sel);
-    });
-  } else {
-    drawGregStaff();
-    p.notes.forEach((n,i)=>{
-      if(n.mode!=='gregorian') return;
-      const col=n.gregMode!=null?GREG_MODES[n.gregMode].col:'#4a3060';
-      drawNeumeLegacy(n.x,n.y,n.neume,col,i===selIdx);
-    });
-    p.barlines.forEach(b=>drawGregBarline(b.x));
-  }
-}
-
-function drawClassicStaff(){
-  const ts=document.getElementById('ts').value;
-  cx.strokeStyle='#4a3820';cx.lineWidth=1;
-  for(let i=0;i<5;i++){
-    const y=SY_C+i*LS;
-    cx.beginPath();cx.moveTo(SX,y);cx.lineTo(SX+SW,y);cx.stroke();
-  }
-  // G-clef
-  cx.fillStyle='#2a1e0a';cx.font='bold 60px Georgia,serif';
-  cx.fillText('\uD834\uDD1E',SX-52,SY_C+LS*3+10);
-  // Key signature
-  let kx=SX+8;
-  const ks=KEY_SIGS[curKeySig]||{sharps:[],flats:[]};
-  // Sharp positions on treble staff (step numbers relative to C4=0, line 0=bottom)
-  // F5=step 10, C5=7, G5=11, D5=8, A4=5, E5=9, B4=6
-  const sharpSteps={F:10,C:7,G:11,D:8,A:5,E:9,B:6};
-  // Flat: B4=6, E5=9, A4=5, D5=8, G4=4, C5=7, F5=10 → typical treble
-  const flatSteps={B:6,E:9,A:5,D:8,G:4,C:7,F:10};
-  if(ks.sharps.length){
-    cx.font='bold 16px Georgia,serif';cx.fillStyle='#2a1e0a';
-    ks.sharps.forEach(n=>{
-      const sy=stepToY(sharpSteps[n]);
-      cx.fillText('♯',kx,sy+5);kx+=12;
-    });
-  } else if(ks.flats.length){
-    cx.font='bold 16px Georgia,serif';cx.fillStyle='#2a1e0a';
-    ks.flats.forEach(n=>{
-      const sy=stepToY(flatSteps[n]);
-      cx.fillText('♭',kx,sy+6);kx+=11;
-    });
-  }
-  // Time signature
-  if(ts){
-    const[tn,td]=ts.split('/');
-    cx.font='bold 20px Georgia,serif';cx.fillStyle='#2a1e0a';
-    cx.fillText(tn,kx+2,SY_C+LS*1.2);
-    cx.fillText(td,kx+2,SY_C+LS*3.2);
-  }
-}
-
-function drawGregStaff(){
-  const showMode=document.getElementById('gmode-print')&&document.getElementById('gmode-print').checked;
-  const hasModeSelected=curGregMode!==null;
-  const m=hasModeSelected?GREG_MODES[curGregMode]:null;
-  const inkCol='#2a1a08';
-  // Draw 4 staff lines first — clef will overlap them from the left edge
-  cx.strokeStyle='#6b5030';cx.lineWidth=0.9;
-  for(let i=0;i<4;i++){
-    const y=SY_G+i*GLS;
-    cx.beginPath();cx.moveTo(SX,y);cx.lineTo(SX+SW,y);cx.stroke();
-  }
-
-  // ── CLEF DRAWING — delegate to shared drawGABCClef() ────────────
-  // Do-clef: c3 = line 3 from bottom; Fa-clef: f3 = line 3 from bottom
-  const isDo = gregClef === 'do';
-  const clefLine = 3; // default GABC position
-  drawGABCClef(cx, SX, SY_G, GLS, isDo, clefLine, inkCol);
-
-  // Mode label — only if selected AND print checkbox is on
-  if(showMode&&m){
-    cx.fillStyle=m.col;cx.font='bold 11px system-ui';
-    cx.fillText(m.name+' — '+m.lat+' | Finalis: '+m.fin+' | Tenor: '+m.rec,SX,SY_G-10);
-  }
-  // Custos (right boundary marker)
-  cx.strokeStyle='#8b7050';cx.lineWidth=1.5;
-  cx.beginPath();cx.moveTo(SX+SW-2,SY_G);cx.lineTo(SX+SW-2,SY_G+GLS*3);cx.stroke();
-}
-
-function drawBarline(x){
-  cx.strokeStyle='#4a3820';cx.lineWidth=1.2;
-  cx.beginPath();cx.moveTo(x,SY_C);cx.lineTo(x,SY_C+LS*4);cx.stroke();
-}
-function drawGregBarline(x){
-  cx.strokeStyle='#6b5030';cx.lineWidth=1;
-  cx.beginPath();cx.moveTo(x,SY_G);cx.lineTo(x,SY_G+GLS*3);cx.stroke();
-}
-
-function drawClassicNote(n,sel){
-  const{x,y,dur,acc,dot,dynamic,tie}=n;
-  const col=sel?'#7a3b1e':'#1a1209';
-  cx.fillStyle=col;cx.strokeStyle=col;cx.lineWidth=1.4;
-  const rx=6,ry=4.5;
-  // ledger lines above/below
-  for(let ly=SY_C-LS;ly>=y-1;ly-=LS){ledger(x,ly,col);}
-  for(let ly=SY_C+LS*5;ly<=y+1;ly+=LS){ledger(x,ly,col);}
-  // accidental
-  if(acc){
-    cx.font='bold 13px Georgia,serif';cx.fillStyle=col;
-    const sym={sharp:'#',flat:'b',natural:'n'}[acc];
-    cx.fillText(sym,x-13,y+4);
-  }
-  // note head
-  cx.beginPath();cx.ellipse(x,y,rx,ry,-0.2,0,Math.PI*2);
-  if(dur===1||dur===2){cx.stroke();}else{cx.fill();}
-  // open center for half note
-  if(dur===2){cx.fillStyle='#faf6e8';cx.beginPath();cx.ellipse(x,y,rx-2.5,ry-2,-0.2,0,Math.PI*2);cx.fill();}
-  cx.fillStyle=col;cx.strokeStyle=col;
-  // stem
-  if(dur>=2){
-    cx.lineWidth=1.2;cx.beginPath();
-    const stemUp=y>SY_C+LS*2;
-    if(stemUp){cx.moveTo(x-rx+1,y);cx.lineTo(x-rx+1,y-LS*3.5);}
-    else{cx.moveTo(x+rx-1,y);cx.lineTo(x+rx-1,y+LS*3.5);}
-    cx.stroke();
-    // flags
-    if(dur>=8){drawFlag(x,y,dur,stemUp,col);}
-  }
-  // dot
-  if(dot){cx.fillStyle=col;cx.beginPath();cx.arc(x+rx+4,y-2,2,0,Math.PI*2);cx.fill();}
-  // tie arc
-  if(tie&&n._tieEnd){
-    cx.strokeStyle=col;cx.lineWidth=1;cx.beginPath();
-    const tx=x,ty=y-ry-3,tw=n._tieEnd-x;
-    cx.moveTo(tx,ty);cx.bezierCurveTo(tx+tw*.3,ty-8,tx+tw*.7,ty-8,tx+tw,ty);cx.stroke();
-  }
-  // dynamic
-  if(dynamic){
-    cx.font='italic bold 11px Georgia,serif';cx.fillStyle='#3d3420';
-    cx.fillText(dynamic,x-4,SY_C+LS*6);
-  }
-}
-
-function drawFlag(x,y,dur,stemUp,col){
-  cx.strokeStyle=col;cx.lineWidth=1.4;
-  const fx=stemUp?x-5:x+5,fy=stemUp?y-LS*3.5:y+LS*3.5;
-  const d=stemUp?1:-1;
-  for(let f=0;f<(dur===8?1:2);f++){
-    cx.beginPath();
-    cx.moveTo(fx,fy+f*7*d);
-    cx.bezierCurveTo(fx+12,fy+f*7*d+5*d,fx+10,fy+f*7*d+10*d,fx+5,fy+f*7*d+14*d);
-    cx.stroke();
-  }
-}
-
-function ledger(x,y,col){
-  cx.strokeStyle=col;cx.lineWidth=1;
-  cx.beginPath();cx.moveTo(x-9,y);cx.lineTo(x+9,y);cx.stroke();
-}
-
-function drawRest(x,y,dur,sel){
-  const col=sel?'#7a3b1e':'#1a1209';
-  cx.fillStyle=col;cx.strokeStyle=col;
-  const ry=SY_C+LS*2;
-  if(dur===1){cx.fillRect(x-8,ry,16,LS/2);}
-  else if(dur===2){cx.fillRect(x-8,ry-LS/2,16,LS/2);}
-  else if(dur===4){
-    cx.lineWidth=1.5;cx.beginPath();
-    cx.moveTo(x-4,ry-LS);cx.lineTo(x+6,ry-LS/2);cx.lineTo(x-4,ry);cx.lineTo(x+4,ry+LS/2);
-    cx.stroke();
-  } else {
-    cx.font='16px Georgia,serif';cx.fillText(dur===8?'𝄾':'𝄿',x-5,ry+4);
-  }
-  cx.font='10px system-ui';cx.fillStyle='#8b7355';cx.fillText('P',x-3,ry+LS+8);
-}
-
-// ── NEUME DRAWING ──────────────────────────────────────────────────
-function drawNeumeLegacy(x,y,neume,col,sel){
-  if(sel)col='#7a3b1e';
-  cx.fillStyle=col;cx.strokeStyle=col;cx.lineWidth=1.5;
-  const r=5,s=GLS;
-  switch(neume){
-    case 'virga':
-      nSquare(x,y);
-      cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+r,y-s*2);cx.stroke();
-      break;
-    case 'punctum':
-      nSquare(x,y);break;
-    case 'podatus': // lower then upper
-      nSquare(x,y);nSquare(x,y-s);
-      cx.lineWidth=1;cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+r,y-s+r);cx.stroke();
-      break;
-    case 'clivis':
-      nSquare(x,y-s);nSquare(x+s,y);
-      cx.lineWidth=1;cx.beginPath();cx.moveTo(x-r,y-s);cx.lineTo(x-r,y-s-4);cx.lineTo(x+s+r,y);cx.stroke();
-      break;
-    case 'torculus': // low-high-low
-      nSquare(x,y);nSquare(x+s,y-s);nSquare(x+s*2,y);
-      cx.lineWidth=1;cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+s-r,y-s);cx.lineTo(x+s*2-r,y);cx.stroke();
-      break;
-    case 'porrectus': // high-low-high
-      cx.lineWidth=1.5;cx.beginPath();
-      cx.moveTo(x,y-s);cx.lineTo(x+s,y);cx.stroke();
-      nSquare(x+s,y);nSquare(x+s*2,y-s);
-      break;
-    case 'quilisma': // wavy punctum
-      nSquare(x,y);
-      cx.lineWidth=1;cx.beginPath();
-      for(let i=0;i<3;i++){cx.arc(x-5+i*3.5,y+r+2,1.5,0,Math.PI);}
-      cx.stroke();
-      break;
-    case 'salicus': // punctum + virga with episema
-      nSquare(x,y);nSquare(x+s,y-s/2);
-      cx.beginPath();cx.moveTo(x+s+r,y-s/2);cx.lineTo(x+s+r,y-s*1.8);cx.stroke();
-      cx.lineWidth=0.8;cx.beginPath();cx.moveTo(x-r,y-s/2);cx.lineTo(x+s+r+4,y-s/2);cx.stroke();
-      break;
-    case 'climacus': // virga + descending puncta
-      cx.beginPath();cx.moveTo(x+r,y-s);cx.lineTo(x+r,y-s*2.5);cx.stroke();
-      nSquare(x,y-s);nSquare(x,y);nSquare(x,y+s);
-      break;
-    case 'scandicus': // ascending 3
-      nSquare(x,y+s);nSquare(x+s,y);
-      cx.lineWidth=1.2;cx.beginPath();cx.moveTo(x+s*2-r,y-s/2);cx.lineTo(x+s*2-r,y-s*2);cx.stroke();
-      nSquare(x+s*2,y-s/2);
-      break;
-  }
-}
-
-function nSquare(x,y){
-  const r=5;
-  cx.fillRect(x-r,y-r+1,r*2,r*2-1);
-}
-
-// ── CANVAS INTERACTION ─────────────────────────────────────────────
-C.addEventListener('click',function(e){
-  const rect=C.getBoundingClientRect();
-  const px=(e.clientX-rect.left)*(PW/rect.width);
-  const py=(e.clientY-rect.top)*(PH/rect.height);
-  const minX=mode==='gregorian'?SX+GREG_CLEF_W:SX;
-  if(px<minX||px>SX+SW) return;
-  // check selection
-  const ni=hitTest(px,py);
-  if(ni>=0&&ni===selIdx){selIdx=-1;updateSelInfo();redraw();return;}
-  if(ni>=0){selIdx=ni;updateSelInfo();redraw();return;}
-  selIdx=-1;
-  push();
-  if(mode==='classic'){
-    const step=yToStep(py);
-    const ny=stepToY(step);
-    const note={mode:'classic',x:px,y:ny,step,dur:curDur,acc:curAcc,dot:isDot,
-      rest:isRest,tie:isTie,dynamic:curDynamic||null,keySig:curKeySig||null};
-    if(isTie&&pg().notes.length>0){
-      const prev=pg().notes[pg().notes.length-1];
-      if(!prev.rest) prev._tieEnd=px;
-    }
-    pg().notes.push(note);
-    const name=stepToName(step);
-    st((isRest?'Pause':name+(curAcc?{sharp:'#',flat:'b',natural:'n'}[curAcc]:'')+' '+
-      {1:'ganze',2:'halbe',4:'viertel',8:'achtel',16:'sechzehntel'}[curDur]+
-      (isDot?', punktiert':'')+' '+pg().notes.length+' Noten'));
-  } else {
-    const line=yToGregLine(py);
-    const gy=gregLineToY(line);
-    pg().notes.push({mode:'gregorian',x:px,y:gy,line,neume:curNeume,gregMode:curGregMode});
-    const mLabel=curGregMode!==null?GREG_MODES[curGregMode].name:'(keine Tonart)';
-    st('Neume: '+curNeume+' | '+mLabel);
-  }
-  updateSelInfo();redraw();
-});
-
-C.addEventListener('mousemove',function(e){
-  const rect=C.getBoundingClientRect();
-  const px=(e.clientX-rect.left)*(PW/rect.width);
-  const py=(e.clientY-rect.top)*(PH/rect.height);
-  redraw();
-  const minX=mode==='gregorian'?SX+GREG_CLEF_W:SX;
-  if(px<minX||px>SX+SW) return;
-  cx.globalAlpha=0.35;
-  if(mode==='classic'){
-    const step=yToStep(py);
-    const ny=stepToY(step);
-    const name=stepToName(step);
-    drawClassicNote({x:px,y:ny,step,dur:curDur,acc:curAcc,dot:isDot,rest:isRest},false);
-    document.getElementById('sb-cur').textContent=name;
-  } else {
-    const line=yToGregLine(py);
-    const gy=gregLineToY(line);
-    const previewCol=curGregMode!==null?GREG_MODES[curGregMode].col:'#4a3060';
-    cx.fillStyle=previewCol;
-    cx.font='10px system-ui';cx.fillText(curNeume,px+8,gy-5);
-    drawNeumeLegacy(px,gy,curNeume,previewCol,false);
-    document.getElementById('sb-cur').textContent='Linie '+line;
-  }
-  cx.globalAlpha=1;
-});
-
-function hitTest(px,py){
-  const notes=pg().notes;
-  for(let i=notes.length-1;i>=0;i--){
-    const n=notes[i];
-    if(Math.abs(n.x-px)<12&&Math.abs(n.y-py)<10) return i;
-  }
-  return -1;
-}
-
-function updateSelInfo(){
-  const el=document.getElementById('sel-info');
-  const btn=document.getElementById('del-sel');
-  if(selIdx<0||selIdx>=pg().notes.length){
-    el.textContent='Nichts';btn.style.display='none';return;
-  }
-  const n=pg().notes[selIdx];
-  if(n.mode==='classic'){
-    const name=stepToName(n.step);
-    el.innerHTML=`<b>${n.rest?'Pause':name+(n.acc?{sharp:'♯',flat:'♭',natural:'♮'}[n.acc]:'')}</b><br>`+
-      `Wert: ${({1:'Ganz',2:'Halb',4:'Viertel',8:'Achtel',16:'Sechzehntel'}[n.dur]||'?')}${n.dot?', punkt.':''}`+
-      (n.dynamic?`<br>Dyn: ${n.dynamic}`:'');
-  } else {
-    const mLabel=n.gregMode!=null?GREG_MODES[n.gregMode].name:'(keine Tonart)';
-    el.innerHTML=`<b>Neume: ${n.neume}</b><br>${mLabel}<br>Linie: ${n.line}`;
-  }
-  btn.style.display='';
-}
-</script>
-<script>
-// ── BARLINES ────────────────────────────────────────────────────────
-function addBarline(){
-  push();
-  const x=pg().notes.length>0?Math.max(...pg().notes.map(n=>n.x))+40:SX+100;
-  pg().barlines.push({x});redraw();st('Taktstrich eingefügt');
-}
-
-// ── TEMPLATES ──────────────────────────────────────────────────────
-function insertTemplate(type){
-  push();
-  const p=pg();
-  if(type==='treble'){p.notes=[];p.barlines=[{x:SX+200},{x:SX+400},{x:SX+600},{x:SX+800}];
-    st('Violinschlüssel-Vorlage eingefügt');}
-  else if(type==='bass'){p.notes=[];p.barlines=[{x:SX+200},{x:SX+400}];
-    st('Bassschlüssel-Vorlage eingefügt');}
-  else if(type==='grand'){p.notes=[];p.barlines=[{x:SX+300},{x:SX+600}];
-    st('Großes System eingefügt');}
-  else if(type==='greg'){setMode('gregorian');p.notes=[];
-    st('Gregorianisches 4-Linien-System aktiviert');}
-  redraw();
-}
-
-// ── PAGES ──────────────────────────────────────────────────────────
-function addPage(){
-  pages.push(newPage());curPage=pages.length-1;
-  selIdx=-1;renderPageList();redraw();
-  st('Neue Seite '+(curPage+1)+' hinzugefügt');
-}
-function switchPage(i){
-  curPage=i;selIdx=-1;renderPageList();
-  mode=pg().mode||'classic';
-  setMode(mode);redraw();
-}
-function renderPageList(){
-  const el=document.getElementById('page-list');
-  el.innerHTML='';
-  pages.forEach((p,i)=>{
-    const d=document.createElement('div');
-    d.className='pi'+(i===curPage?' cur':'');
-    d.textContent='Seite '+(i+1);
-    d.onclick=()=>switchPage(i);
-    el.appendChild(d);
-  });
-}
-
-// ── PSALM PANEL ────────────────────────────────────────────────────
-let psalmOpen=false;
-function togglePsalmPanel(){
-  psalmOpen=!psalmOpen;
-  const sec=document.getElementById('psalm-sec');
-  sec.style.display=psalmOpen?'':'none';
-  if(psalmOpen) buildPsalmPanel();
-}
-function buildPsalmPanel(){
-  const el=document.getElementById('psalm-panel');
-  el.innerHTML='';
-  PSALM_TONES.forEach((pt,i)=>{
-    const div=document.createElement('div');
-    div.className='pf';
-    div.innerHTML=`<div class="pf-n">${pt.tone}</div>`+
-      `<div style="font-size:10px;color:var(--ink2)">Init: ${pt.init} | Ten: ${pt.tenor}</div>`+
-      `<div style="font-size:10px;color:var(--ink2)">Med: ${pt.med} | Term: ${pt.term}</div>`+
-      `<span class="pf-ins" onclick="insertPsalmFormula(${i})">+ Einf&#252;gen</span>`;
-    el.appendChild(div);
-  });
-}
-function insertPsalmFormula(idx){
-  const pt=PSALM_TONES[idx];
-  push();setMode('gregorian');
-  const gm=curGregMode!==null?curGregMode:idx%8;
-  const baseX=SX+60,baseY=gregLineToY(2);
-  const notes=[pt.init,pt.tenor,pt.med,pt.term].join('-').split('-');
-  notes.forEach((n,i)=>{
-    pg().notes.push({mode:'gregorian',x:baseX+i*40,y:baseY,line:2,neume:'punctum',gregMode:gm});
-  });
-  pg().barlines.push({x:baseX+notes.length/2*40});
-  redraw();st('Psalmton-Formel ('+pt.tone+') eingefügt');
-}
-
-// ── UNDO / DELETE ──────────────────────────────────────────────────
-function undoLast(){
-  if(!history.length) return;
-  pages=JSON.parse(history.pop());
-  selIdx=-1;renderPageList();setMode(pg().mode||'classic');redraw();
-  updateSelInfo();st('Rückgängig');
-}
-function clearPage(){
-  push();pg().notes=[];pg().barlines=[];selIdx=-1;redraw();updateSelInfo();st('Seite geleert');
-}
-function deleteSelected(){
-  if(selIdx<0) return;
-  push();pg().notes.splice(selIdx,1);selIdx=-1;redraw();updateSelInfo();
-}
-
-// ── PLAYBACK ───────────────────────────────────────────────────────
-function stopPlay(){
-  oscNodes.forEach(o=>{try{o.stop();}catch(e){}});oscNodes=[];
-}
-async function playScore(){
-  stopPlay();
-  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  const classic=pg().notes.filter(n=>n.mode==='classic'&&!n.rest).sort((a,b)=>a.x-b.x);
-  if(!classic.length){st('Keine spielbaren Noten');return;}
-  let t=audioCtx.currentTime+0.05;
-  classic.forEach(n=>{
-    const f=noteFreq(n.step,n.acc);
-    const dur={1:1.6,2:0.8,4:0.4,8:0.2,16:0.1}[n.dur]*(n.dot?1.5:1);
-    const osc=audioCtx.createOscillator();
-    const g=audioCtx.createGain();
-    const dyn={'pp':0.15,'p':0.2,'mp':0.3,'mf':0.4,'f':0.55,'ff':0.7,'sf':0.6}[n.dynamic]||0.35;
-    osc.connect(g);g.connect(audioCtx.destination);
-    osc.frequency.value=f;osc.type='triangle';
-    g.gain.setValueAtTime(dyn,t);
-    g.gain.exponentialRampToValueAtTime(0.001,t+dur*0.88);
-    osc.start(t);osc.stop(t+dur);
-    oscNodes.push(osc);t+=dur+0.04;
-  });
-  st('Wiedergabe ('+classic.length+' Noten)');
-  setTimeout(()=>st('Bereit'),t*1000);
-}
-
-// ── EXPORT PDF ─────────────────────────────────────────────────────
-async function exportPDF(){
-  st('PDF wird erstellt...');
-  try{
-    const{jsPDF}=window.jspdf||{};
-    if(!jsPDF){showModal('PDF-Export','jsPDF konnte nicht geladen werden. Bitte stellen Sie sicher, dass eine Internetverbindung besteht.',[{label:'OK',fn:closeModal}]);return;}
-    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const mmW=210,mmH=297;
-    for(let i=0;i<pages.length;i++){
-      const prevPage=curPage;curPage=i;
-      if(i>0) doc.addPage();
-      redraw();
-      const imgData=C.toDataURL('image/jpeg',0.95);
-      doc.addImage(imgData,'JPEG',0,0,mmW,mmH);
-      curPage=prevPage;
-    }
-    redraw();
-    doc.save('Partitur_Notator.pdf');
-    st('PDF exportiert ('+pages.length+' Seiten)');
-  }catch(err){st('Fehler: '+err.message);}
-}
-
-// ── EXPORT SVG ─────────────────────────────────────────────────────
-function exportSVG(){
-  redraw();
-  const svg=[`<svg xmlns="http://www.w3.org/2000/svg" width="${PW}" height="${PH}" style="background:#faf6e8">`];
-  svg.push('<rect width="100%" height="100%" fill="#faf6e8"/>');
-  if(mode==='classic'){
-    for(let i=0;i<5;i++) svg.push(`<line x1="${SX}" y1="${SY_C+i*LS}" x2="${SX+SW}" y2="${SY_C+i*LS}" stroke="#4a3820" stroke-width="1"/>`);
-  } else {
-    for(let i=0;i<4;i++) svg.push(`<line x1="${SX}" y1="${SY_G+i*GLS}" x2="${SX+SW}" y2="${SY_G+i*GLS}" stroke="#6b5030" stroke-width="0.9"/>`);
-  }
-  pg().barlines.forEach(b=>{
-    svg.push(`<line x1="${b.x}" y1="${SY_C}" x2="${b.x}" y2="${SY_C+LS*4}" stroke="#4a3820" stroke-width="1.2"/>`);
-  });
-  pg().notes.forEach(n=>{
-    if(n.mode==='classic'&&!n.rest){
-      svg.push(`<ellipse cx="${n.x}" cy="${n.y}" rx="6" ry="4.5" fill="${n.dur>=4?'#1a1209':'none'}" stroke="#1a1209" stroke-width="1.4"/>`);
-      if(n.dur>=2) svg.push(`<line x1="${n.x+5}" y1="${n.y}" x2="${n.x+5}" y2="${n.y-LS*3.5}" stroke="#1a1209" stroke-width="1.2"/>`);
-    } else if(n.mode==='gregorian'){
-      const col=GREG_MODES[n.gregMode].col;
-      svg.push(`<rect x="${n.x-5}" y="${n.y-4}" width="10" height="9" fill="${col}"/>`);
-    }
-  });
-  svg.push('</svg>');
-  const blob=new Blob([svg.join('\n')],{type:'image/svg+xml'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='Partitur_Notator.svg';a.click();
-  st('SVG exportiert');
-}
-
-// ── SAVE / LOAD PROJECT ────────────────────────────────────────────
-function saveProject(){
-  const data=JSON.stringify({pages,curPage,mode,version:'1.0'},null,2);
-  const blob=new Blob([data],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='Notator_Projekt.json';a.click();
-  st('Projekt gespeichert');
-}
-function loadProject(input){
-  const f=input.files[0];if(!f) return;
-  const r=new FileReader();
-  r.onload=e=>{
-    try{
-      const d=JSON.parse(e.target.result);
-      if(d.pages){pages=d.pages;curPage=d.curPage||0;mode=d.mode||'classic';
-        setMode(mode);renderPageList();redraw();st('Projekt geladen: '+pages.length+' Seiten');}
-    }catch(err){st('Fehler beim Laden: '+err.message);}
-    input.value='';
-  };
-  r.readAsText(f);
-}
-
-// ── LOAD PDF ───────────────────────────────────────────────────────
-async function loadPDF(input){
-  const f=input.files[0];if(!f) return;
-  st('PDF wird gelesen...');
-  try{
-    if(!window.pdfjsLib){
-      showModal('PDF-Import','PDF.js konnte nicht geladen werden. Die PDF-Anzeige steht im Browser-Modus zur Verfügung. Das Notationssystem bleibt aktiv.',[{label:'OK',fn:closeModal}]);
-      input.value='';return;
-    }
-    const ab=await f.arrayBuffer();
-    const pdfDoc=await pdfjsLib.getDocument({data:ab}).promise;
-    const numPages=pdfDoc.numPages;
-    pages=[];
-    for(let pi=1;pi<=numPages;pi++){
-      const page=await pdfDoc.getPage(pi);
-      const vp=page.getViewport({scale:PW/page.getViewport({scale:1}).width});
-      const tmpC=document.createElement('canvas');
-      tmpC.width=PW;tmpC.height=PH;
-      const tmpCx=tmpC.getContext('2d');
-      await page.render({canvasContext:tmpCx,viewport:vp}).promise;
-      const p=newPage();
-      p._bgImage=tmpC.toDataURL();
-      pages.push(p);
-    }
-    curPage=0;renderPageList();
-    // custom redraw for PDF bg
-    const origRedraw=redraw;
-    window._pdfMode=true;
-    redraw();
-    st('PDF geladen: '+numPages+' Seiten — Noten auf dem Bild platzieren');
-    showModal('PDF importiert',
-      'Das PDF wurde als Hintergrundbild geladen ('+numPages+' Seite'+(numPages>1?'n':'')+').\n'+
-      'Sie können nun Noten und Neumen über das bestehende Notenbild platzieren und bearbeiten.\n'+
-      'Abschliessend via → PDF exportieren.',
-      [{label:'OK',fn:closeModal}]);
-  }catch(err){st('PDF-Fehler: '+err.message);}
-  input.value='';
-}
-</script>
-<script>
-// ── PDF-AWARE REDRAW ───────────────────────────────────────────────
-const _origRedraw=redraw;
-window.redraw=function(){
-  const p=pg();
-  C.width=PW;C.height=PH;
-  cx.fillStyle='#faf6e8';cx.fillRect(0,0,PW,PH);
-  // PDF background if present
-  if(p._bgImage){
-    const img=new Image();
-    img.onload=()=>{
-      cx.globalAlpha=0.88;cx.drawImage(img,0,0,PW,PH);cx.globalAlpha=1;
-      drawOverlay(p);
-    };
-    img.src=p._bgImage;
-  } else {
-    drawOverlay(p);
-  }
-};
-
-function drawOverlay(p){
-  cx.fillStyle='#f2ecd6';cx.globalAlpha=0.85;cx.fillRect(0,0,PW,18);cx.globalAlpha=1;
-  cx.fillStyle='#8b7355';cx.font='10px system-ui';
-  cx.fillText('Seite '+(curPage+1)+' / '+pages.length+'  |  '+
-    (mode==='classic'?'Klassisch':'Gregorianisch'),8,12);
-  if(!p._bgImage){
-    if(mode==='classic') drawClassicStaff();
-    else drawGregStaff();
-  }
-  p.barlines.forEach(b=>mode==='classic'?drawBarline(b.x):drawGregBarline(b.x));
-  p.notes.forEach((n,i)=>{
-    const sel=i===selIdx;
-    if(n.mode==='classic'){if(n.rest) drawRest(n.x,n.y,n.dur,sel);else drawClassicNote(n,sel);}
-    else if(n.mode==='gregorian'){
-      const col=n.gregMode!=null?GREG_MODES[n.gregMode].col:'#4a3060';
-      drawNeumeLegacy(n.x,n.y,n.neume,col,sel);
-    }
-  });
-}
-
-// ── MODAL ──────────────────────────────────────────────────────────
+// ── Gemeinsame Hilfsfunktionen (Dialog, Skript-Nachladen, Start) ─────
+// (Der frühere Klick-Noten-Editor wurde in Build 230 entfernt; die
+// klassische Fassung entsteht jetzt im Tab "Orgel (klassisch)".)
 function showModal(title,body,btns){
   document.getElementById('modal-title').textContent=title;
   document.getElementById('modal-body').innerHTML='<p style="font-size:12px;color:var(--ink2);white-space:pre-line">'+body+'</p>';
@@ -1486,44 +539,18 @@ function showModal(title,body,btns){
 function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
 document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
-// ── INIT ────────────────────────────────────────────────────────────
-// Load PDF.js and jsPDF lazily
 function loadScript(src,cb){
   const s=document.createElement('script');s.src=src;
   s.onload=cb||null;document.head.appendChild(s);
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
-  // Try to load libs
   loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',()=>{
     if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc=
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   });
   loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-
-  updateModeInfo();
-  renderPageList();
-  redraw();
-  st('Bereit \u2014 Klick auf das Notensystem zum Einf\u00fcgen');
-  // Start on Greg-Editor
   setTimeout(() => switchTab('greg'), 100);
-});
-
-// keyboard shortcuts
-document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
-  const k=e.key.toLowerCase();
-  if(k==='z'&&(e.ctrlKey||e.metaKey)){undoLast();return;}
-  if(k==='delete'||k==='backspace'){deleteSelected();return;}
-  if(k==='1') setDur(1,'nv1');
-  if(k==='2') setDur(2,'nv2');
-  if(k==='4') setDur(4,'nv4');
-  if(k==='8') setDur(8,'nv8');
-  if(k==='6') setDur(16,'nv16');
-  if(k==='r') toggleRest();
-  if(k==='.') toggleDot();
-  if(k==='p') playScore();
-  if(k==='s'&&(e.ctrlKey||e.metaKey)){e.preventDefault();saveProject();}
 });
 </script>
 <script>
@@ -6642,6 +5669,56 @@ function gregSelfTest() {
     "(c4) AL(fd~)le(ef'g)lú(hgh){ia}.(ixhiHG'gf.0) <clear>*(,) <i>ij.</i>(ixhiHG'ge./ghGF'Ef_gffe.) (::) <sp>V/</sp>. E(h)mít(h)te(ixg'//ivHG'hffe.) (,) Spí(fh)ri(ghg'/hf)tum(e[ll:1]d~) tu(egF'D)um,(d.) (:) et(dc~) cre(f)a(ghg)bún(ixhiG'Eg./hiF'D//fffdgvFE.)(,)(df/h_f/!g_[oh:h]e/!fv.df!gvef~)tur :(e.) (:) et(f) re(f)no(f)vá(ef)bis(f) fá(ef'g)ci(gdgvFE)em(e.) (,) * ter(fd/ef!g'h)rae.(ixhiHG'gf.0) (,) (ixhiHG'ge./ghGF'Ef_gffe.) (::)",
     "(c4) AL(fd~)le(ef'g)lú(hgh)(ix)ia.(hiHG'/gf.) (,) (ix)_ij._(hiHG'/ge./ghGF'E/f_gf/fe.) (::) V/. E(h)mít(h)(ix)te(g'//ivHG'/hf/fe.) (,) Spí(fh)ri(ghg'/hf)tum(ed~) tu(egF'D)um,(d.) (:) et(dc~) cre(f)a(ghg)(ix)bún(hiG'E/g./hiF'D//ff/fd/gvFE.)(,)(df/h_f/g_e/fv./df!gv/ef~)tur :(e.) (:) et(f) re(f)no(f)vá(ef)bis(f) fá(ef'g)ci(gd/gvFE)em(e.) (,) * ter(fd/ef!g'h)(ix)rae.(hiHG'/gf.) (,) (ix)(hiHG'/ge./ghGF'E/f_gf/fe.) (::)");
 
+  // ── Orgelfassung (Choral → klassische Noten, Begleitsatz, MusicXML) ──
+  // Reine Funktionstests am Konverter; das offene Stück bleibt unberührt.
+  function ocheck(name, fn, expected) {
+    try {
+      const actual = String(fn());
+      results.push({name: 'Orgel: ' + name, pass: actual === String(expected), expected: String(expected), actual});
+    } catch (err) {
+      results.push({name: 'Orgel: ' + name, pass: false, error: err.message, expected: String(expected), actual: '(Fehler)'});
+    }
+  }
+  const clMel = (gabc, opts) => {
+    const abc = clGabcToAbc([{gabc}], opts || {}).abc.split('\n');
+    return abc[abc.findIndex(l => l.startsWith('K:')) + 1];
+  };
+  ocheck('Tonhöhen, Achtel, Mora, Melisma-Bogen', () => clMel("(c4) Ky(fg)ri(h.)e(h) (::)"), '(FG) A2 A |]');
+  ocheck('b molle gilt bis Wortende', () => clMel("(c4) a(ixi)b(i) c(i) (::)"), '_B B =B |]');
+  ocheck('Episema → Tenuto, Divisio minima → Atemzeichen', () => clMel("(c4) Ky(f_)ri(gh~)e(h) (,) e(g'ih)le(f) (::)"), '!tenuto!F (GA) A !breath!y (GBA) F |]');
+  ocheck('Modale Transposition a-äolisch → c (3 ♭)', () => {
+    const r = clGabcToAbc([{gabc: "(c4) Ky(fg)ri(h.)e(h) (::)"}], {targetPc: 0});
+    return r.info.sigFifths + ' ' + clMel("(c4) Ky(fg)ri(h.)e(h) (::)", {targetPc: 0});
+  }, '-3 (AB) c2 c |]');
+  const oTest = "(c4) Ky(f)ri(gxg)e(hg/hi.) * (,) e(ixi)le(h_g)i(hiH)son.(g.) (;) Chri(fgf)ste(e) e(gh)le(i)i(h!iwj)son.(g.) (:) Ky(hi)ri(j)e(ixihg) e(f)le(g)i(ff)son.(f.) (::)";
+  ocheck('Begleitsatz: alle Abschnitte vierstimmig, Schluss auf Finalis', () => {
+    const r = clGabcToAbc([{gabc: oTest}], {accomp: true});
+    const segs = r.models[0].segs;
+    const bad = segs.filter(sg => !sg.voicing || !sg.voicing.A || !sg.voicing.T || !sg.voicing.B ||
+      sg.notes.reduce((a, n) => a + n.dur, 0) !== sg.pulses).length;
+    const last = segs[segs.length - 1];
+    return bad + ' ' + (clMod(last.voicing.B.D, 7) === clMod(last.notes[last.notes.length - 1].pitch.D, 7));
+  }, '0 true');
+  ocheck('MusicXML wohlgeformt, Stimmen gleich lang', () => {
+    const out = [];
+    [false, true].forEach(acc => {
+      const xml = clBuildMusicXml(clGabcToAbc([{gabc: oTest}], {accomp: acc}).models);
+      const doc = new DOMParser().parseFromString(xml, 'application/xml');
+      if (doc.getElementsByTagName('parsererror').length) { out.push('parsererror'); return; }
+      let mism = 0;
+      Array.from(doc.getElementsByTagName('measure')).forEach(m => {
+        const tot = {};
+        Array.from(m.getElementsByTagName('note')).forEach(n => {
+          const v = n.getElementsByTagName('voice')[0].textContent;
+          tot[v] = (tot[v] || 0) + parseInt(n.getElementsByTagName('duration')[0].textContent, 10);
+        });
+        if (new Set(Object.values(tot)).size > 1) mism++;
+      });
+      out.push(doc.getElementsByTagName('measure').length + 'T/' + doc.getElementsByTagName('lyric').length + 'S/' + mism);
+    });
+    return out.join(' ');
+  }, '3T/20S/0 3T/20S/0');
+
   // Restore whatever the user actually had open before running the test.
   gregEntries = savedEntries;
   gregRefreshList();
@@ -7668,7 +6745,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '229';
+const NOTATOR_BUILD_ID = '230';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -16171,7 +15248,6 @@ window.addEventListener('resize', () => {
 
 function switchTab(tab) {
   if (typeof ntPlayStop === 'function') ntPlayStop();
-  const editorEls=['tb','main'];
   const clp=document.getElementById('classic-panel');
   if(clp) clp.style.display='none';
   const gp=document.getElementById('gabc-panel');
@@ -16179,7 +15255,6 @@ function switchTab(tab) {
   const be=document.getElementById('tab-editor');
   const bg=document.getElementById('tab-gabc');
   const bgr=document.getElementById('tab-greg');
-  editorEls.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
   gp.style.display='none';
   if(grp) grp.style.display='none';
   be.style.background='#2a1a08';be.style.color='#8b9a70';
@@ -16194,8 +15269,7 @@ function switchTab(tab) {
     if(bgr){bgr.style.background='#2a3820';bgr.style.color='#e0d4b0';}
     setTimeout(gregRender, 150);
   } else {
-    // Der alte Klick-Noten-Editor (#tb/#main) wird nicht mehr angezeigt;
-    // stattdessen die klassische Orgel-Fassung (abcjs-Notensatz).
+    // Klassische Orgel-Fassung (abcjs-Notensatz)
     if(clp) clp.style.cssText='display:flex;flex:1;overflow:hidden;flex-direction:column;background:#1a2414';
     be.style.background='#3d3420';be.style.color='#e0d4b0';
     clOpen();

@@ -1,3 +1,37 @@
+# Stand Build 230 (2026-10-04)
+
+Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator).
+Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
+
+## Neu in Build 227–230
+
+- **227 Wiedergabe:** ▶/❚❚/■ + ♪-Einstellungen (Tempo in Achteln/min,
+  Klang Orgel/Chor/Flöte/Klavier) im Choral- und im Orgel-Tab; Orgel mit
+  Mitlesen (gespielte Noten rot). abcjs-Synth, Klänge werden beim ersten
+  Abspielen geladen.
+- **228 App-Installation (PWA):** `manifest.webmanifest`, `sw.js`
+  (Seite: Netz zuerst; Bibliotheken/Klänge: Cache + Hintergrund-Update),
+  Icons in `icons/`, Knopf "📲 Installieren" im Kopf (wenn der Browser es anbietet).
+- **229 MusicXML-Export:** "↓ MusicXML" im Orgel-Tab (Melodie bzw.
+  Begleitsatz auf 2 Systemen, Text, Bögen, Tenuto, Atemzeichen, Titel).
+  Handänderungen im Quelltext werden nicht exportiert (Hinweis erscheint).
+- **230 Aufräumen:** alter Klick-Noten-Editor (#tb/#main, ~800 Zeilen JS)
+  entfernt; Selbsttest um 6 Orgel-Tests erweitert (Tonhöhen/Dauern,
+  b molle, Episema/Divisio, Transposition, Begleitsatz, MusicXML).
+
+## Vorgemerkt (Backlog, mit Nutzer besprochen)
+
+1. **Gottesdienst-Mappe:** mehrere Stücke aus der Bibliothek in eine PDF
+   (Reihenfolge wählen, Seitenumbrüche, evtl. Deckblatt).
+2. **Bibliothek ordnen:** Suche, Filter, Tags (z.B. Kirchenjahr, Ordinarium/Proprium).
+3. **Teilen mit anderen:** Nur-Lese-Link; Hinweis: Google-Login ist im
+   Testmodus auf eingetragene Testnutzer beschränkt.
+4. **Begleitsatz verfeinern:** Akkord-Overrides robust gegen eingefügte/
+   gelöschte Silben (derzeit an Abschnittsindex gebunden); Wahl Grund-
+   stellung/Sextakkord; separates Pedalsystem.
+
+---
+
 # Session 64 (2026-09-26): Notator_208.html — Original-PDF als ausklappbares Seitenpanel statt Geister-Hintergrund
 
 Nutzer meldete: beim "PDF lesen" (Gregorianisch-Modus) wurde das Original-PDF
