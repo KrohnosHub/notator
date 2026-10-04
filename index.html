@@ -9,6 +9,15 @@
      weiss auf grau, und sogar das per Canvas erzeugte PDF übernimmt das. -->
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
+<!-- Als App installierbar (PWA) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#121c0e">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Notator">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Notator</title>
 <style>
 :root{
@@ -35,6 +44,7 @@ html,body{height:100%;overflow:hidden}
 /* Orgel: Menü einklappen / Anzeigeansicht */
 #classic-panel.cl-menu-collapsed #cl-toolbar, #classic-panel.cl-menu-collapsed #cl-headrow, #classic-panel.cl-menu-collapsed #cl-info, #classic-panel.cl-view #cl-src-panel{display:none !important}
 #classic-panel.cl-view text.cl-text{pointer-events:none}
+.nt-playing, .nt-playing path, .nt-playing text{fill:#c0392b !important;stroke:#c0392b}
 body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
 #shell{display:flex;flex-direction:column;height:100vh}
 #hdr{background:#1a1209;padding:6px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
@@ -150,6 +160,7 @@ input[type=file]{display:none}
 <div id="hdr">
   <h1>Not<em>a</em>tor</h1>
   <span style="font-size:10px;color:#6b7a60;margin-left:4px">Klassisch &amp; Gregorianisch</span>
+  <button class="b" id="nt-install-btn" onclick="ntInstall()" style="display:none;margin-left:10px;min-height:20px;padding:2px 10px;font-size:11px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Notator als App auf diesem Gerät installieren">&#128242; Installieren</button>
   <div id="hdr-tabs" style="margin-left:auto;display:flex;gap:4px">
     <button class="b" id="tab-greg" onclick="switchTab('greg')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#1a2018;color:#8b9a70;border-color:#3a5030">Greg-Editor</button>
     <button class="b" id="tab-gabc" onclick="switchTab('gabc')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#2a1a08;color:#8b9a70;border-color:#4a5a30">GABC-Eingabe</button>
@@ -395,6 +406,7 @@ input[type=file]{display:none}
     <span id="greg-mobile-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" onclick="switchTab('editor')" style="font-size:11px;padding:3px 8px" title="Klassische Orgelnoten">&#127929;</button>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
+<button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
     <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
   </div>
@@ -620,6 +632,7 @@ input[type=file]{display:none}
     <span id="cl-vb-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
     <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
+<button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -643,6 +656,7 @@ input[type=file]{display:none}
     <button class="b" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button>
     <span style="color:#3a4a30">|</span>
     <button class="b" onclick="clDownloadAbc()" style="font-size:11px;padding:3px 8px" title="Als ABC-Datei speichern (u.a. für MuseScore, EasyABC, abcjs)">&#8595; ABC</button>
+    <button class="b" onclick="clDownloadMusicXml()" style="font-size:11px;padding:3px 8px" title="Als MusicXML speichern (MuseScore, Sibelius, Finale, Dorico …)">&#8595; MusicXML</button>
     <button class="b" onclick="clExportPDF()" style="font-size:11px;padding:3px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Als PDF sichern (A4, gleiche Ausgabe wie beim Choral)">&#8595; PDF</button>
     <label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext drucken</label>
     <span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
@@ -7654,7 +7668,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '226';
+const NOTATOR_BUILD_ID = '229';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14898,6 +14912,7 @@ function clGabcToAbc(gabcList, opts) {
   const liqChars = [];
   const segRanges = []; // Klickbereiche je Begleitsatz-Abschnitt {start,end,key}
   const segInfo = {};   // key -> {candidates:[{deg,name}], current, currentName}
+  const models = [];    // internes Modell je Abschnitt (für MusicXML-Export)
   let abcAll = '';
   let info = null;
   // Intervall aus erstem Abschnitt
@@ -15049,6 +15064,7 @@ function clGabcToAbc(gabcList, opts) {
     const right = (hdr && hdr.right != null) ? hdr.right : autoRight;
     if (si === 0) { info.autoLeft = autoLeft; info.autoRight = autoRight; }
     head += clAbcSideLines(left, right);
+    models.push({ title, subtitle, left, right, sigFifths, accomp: !!opts.accomp, lines, segs });
     head += 'M:none\nL:1/8\n';
     if (opts.accomp) {
       head += '%%score {(S A) | (T B)}\nV:S clef=treble stem=up\nV:A clef=treble stem=down\nV:T clef=bass stem=up\nV:B clef=bass stem=down\n';
@@ -15165,7 +15181,7 @@ function clGabcToAbc(gabcList, opts) {
     });
     abcAll += head + body + '\n';
   });
-  return { abc: abcAll, liqChars, info, segRanges, segInfo };
+  return { abc: abcAll, liqChars, info, segRanges, segInfo, models };
 }
 
 
@@ -15421,6 +15437,7 @@ function clSyncControls() {
 }
 
 function clRender() {
+  if (typeof ntPlay !== 'undefined' && ntPlay.source === 'cl') ntPlayStop(); // Notenbild wird ersetzt
   clNormalizeState();
   const el = document.getElementById('cl-score');
   const info = document.getElementById('cl-info');
@@ -15447,7 +15464,7 @@ function clRender() {
   if (src && document.activeElement !== src) src.value = abc;
   const sw = clScoreWidth();
   el.style.width = (sw + 40) + 'px';
-  clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clState.accomp && clLast && !clUi().view) ? clChordClick : null);
+  window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clState.accomp && clLast && !clUi().view) ? clChordClick : null);
   clApplyUi();
   clSyncControls();
   clDrawTexts();
@@ -15474,7 +15491,333 @@ function clApplyUi() {
 function clToggleView() { const u = clUi(); u.view = !u.view; if (!u.view) u.menu = true; clSaveUi(u); clApplyUi(); clRender(); }
 function clToggleMenu() { const u = clUi(); u.menu = !u.menu; clSaveUi(u); clApplyUi(); if (!clState.width) clRender(); }
 
+// ── MusicXML-Export der Orgelfassung (für MuseScore, Sibelius, Finale …) ──
+// Erzeugt aus demselben internen Modell wie die Notenanzeige (nicht aus dem
+// ABC-Text): eine Stimme Melodie mit Text, bei Begleitsatz zusätzlich Alt
+// (System 1) sowie Tenor/Bass (System 2). Ohne Taktart (senza misura); ein
+// "Takt" reicht jeweils bis zum nächsten Trennstrich.
+function clXmlEsc(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+const CL_XML_TYPES = { 1: ['eighth', 0], 2: ['quarter', 0], 3: ['quarter', 1], 4: ['half', 0], 6: ['half', 1], 8: ['whole', 0], 12: ['whole', 1] };
+function clXmlSplit(p) {
+  const out = []; let r = p;
+  for (const v of [12, 8, 6, 4, 3, 2, 1]) while (r >= v) { out.push(v); r -= v; }
+  return out;
+}
+function clXmlPitch(n) {
+  const step = CL_LETTERS[clMod(n.D, 7)], oct = Math.floor(n.D / 7);
+  return '<pitch><step>' + step + '</step>' + (n.alt ? '<alter>' + n.alt + '</alter>' : '') + '<octave>' + oct + '</octave></pitch>';
+}
+// Eine (ggf. übergebundene) Note bzw. Pause schreiben.
+// o: {pitch|null, dur, voice, staff, stem, cue, tieStartLast, tieStopFirst, notationsFirst, notationsLast, lyric, artic}
+function clXmlNote(o) {
+  const parts = clXmlSplit(o.dur);
+  let x = '';
+  parts.forEach((d, i) => {
+    const first = i === 0, last = i === parts.length - 1;
+    const t = CL_XML_TYPES[d];
+    const tieStop = (!first) || (first && o.tieStopFirst);
+    const tieStart = (!last) || (last && o.tieStartLast);
+    x += '<note>' + (o.pitch ? clXmlPitch(o.pitch) : '<rest/>') + '<duration>' + d + '</duration>';
+    if (o.pitch && tieStop) x += '<tie type="stop"/>';
+    if (o.pitch && tieStart) x += '<tie type="start"/>';
+    x += '<voice>' + o.voice + '</voice><type' + (o.cue ? ' size="cue"' : '') + '>' + t[0] + '</type>' + (t[1] ? '<dot/>' : '');
+    if (o.pitch && o.stem) x += '<stem>' + o.stem + '</stem>';
+    if (o.staff) x += '<staff>' + o.staff + '</staff>';
+    let nots = '';
+    if (o.pitch && tieStop) nots += '<tied type="stop"/>';
+    if (o.pitch && tieStart) nots += '<tied type="start"/>';
+    if (first && o.notationsFirst) nots += o.notationsFirst;
+    if (last && o.notationsLast) nots += o.notationsLast;
+    if (first && o.artic) nots += '<articulations>' + o.artic + '</articulations>';
+    if (nots) x += '<notations>' + nots + '</notations>';
+    if (first && o.lyric) x += o.lyric;
+    x += '</note>';
+  });
+  return x;
+}
+
+function clBuildMusicXml(models) {
+  if (!models || !models.length) return null;
+  const accomp = models.some(m => m.accomp);
+  const m0 = models[0];
+  let measures = [];
+  let mNo = 0;
+  models.forEach((m, ti) => {
+    const units = [].concat(...m.lines);
+    // Wortanfänge bestimmen (für Silbentrennung im Liedtext)
+    let prevHyphen = false;
+    units.forEach(u => { if (u.kind === 'syl' && u.text) { u._wordStart = !prevHyphen; prevHyphen = !!u.hyphen; } });
+    let cur = null;
+    const newMeasure = () => { cur = { s: [], low: { A: [], T: [], B: [] }, dur: 0, dirs: '', bar: null, ti, first: !measures.some(x => x.ti === ti) }; measures.push(cur); };
+    newMeasure();
+    let pendingDir = '';
+    units.forEach((u, ui) => {
+      const annXml = (u.ann || []).length ? '<direction placement="below"><direction-type><words>' + clXmlEsc(u.ann.join(' ')) + '</words></direction-type>' + (accomp ? '<staff>1</staff>' : '') + '</direction>' : '';
+      if (u.kind === 'syl') {
+        if (annXml) cur.s.push(annXml);
+        u.notes.forEach((nt, k) => {
+          const multi = u.notes.length > 1;
+          let lyric = '';
+          if (k === 0 && u.text) {
+            const syl = u._wordStart ? (u.hyphen ? 'begin' : 'single') : (u.hyphen ? 'middle' : 'end');
+            lyric = '<lyric number="1"><syllabic>' + syl + '</syllabic><text>' + clXmlEsc(u.text) + '</text></lyric>';
+          }
+          cur.s.push(clXmlNote({
+            pitch: nt.pitch, dur: nt.dur, voice: 1, staff: accomp ? 1 : 0, stem: accomp ? 'up' : null, cue: !!nt.liq,
+            notationsFirst: (multi && k === 0) ? '<slur type="start" number="1"/>' : '',
+            notationsLast: (multi && k === u.notes.length - 1) ? '<slur type="stop" number="1"/>' : '',
+            artic: nt.ten ? '<tenuto/>' : '', lyric,
+          }));
+          cur.dur += nt.dur;
+          if (accomp && nt._seg && nt._seg.notes[0] === nt) {
+            const sg = nt._seg, vc = sg.voicing || {};
+            ['A', 'T', 'B'].forEach(v => {
+              const n = vc[v] || null;
+              const nn = sg.next && sg.next.voicing && sg.next.voicing[v];
+              const tie = !!(n && sg.tieNext && nn && nn.D === n.D && nn.alt === n.alt);
+              const prevTie = !!(n && sg._tiedFromPrev && sg._tiedFromPrev[v]);
+              if (tie) { sg.next._tiedFromPrev = sg.next._tiedFromPrev || {}; sg.next._tiedFromPrev[v] = true; }
+              cur.low[v].push(clXmlNote({
+                pitch: n, dur: sg.pulses, voice: v === 'A' ? 2 : v === 'T' ? 3 : 4, staff: v === 'A' ? 1 : 2,
+                stem: v === 'T' ? 'up' : 'down', tieStartLast: tie, tieStopFirst: prevTie,
+              }));
+            });
+          }
+        });
+      } else if (u.kind === 'bar') {
+        if (annXml) cur.s.push(annXml);
+        if (u.t === 'minima' && !u.final) {
+          // Atemzeichen an die letzte Melodienote hängen
+          for (let i = cur.s.length - 1; i >= 0; i--) {
+            if (cur.s[i].indexOf('<note>') === 0) {
+              const lastNoteStart = cur.s[i].lastIndexOf('<note>');
+              let seg = cur.s[i].slice(lastNoteStart);
+              seg = seg.indexOf('<notations>') >= 0 ? seg.replace('<notations>', '<notations><articulations><breath-mark/></articulations>')
+                : seg.replace(/(<\/staff>|<\/stem>|<\/type>|<dot\/>)(?![\s\S]*(<\/staff>|<\/stem>|<\/type>|<dot\/>))/, '$1<notations><articulations><breath-mark/></articulations></notations>');
+              cur.s[i] = cur.s[i].slice(0, lastNoteStart) + seg;
+              break;
+            }
+          }
+          return;
+        }
+        cur.bar = u.final ? 'light-heavy' : (u.t === 'minor' ? 'regular' : 'light-light');
+        if (ui < units.length - 1) newMeasure();
+      } else if (u.kind === 'ann' && annXml) {
+        cur.s.push(annXml);
+      }
+    });
+    if (!cur.dur && !cur.s.length) measures.pop();
+    else if (!cur.bar) cur.bar = 'light-heavy';
+  });
+
+  // Ausgabe
+  let body = '';
+  measures.forEach((ms, i) => {
+    mNo++;
+    body += '<measure number="' + mNo + '"' + (ms.dur ? '' : ' implicit="yes"') + '>';
+    if (i === 0 || ms.first) {
+      const mm = models[ms.ti];
+      body += (i > 0 ? '<print new-system="yes"/>' : '') + '<attributes>';
+      if (i === 0) body += '<divisions>2</divisions>';
+      body += '<key><fifths>' + mm.sigFifths + '</fifths></key><time print-object="no"><senza-misura/></time>';
+      if (i === 0) {
+        if (accomp) body += '<staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>';
+        else body += '<clef><sign>G</sign><line>2</line></clef>';
+      }
+      body += '</attributes>';
+      if (i > 0 && mm.title) body += '<direction placement="above"><direction-type><words font-weight="bold" font-size="12">' + clXmlEsc(mm.title) + '</words></direction-type></direction>';
+    }
+    body += ms.s.join('');
+    if (accomp && ms.dur) {
+      ['A', 'T', 'B'].forEach(v => { body += '<backup><duration>' + ms.dur + '</duration></backup>' + ms.low[v].join(''); });
+    }
+    if (ms.bar && ms.bar !== 'regular') body += '<barline location="right"><bar-style>' + ms.bar + '</bar-style></barline>';
+    body += '</measure>';
+  });
+
+  const credit = (txt, just, valign, size, y) => txt ? '<credit page="1"><credit-words default-x="' + (just === 'left' ? 70 : just === 'right' ? 1130 : 600) + '" default-y="' + y + '" justify="' + just + '" valign="' + valign + '" font-size="' + size + '">' + clXmlEsc(txt) + '</credit-words></credit>' : '';
+  const subs = String(m0.subtitle || '').split('\n').filter(Boolean);
+  let credits = credit(m0.title, 'center', 'top', 22, 1640);
+  subs.forEach((s, k) => { credits += credit(s, 'center', 'top', 13, 1590 - k * 22); });
+  credits += credit(m0.left, 'left', 'bottom', 10, 1530) + credit(m0.right, 'right', 'bottom', 10, 1530);
+
+  return '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' +
+    '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n' +
+    '<score-partwise version="3.1">' +
+    '<work><work-title>' + clXmlEsc(m0.title || 'Unbenanntes Stück') + '</work-title></work>' +
+    '<identification><encoding><software>Notator</software><encoding-date>' + new Date().toISOString().slice(0, 10) + '</encoding-date></encoding></identification>' +
+    '<defaults><page-layout><page-height>1697</page-height><page-width>1200</page-width></page-layout></defaults>' +
+    credits +
+    '<part-list><score-part id="P1"><part-name>' + (accomp ? 'Orgel' : 'Melodie') + '</part-name></score-part></part-list>' +
+    '<part id="P1">' + body + '</part></score-partwise>\n';
+}
+
+function clDownloadMusicXml() {
+  const list = clCollectGabc();
+  if (!clHasNotes(list)) { gregGst('Keine Noten vorhanden.'); return; }
+  const r = clBuild();
+  if (!r || !r.models) return;
+  const xml = clBuildMusicXml(r.models);
+  if (!xml) return;
+  if (clState[clMK()]) gregGst('Hinweis: Handänderungen im Quelltext sind im MusicXML nicht enthalten (Export aus der automatisch erzeugten Fassung).');
+  const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = clFileBase() + (clState.accomp ? '_Orgel' : '') + '.musicxml'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ── Wiedergabe (Choral + Orgel) ─────────────────────────────────────
+// Klangerzeugung über den Synthesizer von abcjs (Klangbibliothek wird beim
+// ersten Abspielen aus dem Netz geladen, danach vom Browser/Service Worker
+// zwischengespeichert). Choral: die einstimmige Übertragung in Original-
+// lage; Orgel: genau die angezeigte Fassung (inkl. Transposition und
+// Begleitsatz) mit Mitlesen (gespielte Noten werden hervorgehoben).
+const NT_INSTRUMENTS = [{ p: 19, n: 'Orgel' }, { p: 52, n: 'Chor' }, { p: 73, n: 'Flöte' }, { p: 0, n: 'Klavier' }];
+const ntPlay = { synth: null, timer: null, state: 'stop', source: null, token: 0, ac: null };
+
+function ntPlayPrefs() {
+  let p = null; try { p = JSON.parse(localStorage.getItem('notatorPlay') || 'null'); } catch (e) {}
+  return Object.assign({ tempo: 150, instr: 19 }, p || {});
+}
+function ntPlaySavePrefs(p) { try { localStorage.setItem('notatorPlay', JSON.stringify(p)); } catch (e) {} }
+
+function ntPlayUpdateButtons() {
+  document.querySelectorAll('.nt-play-btn').forEach(b => {
+    const mine = ntPlay.source === b.getAttribute('data-src');
+    b.innerHTML = (mine && ntPlay.state === 'play') ? '&#10074;&#10074;' : '&#9654;';
+    b.title = (mine && ntPlay.state === 'play') ? 'Pause' : (mine && ntPlay.state === 'pause' ? 'Weiter abspielen' : 'Abspielen');
+  });
+}
+function ntClearHighlight() {
+  document.querySelectorAll('.nt-playing').forEach(el => el.classList.remove('nt-playing'));
+}
+
+function ntPlayStop() {
+  ntPlay.token++;
+  try { if (ntPlay.synth) ntPlay.synth.stop(); } catch (e) {}
+  try { if (ntPlay.timer) ntPlay.timer.stop(); } catch (e) {}
+  ntPlay.synth = null; ntPlay.timer = null; ntPlay.state = 'stop'; ntPlay.source = null;
+  ntClearHighlight();
+  ntPlayUpdateButtons();
+}
+
+// Audio muss im Klick selbst "entsperrt" werden (Handy-Browser) -- darum
+// wird der AudioContext synchron hier angelegt, bevor geladen wird.
+function ntPlayToggle(source) {
+  if (ntPlay.source === source && ntPlay.state === 'play') {
+    try { ntPlay.synth.pause(); } catch (e) {}
+    try { if (ntPlay.timer) ntPlay.timer.pause(); } catch (e) {}
+    ntPlay.state = 'pause'; ntPlayUpdateButtons(); return;
+  }
+  if (ntPlay.source === source && ntPlay.state === 'pause') {
+    try { ntPlay.synth.resume(); } catch (e) {}
+    try { if (ntPlay.timer) ntPlay.timer.start(); } catch (e) {}
+    ntPlay.state = 'play'; ntPlayUpdateButtons(); return;
+  }
+  ntPlayStop();
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) { gregGst('Wiedergabe wird von diesem Browser nicht unterstützt.'); return; }
+  if (!ntPlay.ac || ntPlay.ac.state === 'closed') ntPlay.ac = new AC();
+  try { ntPlay.ac.resume(); } catch (e) {}
+  ntPlay.source = source; ntPlay.state = 'play'; ntPlayUpdateButtons();
+  const token = ntPlay.token;
+  clEnsureAbcjs(() => {
+    if (token !== ntPlay.token) return;
+    if (!ABCJS.synth || !ABCJS.synth.supportsAudio()) { gregGst('Wiedergabe wird von diesem Browser nicht unterstützt.'); ntPlayStop(); return; }
+    try { ABCJS.synth.registerAudioContext(ntPlay.ac); } catch (e) {}
+    let tunes = [];
+    if (source === 'cl') {
+      tunes = (window._clTuneObjs || []).map(t => ({ obj: t, highlight: true }));
+    } else {
+      const list = clCollectGabc();
+      if (!clHasNotes(list)) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
+      const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400 });
+      r.abc.split(/(?=^X:)/m).filter(x => x.trim()).forEach(part => {
+        const objs = ABCJS.renderAbc('*', part);
+        if (objs && objs[0]) tunes.push({ obj: objs[0], highlight: false });
+      });
+    }
+    if (!tunes.length) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
+    ntPlayRun(tunes, 0, token);
+  });
+}
+
+function ntPlayRun(tunes, i, token) {
+  if (token !== ntPlay.token) return;
+  if (i >= tunes.length) { ntPlayStop(); gregGst('Wiedergabe beendet.'); return; }
+  const pref = ntPlayPrefs();
+  const qpm = Math.max(20, Math.round(pref.tempo / 2)); // Tempo-Angabe in Achteln/min
+  const synth = new ABCJS.synth.CreateSynth();
+  ntPlay.synth = synth;
+  gregGst('Lade Klänge …');
+  synth.init({
+    audioContext: ntPlay.ac,
+    visualObj: tunes[i].obj,
+    options: { program: pref.instr, qpm, onEnded: () => { if (token === ntPlay.token && ntPlay.state !== 'pause') { ntClearHighlight(); ntPlayRun(tunes, i + 1, token); } } }, // pause() löst ebenfalls onEnded aus
+  }).then(() => synth.prime()).then(() => {
+    if (token !== ntPlay.token) return;
+    if (tunes[i].highlight) {
+      ntPlay.timer = new ABCJS.TimingCallbacks(tunes[i].obj, {
+        qpm,
+        eventCallback: ev => {
+          ntClearHighlight();
+          if (!ev || !ev.elements) return;
+          ev.elements.forEach(group => (group || []).forEach(el => { if (el && el.classList) el.classList.add('nt-playing'); }));
+        },
+      });
+      ntPlay.timer.start();
+    }
+    synth.start();
+    gregGst('Wiedergabe' + (tunes.length > 1 ? ' (Abschnitt ' + (i + 1) + ' von ' + tunes.length + ')' : '') + ' – ' + (NT_INSTRUMENTS.find(x => x.p === pref.instr) || {}).n + ', ♪ = ' + pref.tempo);
+  }).catch(err => {
+    if (token !== ntPlay.token) return;
+    gregGst('Wiedergabe nicht möglich: ' + (err && err.message ? err.message : err) + ' (Klänge werden beim ersten Mal aus dem Internet geladen)');
+    ntPlayStop();
+  });
+}
+
+// Einstellungen (Tempo, Instrument) als kleines Aufklappfeld
+function ntPlaySettings(btn) {
+  const old = document.getElementById('nt-play-pop');
+  if (old) { old.remove(); return; }
+  const p = ntPlayPrefs();
+  const d = document.createElement('div');
+  d.id = 'nt-play-pop';
+  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;display:flex;flex-direction:column;gap:6px;min-width:200px';
+  const r = btn.getBoundingClientRect();
+  d.style.top = Math.min(r.bottom + 4, window.innerHeight - 120) + 'px';
+  d.style.left = Math.max(4, Math.min(r.left - 120, window.innerWidth - 220)) + 'px';
+  d.innerHTML = '<label style="display:flex;align-items:center;gap:6px">Tempo ♪ <input id="nt-pp-tempo" type="range" min="60" max="300" step="10" value="' + p.tempo + '" style="flex:1;accent-color:#5a8a40"> <span id="nt-pp-tv">' + p.tempo + '</span></label>' +
+    '<label style="display:flex;align-items:center;gap:6px">Klang <select id="nt-pp-instr" style="flex:1;font-size:12px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30">' +
+    NT_INSTRUMENTS.map(x => '<option value="' + x.p + '"' + (x.p === p.instr ? ' selected' : '') + '>' + x.n + '</option>').join('') + '</select></label>' +
+    '<span style="font-size:10px;color:#8b9a70">Änderungen gelten ab dem nächsten Start.</span>';
+  document.body.appendChild(d);
+  d.querySelector('#nt-pp-tempo').oninput = e => { p.tempo = parseInt(e.target.value, 10); d.querySelector('#nt-pp-tv').textContent = p.tempo; ntPlaySavePrefs(p); };
+  d.querySelector('#nt-pp-instr').onchange = e => { p.instr = parseInt(e.target.value, 10); ntPlaySavePrefs(p); };
+  setTimeout(() => document.addEventListener('mousedown', function h(e) { if (!d.contains(e.target) && e.target !== btn) { d.remove(); document.removeEventListener('mousedown', h); } }), 0);
+}
+
 // ── Vollbild für die Notenfläche (Choral und Orgel) ──
+// ── App-Installation (PWA) ──
+let _ntInstallEvt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault(); _ntInstallEvt = e;
+  const b = document.getElementById('nt-install-btn'); if (b) b.style.display = '';
+});
+window.addEventListener('appinstalled', function() {
+  _ntInstallEvt = null; const b = document.getElementById('nt-install-btn'); if (b) b.style.display = 'none';
+  gregGst('Notator wurde als App installiert.');
+});
+function ntInstall() {
+  if (!_ntInstallEvt) { alert('Im Browser-Menü „Zum Startbildschirm hinzufügen“ bzw. „App installieren“ wählen.'); return; }
+  _ntInstallEvt.prompt();
+  _ntInstallEvt.userChoice.finally(function() { _ntInstallEvt = null; const b = document.getElementById('nt-install-btn'); if (b) b.style.display = 'none'; });
+}
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js').catch(function(err) { console.warn('Service Worker nicht registriert:', err); }); });
+}
+
 function ntFsElement() { return document.fullscreenElement || document.webkitFullscreenElement || document.querySelector('.nt-pseudo-fs'); }
 function ntAfterFs() {
   const fs = ntFsElement();
@@ -15827,6 +16170,7 @@ window.addEventListener('resize', () => {
 });
 
 function switchTab(tab) {
+  if (typeof ntPlayStop === 'function') ntPlayStop();
   const editorEls=['tb','main'];
   const clp=document.getElementById('classic-panel');
   if(clp) clp.style.display='none';
