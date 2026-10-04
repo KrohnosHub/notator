@@ -225,12 +225,13 @@ input[type=file]{display:none}
 
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
-  <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;border-bottom:1px solid #3a4a30;flex-shrink:0">
+  <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
-    <span id="greg-mobile-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" onclick="switchTab('editor')" style="font-size:11px;padding:3px 8px" title="Klassische Orgelnoten">&#127929;</button>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
 <button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+    <button class="b nt-zoom-btn" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
     <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
   </div>
@@ -451,12 +452,13 @@ input[type=file]{display:none}
 
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
-  <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-shrink:0">
+  <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
     <button class="b" onclick="switchTab('greg')" style="font-size:11px;padding:3px 8px" title="Zurück zum Choral-Editor">&#8592; Choral</button>
-    <span id="cl-vb-title" style="flex:1;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <span id="cl-vb-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
     <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
 <button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+    <button class="b nt-zoom-btn" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -1430,7 +1432,7 @@ function gregRenderSectionPreview(sec, container) {
       score.annotation = new exsurge.Annotation(ctxt, annArr[annArr.length - 1]);
       score._extraAnnotations = annArr.slice(0, -1);
     }
-    const zoom = sz.zoom || 1;
+    const zoom = (sz.zoom || 1) * gregVS(); // inkl. Anzeige-Skalierung (nur Bildschirm)
     const width = window._gregForcedCanvasWidth
       ? Math.max(window._gregForcedCanvasWidth - 20, 400)
       : Math.max(container.clientWidth - 20, 400);
@@ -1515,6 +1517,9 @@ function gregNeutralizeRubricRed(svgEl) {
     }
   });
 }
+
+// Anzeige-Skalierung (🔍-Regler): nur Bildschirm, nicht PDF/gespeichertes Stück
+function gregVS() { return typeof ntViewScale === 'function' ? ntViewScale('greg') : 1; }
 
 function gregRender() {
   if (window._gregMultiSection) gregRenderAllSections();
@@ -1615,7 +1620,7 @@ function gregRenderGABCInto(gabc, wrap, cb) {
       score.annotation = new exsurge.Annotation(ctxt, annArr[annArr.length - 1]);
       score._extraAnnotations = annArr.slice(0, -1);
     }
-    const zoom = ctxt._zoom || 1;
+    const zoom = (ctxt._zoom || 1) * gregVS();
     // In multi-section mode the active section's svg-wrap is nested inside
     // its own section box (with its own padding), NOT a direct child of
     // greg-canvas-wrap — using greg-canvas-wrap's full width here computed
@@ -1645,7 +1650,7 @@ function gregRenderGABCInto(gabc, wrap, cb) {
         const svgEl = wrap.querySelector('svg');
         if (svgEl) {
           gregNeutralizeRubricRed(svgEl);
-          const zoom = ctxt._zoom || 1;
+          const zoom = (ctxt._zoom || 1) * gregVS();
           const nativeW = parseFloat(svgEl.getAttribute('width')) || width;
           // First apply padding and title at native scale
           svgEl.style.cssText = 'background:transparent;display:block;cursor:crosshair;';
@@ -6745,7 +6750,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '230';
+const NOTATOR_BUILD_ID = '231';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14457,7 +14462,8 @@ function clScoreWidth() {
   // clientWidth enthält das Padding (2x12) des Wrappers; abcjs addiert
   // paddingleft/right (2x10) zur staffwidth -> Rest als Sicherheitsrand.
   const w = wrap ? wrap.clientWidth - 24 - 20 - 16 : 740;
-  return Math.max(280, Math.min(w, 1100));
+  const vs = ntViewScale('cl'); // kleiner -> mehr Noten pro Zeile
+  return Math.max(280, Math.min(w / vs, 1100 / Math.min(vs, 1)));
 }
 
 function clBuild() {
@@ -14540,8 +14546,15 @@ function clRender() {
   const src = document.getElementById('cl-src');
   if (src && document.activeElement !== src) src.value = abc;
   const sw = clScoreWidth();
-  el.style.width = (sw + 40) + 'px';
+  const vs = ntViewScale('cl');
+  el.style.width = Math.round(sw * vs + 40) + 'px';
   window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clState.accomp && clLast && !clUi().view) ? clChordClick : null);
+  if (vs !== 1) el.querySelectorAll('.cl-tune > svg').forEach(svg => {
+    const w = parseFloat(svg.getAttribute('width')), h = parseFloat(svg.getAttribute('height'));
+    if (!w || !h) return;
+    if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    svg.setAttribute('width', Math.round(w * vs)); svg.setAttribute('height', Math.round(h * vs));
+  });
   clApplyUi();
   clSyncControls();
   clDrawTexts();
@@ -14854,6 +14867,49 @@ function ntPlayRun(tunes, i, token) {
   });
 }
 
+// ── Anzeige-Skalierung (🔍) für Choral und Orgel ──
+// Nur Bildschirm: kleiner = mehr Noten pro Zeile (Neu-Umbruch), PDF und
+// gespeichertes Stück bleiben unverändert. Pro Gerät gespeichert.
+function ntViewScale(src) {
+  if (ntViewScale._override) return 1;
+  let o = null; try { o = JSON.parse(localStorage.getItem('notatorViewScale') || 'null'); } catch (e) {}
+  const v = o && o[src];
+  return (typeof v === 'number' && v >= 0.3 && v <= 2) ? v : 1;
+}
+let _ntVsTimer = null;
+function ntSetViewScale(src, v) {
+  let o = null; try { o = JSON.parse(localStorage.getItem('notatorViewScale') || 'null'); } catch (e) {}
+  o = o || {}; o[src] = Math.round(v * 100) / 100;
+  try { localStorage.setItem('notatorViewScale', JSON.stringify(o)); } catch (e) {}
+  ntViewScaleUpdateButtons();
+  clearTimeout(_ntVsTimer);
+  _ntVsTimer = setTimeout(() => { if (src === 'greg') gregRender(); else clRender(); }, 180);
+}
+function ntViewScaleUpdateButtons() {
+  document.querySelectorAll('.nt-zoom-btn').forEach(b => { b.innerHTML = '&#128269; ' + Math.round(ntViewScale(b.getAttribute('data-src')) * 100) + '%'; });
+}
+function ntViewScalePop(btn) {
+  const old = document.getElementById('nt-vs-pop');
+  if (old) { const same = old._btn === btn; old.remove(); if (same) return; }
+  const src = btn.getAttribute('data-src');
+  const d = document.createElement('div');
+  d.id = 'nt-vs-pop'; d._btn = btn;
+  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;display:flex;align-items:center;gap:8px;width:min(300px,calc(100vw - 16px));box-sizing:border-box';
+  const r = btn.getBoundingClientRect();
+  d.style.top = Math.min(r.bottom + 4, window.innerHeight - 60) + 'px';
+  d.style.left = Math.max(8, Math.min(r.left - 120, window.innerWidth - 308)) + 'px';
+  const cur = Math.round(ntViewScale(src) * 100);
+  d.innerHTML = '<span>Grösse</span><input type="range" min="40" max="160" step="5" value="' + cur + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
+    '<span class="v" style="min-width:36px;text-align:right">' + cur + '%</span><button class="b" style="font-size:11px;padding:3px 6px" title="Zurück auf 100 %">100%</button>';
+  document.body.appendChild(d);
+  const inp = d.querySelector('input'), val = d.querySelector('.v');
+  inp.oninput = () => { val.textContent = inp.value + '%'; ntSetViewScale(src, parseInt(inp.value, 10) / 100); };
+  d.querySelector('button').onclick = () => { inp.value = 100; inp.oninput(); };
+  const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close); } };
+  setTimeout(() => document.addEventListener('pointerdown', close), 0);
+}
+document.addEventListener('DOMContentLoaded', ntViewScaleUpdateButtons);
+
 // Einstellungen (Tempo, Instrument) als kleines Aufklappfeld
 function ntPlaySettings(btn) {
   const old = document.getElementById('nt-play-pop');
@@ -15134,7 +15190,7 @@ function clTextDragStart(ev, tx, el, svg) {
   const ox = tx.x, oy = tx.y;
   const h = clSvgHeight(svg);
   const vy = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.y) || 0;
-  const w = parseFloat(svg.getAttribute('width')) || 800;
+  const w = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width) || parseFloat(svg.getAttribute('width')) || 800;
   let tw = 0; try { tw = el.getBBox().width; } catch (e) {}
   el.setPointerCapture && el.setPointerCapture(ev.pointerId);
   const move = e => {
@@ -15189,10 +15245,13 @@ function clExportPDF() {
   // Auf schmalen Bildschirmen (Handy) mit automatischer Breite würde das
   // PDF die Bildschirmbreite übernehmen (riesige Noten, viele Seiten).
   // Dann für den Export einmalig in Standard-Druckbreite neu setzen.
-  if (!clState.width && !clExportPDF._printPass && clScoreWidth() < 700) {
-    clExportPDF._printPass = true;
-    clState.width = 740; clRender();
-    try { clExportPDF(); } finally { clExportPDF._printPass = false; clState.width = null; setTimeout(clRender, 50); }
+  // Ebenso bei verkleinerter/vergrösserter Anzeige: PDF immer in Originalgrösse.
+  if (!clExportPDF._printPass && (ntViewScale('cl') !== 1 || (!clState.width && clScoreWidth() < 700))) {
+    clExportPDF._printPass = true; ntViewScale._override = true;
+    const oldW = clState.width;
+    if (!clState.width && clScoreWidth() < 700) clState.width = 740;
+    clRender();
+    try { clExportPDF(); } finally { clExportPDF._printPass = false; ntViewScale._override = false; clState.width = oldW; setTimeout(clRender, 50); }
     return;
   }
   const printTexts = !!(document.getElementById('cl-pdf-print-texts') || {}).checked;
