@@ -227,6 +227,8 @@ input[type=file]{display:none}
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
+    <button class="b" onclick="document.getElementById('greg-load-in').click()" style="font-size:11px;padding:3px 8px" title="Stück aus Datei laden (.notator)">&#128194; Öffnen</button>
+    <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
     <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" onclick="switchTab('editor')" style="font-size:11px;padding:3px 8px" title="Klassische Orgelnoten">&#127929;</button>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
@@ -242,13 +244,10 @@ input[type=file]{display:none}
         <button class="b" onclick="gregUndo()" style="font-size:10px;padding:2px 6px" title="Letzte Aktion rückgängig machen">&#8617; Undo</button>
         <button class="b" onclick="gregRedo()" style="font-size:10px;padding:2px 6px" title="Rückgängig gemachte Aktion wiederherstellen">&#8618; Redo</button>
         <button class="b" onclick="gregClear()" style="font-size:10px;padding:2px 6px" title="Neues, leeres Stück beginnen (aktuelles Stück wird verworfen)">&#10005; Neu</button>
-        <button class="b" onclick="document.getElementById('greg-load-in').click()" style="font-size:10px;padding:2px 6px" title="Stück laden (.notator)">&#128194; Öffnen</button>
         <input type="file" id="greg-load-in" accept=".notator,.json" style="display:none" onchange="gregLoadPiece(this)">
-        <button class="b" onclick="gregLibShowModal()" style="font-size:10px;padding:2px 6px" title="Im Browser gespeicherte Stücke ansehen/laden (unabhängig von .notator-Dateien)">&#128218; Bibliothek</button>
         <input type="file" id="greg-lib-import-in" accept=".json" style="display:none" onchange="gregLibImportFile(this)">
         <button class="b" onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (benötigt API-Key rechts)">&#128196; PDF lesen</button>
         <input type="file" id="greg-pdf-in" accept=".pdf" style="display:none" onchange="gregLoadPDF(this)">
-        <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:10px;padding:2px 6px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
         <button id="greg-pdf-panel-toggle" class="b" onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:2px 6px;display:none" title="Original-PDF-Panel ein-/ausblenden">&#128196; Original</button>
         <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird nicht gespeichert" style="width:150px;font-size:9px;padding:1px 4px;background:#0a1406;color:#6b8a60;border:1px solid #2a3820;outline:none">
       </div>
@@ -6753,7 +6752,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '232';
+const NOTATOR_BUILD_ID = '233';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
