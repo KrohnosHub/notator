@@ -254,6 +254,7 @@ input[type=file]{display:none}
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" onclick="gregSavePiece()" style="font-size:10px;padding:2px 6px" title="Stück speichern (.notator)">&#128190; Speichern</button>
         <button class="b" onclick="gregLibSaveCurrent()" style="font-size:10px;padding:2px 6px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Aktuelles Stück direkt im Browser (IndexedDB) ablegen/aktualisieren — kein Dateidialog nötig">&#128190; In Bibliothek</button>
+        <button class="b" onclick="gregEditCurrentMeta()" style="font-size:10px;padding:2px 6px" title="Kirchenjahr, Gattung und Tags für die Bibliothek festlegen">&#127991; Einordnen</button>
         <button class="b" onclick="ntPdfSave('greg')" style="font-size:10px;padding:2px 6px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Aktuelles Stück als PDF sichern">&#8595; PDF</button>
         <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext drucken</label>
         <span style="color:#3a4a30;margin:0 2px">|</span>
@@ -6753,7 +6754,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '234';
+const NOTATOR_BUILD_ID = '235';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -6838,7 +6839,8 @@ function gregBuildStateObject() {
     clef: clefKey,
     canvasWidth,
     entries: JSON.parse(JSON.stringify(gregEntries)),
-    classic: (typeof clState !== 'undefined') ? JSON.parse(JSON.stringify(clState)) : null
+    classic: (typeof clState !== 'undefined') ? JSON.parse(JSON.stringify(clState)) : null,
+    meta: Object.assign(ntMetaNorm(gregMeta), { txt: ntCurrentIncipit() || ntMetaNorm(gregMeta).txt })
   };
 }
 
@@ -6899,6 +6901,7 @@ function gregApplyLoadedState(state) {
     (state.sections || []).forEach(sec => gregFixDoubleAsterisk(sec && sec.entries));
   }
   if (typeof clState !== 'undefined') { clState = Object.assign({}, (state && state.classic) || {}); clNormalizeState(); }
+  gregMeta = ntMetaNorm(state && state.meta);
   // NOTE: this file may contain a saved `canvasWidth` from an older
   // version's "remember the page width" feature — deliberately IGNORED
   // here now. That feature was superseded by the render-pass-local
@@ -7123,7 +7126,7 @@ function gdFetch(url, opts, interactive) {
 
 function gdList(interactive) {
   const q = encodeURIComponent("'" + NOTATOR_GDRIVE_FOLDER_ID + "' in parents and trashed = false and name contains '.notator'");
-  return gdFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&orderBy=modifiedTime desc&pageSize=1000&fields=files(id,name,modifiedTime)', {}, interactive)
+  return gdFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&orderBy=modifiedTime desc&pageSize=1000&fields=files(id,name,modifiedTime,appProperties)', {}, interactive)
     .then(r => r.json()).then(j => (j.files || []).filter(f => /\.notator$/i.test(f.name)));
 }
 
@@ -7134,6 +7137,7 @@ function gdDownload(id, interactive) {
 // Legt an (id leer) oder überschreibt (id gesetzt); liefert die Datei-ID.
 function gdUpload(name, stateObj, id, interactive) {
   const meta = id ? { name } : { name, parents: [NOTATOR_GDRIVE_FOLDER_ID], mimeType: 'application/json' };
+  if (stateObj && stateObj.meta && typeof ntMetaToAppProps === 'function') meta.appProperties = ntMetaToAppProps(stateObj.meta);
   const boundary = 'notator' + Date.now();
   const body = '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(meta) +
     '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + JSON.stringify(stateObj, null, 2) + '\r\n--' + boundary + '--';
@@ -7182,7 +7186,7 @@ function gregLibAll() {
 
 function gregLibList() {
   return gregLibAll().then(function(all) {
-    const out = all.map(function(v) { return { id: v.id, title: v.title, savedAt: v.savedAt, updatedAt: v.updatedAt, driveId: v.driveId || null, pending: !!v.pending }; });
+    const out = all.map(function(v) { return { id: v.id, title: v.title, savedAt: v.savedAt, updatedAt: v.updatedAt, driveId: v.driveId || null, pending: !!v.pending, meta: (v.state && v.state.meta) || null }; });
     out.sort(function(a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
     return out;
   });
@@ -7283,6 +7287,7 @@ function gregLibLoadDrive(file) {
     if (local && local.pending && !confirm('Die lokale Kopie von "' + local.title + '" enthält Änderungen, die noch nicht in Drive sind.\nOK = Drive-Version laden (lokale Änderungen verwerfen), Abbrechen = lokale Version laden.')) {
       gregLibApplyRecord(local, 'lokale Kopie'); return;
     }
+    if (file.appProperties) state.meta = Object.assign(ntMetaFromAppProps(file.appProperties), { txt: (state.meta && state.meta.txt) || file.appProperties.txt || '' });
     const rec = Object.assign({}, local || {}, { title: gdTitleFromName(file.name), state: state, driveId: file.id, pending: false, updatedAt: Date.parse(file.modifiedTime) || Date.now() });
     if (!rec.savedAt) rec.savedAt = rec.updatedAt;
     return gregLibPut(rec).then(function(id) { rec.id = id; gregLibApplyRecord(rec, 'Google Drive'); });
@@ -7395,6 +7400,143 @@ function gregLibFormatDate(ts) {
   return d.toLocaleDateString('de-CH') + ' ' + d.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' });
 }
 
+// ── Bibliothek ordnen: Kategorien + freie Tags ──────────────────────
+// Gespeichert im Stück (state.meta) und – für Suche ohne Herunterladen –
+// zusätzlich als Drive-"appProperties" an der .notator-Datei.
+const NT_SEASONS = ['Advent', 'Weihnachtszeit', 'Zeit im Jahreskreis', 'Fastenzeit', 'Karwoche / Triduum', 'Osterzeit', 'Pfingsten', 'Herrenfeste', 'Marienfeste', 'Heiligenfeste', 'Totenliturgie', 'Ganzes Jahr / Sonstiges'];
+const NT_GENRES = ['Introitus', 'Kyrie', 'Gloria', 'Graduale', 'Alleluia', 'Tractus', 'Sequenz', 'Credo', 'Offertorium', 'Sanctus', 'Agnus Dei', 'Communio', 'Ite missa est', 'Antiphon', 'Marianische Antiphon', 'Hymnus', 'Psalm / Canticum', 'Responsorium', 'Sonstiges'];
+var gregMeta = {};
+var _libFilter = { q: '', season: '', genre: '', tag: '' };
+
+function ntMetaNorm(m) {
+  m = m || {};
+  const tags = Array.isArray(m.tags) ? m.tags : String(m.tags || '').split(',');
+  return { season: m.season || '', genre: m.genre || '', tags: tags.map(t => String(t).trim()).filter(Boolean), txt: m.txt || '' };
+}
+function ntUtf8Cut(str, maxBytes) {
+  str = String(str || '');
+  while (new TextEncoder().encode(str).length > maxBytes) str = str.slice(0, -1);
+  return str;
+}
+function ntMetaToAppProps(m) {
+  m = ntMetaNorm(m);
+  return { season: ntUtf8Cut(m.season, 100), genre: ntUtf8Cut(m.genre, 100), tags: ntUtf8Cut(m.tags.join(','), 110), txt: ntUtf8Cut(m.txt, 110) };
+}
+function ntMetaFromAppProps(ap) { return ntMetaNorm(ap || {}); }
+// Liedtext-Anfang des offenen Stücks (für die Suche)
+function ntCurrentIncipit() {
+  const g = (document.getElementById('greg-gabc-out') || {}).value || '';
+  const body = g.indexOf('%%') >= 0 ? g.slice(g.indexOf('%%') + 2) : g;
+  return body.replace(/\([^)]*\)/g, '').replace(/<[^>]+>/g, '').replace(/[*{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 90);
+}
+
+function ntMetaDialog(title, meta, allTags, onSave, onCancel) {
+  meta = ntMetaNorm(meta);
+  showModal('🏷 Einordnen: ' + title, '', []);
+  const body = document.getElementById('modal-body');
+  const opt = (list, cur) => '<option value="">– keine –</option>' + list.map(x => '<option' + (x === cur ? ' selected' : '') + '>' + ntEscAttr(x) + '</option>').join('');
+  body.innerHTML =
+    '<label style="display:block;font-size:12px;margin:4px 0">Kirchenjahr<br><select id="nt-meta-season" style="width:100%;font-size:13px;padding:3px">' + opt(NT_SEASONS, meta.season) + '</select></label>' +
+    '<label style="display:block;font-size:12px;margin:4px 0">Gattung<br><select id="nt-meta-genre" style="width:100%;font-size:13px;padding:3px">' + opt(NT_GENRES, meta.genre) + '</select></label>' +
+    '<label style="display:block;font-size:12px;margin:4px 0">Tags (mit Komma trennen)<br><input id="nt-meta-tags" list="nt-meta-taglist" type="text" value="' + ntEscAttr(meta.tags.join(', ')) + '" style="width:100%;box-sizing:border-box;font-size:13px;padding:4px" placeholder="z.B. Hochamt, Schola, Kyrie XVI"></label>' +
+    '<datalist id="nt-meta-taglist">' + (allTags || []).map(t => '<option value="' + ntEscAttr(t) + '">').join('') + '</datalist>' +
+    ((allTags || []).length ? '<div style="font-size:11px;margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">' + allTags.map(t => '<button class="b nt-tagadd" style="font-size:10px;padding:1px 6px" data-t="' + ntEscAttr(t) + '">+ ' + ntEscAttr(t) + '</button>').join('') + '</div>' : '');
+  body.querySelectorAll('.nt-tagadd').forEach(b => b.onclick = () => {
+    const inp = document.getElementById('nt-meta-tags');
+    const cur = inp.value.split(',').map(x => x.trim()).filter(Boolean);
+    const t = b.getAttribute('data-t');
+    if (!cur.includes(t)) cur.push(t);
+    inp.value = cur.join(', ');
+  });
+  const bEl = document.getElementById('modal-btns');
+  bEl.style.flexDirection = ''; bEl.style.alignItems = '';
+  const ok = document.createElement('button'); ok.className = 'b'; ok.textContent = 'Übernehmen';
+  ok.style.cssText = 'background:#3d6b35;color:#fff;border-color:#3d6b35';
+  const ca = document.createElement('button'); ca.className = 'b'; ca.textContent = 'Abbrechen';
+  bEl.appendChild(ok); bEl.appendChild(ca);
+  ok.onclick = () => onSave(ntMetaNorm({ season: document.getElementById('nt-meta-season').value, genre: document.getElementById('nt-meta-genre').value, tags: document.getElementById('nt-meta-tags').value, txt: meta.txt }));
+  ca.onclick = () => (onCancel ? onCancel() : closeModal());
+}
+
+// Einordnen des gerade offenen Stücks
+function gregEditCurrentMeta() {
+  gregLibCollect(false).then(r => r.allTags).catch(() => []).then(tags => {
+    ntMetaDialog((document.getElementById('greg-title') || {}).value || 'Aktuelles Stück', gregMeta, tags, m => {
+      gregMeta = m; closeModal();
+      gregScheduleAutosave();
+      gregGst('Einordnung gesetzt – wird beim nächsten Speichern in die Bibliothek übernommen.');
+    });
+  });
+}
+
+// Alle Bibliotheks-Einträge (Drive + nur lokal) als einheitliche Liste.
+// withDrive: Drive abfragen (nur wenn angemeldet; lädt vorher ausstehende Änderungen hoch)
+function gregLibCollect(withDrive) {
+  const driveOn = gdConfigured(), signed = driveOn && gdHasToken();
+  const fromLocal = l => ({ kind: 'local', id: l.id, title: l.title, date: l.updatedAt || l.savedAt, meta: ntMetaNorm(l.meta), local: l,
+    badge: driveOn && (l.pending || !l.driveId) ? '⏫ nicht in Drive' : '' });
+  const finish = (items, extra) => {
+    const tags = {};
+    items.forEach(it => it.meta.tags.forEach(t => { tags[t] = 1; }));
+    return Object.assign({ items, allTags: Object.keys(tags).sort((a, b) => a.localeCompare(b, 'de')) }, extra || {});
+  };
+  if (!withDrive || !signed) {
+    return gregLibList().then(locals => finish(locals.map(fromLocal), { mode: 'local', driveOn, signed }));
+  }
+  return gregLibSyncPending(false).then(sync => Promise.all([gdList(false), gregLibList()]).then(res => {
+    const files = res[0], locals = res[1];
+    const items = files.map(f => {
+      const loc = locals.find(l => l.driveId === f.id);
+      return { kind: 'drive', file: f, title: gdTitleFromName(f.name), date: Date.parse(f.modifiedTime),
+        meta: f.appProperties ? ntMetaFromAppProps(f.appProperties) : ntMetaNorm(loc && loc.meta), local: loc || null,
+        badge: loc && loc.pending ? '⏫ lokale Änderung' : '' };
+    });
+    locals.filter(l => l.pending || !l.driveId).filter(l => !files.some(f => f.id === l.driveId)).forEach(l => items.push(fromLocal(l)));
+    return finish(items, { mode: 'drive', driveOn, signed, sync, driveCount: files.length });
+  }));
+}
+
+function ntLibMatches(it, f) {
+  if (f.season && it.meta.season !== f.season) return false;
+  if (f.genre && it.meta.genre !== f.genre) return false;
+  if (f.tag && !it.meta.tags.includes(f.tag)) return false;
+  if (f.q) {
+    const hay = (it.title + ' ' + it.meta.txt + ' ' + it.meta.tags.join(' ') + ' ' + it.meta.genre + ' ' + it.meta.season).toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const words = f.q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/\s+/).filter(Boolean);
+    if (!words.every(w => hay.includes(w))) return false;
+  }
+  return true;
+}
+
+// Filterleiste (Suche, Kirchenjahr, Gattung, Tag) – auch von der Mappe genutzt
+function ntLibFilterBar(container, data, onChange) {
+  const bar = document.createElement('div');
+  bar.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
+  const sel = (key, label, list) => {
+    const s = document.createElement('select');
+    s.className = 'b'; s.style.cssText = 'font-size:11px;max-width:150px;flex:1 1 100px';
+    s.innerHTML = '<option value="">' + label + '</option>' + list.map(x => '<option' + (x === _libFilter[key] ? ' selected' : '') + '>' + ntEscAttr(x) + '</option>').join('');
+    s.onchange = () => { _libFilter[key] = s.value; onChange(); };
+    return s;
+  };
+  const q = document.createElement('input');
+  q.type = 'search'; q.placeholder = '🔍 Suche (Titel, Text, Tag)'; q.value = _libFilter.q;
+  q.style.cssText = 'flex:2 1 160px;font-size:12px;padding:3px 5px;min-width:0';
+  q.oninput = () => { _libFilter.q = q.value; onChange(); };
+  bar.appendChild(q);
+  const used = k => Array.from(new Set(data.items.map(it => it.meta[k]).filter(Boolean)));
+  const us = NT_SEASONS.filter(x => used('season').includes(x)), ug = NT_GENRES.filter(x => used('genre').includes(x));
+  if (us.length) bar.appendChild(sel('season', 'Kirchenjahr: alle', us));
+  if (ug.length) bar.appendChild(sel('genre', 'Gattung: alle', ug));
+  if (data.allTags.length) bar.appendChild(sel('tag', 'Tag: alle', data.allTags));
+  const r = document.createElement('button'); r.className = 'b'; r.textContent = '✕ Filter'; r.style.cssText = 'font-size:11px'; r.title = 'Suche und Filter zurücksetzen';
+  r.onclick = () => { _libFilter = { q: '', season: '', genre: '', tag: '' }; onChange(true); };
+  bar.appendChild(r);
+  container.appendChild(bar);
+  return q;
+}
+
 function gregLibShowModal() {
   const driveOn = gdConfigured();
   const signed = driveOn && gdHasToken();
@@ -7415,6 +7557,7 @@ function gregLibShowModal() {
   const topRow = document.createElement('div');
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
   topRow.appendChild(mkBtn('💾 Aktuelles Stück speichern', function() { gregLibSaveCurrent(); }));
+  topRow.appendChild(mkBtn('📑 Mappe', function() { ntMappeShow(); }, '', 'Gottesdienst-Mappe: mehrere Stücke zu einem PDF'));
   if (driveOn && !signed) topRow.appendChild(mkBtn('🔑 Mit Google Drive verbinden', function() {
     gdGetToken(true).then(function() { gregLibShowModal(); }).catch(function(err) { gregGst(err.message); });
   }, 'background:#2a4a6a;color:#fff;border-color:#2a4a6a'));
@@ -7426,68 +7569,74 @@ function gregLibShowModal() {
   }
   bEl.appendChild(topRow);
 
+  const filterWrap = document.createElement('div');
+  bEl.appendChild(filterWrap);
   const status = document.createElement('div');
   status.style.cssText = 'font-size:11px;color:var(--ink2);margin-bottom:4px';
   bEl.appendChild(status);
   const listEl = document.createElement('div');
-  listEl.style.cssText = 'max-height:52vh;overflow-y:auto';
+  listEl.style.cssText = 'max-height:46vh;overflow-y:auto';
   bEl.appendChild(listEl);
 
-  const row = function(label, onOpen, onRename, onDelete, badge) {
-    const r = document.createElement('div');
-    r.style.cssText = 'display:flex;align-items:center;gap:4px;margin:2px 0';
-    const ob = mkBtn(label, onOpen, 'flex:1;text-align:left');
-    if (badge) { const s = document.createElement('span'); s.textContent = '  ' + badge; s.style.cssText = 'font-size:10px;color:#a06030'; ob.appendChild(s); }
-    r.appendChild(ob);
-    if (onRename) r.appendChild(mkBtn('✎', onRename, 'font-size:11px;padding:2px 5px', 'Umbenennen'));
-    if (onDelete) r.appendChild(mkBtn('🗑', onDelete, 'font-size:11px;padding:2px 5px;color:#c0605a', 'Löschen'));
-    listEl.appendChild(r);
+  let data = null, statusBase = '';
+  const metaLine = m => [m.season, m.genre].filter(Boolean).join(' · ') + (m.tags.length ? (m.season || m.genre ? ' · ' : '') + m.tags.map(t => '#' + t).join(' ') : '');
+  const editMeta = it => {
+    ntMetaDialog(it.title, it.meta, data.allTags, m => {
+      m.txt = it.meta.txt;
+      let p;
+      if (it.kind === 'drive') {
+        p = gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(it.file.id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appProperties: ntMetaToAppProps(m) }) }, true).then(() => {
+          if (it.local) return gregLibGet(it.local.id).then(rec => { if (rec && rec.state) { rec.state.meta = m; return gregLibPut(rec); } });
+        });
+      } else {
+        p = gregLibGet(it.id).then(rec => { if (!rec) return; rec.state = rec.state || {}; rec.state.meta = m; rec.pending = true; return gregLibPut(rec); });
+      }
+      const curId = it.local ? it.local.id : it.id;
+      if (gregLibCurrentId != null && gregLibCurrentId === curId) gregMeta = m;
+      p.then(() => { gregGst('Einordnung gespeichert: ' + it.title); gregLibShowModal(); })
+        .catch(err => { gregGst('Fehler: ' + err.message); gregLibShowModal(); });
+    }, () => gregLibShowModal());
   };
-  const heading = function(t) {
-    const h = document.createElement('div');
-    h.textContent = t; h.style.cssText = 'font-size:11px;font-weight:bold;margin:8px 0 2px;color:var(--ink2)';
-    listEl.appendChild(h);
-  };
-  const renderLocal = function(items, onlyUnsynced) {
-    const show = onlyUnsynced ? items.filter(function(it) { return it.pending || !it.driveId; }) : items;
-    if (!show.length) return;
-    if (driveOn) heading(onlyUnsynced ? 'Nur lokal / noch nicht in Drive' : 'Lokale Kopien (offline)');
-    show.forEach(function(it) {
-      row(it.title + '  —  ' + gregLibFormatDate(it.updatedAt || it.savedAt),
-        function() { gregLibLoadEntry(it.id); },
-        function() { gregLibRenameEntry(it.id, it.title); },
-        function() { gregLibDeleteEntryConfirm(it.id, it.title); },
-        driveOn && (it.pending || !it.driveId) ? '⏫ nicht in Drive' : '');
+  const render = function(rebuildFilters) {
+    if (rebuildFilters) { filterWrap.innerHTML = ''; ntLibFilterBar(filterWrap, data, render); }
+    listEl.innerHTML = '';
+    const shown = data.items.filter(it => ntLibMatches(it, _libFilter));
+    status.textContent = statusBase + (shown.length !== data.items.length ? ' · ' + shown.length + ' angezeigt' : '');
+    if (!data.items.length) { listEl.innerHTML = '<p style="font-size:11px;color:var(--ink2)">' + (data.mode === 'drive' ? 'Der Drive-Ordner ist noch leer.' : 'Noch keine Stücke gespeichert.') + '</p>'; return; }
+    if (!shown.length) { listEl.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Keine Treffer für diesen Filter.</p>'; return; }
+    shown.forEach(function(it) {
+      const r = document.createElement('div');
+      r.style.cssText = 'display:flex;align-items:center;gap:4px;margin:2px 0';
+      const ob = mkBtn('', function() { if (it.kind === 'drive') gregLibLoadDrive(it.file); else gregLibLoadEntry(it.id); }, 'flex:1;text-align:left;min-width:0');
+      const t = document.createElement('div'); t.textContent = it.title + '  —  ' + gregLibFormatDate(it.date);
+      t.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      if (it.badge) { const s = document.createElement('span'); s.textContent = '  ' + it.badge; s.style.cssText = 'font-size:10px;color:#a06030'; t.appendChild(s); }
+      ob.appendChild(t);
+      const ml = metaLine(it.meta);
+      if (ml) { const d = document.createElement('div'); d.textContent = ml; d.style.cssText = 'font-size:10px;color:#5a7a40;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; ob.appendChild(d); }
+      r.appendChild(ob);
+      r.appendChild(mkBtn('🏷', function() { editMeta(it); }, 'font-size:11px;padding:2px 5px', 'Einordnen (Kirchenjahr, Gattung, Tags)'));
+      if (it.kind === 'drive') {
+        r.appendChild(mkBtn('✎', function() { gregLibRenameDrive(it.file); }, 'font-size:11px;padding:2px 5px', 'Umbenennen'));
+        r.appendChild(mkBtn('🗑', function() { gregLibDeleteDrive(it.file); }, 'font-size:11px;padding:2px 5px;color:#c0605a', 'Löschen'));
+      } else {
+        r.appendChild(mkBtn('✎', function() { gregLibRenameEntry(it.id, it.title); }, 'font-size:11px;padding:2px 5px', 'Umbenennen'));
+        r.appendChild(mkBtn('🗑', function() { gregLibDeleteEntryConfirm(it.id, it.title); }, 'font-size:11px;padding:2px 5px;color:#c0605a', 'Löschen'));
+      }
+      listEl.appendChild(r);
     });
   };
 
-  gregLibList().then(function(localItems) {
-    if (!driveOn || !signed) {
-      if (driveOn) status.textContent = 'Nicht mit Google Drive verbunden – angezeigt werden die lokalen Kopien.';
-      if (!localItems.length) listEl.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Noch keine Stücke gespeichert.</p>';
-      renderLocal(localItems, false);
-      return;
-    }
-    status.textContent = 'Lade Liste aus Google Drive …';
-    // erst ausstehende lokale Änderungen hochladen, dann Drive-Liste zeigen
-    gregLibSyncPending(false).then(function(sync) {
-      return Promise.all([gdList(false), gregLibList()]).then(function(res) {
-        const files = res[0], locals = res[1];
-        status.textContent = files.length + ' Gesang/Gesänge in Google Drive' + (sync.total ? ' · ' + sync.ok + ' von ' + sync.total + ' lokalen Änderung(en) hochgeladen' : '');
-        if (!files.length) { const p = document.createElement('p'); p.style.cssText = 'font-size:11px;color:var(--ink2)'; p.textContent = 'Der Drive-Ordner ist noch leer.'; listEl.appendChild(p); }
-        files.forEach(function(f) {
-          const loc = locals.find(function(l) { return l.driveId === f.id; });
-          row(gdTitleFromName(f.name) + '  —  ' + gregLibFormatDate(Date.parse(f.modifiedTime)),
-            function() { gregLibLoadDrive(f); },
-            function() { gregLibRenameDrive(f); },
-            function() { gregLibDeleteDrive(f); },
-            loc && loc.pending ? '⏫ lokale Änderung' : '');
-        });
-        renderLocal(locals, true);
-      });
-    }).catch(function(err) {
-      status.textContent = 'Google Drive nicht erreichbar (' + err.message + ') – angezeigt werden die lokalen Kopien.';
-      renderLocal(localItems, false);
+  status.textContent = signed ? 'Lade Liste aus Google Drive …' : '';
+  gregLibCollect(true).then(function(d) {
+    data = d;
+    if (d.mode === 'drive') statusBase = d.driveCount + ' Gesang/Gesänge in Google Drive' + (d.sync && d.sync.total ? ' · ' + d.sync.ok + ' von ' + d.sync.total + ' lokalen Änderung(en) hochgeladen' : '');
+    else statusBase = driveOn ? 'Nicht mit Google Drive verbunden – angezeigt werden die lokalen Kopien.' : '';
+    render(true);
+  }).catch(function(err) {
+    gregLibCollect(false).then(function(d) {
+      data = d; statusBase = 'Google Drive nicht erreichbar (' + err.message + ') – angezeigt werden die lokalen Kopien.'; render(true);
     });
   });
 
