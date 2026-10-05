@@ -233,6 +233,7 @@ input[type=file]{display:none}
 <button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-zoom-btn" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
+    <button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button>
     <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
@@ -254,7 +255,7 @@ input[type=file]{display:none}
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" onclick="gregSavePiece()" style="font-size:10px;padding:2px 6px" title="Stück speichern (.notator)">&#128190; Speichern</button>
         <button class="b" onclick="gregLibSaveCurrent()" style="font-size:10px;padding:2px 6px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Aktuelles Stück direkt im Browser (IndexedDB) ablegen/aktualisieren — kein Dateidialog nötig">&#128190; In Bibliothek</button>
-        <button class="b" onclick="gregExportPDF()" style="font-size:10px;padding:2px 6px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Aktuelles Stück als PDF sichern">&#8595; PDF</button>
+        <button class="b" onclick="ntPdfSave('greg')" style="font-size:10px;padding:2px 6px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Aktuelles Stück als PDF sichern">&#8595; PDF</button>
         <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext drucken</label>
         <span style="color:#3a4a30;margin:0 2px">|</span>
         <button class="b" onclick="gregSelfTest()" style="font-size:10px;padding:2px 6px;color:#6b8a60" title="Regressionstests laufen lassen (prüft GABC-Import/Export gegen bekannt-korrekte Fälle) — betrifft das offene Stück nicht">&#129514; Selbsttest</button>
@@ -483,7 +484,7 @@ input[type=file]{display:none}
     <span style="color:#3a4a30">|</span>
     <button class="b" onclick="clDownloadAbc()" style="font-size:11px;padding:3px 8px" title="Als ABC-Datei speichern (u.a. für MuseScore, EasyABC, abcjs)">&#8595; ABC</button>
     <button class="b" onclick="clDownloadMusicXml()" style="font-size:11px;padding:3px 8px" title="Als MusicXML speichern (MuseScore, Sibelius, Finale, Dorico …)">&#8595; MusicXML</button>
-    <button class="b" onclick="clExportPDF()" style="font-size:11px;padding:3px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Als PDF sichern (A4, gleiche Ausgabe wie beim Choral)">&#8595; PDF</button>
+    <button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Als PDF sichern (A4, gleiche Ausgabe wie beim Choral)">&#8595; PDF</button>
     <label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext drucken</label>
     <span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
   </div>
@@ -6686,6 +6687,8 @@ function gregAssemblePdf(pairList, filename) {
         pdf.rect(0, 0, A4_W_MM, A4_H_MM, 'F');
         pdf.addImage(png, 'PNG', marginMm, marginMm, wMm, hMm);
       }
+      const deliver = window._ntPdfDeliver; window._ntPdfDeliver = null;
+      if (deliver) { gregGst('PDF erstellt (' + pageCount + ' Seite' + (pageCount>1?'n':'') + ') – wird gespeichert …'); deliver(pdf.output('blob')); return; }
       pdf.save(filename || 'notator.pdf');
       gregGst('PDF exportiert (' + pageCount + ' Seite' + (pageCount>1?'n':'') + ')');
     }
@@ -6750,7 +6753,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '231';
+const NOTATOR_BUILD_ID = '232';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14865,6 +14868,235 @@ function ntPlayRun(tunes, i, token) {
     gregGst('Wiedergabe nicht möglich: ' + (err && err.message ? err.message : err) + ' (Klänge werden beim ersten Mal aus dem Internet geladen)');
     ntPlayStop();
   });
+}
+
+// ── PDF speichern: Ziel wählen (dieses Gerät oder Google Drive) ─────
+// Ablauf: Klick auf "↓ PDF" -> Dialog (Dateiname, Ziel) -> im Klick selbst
+// Speicherdialog bzw. Google-Anmeldung öffnen (Browser verlangen dafür eine
+// Nutzeraktion) -> PDF erzeugen -> gregAssemblePdf übergibt das fertige PDF
+// an window._ntPdfDeliver statt es direkt herunterzuladen.
+// Voreinstellungen pro Gerät: letztes Ziel + Drive-Ordner (localStorage),
+// lokaler Standardordner als Ordner-Handle (IndexedDB, nur Chrome/Edge am PC).
+const NT_PDF_PREF = 'notatorPdfSave';
+const NT_PDF_DRIVE_DEFAULT_SUB = 'PDF';
+let _ntPdfLocalDir = null; // FileSystemDirectoryHandle oder null
+
+function ntPdfPrefs() {
+  let p = null; try { p = JSON.parse(localStorage.getItem(NT_PDF_PREF) || 'null'); } catch (e) {}
+  return Object.assign({ dest: 'local', driveFolder: null }, p || {});
+}
+function ntPdfSavePrefs(p) { try { localStorage.setItem(NT_PDF_PREF, JSON.stringify(p)); } catch (e) {} }
+function ntFsSupported() { return typeof window.showSaveFilePicker === 'function' && typeof window.showDirectoryPicker === 'function'; }
+
+function ntKv(mode, fn) {
+  return new Promise((resolve, reject) => {
+    const rq = indexedDB.open('NotatorSettingsDB', 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+    rq.onerror = () => reject(rq.error);
+    rq.onsuccess = () => {
+      const tx = rq.result.transaction('kv', mode), st = tx.objectStore('kv');
+      const r = fn(st);
+      tx.oncomplete = () => resolve(r && r.result);
+      tx.onerror = () => reject(tx.error);
+    };
+  });
+}
+function ntLoadLocalDir() {
+  if (!ntFsSupported()) return Promise.resolve(null);
+  return ntKv('readonly', st => st.get('pdfDir')).then(h => (_ntPdfLocalDir = h || null)).catch(() => null);
+}
+
+function ntEscAttr(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function ntSanitizeName(n) {
+  n = String(n || '').trim().replace(/[\\/:*?"<>|]+/g, '_') || 'Stueck';
+  return /\.pdf$/i.test(n) ? n : n + '.pdf';
+}
+function ntDrivePathText(f) { return f && f.path ? f.path : 'Notator › ' + NT_PDF_DRIVE_DEFAULT_SUB + ' (Standard)'; }
+
+// kind: 'greg' | 'cl'
+function ntPdfSave(kind) {
+  window._ntPdfDeliver = null;
+  const base = kind === 'cl' ? clFileBase() + '_Orgel'
+    : (((document.getElementById('greg-title') || {}).value || '').trim() || 'gregorianisch');
+  ntLoadLocalDir().then(() => ntPdfDialog({ kind, name: ntSanitizeName(base), dest: ntPdfPrefs().dest }));
+}
+
+function ntPdfDialog(ctx) {
+  const pr = ntPdfPrefs();
+  const driveOn = typeof gdConfigured === 'function' && gdConfigured();
+  if (!driveOn && ctx.dest === 'drive') ctx.dest = 'local';
+  showModal('↓ PDF speichern', '', []);
+  const body = document.getElementById('modal-body');
+  const localTxt = ntFsSupported()
+    ? (_ntPdfLocalDir ? 'Speicherdialog öffnet im Ordner «' + ntEscAttr(_ntPdfLocalDir.name) + '»' : 'Speicherdialog öffnet im Ordner «Dokumente» (Standard)')
+    : 'Download-Ordner des Browsers (auf diesem Gerät nicht änderbar)';
+  const row = (val, label, sub, btn) =>
+    '<label style="display:flex;gap:8px;align-items:flex-start;padding:6px;border:1px solid var(--parch3);border-radius:4px;margin:4px 0;cursor:pointer">' +
+    '<input type="radio" name="nt-pdf-dest" value="' + val + '"' + (ctx.dest === val ? ' checked' : '') + (val === 'drive' && !driveOn ? ' disabled' : '') + ' style="margin-top:3px">' +
+    '<span style="flex:1;font-size:12px"><b>' + label + '</b><br><span style="color:var(--ink2);font-size:11px">' + sub + '</span></span>' + (btn || '') + '</label>';
+  body.innerHTML =
+    '<label style="font-size:12px;display:block;margin-bottom:6px">Dateiname<br><input id="nt-pdf-name" type="text" value="' + ntEscAttr(ctx.name) + '" style="width:100%;box-sizing:border-box;font-size:13px;padding:4px"></label>' +
+    row('local', '💻 Auf diesem Gerät', localTxt,
+      ntFsSupported() ? '<button class="b" id="nt-pdf-localdir" style="font-size:11px;padding:2px 6px">Standard ändern</button>' : '') +
+    row('drive', '☁ Google Drive', driveOn ? 'Ordner: ' + ntEscAttr(ntDrivePathText(pr.driveFolder)) : 'Google Drive ist nicht eingerichtet',
+      driveOn ? '<button class="b" id="nt-pdf-drivedir" style="font-size:11px;padding:2px 6px">Ordner ändern</button>' : '');
+  const bEl = document.getElementById('modal-btns');
+  const ok = document.createElement('button'); ok.className = 'b'; ok.textContent = 'Speichern';
+  ok.style.cssText = 'background:#3d6b35;color:#fff;border-color:#3d6b35';
+  const cancel = document.createElement('button'); cancel.className = 'b'; cancel.textContent = 'Abbrechen';
+  bEl.appendChild(ok); bEl.appendChild(cancel);
+  const nameEl = document.getElementById('nt-pdf-name');
+  const sync = () => { ctx.name = nameEl.value; const r = body.querySelector('input[name=nt-pdf-dest]:checked'); if (r) ctx.dest = r.value; };
+  cancel.onclick = () => closeModal();
+  const ld = document.getElementById('nt-pdf-localdir');
+  if (ld) ld.onclick = e => {
+    e.preventDefault(); sync();
+    window.showDirectoryPicker({ id: 'notator-pdf', mode: 'readwrite', startIn: _ntPdfLocalDir || 'documents' }).then(h => {
+      _ntPdfLocalDir = h; ctx.dest = 'local';
+      return ntKv('readwrite', st => st.put(h, 'pdfDir'));
+    }).then(() => ntPdfDialog(ctx)).catch(() => {});
+  };
+  const dd = document.getElementById('nt-pdf-drivedir');
+  if (dd) dd.onclick = e => {
+    e.preventDefault(); sync(); ctx.dest = 'drive';
+    gdGetToken(true).then(() => ntDriveFolderBrowser(ctx)).catch(err => gregGst(err.message));
+  };
+  ok.onclick = () => {
+    sync();
+    const name = ntSanitizeName(ctx.name);
+    const p = ntPdfPrefs(); p.dest = ctx.dest; ntPdfSavePrefs(p);
+    if (ctx.dest === 'drive') {
+      // Anmeldung im Klick (Popup), danach PDF erzeugen und hochladen
+      gdGetToken(true).then(() => {
+        closeModal();
+        ntPdfRun(ctx.kind, blob => ntPdfToDrive(blob, name));
+      }).catch(err => gregGst('Google Drive: ' + err.message));
+    } else if (ntFsSupported()) {
+      const opts = { suggestedName: name, types: [{ description: 'PDF-Dokument', accept: { 'application/pdf': ['.pdf'] } }] };
+      opts.startIn = _ntPdfLocalDir || 'documents';
+      window.showSaveFilePicker(opts).then(h => {
+        closeModal();
+        ntPdfRun(ctx.kind, blob => h.createWritable().then(w => w.write(blob).then(() => w.close()))
+          .then(() => gregGst('PDF gespeichert: ' + h.name)).catch(err => gregGst('Speichern fehlgeschlagen: ' + err.message)));
+      }).catch(err => { if (err && err.name !== 'AbortError') gregGst('Speichern fehlgeschlagen: ' + err.message); });
+    } else {
+      closeModal();
+      ntPdfRun(ctx.kind, blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        gregGst('PDF heruntergeladen: ' + name);
+      });
+    }
+  };
+}
+
+function ntPdfRun(kind, deliver) {
+  window._ntPdfDeliver = deliver;
+  if (kind === 'cl') clExportPDF(); else gregExportPDF();
+}
+
+// ── Drive: PDF-Ordner und Upload ──
+function gdFindOrCreateFolder(name, parentId) {
+  const q = encodeURIComponent("'" + parentId + "' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder' and name = '" + name.replace(/'/g, "\\'") + "'");
+  return gdFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name)', {}, false)
+    .then(r => r.json()).then(j => {
+      if (j.files && j.files[0]) return j.files[0].id;
+      return gdFetch('https://www.googleapis.com/drive/v3/files?fields=id', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] }) }, false).then(r => r.json()).then(x => x.id);
+    });
+}
+function gdFolderInfo(id) {
+  return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id) + '?fields=id,name,parents', {}, false).then(r => r.json());
+}
+// Pfad (Wurzel -> Ordner) als [{id,name}]
+function gdFolderChain(id) {
+  const chain = [];
+  const step = (fid, n) => gdFolderInfo(fid).then(f => {
+    const isRoot = !f.parents || !f.parents.length;
+    chain.unshift({ id: f.id, name: isRoot ? 'Meine Ablage' : f.name });
+    if (!isRoot && n < 12) return step(f.parents[0], n + 1);
+  });
+  return step(id, 0).then(() => chain).catch(() => chain.length ? chain : [{ id: id, name: '…' }]);
+}
+function ntPdfDriveFolderId() {
+  const f = ntPdfPrefs().driveFolder;
+  if (f && f.id) return Promise.resolve(f.id);
+  return gdFindOrCreateFolder(NT_PDF_DRIVE_DEFAULT_SUB, NOTATOR_GDRIVE_FOLDER_ID);
+}
+function gdUploadBlob(name, blob, mime, parentId, existingId) {
+  const meta = existingId ? { name } : { name, parents: [parentId], mimeType: mime };
+  const boundary = 'notatorpdf' + Date.now();
+  const body = new Blob(['--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(meta) +
+    '\r\n--' + boundary + '\r\nContent-Type: ' + mime + '\r\n\r\n', blob, '\r\n--' + boundary + '--'], { type: 'multipart/related; boundary=' + boundary });
+  const url = 'https://www.googleapis.com/upload/drive/v3/files' + (existingId ? '/' + encodeURIComponent(existingId) : '') + '?uploadType=multipart&fields=id,name,webViewLink';
+  return gdFetch(url, { method: existingId ? 'PATCH' : 'POST', headers: { 'Content-Type': 'multipart/related; boundary=' + boundary }, body }, false).then(r => r.json());
+}
+function ntPdfToDrive(blob, name) {
+  gregGst('Lade PDF in Google Drive hoch …');
+  ntPdfDriveFolderId().then(folderId => {
+    const q = encodeURIComponent("'" + folderId + "' in parents and trashed = false and name = '" + name.replace(/'/g, "\\'") + "'");
+    return gdFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name)', {}, false).then(r => r.json()).then(j => {
+      const same = (j.files || [])[0];
+      let existing = null, finalName = name;
+      if (same) {
+        if (confirm('In diesem Drive-Ordner gibt es bereits "' + name + '". Überschreiben?\n(Abbrechen = als neue Datei mit Datum speichern)')) existing = same.id;
+        else finalName = name.replace(/\.pdf$/i, '') + ' (' + new Date().toLocaleString('de-CH').replace(/[\\/:*?"<>|]+/g, '-') + ').pdf';
+      }
+      return gdUploadBlob(finalName, blob, 'application/pdf', folderId, existing);
+    });
+  }).then(f => {
+    gregGst('PDF in Google Drive gespeichert: ' + f.name + ' (' + ntDrivePathText(ntPdfPrefs().driveFolder).replace(' (Standard)', '') + ')');
+  }).catch(err => gregGst('Drive-Upload fehlgeschlagen: ' + err.message));
+}
+
+// Einfacher Ordner-Browser für Google Drive (ohne Google-Picker / API-Schlüssel)
+function ntDriveFolderBrowser(ctx, chain) {
+  showModal('☁ Drive-Ordner für PDFs', 'Lade Ordner …', []);
+  const body = document.getElementById('modal-body'), bEl = document.getElementById('modal-btns');
+  const start = chain ? Promise.resolve(chain)
+    : ntPdfDriveFolderId().then(id => gdFolderChain(id));
+  start.then(ch => {
+    const cur = ch[ch.length - 1];
+    const q = encodeURIComponent("'" + cur.id + "' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'");
+    return gdFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&orderBy=name&pageSize=500&fields=files(id,name)', {}, false)
+      .then(r => r.json()).then(j => {
+        body.innerHTML = '';
+        const crumbs = document.createElement('div');
+        crumbs.style.cssText = 'font-size:11px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:2px;align-items:center';
+        ch.forEach((c, i) => {
+          const a = document.createElement('a'); a.href = '#'; a.textContent = c.name;
+          a.onclick = e => { e.preventDefault(); ntDriveFolderBrowser(ctx, ch.slice(0, i + 1)); };
+          if (i) crumbs.appendChild(document.createTextNode(' › '));
+          crumbs.appendChild(a);
+        });
+        body.appendChild(crumbs);
+        const list = document.createElement('div');
+        list.style.cssText = 'max-height:45vh;overflow-y:auto;border:1px solid var(--parch3);border-radius:4px';
+        if (!(j.files || []).length) list.innerHTML = '<div style="font-size:11px;color:var(--ink2);padding:6px">(keine Unterordner)</div>';
+        (j.files || []).forEach(f => {
+          const b = document.createElement('button'); b.className = 'b'; b.textContent = '📁 ' + f.name;
+          b.style.cssText = 'display:block;width:100%;text-align:left;border:none;border-bottom:1px solid var(--parch3);border-radius:0';
+          b.onclick = () => ntDriveFolderBrowser(ctx, ch.concat([{ id: f.id, name: f.name }]));
+          list.appendChild(b);
+        });
+        body.appendChild(list);
+        bEl.innerHTML = '';
+        const mk = (t, fn, css) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = t; b.onclick = fn; if (css) b.style.cssText = css; bEl.appendChild(b); };
+        mk('✓ Diesen Ordner verwenden', () => {
+          const p = ntPdfPrefs();
+          p.driveFolder = { id: cur.id, path: ch.map(c => c.name).join(' › ') };
+          ntPdfSavePrefs(p); ntPdfDialog(ctx);
+        }, 'background:#3d6b35;color:#fff;border-color:#3d6b35');
+        mk('+ Neuer Ordner', () => {
+          const n = prompt('Name des neuen Ordners:'); if (!n || !n.trim()) return;
+          gdFindOrCreateFolder(n.trim(), cur.id).then(id => ntDriveFolderBrowser(ctx, ch.concat([{ id, name: n.trim() }])))
+            .catch(err => gregGst(err.message));
+        });
+        mk('Standard', () => { const p = ntPdfPrefs(); p.driveFolder = null; ntPdfSavePrefs(p); ntPdfDialog(ctx); });
+        mk('Zurück', () => ntPdfDialog(ctx));
+      });
+  }).catch(err => { body.textContent = 'Fehler: ' + err.message; bEl.innerHTML = ''; const b = document.createElement('button'); b.className = 'b'; b.textContent = 'Zurück'; b.onclick = () => ntPdfDialog(ctx); bEl.appendChild(b); });
 }
 
 // ── Anzeige-Skalierung (🔍) für Choral und Orgel ──
