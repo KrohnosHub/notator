@@ -473,6 +473,7 @@ input[type=file]{display:none}
     <span style="color:#3a4a30">|</span>
     <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
     <button class="b" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button>
+    <button class="b" id="cl-pedal-btn" onclick="clTogglePedal()" style="font-size:11px;padding:3px 8px;display:none" title="Bass als eigenes Pedalsystem (Orgelsatz mit 3 Systemen) oder im unteren Manualsystem">Pedal: im Bass-System</button>
     <button class="b" onclick="clResetChords()" style="font-size:11px;padding:3px 8px" title="Von Hand gewählte Akkorde zurücksetzen">&#8634; Akkorde</button>
     <button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Freitext einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Text</button>
     <span style="color:#3a4a30">|</span>
@@ -6752,7 +6753,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '233';
+const NOTATOR_BUILD_ID = '234';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -13900,6 +13901,19 @@ function clVoicings(seg, ch, inv) {
   return res.slice(0, 10);
 }
 
+// Stimmen-Kopf des Begleitsatzes: 2 Systeme (Manual) oder Orgelsatz mit Pedal
+function clAbcScoreHeader(pedal) {
+  return pedal
+    ? '%%score {(S A) | T} B\nV:S clef=treble stem=up\nV:A clef=treble stem=down\nV:T clef=bass\nV:B clef=bass nm="Ped."\n'
+    : '%%score {(S A) | (T B)}\nV:S clef=treble stem=up\nV:A clef=treble stem=down\nV:T clef=bass stem=up\nV:B clef=bass stem=down\n';
+}
+// Akkord-Vorgabe lesen: alte Form = Zahl (Stufe), neu {d: Stufe|null, i: 0|1|null}
+function clOvParse(v) {
+  if (v === undefined || v === null) return null;
+  if (typeof v === 'number') return { d: v, i: null };
+  if (typeof v === 'object') return { d: v.d != null ? v.d : null, i: v.i != null ? v.i : null };
+  return null;
+}
 // segs: [{notes:[{pitch,dur}], pulses, endBar, final, key}]
 // ctx: {keyAlt, finalisStep, overrides:{key: degree}}
 function clHarmonize(segs, ctx) {
@@ -13907,12 +13921,13 @@ function clHarmonize(segs, ctx) {
   const states = segs.map((seg, si) => {
     let chords = clSegChords(seg, ctx.keyAlt);
     seg.candidates = chords;
-    const ov = ctx.overrides && ctx.overrides[seg.key];
-    if (ov !== undefined && ov !== null) {
-      const want = clMod(ctx.finalisStep + ov, 7);
+    const ov = clOvParse(ctx.overrides && (ctx.overrides[seg.key] != null ? ctx.overrides[seg.key] : ctx.overrides[seg.legacyKey]));
+    if (ov && ov.d != null) {
+      const want = clMod(ctx.finalisStep + ov.d, 7);
       const f = chords.filter(c => c.root === want);
       if (f.length) chords = f;
     }
+    const forcedInv = ov && ov.i != null ? ov.i : null;
     const isLast = si === segs.length - 1;
     const phraseEnd = isLast || seg.endBar === 'maior' || seg.endBar === 'finalis' || seg.endBar === 'minor';
     const st = [];
@@ -13924,12 +13939,17 @@ function clHarmonize(segs, ctx) {
       if (si === 0 && ch.root !== ctx.finalisStep) hc += 1;
       // Phrasenschluss an Doppel-/Schlussstrich: Finalis-Akkord deutlich bevorzugt
       if (phraseEnd && !isLast && ch.root !== ctx.finalisStep) hc += (seg.endBar === 'minor' ? 0.6 : 2.5);
-      [0, 1].forEach(inv => {
-        if (inv && phraseEnd) return;
+      const invs = forcedInv != null ? [forcedInv] : [0, 1];
+      invs.forEach(inv => {
+        if (inv && phraseEnd && forcedInv == null) return;
         let vs = clVoicings(seg, ch, inv);
-        vs.forEach(v => st.push({ ch, inv, v, cost: hc + v.c + (inv ? 1.2 : 0) }));
+        vs.forEach(v => st.push({ ch, inv, v, cost: hc + v.c + (inv && forcedInv == null ? 1.2 : 0) }));
       });
     });
+    if (!st.length && forcedInv != null) {
+      // gewünschte Lage hier nicht spielbar -> automatisch
+      chords.forEach(ch => [0, 1].forEach(inv => clVoicings(seg, ch, inv).forEach(v => st.push({ ch, inv, v, cost: v.c + 5 }))));
+    }
     if (!st.length) {
       // Notlösung (z.B. Melodie ausserhalb der Stimmlagen): Pausen statt Akkord,
       // damit die Optimierung über die übrigen Abschnitte nicht abbricht.
@@ -14103,15 +14123,27 @@ function clGabcToAbc(gabcList, opts) {
         const endsHere = !nx || (nx.kind === 'bar' && nx.t !== 'minima');
         if (endsHere) { const ln = u.notes[u.notes.length - 1]; if (ln.dur >= 2 || !nx || nx.final) ln._cadence = true; }
       }
+      // Schlüssel je Abschnitt = Silbenanker (vorige|eigene|nächste Silbe,
+      // Notenposition in der Silbe, Tonhöhe) statt laufender Nummer -> eine
+      // Akkordwahl bleibt beim Einfügen/Löschen anderer Silben erhalten.
+      const sylUnits = flat.filter(x => x.kind === 'syl');
+      const sylTxt = x => x ? String(x.text == null ? '~' : x.text).replace(/[|#:]/g, '') : '^';
+      const anchorSeen = {};
       lines.forEach((ln, li) => {
         let lineStart = true;
         ln.forEach(u => {
           if (u.kind === 'bar') { if (cur) { cur.endBar = u.t; cur.final = !!u.final; } cur = null; return; }
           if (u.kind !== 'syl') return;
           const wordStart = !!u.text && !prevHyphen;
+          const ui = sylUnits.indexOf(u);
           u.notes.forEach((nt, k) => {
             const boundary = !cur || lineStart || (k === 0 && (wordStart || u.notes.length > 1)) || cur.pulses >= 8 || nt._cadence;
-            if (boundary) { cur = { notes: [], pulses: 0, line: li, key: si + ':' + segs.length }; segs.push(cur); }
+            if (boundary) {
+              let a = sylTxt(sylUnits[ui - 1]) + '|' + sylTxt(u) + '|' + sylTxt(sylUnits[ui + 1]) + '|' + k + '|' + nt.pitch.D;
+              anchorSeen[a] = (anchorSeen[a] || 0) + 1;
+              if (anchorSeen[a] > 1) a += '#' + anchorSeen[a];
+              cur = { notes: [], pulses: 0, line: li, key: si + ':' + a, legacyKey: si + ':' + segs.length }; segs.push(cur);
+            }
             cur.notes.push(nt); cur.pulses += nt.dur; nt._seg = cur;
             lineStart = false;
           });
@@ -14127,7 +14159,10 @@ function clGabcToAbc(gabcList, opts) {
           candidates: (sg.candidates || []).map(c => ({ deg: clMod(c.root - tgt.step, 7), name: clChordName(c) })),
           current: sg.chord ? clMod(sg.chord.root - tgt.step, 7) : null,
           currentName: sg.chord ? clChordName(sg.chord) + (sg.inv ? ' (Sextakkord)' : '') : '',
-          overridden: !!(opts.chordOverrides && opts.chordOverrides[sg.key] != null),
+          inv: sg.inv || 0,
+          ov: clOvParse(opts.chordOverrides && (opts.chordOverrides[sg.key] != null ? opts.chordOverrides[sg.key] : opts.chordOverrides[sg.legacyKey])),
+          legacyKey: sg.legacyKey,
+          overridden: !!(opts.chordOverrides && (opts.chordOverrides[sg.key] != null || opts.chordOverrides[sg.legacyKey] != null)),
         };
       });
     }
@@ -14148,11 +14183,9 @@ function clGabcToAbc(gabcList, opts) {
     const right = (hdr && hdr.right != null) ? hdr.right : autoRight;
     if (si === 0) { info.autoLeft = autoLeft; info.autoRight = autoRight; }
     head += clAbcSideLines(left, right);
-    models.push({ title, subtitle, left, right, sigFifths, accomp: !!opts.accomp, lines, segs });
+    models.push({ title, subtitle, left, right, sigFifths, accomp: !!opts.accomp, pedal: !!(opts.accomp && opts.pedal), lines, segs });
     head += 'M:none\nL:1/8\n';
-    if (opts.accomp) {
-      head += '%%score {(S A) | (T B)}\nV:S clef=treble stem=up\nV:A clef=treble stem=down\nV:T clef=bass stem=up\nV:B clef=bass stem=down\n';
-    }
+    if (opts.accomp) head += clAbcScoreHeader(!!opts.pedal);
     head += 'K:' + abcKey + ' clef=treble\n';
     let body = '';
     lines.forEach(ln => {
@@ -14408,7 +14441,7 @@ const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-
 //        null = automatisch, sonst eigener Text (auch leer = ausgeblendet)
 var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] };
 function clNormalizeState() {
-  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: false, chordOverrides: {} }, clState || {});
+  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: false, pedal: false, chordOverrides: {} }, clState || {});
   if (!Array.isArray(clState.texts)) clState.texts = [];
   if (!clState.chordOverrides || typeof clState.chordOverrides !== 'object') clState.chordOverrides = {};
 }
@@ -14416,6 +14449,10 @@ function clNormalizeState() {
 function clMK() { return clState.accomp ? 'manualAbcAcc' : 'manualAbc'; }
 function clToggleAccomp() {
   clState.accomp = !clState.accomp;
+  clRender();
+}
+function clTogglePedal() {
+  clState.pedal = !clState.pedal;
   clRender();
 }
 let clLast = null;
@@ -14473,7 +14510,7 @@ function clBuild() {
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
   const headers = list.map((x, i) => i === 0 ? Object.assign({}, clEffectiveHead(), { left: clState.left, right: clState.right }) : { title: x.title, subtitle: x.subtitle });
-  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, chordOverrides: clState.chordOverrides });
+  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, chordOverrides: clState.chordOverrides });
 }
 
 function clFillTargetSelect() {
@@ -14502,6 +14539,8 @@ function clFillTargetSelect() {
 function clSyncControls() {
   const ab = document.getElementById('cl-accomp-btn');
   if (ab) { ab.innerHTML = clState.accomp ? '&#127929; Begleitsatz: an' : '&#127929; Begleitsatz: aus'; ab.style.background = clState.accomp ? '#2a4a6a' : ''; ab.style.color = clState.accomp ? '#fff' : ''; }
+  const pb = document.getElementById('cl-pedal-btn');
+  if (pb) { pb.style.display = clState.accomp ? '' : 'none'; pb.innerHTML = clState.pedal ? 'Pedal: eigenes System' : 'Pedal: im Bass-System'; pb.style.background = clState.pedal ? '#2a4a6a' : ''; pb.style.color = clState.pedal ? '#fff' : ''; }
   const octEl = document.getElementById('cl-oct');
   if (octEl) octEl.textContent = (clState.octave > 0 ? '+' : '') + clState.octave;
   const wr = document.getElementById('cl-width');
@@ -14530,6 +14569,7 @@ function clRender() {
   if (!el) return;
   let abc, liq = [];
   if (clState[clMK()]) {
+    if (clState.accomp) clState[clMK()] = clState[clMK()].replace(/^%%score[^\n]*\n(?:V:[STAB] [^\n]*\n){4}/m, clAbcScoreHeader(!!clState.pedal));
     abc = clState[clMK()];
     if (info) info.innerHTML = '<span style="color:#e0a060">Von Hand bearbeitete Fassung</span> – „Aus Choral übernehmen“ erzeugt sie neu aus dem Choral (Handänderungen gehen dabei verloren).';
   } else {
@@ -14539,6 +14579,7 @@ function clRender() {
       if (info) info.textContent = '';
       return;
     }
+    clMigrateOverrides(clLast);
     abc = clLast.abc; liq = clLast.liqChars;
     const inf = clLast.info;
     if (info) info.textContent = 'Schlusston ' + inf.finalisOrig + ' (' + inf.modeName + ')' +
@@ -14632,6 +14673,7 @@ function clXmlNote(o) {
 function clBuildMusicXml(models) {
   if (!models || !models.length) return null;
   const accomp = models.some(m => m.accomp);
+  const pedal = accomp && models.some(m => m.pedal);
   const m0 = models[0];
   let measures = [];
   let mNo = 0;
@@ -14671,8 +14713,8 @@ function clBuildMusicXml(models) {
               const prevTie = !!(n && sg._tiedFromPrev && sg._tiedFromPrev[v]);
               if (tie) { sg.next._tiedFromPrev = sg.next._tiedFromPrev || {}; sg.next._tiedFromPrev[v] = true; }
               cur.low[v].push(clXmlNote({
-                pitch: n, dur: sg.pulses, voice: v === 'A' ? 2 : v === 'T' ? 3 : 4, staff: v === 'A' ? 1 : 2,
-                stem: v === 'T' ? 'up' : 'down', tieStartLast: tie, tieStopFirst: prevTie,
+                pitch: n, dur: sg.pulses, voice: v === 'A' ? 2 : v === 'T' ? 3 : 4, staff: v === 'A' ? 1 : (v === 'B' && pedal ? 3 : 2),
+                stem: pedal ? (v === 'A' ? 'down' : null) : (v === 'T' ? 'up' : 'down'), tieStartLast: tie, tieStopFirst: prevTie,
               }));
             });
           }
@@ -14714,7 +14756,7 @@ function clBuildMusicXml(models) {
       if (i === 0) body += '<divisions>2</divisions>';
       body += '<key><fifths>' + mm.sigFifths + '</fifths></key><time print-object="no"><senza-misura/></time>';
       if (i === 0) {
-        if (accomp) body += '<staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>';
+        if (accomp) body += '<staves>' + (pedal ? 3 : 2) + '</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>' + (pedal ? '<clef number="3"><sign>F</sign><line>4</line></clef>' : '');
         else body += '<clef><sign>G</sign><line>2</line></clef>';
       }
       body += '</attributes>';
@@ -15327,6 +15369,17 @@ function clDownloadAbc() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+// Alte Akkord-Vorgaben (Schlüssel "Abschnitt:Nummer") auf Silbenanker umstellen
+function clMigrateOverrides(r) {
+  const ov = clState.chordOverrides || {};
+  const legacy = Object.keys(ov).filter(k => /^\d+:\d+$/.test(k));
+  if (!legacy.length || !r || !r.models) return;
+  r.models.forEach(m => (m.segs || []).forEach(sg => {
+    if (ov[sg.legacyKey] != null && ov[sg.key] == null) ov[sg.key] = ov[sg.legacyKey];
+  }));
+  legacy.forEach(k => delete ov[k]);
+}
+
 // ── Akkord per Klick ändern ──────────────────────────────────────
 function clChordClick(absChar, ev) {
   if (!clLast || !clLast.segRanges) return;
@@ -15352,8 +15405,23 @@ function clChordClick(absChar, ev) {
     bt.onclick = () => { clCloseChordMenu(); onClick(); };
     m.appendChild(bt);
   };
-  inf.candidates.forEach(c => mk(c.name, () => { clState.chordOverrides[r.key] = c.deg; clRender(); }, inf.overridden && c.deg === inf.current));
-  mk('↺ Automatisch', () => { delete clState.chordOverrides[r.key]; clRender(); }, !inf.overridden);
+  const cur = inf.ov || { d: null, i: null };
+  const setOv = (d, i) => {
+    delete clState.chordOverrides[inf.legacyKey];
+    if (d == null && i == null) delete clState.chordOverrides[r.key];
+    else clState.chordOverrides[r.key] = { d, i };
+    clRender();
+  };
+  inf.candidates.forEach(c => mk(c.name, () => setOv(c.deg, cur.i), cur.d === c.deg));
+  mk('Akkord automatisch', () => setOv(null, cur.i), cur.d == null);
+  const sep = document.createElement('div');
+  sep.textContent = 'Lage';
+  sep.style.cssText = 'font-weight:bold;margin:6px 0 2px;color:#e0d4b0;border-top:1px solid #3a4a30;padding-top:4px';
+  m.appendChild(sep);
+  mk('Grundstellung', () => setOv(cur.d, 0), cur.i === 0);
+  mk('Sextakkord', () => setOv(cur.d, 1), cur.i === 1);
+  mk('Lage automatisch' + (cur.i == null ? ' (' + (inf.inv ? 'Sextakkord' : 'Grundstellung') + ')' : ''), () => setOv(cur.d, null), cur.i == null);
+  mk('↺ Alles automatisch', () => setOv(null, null), !inf.overridden);
   document.body.appendChild(m);
   setTimeout(() => document.addEventListener('mousedown', clMenuOutside), 0);
 }
