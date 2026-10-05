@@ -5728,6 +5728,36 @@ function gregSelfTest() {
     return out.join(' ');
   }, '3T/20S/0 3T/20S/0');
 
+  // ── Begleitsatz-Verfeinerung, Bibliothek, Teilen (Build 234–237) ──
+  ocheck('Akkordvorgabe bleibt nach Einfügen einer Silbe erhalten', () => {
+    const g1 = "(c4) Ky(f)ri(gxg)e(hg/hi.) * (,) e(ixi)le(h_g)i(hiH)son.(g.) (;) Chri(fgf)ste(e) e(gh)le(i)i(h!iwj)son.(g.) (::)";
+    const g2 = g1.replace('(c4) ', '(c4) Al(f)le(g) ');
+    const nm = r => { const sg = r.models[0].segs.find(s => s.key.split('|')[1] === 'Chri'); return clChordName(sg.chord) + (sg.inv ? '/6' : ''); };
+    const r1 = clGabcToAbc([{gabc: g1}], {accomp: true});
+    const sg = r1.models[0].segs.find(s => s.key.split('|')[1] === 'Chri');
+    const pick = r1.segInfo[sg.key].candidates.map(c => c.deg).find(d => d !== r1.segInfo[sg.key].current);
+    const ov = {}; ov[sg.key] = {d: pick, i: 1};
+    const a = nm(clGabcToAbc([{gabc: g1}], {accomp: true, chordOverrides: ov}));
+    const b = nm(clGabcToAbc([{gabc: g2}], {accomp: true, chordOverrides: ov}));
+    return (a === b) + ' ' + /\/6$/.test(a);
+  }, 'true true');
+  ocheck('Pedalsystem: ABC-Kopf und MusicXML mit 3 Systemen', () => {
+    const r = clGabcToAbc([{gabc: oTest}], {accomp: true, pedal: true});
+    return /%%score \{\(S A\) \| T\} B/.test(r.abc) + ' ' + /<staves>3<\/staves>/.test(clBuildMusicXml(r.models));
+  }, 'true true');
+  ocheck('Bibliothek: Suche ohne Akzente, Tags, Drive-Feldlänge', () => {
+    const it = { title: 'Kýrie XVI', meta: ntMetaNorm({ genre: 'Kyrie', tags: 'Hochamt, Schola', txt: 'Ký-ri-e e-lé-i-son' }) };
+    const f = (q, extra) => ntLibMatches(it, Object.assign({ q, season: '', genre: '', tag: '' }, extra || {}));
+    const ap = ntMetaToAppProps({ tags: Array(60).fill('Tagname').join(',') });
+    return [f('kyrie'), f('eleison') === false, f('schola'), f('', { tag: 'Hochamt' }), f('', { genre: 'Gloria' }) === false,
+      new TextEncoder().encode(ap.tags).length <= 110].join(' ');
+  }, 'true true true true true true');
+  ocheck('Teilen: Link-Kodierung verlustfrei (Base64url)', () => {
+    const bytes = new Uint8Array(300).map((_, i) => (i * 37) & 255);
+    const back = ntUnB64url(ntB64url(bytes));
+    return back.length === bytes.length && back.every((v, i) => v === bytes[i]) && !/[+/=]/.test(ntB64url(bytes));
+  }, 'true');
+
   // Restore whatever the user actually had open before running the test.
   gregEntries = savedEntries;
   gregRefreshList();

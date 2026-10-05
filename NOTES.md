@@ -1,34 +1,34 @@
-# Stand Build 230 (2026-10-04)
+# Stand Build 237 (2026-10-05)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator).
 Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
 
-## Neu in Build 227–230
+## Neu in Build 227–237
 
-- **227 Wiedergabe:** ▶/❚❚/■ + ♪-Einstellungen (Tempo in Achteln/min,
-  Klang Orgel/Chor/Flöte/Klavier) im Choral- und im Orgel-Tab; Orgel mit
-  Mitlesen (gespielte Noten rot). abcjs-Synth, Klänge werden beim ersten
-  Abspielen geladen.
-- **228 App-Installation (PWA):** `manifest.webmanifest`, `sw.js`
-  (Seite: Netz zuerst; Bibliotheken/Klänge: Cache + Hintergrund-Update),
-  Icons in `icons/`, Knopf "📲 Installieren" im Kopf (wenn der Browser es anbietet).
-- **229 MusicXML-Export:** "↓ MusicXML" im Orgel-Tab (Melodie bzw.
-  Begleitsatz auf 2 Systemen, Text, Bögen, Tenuto, Atemzeichen, Titel).
-  Handänderungen im Quelltext werden nicht exportiert (Hinweis erscheint).
-- **230 Aufräumen:** alter Klick-Noten-Editor (#tb/#main, ~800 Zeilen JS)
-  entfernt; Selbsttest um 6 Orgel-Tests erweitert (Tonhöhen/Dauern,
-  b molle, Episema/Divisio, Transposition, Begleitsatz, MusicXML).
+- **227 Wiedergabe**, **228 PWA**, **229 MusicXML**, **230 Aufräumen** (siehe Git-Log).
+- **231 Anzeigegrösse (🔍)** für Choral/Orgel, nur Bildschirm.
+- **232 PDF speichern:** Ziel Gerät (Speicherdialog mit Standardordner, wo
+  der Browser es kann) oder Google Drive (Standard Notator › PDF, änderbar).
+- **233** Bibliothek/Öffnen/Song importieren in der oberen Leiste.
+- **234 Begleitsatz:** Akkordvorgaben an Silbenanker gebunden (überstehen
+  Einfügen/Löschen anderer Silben; alte Vorgaben werden migriert), Lage
+  Grundstellung/Sextakkord wählbar, Pedal als eigenes System zuschaltbar
+  (auch im MusicXML).
+- **235 Bibliothek ordnen:** Kirchenjahr, Gattung, freie Tags (state.meta +
+  Drive-appProperties), Suche (Titel, Textanfang, Tags; ohne Akzente) und Filter.
+- **236 Gottesdienst-Mappe:** Stücke aus der Bibliothek, Fassung je Stück
+  (Choral / Orgel / Orgel + Begleitsatz), Reihenfolge, Deckblatt mit Inhalt,
+  jedes Stück auf neuer Seite; speicherbar (lokal + Drive Notator › Mappen).
+  PDF-Bilder jetzt komprimiert (vorher mehrere MB je Seite).
+- **237 Teilen:** Notator-Link mit eingebettetem Stück (#n=…, deflate +
+  base64url; öffnet beim Empfänger die Ansicht, Choral oder Orgel) oder nur
+  PDF (Senden über das Teilen-Menü des Geräts, Download oder Drive-Link
+  «Jeder mit dem Link»).
 
-## Vorgemerkt (Backlog, mit Nutzer besprochen)
+## Offen / Ideen
 
-1. **Gottesdienst-Mappe:** mehrere Stücke aus der Bibliothek in eine PDF
-   (Reihenfolge wählen, Seitenumbrüche, evtl. Deckblatt).
-2. **Bibliothek ordnen:** Suche, Filter, Tags (z.B. Kirchenjahr, Ordinarium/Proprium).
-3. **Teilen mit anderen:** Nur-Lese-Link; Hinweis: Google-Login ist im
-   Testmodus auf eingetragene Testnutzer beschränkt.
-4. **Begleitsatz verfeinern:** Akkord-Overrides robust gegen eingefügte/
-   gelöschte Silben (derzeit an Abschnittsindex gebunden); Wahl Grund-
-   stellung/Sextakkord; separates Pedalsystem.
+- Mappe: Seitenzahlen, Inhaltsverzeichnis mit Seitenzahlen.
+- Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).
 
 ---
 
