@@ -236,6 +236,7 @@ input[type=file]{display:none}
     <button class="b nt-zoom-btn" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
     <button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button>
+    <button class="b" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279; Teilen</button>
     <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
@@ -460,6 +461,7 @@ input[type=file]{display:none}
     <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
 <button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-zoom-btn" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
+    <button class="b" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279; Teilen</button>
     <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -6761,7 +6763,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '236';
+const NOTATOR_BUILD_ID = '237';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7831,6 +7833,7 @@ setTimeout(function(){
   gregUpdateMoraUI();
   gregTryRestoreAutosave(); // before the initial render, so it renders the restored content (if any)
   setTimeout(gregRender,200);
+  setTimeout(() => { if (typeof ntShareCheckIncoming === 'function') ntShareCheckIncoming(); }, 900); // geteilter Link (#n=…)
   setTimeout(gregMobileInit,700); // nach Autosave-Restore + erstem Render
 },500);
 </script>
@@ -15550,6 +15553,155 @@ function ntMappeBuild() {
   };
   next();
 }
+
+// ── Teilen: Notator-Link (Stück im Link) oder nur PDF ───────────────
+// Link: das Stück wird komprimiert in den Link-Anker (#n=…) geschrieben –
+// kein Server, keine Anmeldung, nichts wird öffentlich abgelegt. Der
+// Empfänger sieht das Stück in Notator in der Ansicht.
+const NT_SHARE_BASE = 'https://krohnoshub.github.io/notator/';
+function ntB64url(bytes) {
+  let s = ''; const CH = 0x8000;
+  for (let i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function ntUnB64url(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/'); while (str.length % 4) str += '=';
+  const bin = atob(str); const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function ntStreamBytes(bytes, stream) {
+  return new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer().then(b => new Uint8Array(b));
+}
+function ntShareEncode(state) {
+  const json = new TextEncoder().encode(JSON.stringify(state)) // vollständig (weggelassene Felder würden beim Empfänger anders gedeutet);
+  if (typeof CompressionStream === 'function') return ntStreamBytes(json, new CompressionStream('deflate-raw')).then(b => 'd' + ntB64url(b));
+  return Promise.resolve('j' + ntB64url(json));
+}
+function ntShareDecode(code) {
+  const kind = code[0], bytes = ntUnB64url(code.slice(1));
+  const p = kind === 'd' ? ntStreamBytes(bytes, new DecompressionStream('deflate-raw')) : Promise.resolve(bytes);
+  return p.then(b => JSON.parse(new TextDecoder().decode(b)));
+}
+function ntShareBase() {
+  return /^https?:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname) ? location.origin + location.pathname : NT_SHARE_BASE;
+}
+function ntShareState() {
+  const st = gregBuildStateObject();
+  delete st.canvasWidth;
+  return st;
+}
+
+function ntShareShow(from) {
+  const title = ((document.getElementById('greg-title') || {}).value || '').trim() || 'Stück';
+  const ctx = { from: from === 'cl' ? 'cl' : 'greg', title, pdfBlob: null, pdfName: null };
+  ntShareDialog(ctx);
+}
+
+function ntShareDialog(ctx) {
+  showModal('🔗 Teilen: ' + ctx.title, '', []);
+  const body = document.getElementById('modal-body'), bEl = document.getElementById('modal-btns');
+  bEl.style.flexDirection = ''; bEl.style.alignItems = '';
+  const box = (html) => '<div style="border:1px solid var(--parch3);border-radius:4px;padding:8px;margin:6px 0;font-size:12px">' + html + '</div>';
+  body.innerHTML =
+    box('<b>🎼 Link zu Notator</b><br><span style="color:var(--ink2);font-size:11px">Der Empfänger öffnet das Stück direkt in Notator (Ansicht, ohne Anmeldung) und kann es abspielen, umschalten oder in seine Bibliothek übernehmen. Das Stück steckt im Link selbst – nichts wird öffentlich gespeichert.</span>' +
+      '<div style="margin:6px 0">Öffnet als: <label><input type="radio" name="nt-sh-v" value="greg"' + (ctx.from === 'greg' ? ' checked' : '') + '> Choral</label> ' +
+      '<label><input type="radio" name="nt-sh-v" value="cl"' + (ctx.from === 'cl' ? ' checked' : '') + '> Orgel</label></div>' +
+      '<div style="display:flex;gap:4px;flex-wrap:wrap"><button class="b" id="nt-sh-link">Link erstellen</button></div>' +
+      '<div id="nt-sh-linkout" style="margin-top:6px"></div>') +
+    box('<b>📄 Nur PDF</b><br><span style="color:var(--ink2);font-size:11px">Der Empfänger bekommt nur die Noten als PDF, ohne Zugriff auf Notator.</span>' +
+      '<div style="margin:6px 0">Fassung: <label><input type="radio" name="nt-sh-p" value="greg"' + (ctx.from === 'greg' ? ' checked' : '') + '> Choral</label> ' +
+      '<label><input type="radio" name="nt-sh-p" value="cl"' + (ctx.from === 'cl' ? ' checked' : '') + '> Orgel' + (clState && clState.accomp ? ' (mit Begleitsatz)' : '') + '</label></div>' +
+      '<div style="display:flex;gap:4px;flex-wrap:wrap"><button class="b" id="nt-sh-pdf">PDF erzeugen</button></div>' +
+      '<div id="nt-sh-pdfout" style="margin-top:6px"></div>');
+  const close = document.createElement('button'); close.className = 'b'; close.textContent = 'Schliessen'; close.onclick = () => closeModal(); bEl.appendChild(close);
+  const linkOut = document.getElementById('nt-sh-linkout'), pdfOut = document.getElementById('nt-sh-pdfout');
+  const offer = (out, url, shareTitle) => {
+    out.innerHTML = '<input type="text" readonly style="width:100%;box-sizing:border-box;font-size:11px;padding:3px" value="' + ntEscAttr(url) + '">' +
+      '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px"><button class="b nt-copy">📋 Kopieren</button>' +
+      (navigator.share ? '<button class="b nt-send">📤 Senden …</button>' : '') + '</div>';
+    const inp = out.querySelector('input'); inp.onclick = () => inp.select();
+    out.querySelector('.nt-copy').onclick = () => {
+      (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => gregGst('Link kopiert.'))
+        .catch(() => { inp.select(); document.execCommand('copy'); gregGst('Link kopiert.'); });
+    };
+    const sd = out.querySelector('.nt-send');
+    if (sd) sd.onclick = () => navigator.share({ title: shareTitle, text: shareTitle, url }).catch(() => {});
+  };
+  document.getElementById('nt-sh-link').onclick = () => {
+    const v = (body.querySelector('input[name=nt-sh-v]:checked') || {}).value || 'greg';
+    ntShareEncode(ntShareState()).then(code => {
+      const url = ntShareBase() + '#n=' + code + (v === 'cl' ? '&v=cl' : '');
+      offer(linkOut, url, ctx.title + ' (Notator)');
+      const len = document.createElement('div'); len.style.cssText = 'font-size:10px;color:var(--ink2);margin-top:2px';
+      len.textContent = 'Linklänge: ' + url.length + ' Zeichen' + (url.length > 30000 ? ' – sehr lang, manche Messenger kürzen so lange Links. Dann besser PDF oder Datei senden.' : '');
+      linkOut.appendChild(len);
+    }).catch(err => { linkOut.textContent = 'Fehler: ' + err.message; });
+  };
+  document.getElementById('nt-sh-pdf').onclick = () => {
+    const v = (body.querySelector('input[name=nt-sh-p]:checked') || {}).value || 'greg';
+    const name = ntSanitizeName(v === 'cl' ? clFileBase() + '_Orgel' : ctx.title);
+    pdfOut.textContent = 'PDF wird erstellt …';
+    const prevTab = window._ntTab || 'greg';
+    if (v === 'cl' && prevTab !== 'editor') switchTab('editor');
+    const go = () => ntPdfRun(v, blob => {
+      if (v === 'cl' && prevTab !== 'editor') switchTab(prevTab);
+      ctx.pdfBlob = blob; ctx.pdfName = name;
+      ntShareDialog(ctx);
+    });
+    if (v === 'cl') clEnsureAbcjs(() => setTimeout(go, 150)); else go();
+  };
+  if (ctx.pdfBlob) {
+    const file = new File([ctx.pdfBlob], ctx.pdfName, { type: 'application/pdf' });
+    const canFile = navigator.canShare && navigator.canShare({ files: [file] });
+    pdfOut.innerHTML = '<div style="color:#3d6b35">✓ ' + ntEscAttr(ctx.pdfName) + ' (' + Math.round(ctx.pdfBlob.size / 1024) + ' KB)</div>' +
+      '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">' +
+      (canFile ? '<button class="b" id="nt-sh-pdfshare">📤 PDF senden …</button>' : '') +
+      (gdConfigured() ? '<button class="b" id="nt-sh-pdfdrive">☁ Link über Google Drive</button>' : '') +
+      '<button class="b" id="nt-sh-pdfdl">↓ Herunterladen</button></div><div id="nt-sh-pdflink" style="margin-top:6px"></div>';
+    const ps = document.getElementById('nt-sh-pdfshare');
+    if (ps) ps.onclick = () => navigator.share({ files: [file], title: ctx.pdfName }).catch(() => {});
+    document.getElementById('nt-sh-pdfdl').onclick = () => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(ctx.pdfBlob); a.download = ctx.pdfName; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    };
+    const pdr = document.getElementById('nt-sh-pdfdrive');
+    if (pdr) pdr.onclick = () => {
+      if (!confirm('Das PDF wird in Google Drive (PDF-Ordner) abgelegt und für «Jeder mit dem Link» lesbar freigegeben. Fortfahren?')) return;
+      const out = document.getElementById('nt-sh-pdflink');
+      out.textContent = 'Lade hoch …';
+      gdGetToken(true).then(() => ntPdfDriveFolderId()).then(fid => gdUploadBlob(ctx.pdfName, ctx.pdfBlob, 'application/pdf', fid, null))
+        .then(f => gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(f.id) + '/permissions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) }, false)
+          .then(() => f.webViewLink || ('https://drive.google.com/file/d/' + f.id + '/view')))
+        .then(url => { offer(out, url, ctx.pdfName); gregGst('PDF in Drive freigegeben.'); })
+        .catch(err => { out.textContent = 'Fehler: ' + err.message; });
+    };
+  }
+}
+
+// Eingehender Link (#n=…): Stück anzeigen, Anker danach entfernen
+function ntShareCheckIncoming() {
+  const h = location.hash || '';
+  const m = h.match(/[#&]n=([A-Za-z0-9_-]+)/);
+  if (!m) return;
+  const toCl = /[#&]v=cl\b/.test(h);
+  ntShareDecode(m[1]).then(state => {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    gregApplyLoadedState(state);
+    gregLibCurrentId = null;
+    if (typeof gregRefreshList === 'function') gregRefreshList();
+    gregMobileSetEditMode(false);
+    gregRender();
+    if (toCl) { switchTab('editor'); if (!clUi().view) clToggleView(); }
+    const t = state.title || 'Stück';
+    gregGst('Geteiltes Stück geöffnet: "' + t + '"');
+    showModal('🔗 Geteiltes Stück', '«' + t + '» wurde mit dir geteilt und ist jetzt geöffnet.', [
+      { label: '📚 In meine Bibliothek übernehmen', fn: () => { closeModal(); gregLibSaveCurrent(); } },
+      { label: 'Ansehen', fn: () => closeModal() },
+    ]);
+  }).catch(err => gregGst('Geteilter Link ist ungültig oder unvollständig (' + err.message + ').'));
+}
+window.addEventListener('hashchange', ntShareCheckIncoming);
 
 // ── Anzeige-Skalierung (🔍) für Choral und Orgel ──
 // Nur Bildschirm: kleiner = mehr Noten pro Zeile (Neu-Umbruch), PDF und
