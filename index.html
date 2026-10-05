@@ -949,7 +949,7 @@ function gregEntriesToBody(entries, clefGabc) {
       const midMelisma = inRun && nextNoteContinuesRun(idx, runMappingIdx);
       const glueDivisio = (inRun && midMelisma) || !!e.glueToPrevSpecial;
       emitParenGroup();
-      frags.push({text: '(' + e.div + ')', glue: glueDivisio});
+      frags.push({text: '(' + e.div + ')', glue: glueDivisio, div: true});
       if (midMelisma) {
         openGroupGlue = true;
       } else if (inRun) {
@@ -960,7 +960,7 @@ function gregEntriesToBody(entries, clefGabc) {
     }
 
     if (inRun) endRun();
-    if (e.type === 'special')        { frags.push({text: e.text, glue:false}); }
+    if (e.type === 'special')        { frags.push({text: e.text, glue:false, special: true}); }
     else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue:false}); }
     // Exported as gabc's <i>...</i> HTML-style italic markup rather than
     // the native "_..._()" underscore syntax (changed 2026-08-10, per
@@ -1033,7 +1033,14 @@ function gregEntriesToBody(entries, clefGabc) {
   let body = '';
   frags.forEach((f, i) => {
     if (i === 0) { body = f.text; return; }
-    body += (f.glue ? '' : ' ') + f.text;
+    let t = f.text;
+    // Sonderzeichen (z.B. "*") direkt vor einer Notengruppe OHNE eigenen
+    // Text (z.B. Vorzeichen "(ix)lae"): als "*()" ausgeben -- sonst hängt
+    // exsurge den Stern an eine notenlose Gruppe und das ganze Notenbild
+    // bleibt leer (Fehler "needsLayout", Nutzerbericht 2026-10-05).
+    const nx = frags[i + 1];
+    if (f.special && nx && !nx.div && !nx.glue && /^\(/.test(nx.text)) t += '()';
+    body += (f.glue ? '' : ' ') + t;
   });
   return body.trim();
 }
@@ -5758,6 +5765,12 @@ function gregSelfTest() {
     return back.length === bytes.length && back.every((v, i) => v === bytes[i]) && !/[+/=]/.test(ntB64url(bytes));
   }, 'true');
 
+  // 2026-10-05: Stern direkt vor einer Vorzeichen-Gruppe liess das ganze
+  // Notenbild leer (exsurge "needsLayout"); alte Exporte ohne "()" einlesbar.
+  check('Stern vor Vorzeichen ("* (ix)lae")', 'c4',
+    "li(h.) * (ix)lae(i)tá(h) (::)",
+    "(c4) li(h.) *() (ix)lae(i)tá(h) (::)");
+
   // Restore whatever the user actually had open before running the test.
   gregEntries = savedEntries;
   gregRefreshList();
@@ -6009,6 +6022,9 @@ function gregImportGABCString(gabcStr, opts) {
   const ctxt = new exsurge.ChantContext();
   ctxt.autoColor = false;
   let mappings;
+  // Ältere Notator-Exporte schrieben "* (ix)lae…": Stern vor notenloser
+  // Gruppe -> exsurge verliert die folgende Silbe. Als "*() (ix)…" lesen.
+  body = body.replace(/(^|\s)\*(\s+)\(/g, '$1*()$2(');
   try {
     mappings = exsurge.Gabc.createMappingsFromSource(ctxt, body);
   } catch (e) {
@@ -6038,7 +6054,7 @@ function gregImportGABCString(gabcStr, opts) {
     // also bleed onto later, unrelated syllables of the same mapping).
     let italicConsumedInMapping = false;
 
-    for (const nt of m.notations) {
+    for (const nt of (m.notations || [])) {
       const cname = nt.constructor.name.replace(/^_/, '');
       if (cname === 'DoClef' || cname === 'FaClef') continue;
 
@@ -6793,7 +6809,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '237';
+const NOTATOR_BUILD_ID = '238';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
