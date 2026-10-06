@@ -6810,7 +6810,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '239';
+const NOTATOR_BUILD_ID = '240';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7462,6 +7462,7 @@ function gregLibFormatDate(ts) {
 // zusätzlich als Drive-"appProperties" an der .notator-Datei.
 const NT_SEASONS = ['Advent', 'Weihnachtszeit', 'Zeit im Jahreskreis', 'Fastenzeit', 'Karwoche / Triduum', 'Osterzeit', 'Pfingsten', 'Herrenfeste', 'Marienfeste', 'Heiligenfeste', 'Totenliturgie', 'Ganzes Jahr / Sonstiges'];
 const NT_GENRES = ['Introitus', 'Kyrie', 'Gloria', 'Graduale', 'Alleluia', 'Tractus', 'Sequenz', 'Credo', 'Offertorium', 'Sanctus', 'Agnus Dei', 'Communio', 'Ite missa est', 'Antiphon', 'Marianische Antiphon', 'Hymnus', 'Psalm / Canticum', 'Responsorium', 'Sonstiges'];
+const NT_NOH_URL = 'https://krohnoshub.github.io/notator/noh/';
 var gregMeta = {};
 var _libFilter = { q: '', season: '', genre: '', tag: '' };
 
@@ -7615,6 +7616,7 @@ function gregLibShowModal() {
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
   topRow.appendChild(mkBtn('💾 Aktuelles Stück speichern', function() { gregLibSaveCurrent(); }));
   topRow.appendChild(mkBtn('📑 Mappe', function() { ntMappeShow(); }, '', 'Gottesdienst-Mappe: mehrere Stücke zu einem PDF'));
+  topRow.appendChild(mkBtn('🔎 In NOH-Notenbibliothek suchen', function() { window.open(NT_NOH_URL, '_blank', 'noopener'); }, '', 'NOH-Notenbibliothek (Nova Organi Harmonia) in neuem Tab öffnen'));
   if (driveOn && !signed) topRow.appendChild(mkBtn('🔑 Mit Google Drive verbinden', function() {
     gdGetToken(true).then(function() { gregLibShowModal(); }).catch(function(err) { gregGst(err.message); });
   }, 'background:#2a4a6a;color:#fff;border-color:#2a4a6a'));
