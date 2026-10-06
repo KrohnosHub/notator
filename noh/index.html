@@ -139,13 +139,16 @@ h1{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:40px;line-he
   .row{box-shadow:none;border-color:#ccc;break-inside:avoid}
   .wrap{padding:0}
 }
+/* Notator-Button */
+.openbtn.ntbtn{background:var(--paper);color:var(--accent);border:1px solid var(--accent)}
 /* Mobile-Fix: Titel umbrechen, Aktionen in eigene Zeile */
 .incipit{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 @media(max-width:600px){
   .row{flex-wrap:wrap;padding:11px 12px;gap:8px 10px}
   .bandtag{width:40px;height:40px}
   .meta{flex:1 1 0;min-width:0}
-  .actions{flex:1 0 100%;justify-content:flex-end;gap:6px}
+  .actions{flex:1 0 100%;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+  .openbtn{padding:0 10px}
 }
 </style>
 </head>
@@ -375,6 +378,7 @@ function rowHTML(i){
       +'<button class="iconbtn" title="Notiz" onclick="openNote('+i+')">✎</button>'
       +'<button class="iconbtn '+(added?'added':'')+'" title="Zur Setlist" onclick="toggleSet('+i+',this)">'+(added?'✓':'+')+'</button>'
       +'<button class="openbtn" onclick="openPdf('+i+')">Öffnen</button>'
+      +'<button class="openbtn ntbtn" title="In Notator öffnen und Titel in GregoBase suchen" onclick="openNotator('+i+')">In Notator</button>'
     +'</div>'
   +'</div>';
 }
@@ -391,6 +395,10 @@ function renderLib(){
   list.innerHTML=slice.map(rowHTML).join('');
 }
 function openPdf(i){ window.open(urlOf(NOH[i]),'_blank','noopener'); }
+function openNotator(i){
+  let t=NOH[i][1].replace(/\([^)]*\)/g,' ').replace(/[….]+$/,'').replace(/\s+/g,' ').trim();
+  window.open('../#song='+encodeURIComponent(t),'_blank');
+}
 
 /* ---------- Favorites / Setlist ---------- */
 function toggleFav(i,btn){
@@ -427,6 +435,7 @@ function renderSet(){
         +'<button class="iconbtn" title="runter" onclick="moveSet('+i+',1)">↓</button>'
         +'<button class="iconbtn" title="entfernen" onclick="toggleSet('+i+')">✕</button>'
         +'<button class="openbtn" onclick="openPdf('+i+')">Öffnen</button>'
+      +'<button class="openbtn ntbtn" title="In Notator öffnen und Titel in GregoBase suchen" onclick="openNotator('+i+')">In Notator</button>'
       +'</div></div>';
   }).join('');
 }

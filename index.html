@@ -4521,8 +4521,9 @@ function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel) {
 // gregMapGregoBaseHeaderFields/gregPickGregoBaseMatchModal) statt eigener
 // Kopien, damit ein künftiger Fix an der GregoBase-Anbindung automatisch
 // für beide Wege gilt.
-async function gregImportSongFromGregoBase() {
-  const incipit = (window.prompt('Titel / Textanfang (Incipit) des Stücks, wird in GregoBase gesucht:', '') || '').trim();
+async function gregImportSongFromGregoBase(preset) {
+  // preset (String): Titel direkt suchen, ohne Eingabefenster (z. B. aus der NOH-Bibliothek via #song=…)
+  const incipit = (typeof preset === 'string' && preset.trim()) ? preset.trim() : (window.prompt('Titel / Textanfang (Incipit) des Stücks, wird in GregoBase gesucht:', '') || '').trim();
   if (!incipit) return;
   try {
     gregGst('Suche "' + incipit + '" in GregoBase…');
@@ -7880,6 +7881,7 @@ setTimeout(function(){
   gregTryRestoreAutosave(); // before the initial render, so it renders the restored content (if any)
   setTimeout(gregRender,200);
   setTimeout(() => { if (typeof ntShareCheckIncoming === 'function') ntShareCheckIncoming(); }, 900); // geteilter Link (#n=…)
+  setTimeout(() => { if (typeof ntSongCheckIncoming === 'function') ntSongCheckIncoming(); }, 1000); // Titel-Link (#song=…)
   setTimeout(gregMobileInit,700); // nach Autosave-Restore + erstem Render
 },500);
 </script>
@@ -15748,6 +15750,19 @@ function ntShareCheckIncoming() {
   }).catch(err => gregGst('Geteilter Link ist ungültig oder unvollständig (' + err.message + ').'));
 }
 window.addEventListener('hashchange', ntShareCheckIncoming);
+
+// Eingehender Link (#song=Titel), z. B. aus der NOH-Notenbibliothek: Greg-Editor öffnen und Titel in GregoBase suchen
+function ntSongCheckIncoming() {
+  const m = (location.hash || '').match(/[#&]song=([^&]+)/);
+  if (!m) return;
+  let title = '';
+  try { title = decodeURIComponent(m[1].replace(/\+/g, ' ')).trim(); } catch (e) { return; }
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  if (!title) return;
+  try { switchTab('greg'); } catch (e) {}
+  gregImportSongFromGregoBase(title);
+}
+window.addEventListener('hashchange', ntSongCheckIncoming);
 
 // ── Anzeige-Skalierung (🔍) für Choral und Orgel ──
 // Nur Bildschirm: kleiner = mehr Noten pro Zeile (Neu-Umbruch), PDF und
