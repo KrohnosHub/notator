@@ -68,9 +68,9 @@ input[type=file]{display:none}
 .pi.cur{background:var(--acc1);color:#fff}
 #modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
 #modal-bg.open{display:flex}
-#modal{background:var(--parch);border-radius:6px;padding:20px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+#modal{background:var(--parch);border-radius:6px;padding:20px;max-width:480px;width:90%;max-height:92vh;overflow-y:auto;box-sizing:border-box;box-shadow:0 8px 40px rgba(0,0,0,.5)}
 #modal h2{font-family:var(--fh);font-size:15px;margin-bottom:8px}
-.mbtns{display:flex;gap:7px;justify-content:flex-end;margin-top:12px}
+.mbtns{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:12px}
 .mi{font-size:11px;color:var(--ink2);line-height:1.7}
 .pf{margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--parch3)}
 .pf:last-child{border:none;margin:0;padding:0}
@@ -6810,7 +6810,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '238';
+const NOTATOR_BUILD_ID = '239';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
