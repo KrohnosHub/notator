@@ -25,6 +25,14 @@ Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
   PDF (Senden über das Teilen-Menü des Geräts, Download oder Drive-Link
   «Jeder mit dem Link»).
 
+## NOH-Notenbibliothek
+
+- Liegt unter `noh/` (https://krohnoshub.github.io/notator/noh/), gepflegt im Chat
+  «Digitale Musiknotenbibliothek erstellen». Knopf «In Notator» öffnet
+  `../#song=Titel` → Notator sucht den Titel direkt in GregoBase.
+- Der Notator-Service-Worker (Bereich /notator/) deckt noh/ mit ab
+  (Netz zuerst, Kopie im Cache); offline wird für noh/ nie index.html ersetzt.
+
 ## Offen / Ideen
 
 - Mappe: Seitenzahlen, Inhaltsverzeichnis mit Seitenzahlen.

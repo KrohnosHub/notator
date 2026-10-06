@@ -5,7 +5,7 @@
 //  - Bibliotheken von CDNs (abcjs, jsPDF, pdf.js) und Orgelklänge: aus dem
 //    Cache, im Hintergrund aktualisiert.
 //  - Google-Anmeldung/Drive, GregoBase-Proxy, KI-Schnittstelle: nie cachen.
-const CACHE = 'notator-v10';
+const CACHE = 'notator-v11';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 const CDN_HOSTS = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'paulrosen.github.io'];
 
@@ -24,7 +24,9 @@ self.addEventListener('fetch', e => {
     e.respondWith(fetch(req).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
-    }).catch(() => caches.match(req).then(r => r || (req.mode === 'navigate' ? caches.match('./index.html') : undefined))));
+    }).catch(() => caches.match(req).then(r => r || (req.mode === 'navigate' && !/\/noh\//.test(url.pathname) ? caches.match('./index.html') : undefined))));
+    // (NOH-Notenbibliothek liegt unter noh/ im selben Bereich: wird mitgecacht,
+    //  bekommt offline aber nie die Notator-Seite als Ersatz.)
     return;
   }
   if (CDN_HOSTS.includes(url.hostname)) {
