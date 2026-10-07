@@ -2707,6 +2707,7 @@ function gregClear() {
   set('greg-dropcap-letter', '');
   setChk('greg-dropcap', true);
   gregSetClef('do');
+  if (!window._gregMultiSection && typeof clState !== 'undefined') { clState = {}; clNormalizeState(); gregMeta = {}; } // neues Stück: Orgel-Standard (Begleitsatz an)
   gregRefreshList();
   if (window._gregMultiSection) gregSectionFromUI();
   gregRender();
@@ -4549,6 +4550,7 @@ async function gregImportSongFromGregoBase(preset) {
     gbGabc = gregMapGregoBaseHeaderFields(gbGabc);
     const previousEntries = gregEntries;
     gregImportGABCString(gbGabc, { deferRender: true });
+    if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); } // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
     if (gregEntries.length > 400) { // gleiche Sicherheitsgrenze wie beim PDF-Weg
       const proceed = await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Der GregoBase-Download ergibt ' + gregEntries.length + ' Einträge — ungewöhnlich viel. Trotzdem laden?');
       if (!proceed) { gregEntries = previousEntries; gregGst('Abgebrochen.'); return; }
@@ -4886,6 +4888,7 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
             gbGabc = gregMapGregoBaseHeaderFields(gbGabc);
             const previousEntries = gregEntries;
             gregImportGABCString(gbGabc, { deferRender: true });
+    if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); } // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
             console.log('GregoBase: Import ergab ' + gregEntries.length + ' Einträge.');
             if (gregEntries.length > 400) { // sanity cap even for a trusted source — a malformed/huge download shouldn't render blindly either
               const proceed = await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Der GregoBase-Download ergibt ' + gregEntries.length + ' Einträge — ungewöhnlich viel. Trotzdem laden?');
@@ -6819,7 +6822,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '245';
+const NOTATOR_BUILD_ID = '246';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14684,7 +14687,7 @@ const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-
 //        null = automatisch, sonst eigener Text (auch leer = ausgeblendet)
 var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] };
 function clNormalizeState() {
-  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: false, pedal: false, chordOverrides: {}, chordBreaks: {} }, clState || {});
+  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: true, pedal: false, chordOverrides: {}, chordBreaks: {} }, clState || {}); // Begleitsatz standardmässig an
   if (!Array.isArray(clState.texts)) clState.texts = [];
   if (!clState.chordOverrides || typeof clState.chordOverrides !== 'object') clState.chordOverrides = {};
 }
