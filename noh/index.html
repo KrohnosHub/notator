@@ -518,7 +518,25 @@ const io=new IntersectionObserver(es=>{
   q.addEventListener('input',()=>{ document.getElementById('clear').style.display=q.value?'block':'none'; renderLimit=60; renderLib(); });
   renderLib();
   io.observe(document.getElementById('sentinel'));
+  applyIncomingQuery();
+  window.addEventListener('hashchange',applyIncomingQuery);
 })();
+
+/* Eingehender Link: #q=Titel (oder ?q=Titel) setzt die Suche, z. B. aus Notator/anderen Apps */
+function applyIncomingQuery(){
+  const src=(location.hash||'')+'&'+(location.search||'');
+  const m=src.match(/[#&?]q=([^&]*)/); if(!m) return;
+  let t=''; try{ t=decodeURIComponent(m[1].replace(/\+/g,' ')).trim(); }catch(e){ return; }
+  try{ history.replaceState(null,'',location.pathname); }catch(e){}
+  if(!t) return;
+  if(typeof setView==='function' && view!=='lib') setView('lib');
+  resetFilters();
+  if(favOnly){ favOnly=false; const fb=document.querySelector('.favchip,[data-fav]'); if(fb) fb.setAttribute('aria-pressed','false'); }
+  activeBands.clear(); try{ buildChips(); }catch(e){}
+  const q=document.getElementById('q'); q.value=t;
+  document.getElementById('clear').style.display='block';
+  renderLimit=60; renderLib(); window.scrollTo(0,0);
+}
 </script>
 </body>
 </html>
