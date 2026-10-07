@@ -6819,7 +6819,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '243';
+const NOTATOR_BUILD_ID = '245';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14134,6 +14134,13 @@ function clAbcScoreHeader(pedal) {
     ? '%%score {(S A) | T} B\nV:S clef=treble stem=up\nV:A clef=treble stem=down\nV:T clef=bass\nV:B clef=bass nm="Ped."\n'
     : '%%score {(S A) | (T B)}\nV:S clef=treble stem=up\nV:A clef=treble stem=down\nV:T clef=bass stem=up\nV:B clef=bass stem=down\n';
 }
+// Vorgabe zu einem Abschnitt: aktueller Schlüssel, sonst frühere Schlüsselformen
+function clOvLookup(ovs, sg) {
+  if (!ovs || !sg) return undefined;
+  if (ovs[sg.key] != null) return ovs[sg.key];
+  for (const k of (sg.legacyKeys || [])) if (ovs[k] != null) return ovs[k];
+  return undefined;
+}
 // Akkord-Vorgabe lesen: alte Form = Zahl (Stufe), neu {d: Stufe|null, i: 0|1|null}
 function clOvParse(v) {
   if (v === undefined || v === null) return null;
@@ -14148,7 +14155,7 @@ function clHarmonize(segs, ctx) {
   const states = segs.map((seg, si) => {
     let chords = clSegChords(seg, ctx.keyAlt);
     seg.candidates = chords;
-    const ov = clOvParse(ctx.overrides && (ctx.overrides[seg.key] != null ? ctx.overrides[seg.key] : ctx.overrides[seg.legacyKey]));
+    const ov = clOvParse(clOvLookup(ctx.overrides, seg));
     if (ov && ov.d != null) {
       const want = clMod(ctx.finalisStep + ov.d, 7);
       const f = chords.filter(c => c.root === want);
@@ -14355,7 +14362,8 @@ function clGabcToAbc(gabcList, opts) {
       // Akkordwahl bleibt beim Einfügen/Löschen anderer Silben erhalten.
       const sylUnits = flat.filter(x => x.kind === 'syl');
       const sylTxt = x => x ? String(x.text == null ? '~' : x.text).replace(/[|#:]/g, '') : '^';
-      const anchorSeen = {};
+      const anchorSeen = {}, noteSeen = {};
+      const brk = opts.chordBreaks || {};
       lines.forEach((ln, li) => {
         let lineStart = true;
         ln.forEach(u => {
@@ -14364,12 +14372,20 @@ function clGabcToAbc(gabcList, opts) {
           const wordStart = !!u.text && !prevHyphen;
           const ui = sylUnits.indexOf(u);
           u.notes.forEach((nt, k) => {
-            const boundary = !cur || lineStart || (k === 0 && (wordStart || u.notes.length > 1)) || cur.pulses >= 8 || nt._cadence;
+            // Anker jeder Note (über alle Noten eindeutig) -> Schlüssel für
+            // Abschnitts-Akkorde und für von Hand gesetzte Akkordwechsel.
+            const a = sylTxt(sylUnits[ui - 1]) + '|' + sylTxt(u) + '|' + sylTxt(sylUnits[ui + 1]) + '|' + k + '|' + nt.pitch.D;
+            noteSeen[a] = (noteSeen[a] || 0) + 1;
+            nt._anchor = si + ':' + a + (noteSeen[a] > 1 ? '#' + noteSeen[a] : '');
+            const hard = !cur || lineStart; // Anfang / neue Zeile: immer neuer Akkord
+            const auto = hard || (k === 0 && (wordStart || u.notes.length > 1)) || cur.pulses >= 8 || nt._cadence;
+            const boundary = hard || brk[nt._anchor] === true || (auto && brk[nt._anchor] !== false);
+            nt._mergeable = !hard;
+            nt._autoBoundary = auto;
             if (boundary) {
-              let a = sylTxt(sylUnits[ui - 1]) + '|' + sylTxt(u) + '|' + sylTxt(sylUnits[ui + 1]) + '|' + k + '|' + nt.pitch.D;
-              anchorSeen[a] = (anchorSeen[a] || 0) + 1;
-              if (anchorSeen[a] > 1) a += '#' + anchorSeen[a];
-              cur = { notes: [], pulses: 0, line: li, key: si + ':' + a, legacyKey: si + ':' + segs.length }; segs.push(cur);
+              let oa = a; anchorSeen[oa] = (anchorSeen[oa] || 0) + 1;
+              if (anchorSeen[oa] > 1) oa += '#' + anchorSeen[oa];
+              cur = { notes: [], pulses: 0, line: li, key: nt._anchor, legacyKeys: [si + ':' + oa, si + ':' + segs.length] }; segs.push(cur);
             }
             cur.notes.push(nt); cur.pulses += nt.dur; nt._seg = cur;
             lineStart = false;
@@ -14387,9 +14403,9 @@ function clGabcToAbc(gabcList, opts) {
           current: sg.chord ? clMod(sg.chord.root - tgt.step, 7) : null,
           currentName: sg.chord ? clChordName(sg.chord) + (sg.inv ? ' (Sextakkord)' : '') : '',
           inv: sg.inv || 0,
-          ov: clOvParse(opts.chordOverrides && (opts.chordOverrides[sg.key] != null ? opts.chordOverrides[sg.key] : opts.chordOverrides[sg.legacyKey])),
-          legacyKey: sg.legacyKey,
-          overridden: !!(opts.chordOverrides && (opts.chordOverrides[sg.key] != null || opts.chordOverrides[sg.legacyKey] != null)),
+          ov: clOvParse(clOvLookup(opts.chordOverrides, sg)),
+          legacyKeys: sg.legacyKeys || [],
+          overridden: clOvLookup(opts.chordOverrides, sg) != null,
         };
       });
     }
@@ -14484,7 +14500,7 @@ function clGabcToAbc(gabcList, opts) {
               s += pitchStr + p;
             });
             music += s;
-            if (nt._seg) sRanges.push({ s: noteStart, e: music.length, key: nt._seg.key });
+            if (nt._seg) sRanges.push({ s: noteStart, e: music.length, key: nt._seg.key, note: { anchor: nt._anchor, segStart: nt._seg.notes[0] === nt, mergeable: !!nt._mergeable, auto: !!nt._autoBoundary } });
           });
           if (multi) music += ')';
           // Lyrics: erste Note = Silbe, weitere Noten = "_" (Silbe gehalten)
@@ -14510,7 +14526,7 @@ function clGabcToAbc(gabcList, opts) {
       const lead = music.length - music.trimStart().length;
       const lineStart = abcAll.length + head.length + body.length + sPrefix.length - lead;
       ln.forEach(u => (u._notesRef || []).forEach(nt => { if (nt._liqOffset !== undefined) liqChars.push(lineStart + nt._liqOffset); }));
-      sRanges.forEach(r => segRanges.push({ start: lineStart + r.s, end: lineStart + r.e, key: r.key }));
+      sRanges.forEach(r => segRanges.push({ start: lineStart + r.s, end: lineStart + r.e, key: r.key, note: r.note }));
       body += sPrefix + music.trim() + '\n';
       body += 'w: ' + lyr.join(' ') + '\n';
       if (opts.accomp) {
@@ -14550,7 +14566,7 @@ function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick) {
     el.appendChild(div);
     const tunes = ABCJS.renderAbc(div, part, {
       add_classes: true,
-      clickListener: onNoteClick ? function(abcelem, tuneNumber, classes, analysis, drag, ev) { onNoteClick(st + (abcelem.startChar || 0), ev); } : undefined,
+      clickListener: onNoteClick ? function(abcelem, tuneNumber, classes, analysis, drag, ev) { onNoteClick(st + (abcelem.startChar || 0), ev, st + (abcelem.endChar || abcelem.startChar || 0)); } : undefined,
       staffwidth: staffwidth || 740,
       paddingleft: 10, paddingright: 10, paddingbottom: 20,
       format: { titlefont: '"Palatino Linotype", Palatino, serif 18', subtitlefont: '"Palatino Linotype", Palatino, serif 13', composerfont: '"Palatino Linotype", Palatino, serif 11 italic', infofont: '"Palatino Linotype", Palatino, serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: '"Palatino Linotype", Palatino, serif 13' },
@@ -14668,7 +14684,7 @@ const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-
 //        null = automatisch, sonst eigener Text (auch leer = ausgeblendet)
 var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] };
 function clNormalizeState() {
-  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: false, pedal: false, chordOverrides: {} }, clState || {});
+  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: false, pedal: false, chordOverrides: {}, chordBreaks: {} }, clState || {});
   if (!Array.isArray(clState.texts)) clState.texts = [];
   if (!clState.chordOverrides || typeof clState.chordOverrides !== 'object') clState.chordOverrides = {};
 }
@@ -14737,7 +14753,7 @@ function clBuild() {
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
   const headers = list.map((x, i) => i === 0 ? Object.assign({}, clEffectiveHead(), { left: clState.left, right: clState.right }) : { title: x.title, subtitle: x.subtitle });
-  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, chordOverrides: clState.chordOverrides });
+  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks });
 }
 
 function clFillTargetSelect() {
@@ -16058,18 +16074,25 @@ function clDownloadAbc() {
 // Alte Akkord-Vorgaben (Schlüssel "Abschnitt:Nummer") auf Silbenanker umstellen
 function clMigrateOverrides(r) {
   const ov = clState.chordOverrides || {};
-  const legacy = Object.keys(ov).filter(k => /^\d+:\d+$/.test(k));
-  if (!legacy.length || !r || !r.models) return;
+  if (!r || !r.models) return;
+  const cur = new Set(), moved = new Set();
+  r.models.forEach(m => (m.segs || []).forEach(sg => cur.add(sg.key)));
   r.models.forEach(m => (m.segs || []).forEach(sg => {
-    if (ov[sg.legacyKey] != null && ov[sg.key] == null) ov[sg.key] = ov[sg.legacyKey];
+    if (ov[sg.key] != null) return;
+    for (const k of (sg.legacyKeys || [])) if (ov[k] != null && k !== sg.key) { ov[sg.key] = ov[k]; moved.add(k); break; }
   }));
-  legacy.forEach(k => delete ov[k]);
+  moved.forEach(k => { if (!cur.has(k)) delete ov[k]; });
+  Object.keys(ov).filter(k => /^\d+:\d+$/.test(k)).forEach(k => delete ov[k]);
 }
 
 // ── Akkord per Klick ändern ──────────────────────────────────────
-function clChordClick(absChar, ev) {
+function clChordClick(absChar, ev, absEnd) {
   if (!clLast || !clLast.segRanges) return;
-  const r = clLast.segRanges.find(x => absChar >= x.start && absChar < x.end);
+  // abcjs zählt vorangehende Leerzeichen/Bogenklammern "(" teils zur Note:
+  // daher Überlappung des ganzen Noten-Textbereichs prüfen, nicht nur den Anfang.
+  const end = Math.max(absEnd || 0, absChar + 1);
+  const r = clLast.segRanges.find(x => absChar >= x.start && absChar < x.end) ||
+            clLast.segRanges.find(x => x.start < end && x.end > absChar);
   if (!r) return;
   const inf = clLast.segInfo[r.key];
   if (!inf) return;
@@ -16098,7 +16121,7 @@ function clChordClick(absChar, ev) {
   };
   const cur = inf.ov || { d: null, i: null };
   const setOv = (d, i) => {
-    delete clState.chordOverrides[inf.legacyKey];
+    (inf.legacyKeys || []).forEach(k => { if (k !== r.key) delete clState.chordOverrides[k]; });
     if (d == null && i == null) delete clState.chordOverrides[r.key];
     else clState.chordOverrides[r.key] = { d, i };
     clRender();
@@ -16113,6 +16136,19 @@ function clChordClick(absChar, ev) {
   mk('Sextakkord', () => setOv(cur.d, 1), cur.i === 1);
   mk('Lage automatisch' + (cur.i == null ? ' (' + (inf.inv ? 'Sextakkord' : 'Grundstellung') + ')' : ''), () => setOv(cur.d, null), cur.i == null);
   mk('↺ Alles automatisch', () => setOv(null, null), !inf.overridden);
+  // Akkordwechsel an der angetippten Melodienote setzen/entfernen
+  const nt = r.note;
+  if (nt) {
+    const brk = clState.chordBreaks || (clState.chordBreaks = {});
+    const setBrk = v => { if (v === null) delete brk[nt.anchor]; else brk[nt.anchor] = v; clRender(); };
+    const sep2 = document.createElement('div');
+    sep2.textContent = 'Akkordwechsel';
+    sep2.style.cssText = 'font-weight:bold;margin:6px 0 2px;color:#e0d4b0;border-top:1px solid #3a4a30;padding-top:4px';
+    m.appendChild(sep2);
+    if (!nt.segStart) mk('✂ Neuer Akkord ab dieser Note', () => setBrk(nt.auto ? null : true));
+    else if (nt.mergeable) mk('⤺ Akkord der vorigen Note weiterklingen', () => setBrk(nt.auto ? false : null));
+    if (brk[nt.anchor] != null) mk('↺ Wechsel wie automatisch', () => setBrk(null));
+  }
   document.body.appendChild(m);
   setTimeout(() => document.addEventListener('mousedown', clMenuOutside), 0);
 }
@@ -16122,9 +16158,9 @@ function clCloseChordMenu() {
   document.removeEventListener('mousedown', clMenuOutside);
 }
 function clResetChords() {
-  if (!Object.keys(clState.chordOverrides).length) return;
+  if (!Object.keys(clState.chordOverrides).length && !Object.keys(clState.chordBreaks || {}).length) return;
   if (!confirm('Alle von Hand gewählten Akkorde verwerfen und den Begleitsatz neu automatisch erzeugen?')) return;
-  clState.chordOverrides = {}; clRender();
+  clState.chordOverrides = {}; clState.chordBreaks = {}; clRender();
 }
 
 // ── Freitext ─────────────────────────────────────────────────────
