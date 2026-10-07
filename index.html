@@ -6819,7 +6819,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '242';
+const NOTATOR_BUILD_ID = '243';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -16076,6 +16076,7 @@ function clChordClick(absChar, ev) {
   clCloseChordMenu();
   const m = document.createElement('div');
   m.id = 'cl-chord-menu';
+  m._t0 = Date.now();
   m.style.cssText = 'position:fixed;z-index:1000;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;min-width:170px';
   const x = (ev && ev.clientX) || 100, y = (ev && ev.clientY) || 100;
   m.style.left = Math.min(x + 6, window.innerWidth - 200) + 'px';
@@ -16088,7 +16089,11 @@ function clChordClick(absChar, ev) {
     const bt = document.createElement('button');
     bt.className = 'b'; bt.textContent = label;
     bt.style.cssText = 'display:block;width:100%;text-align:left;margin:2px 0;font-size:12px;padding:3px 6px' + (active ? ';background:#3d6b35;color:#fff' : '');
-    bt.onclick = () => { clCloseChordMenu(); onClick(); };
+    // Touch: der vom Browser nachgereichte "click" der Berührung, die das
+    // Menü geöffnet hat, landet sonst direkt auf einem Menüeintrag (Menü
+    // erscheint unter dem Finger) -> wählt ungewollt einen Akkord und
+    // schliesst das Menü sofort. Klicks kurz nach dem Öffnen ignorieren.
+    bt.onclick = () => { if (Date.now() - m._t0 < 500) return; clCloseChordMenu(); onClick(); };
     m.appendChild(bt);
   };
   const cur = inf.ov || { d: null, i: null };
