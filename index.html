@@ -92,6 +92,13 @@ input[type=file]{display:none}
    Transform auf Bildschirmbreite skaliert (gregMobileApplyScale) statt
    die interne, für Layout-Stabilität sorgfältig austarierte Render-
    Breitenlogik anzufassen. */
+/* Ziehleisten: auch mit dem Finger verschiebbar (Tablet) */
+#greg-drag-handle,#greg-pdf-drag-handle,#gabc-drag-handle{touch-action:none}
+@media (pointer:coarse){
+  #greg-drag-handle,#greg-pdf-drag-handle,#gabc-drag-handle{width:18px !important;background:#22301a !important;
+    background-image:radial-gradient(circle,#8aa870 1.6px,transparent 2px) !important;background-size:18px 10px !important;
+    background-repeat:repeat-y !important;background-position:center calc(50% - 15px) !important}
+}
 #greg-mobile-bar{display:flex}
 #greg-mobile-scale-wrap{transform-origin:top left}
 @media (max-width: 700px) {
@@ -233,6 +240,7 @@ input[type=file]{display:none}
     <button class="b" onclick="switchTab('editor')" style="font-size:11px;padding:3px 8px" title="Klassische Orgelnoten">&#127929;</button>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
 <button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+    <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
     <button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button>
@@ -460,6 +468,7 @@ input[type=file]{display:none}
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
     <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
 <button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+    <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279; Teilen</button>
     <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
@@ -6810,7 +6819,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '240';
+const NOTATOR_BUILD_ID = '241';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7835,19 +7844,21 @@ function gregImportFromPanel() {
 // ── Drag resize ──────────────────────────────────────────────────
 (function(){
   let dr=false,sx=0,sw=0;
-  document.addEventListener('mousedown',function(e){
+  document.addEventListener('pointerdown',function(e){
     if(e.target.id!=='greg-drag-handle')return;
     dr=true;sx=e.clientX;sw=document.getElementById('greg-input-panel').offsetWidth;
     document.body.style.cursor='col-resize';document.body.style.userSelect='none';e.preventDefault();
   });
-  document.addEventListener('mousemove',function(e){
+  document.addEventListener('pointermove',function(e){
     if(!dr)return;
     document.getElementById('greg-input-panel').style.width=Math.max(200,Math.min(sw+(e.clientX-sx),window.innerWidth-300))+'px';
     clearTimeout(window._gregDRT);window._gregDRT=setTimeout(gregRender,120);
   });
-  document.addEventListener('mouseup',function(){
+  const _up = function(){
     if(!dr)return;dr=false;document.body.style.cursor='';document.body.style.userSelect='';gregRender();
-  });
+  };
+  document.addEventListener('pointerup', _up);
+  document.addEventListener('pointercancel', _up);
 })();
 
 // Runde 65: Ziehleiste für das neue Original-PDF-Seitenpanel (rechts) — analog
@@ -7855,19 +7866,21 @@ function gregImportFromPanel() {
 // (Panel liegt rechts von seiner Ziehleiste, nicht links).
 (function(){
   let dr=false,sx=0,sw=0;
-  document.addEventListener('mousedown',function(e){
+  document.addEventListener('pointerdown',function(e){
     if(e.target.id!=='greg-pdf-drag-handle')return;
     dr=true;sx=e.clientX;sw=document.getElementById('greg-pdf-panel').offsetWidth;
     document.body.style.cursor='col-resize';document.body.style.userSelect='none';e.preventDefault();
   });
-  document.addEventListener('mousemove',function(e){
+  document.addEventListener('pointermove',function(e){
     if(!dr)return;
     document.getElementById('greg-pdf-panel').style.width=Math.max(200,Math.min(sw+(sx-e.clientX),window.innerWidth-400))+'px';
     if (_gregPdfDoc) { clearTimeout(window._gregPdfDRT); window._gregPdfDRT=setTimeout(()=>gregRenderPDFPage(_gregPdfPage),120); }
   });
-  document.addEventListener('mouseup',function(){
+  const _up = function(){
     if(!dr)return;dr=false;document.body.style.cursor='';document.body.style.userSelect='';
-  });
+  };
+  document.addEventListener('pointerup', _up);
+  document.addEventListener('pointercancel', _up);
 })();
 
 // ── Init ─────────────────────────────────────────────────────────
@@ -15766,6 +15779,49 @@ function ntSongCheckIncoming() {
 }
 window.addEventListener('hashchange', ntSongCheckIncoming);
 
+// ── Bildschirm wach halten (Screen Wake Lock) ───────────────────────
+// Verhindert, dass das Tablet/Handy beim Notenlesen dunkel wird, solange
+// Notator sichtbar ist. Standard: an (pro Gerät abschaltbar über ☀).
+// Der Browser gibt die Sperre beim Wechsel in eine andere App/Tab frei;
+// beim Zurückkehren wird sie neu angefordert.
+const ntWake = { lock: null };
+function ntWakeSupported() { return 'wakeLock' in navigator; }
+function ntWakePref() { try { return localStorage.getItem('notatorWake') !== '0'; } catch (e) { return true; } }
+function ntWakeUpdate() {
+  document.querySelectorAll('.nt-wake-btn').forEach(b => {
+    if (!ntWakeSupported()) { b.style.display = 'none'; return; }
+    const on = !!ntWake.lock, want = ntWakePref();
+    b.innerHTML = on ? '&#9728;&#xFE0E; an' : '&#9728;&#xFE0E; aus';
+    b.style.background = on ? '#c09a30' : ''; b.style.color = on ? '#1a1209' : '';
+    b.title = on ? 'Bildschirm bleibt an (tippen zum Abschalten)'
+      : (want ? 'Bildschirm-wach-halten wird beim nächsten Tippen aktiviert' : 'Bildschirm darf ausgehen (tippen, damit er anbleibt)');
+  });
+}
+function ntWakeAcquire() {
+  if (!ntWakeSupported() || !ntWakePref() || ntWake.lock || ntWake.pending || document.visibilityState !== 'visible') return;
+  ntWake.pending = true;
+  navigator.wakeLock.request('screen').then(l => {
+    ntWake.lock = l;
+    l.addEventListener('release', () => { ntWake.lock = null; ntWakeUpdate(); });
+  }).catch(() => {}).then(() => { ntWake.pending = false; ntWakeUpdate(); });
+}
+function ntWakeRelease() {
+  const l = ntWake.lock; ntWake.lock = null;
+  if (l) l.release().catch(() => {});
+  ntWakeUpdate();
+}
+function ntWakeToggle() {
+  const on = !ntWakePref();
+  try { localStorage.setItem('notatorWake', on ? '1' : '0'); } catch (e) {}
+  if (on) ntWakeAcquire(); else ntWakeRelease();
+  gregGst(on ? 'Bildschirm bleibt an, solange Notator sichtbar ist.' : 'Bildschirm darf wieder ausgehen.');
+  ntWakeUpdate();
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') ntWakeAcquire(); });
+// manche Browser erlauben die Sperre erst nach einer Berührung
+document.addEventListener('pointerdown', e => { if (!(e.target.closest && e.target.closest('.nt-wake-btn'))) ntWakeAcquire(); }, { passive: true });
+document.addEventListener('DOMContentLoaded', () => { ntWakeUpdate(); ntWakeAcquire(); });
+
 // ── Anzeige-Skalierung (🔍) für Choral und Orgel ──
 // Nur Bildschirm: kleiner = mehr Noten pro Zeile (Neu-Umbruch), PDF und
 // gespeichertes Stück bleiben unverändert. Pro Gerät gespeichert.
@@ -16608,7 +16664,7 @@ async function exportGABCasPDF(){
 // ── GABC panel drag-resize ─────────────────────────────────────────────
 (function() {
   let dragging = false, startX = 0, startW = 0;
-  document.addEventListener('mousedown', function(e) {
+  document.addEventListener('pointerdown', function(e) {
     if (e.target.id !== 'gabc-drag-handle') return;
     dragging = true;
     startX = e.clientX;
@@ -16617,7 +16673,7 @@ async function exportGABCasPDF(){
     document.body.style.userSelect = 'none';
     e.preventDefault();
   });
-  document.addEventListener('mousemove', function(e) {
+  document.addEventListener('pointermove', function(e) {
     if (!dragging) return;
     const panel = document.getElementById('gabc-input-panel');
     const newW = Math.max(180, Math.min(startW + (e.clientX - startX), window.innerWidth - 300));
@@ -16625,13 +16681,15 @@ async function exportGABCasPDF(){
     clearTimeout(window._gabcResizeTimer);
     window._gabcResizeTimer = setTimeout(renderGABC, 120);
   });
-  document.addEventListener('mouseup', function() {
+  const _up = function() {
     if (!dragging) return;
     dragging = false;
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
     renderGABC();
-  });
+  };
+  document.addEventListener('pointerup', _up);
+  document.addEventListener('pointercancel', _up);
 })();
 
 setTimeout(()=>{
