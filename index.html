@@ -261,7 +261,7 @@ input[type=file]{display:none}
         <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird nicht gespeichert" style="width:150px;font-size:9px;padding:1px 4px;background:#0a1406;color:#6b8a60;border:1px solid #2a3820;outline:none">
       </div>
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
-        <button class="b" onclick="gregSavePiece()" style="font-size:10px;padding:2px 6px" title="Stück speichern (.notator)">&#128190; Speichern</button>
+        <button class="b" onclick="ntNotatorSave()" style="font-size:10px;padding:2px 6px" title="Stück als Notator-Datei speichern – auf diesem Gerät oder in Google Drive">&#128190; Speichern</button>
         <button class="b" onclick="gregLibSaveCurrent()" style="font-size:10px;padding:2px 6px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Aktuelles Stück direkt im Browser (IndexedDB) ablegen/aktualisieren — kein Dateidialog nötig">&#128190; In Bibliothek</button>
         <button class="b" onclick="gregEditCurrentMeta()" style="font-size:10px;padding:2px 6px" title="Kirchenjahr, Gattung und Tags für die Bibliothek festlegen">&#127991; Einordnen</button>
         <button class="b" onclick="ntPdfSave('greg')" style="font-size:10px;padding:2px 6px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Aktuelles Stück als PDF sichern">&#8595; PDF</button>
@@ -6822,7 +6822,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '246';
+const NOTATOR_BUILD_ID = '247';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -15194,11 +15194,14 @@ function ntLoadLocalDir() {
 }
 
 function ntEscAttr(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-function ntSanitizeName(n) {
+function ntSanitizeName(n, ext) {
+  ext = ext || '.pdf';
   n = String(n || '').trim().replace(/[\\/:*?"<>|]+/g, '_') || 'Stueck';
-  return /\.pdf$/i.test(n) ? n : n + '.pdf';
+  return n.toLowerCase().endsWith(ext) ? n : n.replace(/\.(pdf|notator)$/i, '') + ext;
 }
-function ntDrivePathText(f) { return f && f.path ? f.path : 'Notator › ' + NT_PDF_DRIVE_DEFAULT_SUB + ' (Standard)'; }
+function ntDrivePathText(f, isNot) { return f && f.path ? f.path : (isNot ? 'Notator – Bibliothek (Standard)' : 'Notator › ' + NT_PDF_DRIVE_DEFAULT_SUB + ' (Standard)'); }
+// Ziel-Einstellungen getrennt für PDF und Notator-Datei (.notator)
+function ntDestKeys(ctx) { const n = ctx && ctx.kind === 'notator'; return { n, dest: n ? 'destNotator' : 'dest', folder: n ? 'driveFolderNotator' : 'driveFolder' }; }
 
 // kind: 'greg' | 'cl'
 function ntPdfSave(kind) {
@@ -15208,12 +15211,19 @@ function ntPdfSave(kind) {
     : (((document.getElementById('greg-title') || {}).value || '').trim() || 'gregorianisch');
   ntLoadLocalDir().then(() => ntPdfDialog({ kind, name: ntSanitizeName(base), dest: ntPdfPrefs().dest }));
 }
+// Stück als Notator-Datei speichern: gleicher Dialog (Gerät oder Google Drive)
+function ntNotatorSave() {
+  const title = (((document.getElementById('greg-title') || {}).value || '').trim() || 'unbenannt');
+  const p = ntPdfPrefs();
+  ntLoadLocalDir().then(() => ntPdfDialog({ kind: 'notator', name: ntSanitizeName(title, '.notator'), dest: p.destNotator || 'local' }));
+}
 
 function ntPdfDialog(ctx) {
   const pr = ntPdfPrefs();
+  const K = ntDestKeys(ctx), ext = K.n ? '.notator' : '.pdf';
   const driveOn = typeof gdConfigured === 'function' && gdConfigured();
   if (!driveOn && ctx.dest === 'drive') ctx.dest = 'local';
-  showModal('↓ PDF speichern', '', []);
+  showModal(K.n ? '💾 Stück speichern (.notator)' : '↓ PDF speichern', '', []);
   const body = document.getElementById('modal-body');
   const localTxt = ntFsSupported()
     ? (_ntPdfLocalDir ? 'Speicherdialog öffnet im Ordner «' + ntEscAttr(_ntPdfLocalDir.name) + '»' : 'Speicherdialog öffnet im Ordner «Dokumente» (Standard)')
@@ -15226,7 +15236,7 @@ function ntPdfDialog(ctx) {
     '<label style="font-size:12px;display:block;margin-bottom:6px">Dateiname<br><input id="nt-pdf-name" type="text" value="' + ntEscAttr(ctx.name) + '" style="width:100%;box-sizing:border-box;font-size:13px;padding:4px"></label>' +
     row('local', '💻 Auf diesem Gerät', localTxt,
       ntFsSupported() ? '<button class="b" id="nt-pdf-localdir" style="font-size:11px;padding:2px 6px">Standard ändern</button>' : '') +
-    row('drive', '☁ Google Drive', driveOn ? 'Ordner: ' + ntEscAttr(ntDrivePathText(pr.driveFolder)) : 'Google Drive ist nicht eingerichtet',
+    row('drive', '☁ Google Drive', driveOn ? 'Ordner: ' + ntEscAttr(ntDrivePathText(pr[K.folder], K.n)) : 'Google Drive ist nicht eingerichtet',
       driveOn ? '<button class="b" id="nt-pdf-drivedir" style="font-size:11px;padding:2px 6px">Ordner ändern</button>' : '');
   const bEl = document.getElementById('modal-btns');
   const ok = document.createElement('button'); ok.className = 'b'; ok.textContent = 'Speichern';
@@ -15251,21 +15261,22 @@ function ntPdfDialog(ctx) {
   };
   ok.onclick = () => {
     sync();
-    const name = ntSanitizeName(ctx.name);
-    const p = ntPdfPrefs(); p.dest = ctx.dest; ntPdfSavePrefs(p);
+    const name = ntSanitizeName(ctx.name, ext);
+    const p = ntPdfPrefs(); p[K.dest] = ctx.dest; ntPdfSavePrefs(p);
+    const what = K.n ? 'Gespeichert' : 'PDF gespeichert';
     if (ctx.dest === 'drive') {
-      // Anmeldung im Klick (Popup), danach PDF erzeugen und hochladen
+      // Anmeldung im Klick (Popup), danach Datei erzeugen und hochladen
       gdGetToken(true).then(() => {
         closeModal();
-        ntPdfRun(ctx.kind, blob => ntPdfToDrive(blob, name));
+        ntPdfRun(ctx.kind, blob => ntPdfToDrive(blob, name, ctx));
       }).catch(err => gregGst('Google Drive: ' + err.message));
     } else if (ntFsSupported()) {
-      const opts = { suggestedName: name, types: [{ description: 'PDF-Dokument', accept: { 'application/pdf': ['.pdf'] } }] };
+      const opts = { suggestedName: name, types: [K.n ? { description: 'Notator-Datei', accept: { 'application/json': ['.notator'] } } : { description: 'PDF-Dokument', accept: { 'application/pdf': ['.pdf'] } }] };
       opts.startIn = _ntPdfLocalDir || 'documents';
       window.showSaveFilePicker(opts).then(h => {
         closeModal();
         ntPdfRun(ctx.kind, blob => h.createWritable().then(w => w.write(blob).then(() => w.close()))
-          .then(() => gregGst('PDF gespeichert: ' + h.name)).catch(err => gregGst('Speichern fehlgeschlagen: ' + err.message)));
+          .then(() => gregGst(what + ': ' + h.name)).catch(err => gregGst('Speichern fehlgeschlagen: ' + err.message)));
       }).catch(err => { if (err && err.name !== 'AbortError') gregGst('Speichern fehlgeschlagen: ' + err.message); });
     } else {
       closeModal();
@@ -15273,13 +15284,14 @@ function ntPdfDialog(ctx) {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-        gregGst('PDF heruntergeladen: ' + name);
+        gregGst((K.n ? 'Heruntergeladen: ' : 'PDF heruntergeladen: ') + name);
       });
     }
   };
 }
 
 function ntPdfRun(kind, deliver) {
+  if (kind === 'notator') { deliver(new Blob([JSON.stringify(gregBuildStateObject(), null, 2)], { type: 'application/json' })); return; }
   window._ntPdfDeliver = deliver;
   if (kind === 'cl') clExportPDF(); else if (kind === 'mappe') ntMappeBuild(); else gregExportPDF();
 }
@@ -15307,43 +15319,50 @@ function gdFolderChain(id) {
   });
   return step(id, 0).then(() => chain).catch(() => chain.length ? chain : [{ id: id, name: '…' }]);
 }
-function ntPdfDriveFolderId() {
-  const f = ntPdfPrefs().driveFolder;
+function ntPdfDriveFolderId(ctx) {
+  const K = ntDestKeys(ctx);
+  const f = ntPdfPrefs()[K.folder];
   if (f && f.id) return Promise.resolve(f.id);
+  if (K.n) return Promise.resolve(NOTATOR_GDRIVE_FOLDER_ID);
   return gdFindOrCreateFolder(NT_PDF_DRIVE_DEFAULT_SUB, NOTATOR_GDRIVE_FOLDER_ID);
 }
-function gdUploadBlob(name, blob, mime, parentId, existingId) {
+function gdUploadBlob(name, blob, mime, parentId, existingId, appProps) {
   const meta = existingId ? { name } : { name, parents: [parentId], mimeType: mime };
+  if (appProps) meta.appProperties = appProps;
   const boundary = 'notatorpdf' + Date.now();
   const body = new Blob(['--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(meta) +
     '\r\n--' + boundary + '\r\nContent-Type: ' + mime + '\r\n\r\n', blob, '\r\n--' + boundary + '--'], { type: 'multipart/related; boundary=' + boundary });
   const url = 'https://www.googleapis.com/upload/drive/v3/files' + (existingId ? '/' + encodeURIComponent(existingId) : '') + '?uploadType=multipart&fields=id,name,webViewLink';
   return gdFetch(url, { method: existingId ? 'PATCH' : 'POST', headers: { 'Content-Type': 'multipart/related; boundary=' + boundary }, body }, false).then(r => r.json());
 }
-function ntPdfToDrive(blob, name) {
-  gregGst('Lade PDF in Google Drive hoch …');
-  ntPdfDriveFolderId().then(folderId => {
+function ntPdfToDrive(blob, name, ctx) {
+  const K = ntDestKeys(ctx);
+  const mime = K.n ? 'application/json' : 'application/pdf';
+  const appProps = K.n ? ntMetaToAppProps(Object.assign(ntMetaNorm(gregMeta), { txt: ntCurrentIncipit() })) : null;
+  gregGst(K.n ? 'Speichere in Google Drive …' : 'Lade PDF in Google Drive hoch …');
+  ntPdfDriveFolderId(ctx).then(folderId => {
     const q = encodeURIComponent("'" + folderId + "' in parents and trashed = false and name = '" + name.replace(/'/g, "\\'") + "'");
     return gdFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name)', {}, false).then(r => r.json()).then(j => {
       const same = (j.files || [])[0];
       let existing = null, finalName = name;
       if (same) {
         if (confirm('In diesem Drive-Ordner gibt es bereits "' + name + '". Überschreiben?\n(Abbrechen = als neue Datei mit Datum speichern)')) existing = same.id;
-        else finalName = name.replace(/\.pdf$/i, '') + ' (' + new Date().toLocaleString('de-CH').replace(/[\\/:*?"<>|]+/g, '-') + ').pdf';
+        else finalName = name.replace(/\.(pdf|notator)$/i, '') + ' (' + new Date().toLocaleString('de-CH').replace(/[\\/:*?"<>|]+/g, '-') + ')' + (K.n ? '.notator' : '.pdf');
       }
-      return gdUploadBlob(finalName, blob, 'application/pdf', folderId, existing);
+      return gdUploadBlob(finalName, blob, mime, folderId, existing, appProps);
     });
   }).then(f => {
-    gregGst('PDF in Google Drive gespeichert: ' + f.name + ' (' + ntDrivePathText(ntPdfPrefs().driveFolder).replace(' (Standard)', '') + ')');
+    gregGst((K.n ? 'In Google Drive gespeichert: ' : 'PDF in Google Drive gespeichert: ') + f.name + ' (' + ntDrivePathText(ntPdfPrefs()[K.folder], K.n).replace(' (Standard)', '') + ')');
   }).catch(err => gregGst('Drive-Upload fehlgeschlagen: ' + err.message));
 }
 
 // Einfacher Ordner-Browser für Google Drive (ohne Google-Picker / API-Schlüssel)
 function ntDriveFolderBrowser(ctx, chain) {
-  showModal('☁ Drive-Ordner für PDFs', 'Lade Ordner …', []);
+  const K = ntDestKeys(ctx);
+  showModal(K.n ? '☁ Drive-Ordner für Notator-Dateien' : '☁ Drive-Ordner für PDFs', 'Lade Ordner …', []);
   const body = document.getElementById('modal-body'), bEl = document.getElementById('modal-btns');
   const start = chain ? Promise.resolve(chain)
-    : ntPdfDriveFolderId().then(id => gdFolderChain(id));
+    : ntPdfDriveFolderId(ctx).then(id => gdFolderChain(id));
   start.then(ch => {
     const cur = ch[ch.length - 1];
     const q = encodeURIComponent("'" + cur.id + "' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'");
@@ -15373,7 +15392,7 @@ function ntDriveFolderBrowser(ctx, chain) {
         const mk = (t, fn, css) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = t; b.onclick = fn; if (css) b.style.cssText = css; bEl.appendChild(b); };
         mk('✓ Diesen Ordner verwenden', () => {
           const p = ntPdfPrefs();
-          p.driveFolder = { id: cur.id, path: ch.map(c => c.name).join(' › ') };
+          p[K.folder] = { id: cur.id, path: ch.map(c => c.name).join(' › ') };
           ntPdfSavePrefs(p); ntPdfDialog(ctx);
         }, 'background:#3d6b35;color:#fff;border-color:#3d6b35');
         mk('+ Neuer Ordner', () => {
@@ -15381,7 +15400,7 @@ function ntDriveFolderBrowser(ctx, chain) {
           gdFindOrCreateFolder(n.trim(), cur.id).then(id => ntDriveFolderBrowser(ctx, ch.concat([{ id, name: n.trim() }])))
             .catch(err => gregGst(err.message));
         });
-        mk('Standard', () => { const p = ntPdfPrefs(); p.driveFolder = null; ntPdfSavePrefs(p); ntPdfDialog(ctx); });
+        mk('Standard', () => { const p = ntPdfPrefs(); p[K.folder] = null; ntPdfSavePrefs(p); ntPdfDialog(ctx); });
         mk('Zurück', () => ntPdfDialog(ctx));
       });
   }).catch(err => { body.textContent = 'Fehler: ' + err.message; bEl.innerHTML = ''; const b = document.createElement('button'); b.className = 'b'; b.textContent = 'Zurück'; b.onclick = () => ntPdfDialog(ctx); bEl.appendChild(b); });
