@@ -245,7 +245,7 @@ input[type=file]{display:none}
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
     <button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button>
     <button class="b" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279; Teilen</button>
-    <button class="b" onclick="gregLibSaveCurrent()" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="In Bibliothek speichern">&#128190;</button>
+    <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190; Speichern</button>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
     <div id="greg-input-panel" style="width:540px;min-width:200px;flex-shrink:0;background:#1a2414;border-right:1px solid #3a4a30;display:flex;flex-direction:column;overflow:hidden">
@@ -464,13 +464,18 @@ input[type=file]{display:none}
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
     <button class="b" onclick="switchTab('greg')" style="font-size:11px;padding:3px 8px" title="Zurück zum Choral-Editor">&#8592; Choral</button>
+    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
+    <button class="b" onclick="document.getElementById('greg-load-in').click()" style="font-size:11px;padding:3px 8px" title="Stück aus Datei laden (.notator)">&#128194; Öffnen</button>
+    <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925; Song importieren</button>
     <span id="cl-vb-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
     <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
 <button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
+    <button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button>
     <button class="b" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279; Teilen</button>
+    <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190; Speichern</button>
     <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -1544,6 +1549,7 @@ function gregVS() { return typeof ntViewScale === 'function' ? ntViewScale('greg
 function gregRender() {
   if (window._gregMultiSection) gregRenderAllSections();
   else gregRenderActiveOnly();
+  if (typeof ntRefreshOrganIfVisible === 'function') ntRefreshOrganIfVisible();
   gregScheduleAutosave();
 }
 
@@ -6865,7 +6871,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '248';
+const NOTATOR_BUILD_ID = '249';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -15907,6 +15913,34 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 document.addEventListener('pointerdown', e => { if (!(e.target.closest && e.target.closest('.nt-wake-btn'))) ntWakeAcquire(); }, { passive: true });
 document.addEventListener('DOMContentLoaded', () => { ntWakeUpdate(); ntWakeAcquire(); });
 
+// ── Speichern-Menü (in beiden Abschnitten gleich) ──
+function ntSaveMenu(btn) {
+  const old = document.getElementById('nt-save-pop');
+  if (old) { const same = old._btn === btn; old.remove(); if (same) return; }
+  const d = document.createElement('div');
+  d.id = 'nt-save-pop'; d._btn = btn;
+  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:4px;min-width:220px';
+  const r = btn.getBoundingClientRect();
+  d.style.top = Math.min(r.bottom + 4, window.innerHeight - 130) + 'px';
+  d.style.left = Math.max(8, Math.min(r.right - 230, window.innerWidth - 238)) + 'px';
+  const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:12px;padding:5px 8px';
+    b.onclick = () => { d.remove(); fn(); }; d.appendChild(b); };
+  item('📚 In Bibliothek speichern', 'In die Bibliothek (Google Drive, Ordner Notator) – mit lokaler Kopie für offline', () => gregLibSaveCurrent());
+  item('💾 Als Notator-Datei …', 'Als .notator-Datei auf diesem Gerät oder in einem beliebigen Drive-Ordner', () => ntNotatorSave());
+  item('🏷 Einordnen …', 'Kirchenjahr, Gattung und Tags für die Bibliothek', () => gregEditCurrentMeta());
+  document.body.appendChild(d);
+  const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close); } };
+  setTimeout(() => document.addEventListener('pointerdown', close), 0);
+}
+// Wird ein Stück geladen/importiert, während die Orgelansicht offen ist,
+// diese gleich mitaktualisieren (Laden ist aus beiden Abschnitten möglich).
+let _ntOrganRefreshT = null;
+function ntRefreshOrganIfVisible() {
+  if (window._ntTab !== 'editor' || window._ntMappeBusy || typeof clOpen !== 'function') return;
+  clearTimeout(_ntOrganRefreshT);
+  _ntOrganRefreshT = setTimeout(() => { if (window._ntTab === 'editor' && !window._ntMappeBusy) { clOpen(); } }, 250);
+}
+
 // ── Anzeige-Skalierung (🔍) für Choral und Orgel ──
 // Nur Bildschirm: kleiner = mehr Noten pro Zeile (Neu-Umbruch), PDF und
 // gespeichertes Stück bleiben unverändert. Pro Gerät gespeichert.
@@ -16181,7 +16215,7 @@ function clChordClick(absChar, ev, absEnd) {
     // Menü geöffnet hat, landet sonst direkt auf einem Menüeintrag (Menü
     // erscheint unter dem Finger) -> wählt ungewollt einen Akkord und
     // schliesst das Menü sofort. Klicks kurz nach dem Öffnen ignorieren.
-    bt.onclick = () => { if (Date.now() - m._t0 < 500) return; clCloseChordMenu(); onClick(); };
+    bt.onclick = () => { if (Date.now() - m._t0 < 350) return; clCloseChordMenu(); onClick(); };
     m.appendChild(bt);
   };
   const cur = inf.ov || { d: null, i: null };
