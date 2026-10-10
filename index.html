@@ -498,6 +498,7 @@ input[type=file]{display:none}
     <span style="color:#3a4a30">|</span>
     <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
     <button class="b" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button>
+    <button class="b" id="cl-flat-btn" onclick="clToggleFlatScope()" style="font-size:11px;padding:3px 8px" title="Gültigkeit eines b-Vorzeichens aus dem Choral: bis Wortende (Solesmes-Regel, Standard) oder bis zum nächsten Trennstrich (für Quellen, die das b in einem neuen Wort nicht wiederholen)">♭ gilt bis Wortende</button>
     <button class="b" id="cl-pedal-btn" onclick="clTogglePedal()" style="font-size:11px;padding:3px 8px;display:none" title="Bass als eigenes Pedalsystem (Orgelsatz mit 3 Systemen) oder im unteren Manualsystem">Pedal: im Bass-System</button>
     <button class="b" onclick="clResetChords()" style="font-size:11px;padding:3px 8px" title="Von Hand gewählte Akkorde zurücksetzen">&#8634; Akkorde</button>
     <button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Freitext einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Text</button>
@@ -5847,6 +5848,7 @@ function gregSelfTest() {
   };
   ocheck('Tonhöhen, Achtel, Mora, Melisma-Bogen', () => clMel("(c4) Ky(fg)ri(h.)e(h) (::)"), '(FG) A2 A |]');
   ocheck('b molle gilt bis Wortende', () => clMel("(c4) a(ixi)b(i) c(i) (::)"), '_B B =B |]');
+  ocheck('b molle wahlweise bis Trennstrich', () => clMel("(c4) a(ixi)b(i) c(i) (,) d(i) (::)", {flatToBar: true}), '_B B B !breath!y =B |]');
   ocheck('Episema → Tenuto, Divisio minima → Atemzeichen', () => clMel("(c4) Ky(f_)ri(gh~)e(h) (,) e(g'ih)le(f) (::)"), '!tenuto!F (GA) A !breath!y (GBA) F |]');
   ocheck('Modale Transposition a-äolisch → c (3 ♭)', () => {
     const r = clGabcToAbc([{gabc: "(c4) Ky(fg)ri(h.)e(h) (::)"}], {targetPc: 0});
@@ -6997,7 +6999,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '253';
+const NOTATOR_BUILD_ID = '254';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14006,7 +14008,8 @@ function clCleanText(t) {
 // events: {k:'note', D, alt, dur, ten, liq, quil, sylStart, text, wordEnd, hyphen}
 //         {k:'bar', t:'minima'|'minor'|'maior'|'finalis'}
 //         {k:'text', text}   (Silbe ohne Noten, z.B. "iij.", "Ant.", "*")
-function clParseGabc(gabc) {
+function clParseGabc(gabc, popts) {
+  const flatToBar = !!(popts && popts.flatToBar); // ♭ gilt bis zum nächsten Trennstrich statt bis Wortende
   const out = { title: '', subtitle: '', annotation: '', mode: '', events: [] };
   let body = gabc;
   const hdrSplit = gabc.match(/^([\s\S]*?)\n?%%\s*\n?([\s\S]*)$/);
@@ -14062,7 +14065,7 @@ function clParseGabc(gabc) {
   }
 
   sylls.forEach(s => {
-    if (s.text && s.newWord) accReset();
+    if (s.text && s.newWord && !flatToBar) accReset();
     const n = s.notes;
     let i = 0;
     let sylNotesStart = true;
@@ -14168,7 +14171,7 @@ function clParseGabc(gabc) {
         pendingTextHyphen = s.wordContinues;
       }
     }
-    if (!s.wordContinues && hadNote) accReset();
+    if (!s.wordContinues && hadNote && !flatToBar) accReset();
   });
   return out;
 }
@@ -14499,7 +14502,7 @@ function clGabcToAbc(gabcList, opts) {
   let abcAll = '';
   let info = null;
   // Intervall aus erstem Abschnitt
-  const firstParsed = clParseGabc(gabcList[0].gabc);
+  const firstParsed = clParseGabc(gabcList[0].gabc, opts);
   const fin = clFinalis(firstParsed);
   const baseFifths = clBaseKeyFifths(gabcList[0].gabc);
   const origPc = clPcOf(clMod(fin.D, 7), fin.alt);
@@ -14530,7 +14533,7 @@ function clGabcToAbc(gabcList, opts) {
   };
 
   gabcList.forEach((sec, si) => {
-    const parsed = si === 0 ? firstParsed : clParseGabc(sec.gabc);
+    const parsed = si === 0 ? firstParsed : clParseGabc(sec.gabc, opts);
     const notes = parsed.events.filter(e => e.k === 'note').map(e => clSpellTranspose(e.D, e.alt, d, semi));
     // Auto-Oktave: Mittelwert möglichst nahe an H4 (Mitte Violinschlüssel)
     let shift = 0;
@@ -14939,6 +14942,10 @@ function clToggleAccomp() {
   clState.accomp = !clState.accomp;
   clRender();
 }
+function clToggleFlatScope() {
+  clState.flatToBar = !clState.flatToBar;
+  clRender();
+}
 function clTogglePedal() {
   clState.pedal = !clState.pedal;
   clRender();
@@ -14998,7 +15005,7 @@ function clBuild() {
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
   const headers = list.map((x, i) => i === 0 ? Object.assign({}, clEffectiveHead(), { left: clState.left, right: clState.right }) : { title: x.title, subtitle: x.subtitle });
-  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks });
+  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks });
 }
 
 function clFillTargetSelect() {
@@ -15007,7 +15014,7 @@ function clFillTargetSelect() {
   const list = clCollectGabc();
   sel.innerHTML = '';
   if (!clHasNotes(list)) return;
-  const parsed = clParseGabc(list[0].gabc);
+  const parsed = clParseGabc(list[0].gabc, { flatToBar: !!clState.flatToBar });
   const fin = clFinalis(parsed);
   const base = clBaseKeyFifths(list[0].gabc);
   const origPc = clPcOf(clMod(fin.D, 7), fin.alt);
@@ -15027,6 +15034,8 @@ function clFillTargetSelect() {
 function clSyncControls() {
   const ab = document.getElementById('cl-accomp-btn');
   if (ab) { ab.innerHTML = clState.accomp ? '&#127929; Begleitsatz: an' : '&#127929; Begleitsatz: aus'; ab.style.background = clState.accomp ? '#2a4a6a' : ''; ab.style.color = clState.accomp ? '#fff' : ''; }
+  const fb = document.getElementById('cl-flat-btn');
+  if (fb) { fb.innerHTML = clState.flatToBar ? '♭ gilt bis Trennstrich' : '♭ gilt bis Wortende'; fb.style.background = clState.flatToBar ? '#2a4a6a' : ''; fb.style.color = clState.flatToBar ? '#fff' : ''; }
   const pb = document.getElementById('cl-pedal-btn');
   if (pb) { pb.style.display = clState.accomp ? '' : 'none'; pb.innerHTML = clState.pedal ? 'Pedal: eigenes System' : 'Pedal: im Bass-System'; pb.style.background = clState.pedal ? '#2a4a6a' : ''; pb.style.color = clState.pedal ? '#fff' : ''; }
   const octEl = document.getElementById('cl-oct');
