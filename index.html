@@ -302,6 +302,7 @@ input[type=file]{display:none}
             <span style="font-size:9px;color:#6b8a60;min-width:55px">Annotation</span>
             <textarea id="greg-annotation" placeholder="z.B. II&#10;8 c" rows="2" style="width:70px;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none;resize:none;font-family:inherit;line-height:1.3" title="Mehrere Zeilen möglich (Enter für 2. Zeile)"></textarea>
             <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:3px"><input id="greg-dropcap" type="checkbox" checked> Drop Cap</label>
+            <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:3px" title="Initiale über zwei Notensysteme (wie Gregorio). Grösse wird automatisch angepasst; beide Zeilen werden eingerückt."><input id="greg-dropcap2" type="checkbox" onchange="gregRender()"> 2-zeilig</label>
             <input id="greg-dropcap-letter" type="text" placeholder="Buchstabe" maxlength="1" title="Drop-Cap-Buchstabe ohne Noten (erzeugt X() vor erster Note)" style="width:55px;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
             <button class="b" onclick="gregInsertDropCapLetter()" style="font-size:10px;padding:1px 5px" title="Drop Cap ohne Noten einfügen">+DC</button>
           </div>
@@ -1161,6 +1162,7 @@ function gregBuildGABC() {
     });
   }
   if (dc)  header += 'drop-cap: auto\n';
+  if (dc && (document.getElementById('greg-dropcap2')||{}).checked) header += 'notator-initial-lines: 2\n';
   const body = gregEntriesToBody(gregEntries, gregClefVal);
   return header ? header + '%%\n' + body : body;
 }
@@ -1202,6 +1204,7 @@ function gregSectionFromUI() {
   s.dropCapLetter = (document.getElementById('greg-dropcap-letter')||{value:''}).value;
   s.clef          = Object.keys(GREG_CLEF_MAP).find(k => GREG_CLEF_MAP[k] === gregClefVal) || 'do';
   s.commentary    = (document.getElementById('greg-commentary')||{value:''}).value;
+  s.initialLines  = (document.getElementById('greg-dropcap2')||{}).checked ? 2 : 1;
   s.hdrExtra      = gregHdrExtra;
   s.clefRaw       = gregClefRaw;
 }
@@ -1219,6 +1222,7 @@ function gregLoadSectionToUI(idx) {
   const dcEl = document.getElementById('greg-dropcap');
   if (dcEl) dcEl.checked = s.dropCap !== false;
   set('greg-commentary',    s.commentary);
+  { const d2 = document.getElementById('greg-dropcap2'); if (d2) d2.checked = s.initialLines === 2; }
   gregHdrExtra = s.hdrExtra || '';
   gregSetClef(s.clef || 'do', true); // silent: no render here — caller renders once, after this returns
   gregClefRaw = s.clefRaw || '';
@@ -1260,6 +1264,7 @@ function gregAddSection() {
     first.dropCapLetter = (document.getElementById('greg-dropcap-letter')||{value:''}).value;
     first.clef          = Object.keys(GREG_CLEF_MAP).find(k => GREG_CLEF_MAP[k] === gregClefVal) || 'do';
     first.commentary    = (document.getElementById('greg-commentary')||{value:''}).value;
+    first.initialLines  = (document.getElementById('greg-dropcap2')||{}).checked ? 2 : 1;
     first.hdrExtra      = gregHdrExtra;
     first.clefRaw       = gregClefRaw;
     gregSections = [first];
@@ -1544,6 +1549,7 @@ function gregRenderSectionPreview(sec, container) {
   try {
     const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, body);
     const score = new exsurge.ChantScore(ctxt, mappings, useDropCap);
+    score.initialLines = gregInitialLinesOf(gabc);
     const annArr = annText ? annText.split('\n').filter(Boolean) : [];
     if (annArr.length > 0) {
       score.annotation = new exsurge.Annotation(ctxt, annArr[annArr.length - 1]);
@@ -1608,6 +1614,7 @@ function gregBuildGABCFor(sec) {
   if (sec.hdrExtra) header += sec.hdrExtra + '\n';
   if (ann) ann.split('\n').filter(Boolean).forEach(function(line) { header += 'annotation: ' + line + '\n'; });
   if (dc) header += 'drop-cap: auto\n';
+  if (dc && sec.initialLines === 2) header += 'notator-initial-lines: 2\n';
   const body = gregEntriesToBody(sec.entries, clefGabc, sec.clefRaw || '');
   return header ? header + '%%\n' + body : body;
 }
@@ -1735,6 +1742,7 @@ function gregRenderGABCInto(gabc, wrap, cb) {
   try {
     const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, body);
     const score = new exsurge.ChantScore(ctxt, mappings, useDropCap);
+    score.initialLines = gregInitialLinesOf(gabc);
     const annArr = annText ? annText.split('\n').filter(Boolean) : [];
     if (annArr.length > 0) {
       score.annotation = new exsurge.Annotation(ctxt, annArr[annArr.length - 1]);
@@ -2807,6 +2815,7 @@ function gregClear() {
   set('greg-subtitle', '');
   set('greg-annotation', '');
   set('greg-commentary', '');
+  setChk('greg-dropcap2', false);
   gregHdrExtra = ''; gregClefRaw = '';
   set('greg-dropcap-letter', '');
   setChk('greg-dropcap', true);
@@ -3122,6 +3131,7 @@ function gregGetContentLeftX(svgEl, vx, pad) {
 // ── Render title above SVG ───────────────────────────────────────
 // Call this BEFORE addSvgPadding so we can set the right topPad.
 // Returns the required topPad value.
+function gregInitialLinesOf(g) { return /(^|\n)\s*notator-initial-lines:\s*2/i.test(String(g || '').split('%%')[0]) ? 2 : 1; }
 function gregSecGap() { const el = document.getElementById('gs-secgap'); const v = el ? parseFloat(el.value) : 16; return isFinite(v) ? Math.max(0, v) : 16; }
 function gregCommentaryText(overrideComm) {
   return (overrideComm !== undefined ? overrideComm : (document.getElementById('greg-commentary')||{value:''}).value || '').trim();
@@ -6055,7 +6065,7 @@ function gregImportGABCString(gabcStr, opts) {
   }
 
   let annotation = '', useDropCap = false, titleStr = '', subtitleStr = '', body = gabcStr;
-  let commentaryStr = '', modeStr = '', modeDiff = '', bookStr = '';
+  let commentaryStr = '', modeStr = '', modeDiff = '', bookStr = '', initialLines2 = false;
   const hdrExtraLines = [];
   if (gabcStr.includes('%%')) {
     const si = gabcStr.indexOf('%%');
@@ -6071,11 +6081,12 @@ function gregImportGABCString(gabcStr, opts) {
       if (k === 'notator-subtitle') subtitleStr = v.replace(/\\n/g, '\n');
       if (k === 'drop-cap' && v === 'auto') useDropCap = true;
       if (k === 'commentary') commentaryStr = v;
+      if (k === 'notator-initial-lines') initialLines2 = (v === '2');
       if (k === 'mode') modeStr = v;
       if (k === 'mode-differentia') modeDiff = v;
       if (k === 'book') bookStr = v;
       // alle übrigen Kopffelder unverändert mitführen (verlustfreier Export)
-      if (!/^(name|annotation|notator-subtitle|drop-cap|commentary)$/.test(k) && !/^%/.test(k)) hdrExtraLines.push(l.trim().replace(/;?$/, ';'));
+      if (!/^(name|annotation|notator-subtitle|notator-initial-lines|drop-cap|commentary)$/.test(k) && !/^%/.test(k)) hdrExtraLines.push(l.trim().replace(/;?$/, ';'));
     }
     // Gregorio-Verhalten: ohne Annotation wird der Modus (+ Differentia) gesetzt
     if (!annotationLines.length && modeStr) annotationLines.push(modeStr + (modeDiff ? ' ' + modeDiff : ''));
@@ -6100,6 +6111,8 @@ function gregImportGABCString(gabcStr, opts) {
   if (subEl) subEl.value = subtitleStr;
   const commEl = document.getElementById('greg-commentary');
   if (commEl) commEl.value = commentaryStr;
+  const dc2El = document.getElementById('greg-dropcap2');
+  if (dc2El) dc2El.checked = initialLines2;
   gregHdrExtra = hdrExtraLines.join('\n');
 
   const clefM = body.match(/\(([cf]b?[1-5](?:@[cf]b?[1-5])?)\)/);
@@ -6724,6 +6737,7 @@ function gregExportPDF() {
     try {
       const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, body);
       const score = new exsurge.ChantScore(ctxt, mappings, useDropCap);
+      score.initialLines = gregInitialLinesOf(gabcEntry.gabc);
       if (annText) {
         const annArr = annText.split('\n').filter(Boolean);
         if (annArr.length > 0) score.annotation = new exsurge.Annotation(ctxt, annArr[annArr.length-1]);
@@ -7085,7 +7099,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '260';
+const NOTATOR_BUILD_ID = '261';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7202,6 +7216,7 @@ function gregBuildStateObject() {
     commentary: (document.getElementById('greg-commentary')||{value:''}).value || undefined,
     hdrExtra: gregHdrExtra || undefined,
     secGap: gregSecGap(),
+    initialLines: (document.getElementById('greg-dropcap2')||{}).checked ? 2 : undefined,
     canvasWidth,
     entries: JSON.parse(JSON.stringify(gregEntries)),
     classic: (typeof clState !== 'undefined') ? JSON.parse(JSON.stringify(clState)) : null,
@@ -7312,6 +7327,7 @@ function gregApplyLoadedState(state) {
     if (state.clef) gregSetClef(state.clef);
     gregClefRaw = state.clefRaw || '';
     set('greg-commentary', state.commentary);
+    { const d2 = document.getElementById('greg-dropcap2'); if (d2) d2.checked = state.initialLines === 2; }
     gregHdrExtra = state.hdrExtra || '';
   }
 }
@@ -11124,6 +11140,9 @@ var exsurge = (() => {
       var totalHeight = this.notationBounds.height;
       for (i2 = 0; i2 < this.lyricLineHeights.length; i2++)
         totalHeight += this.lyricLineHeights[i2];
+      this._dcBaseY = this.lyricLineHeights.length > 0
+        ? this.notationBounds.y + this.notationBounds.height + this.lyricLineBaselines[0]
+        : this.notationBounds.y + this.notationBounds.height;
       if (this.notationsStartIndex === 0) {
         if (this.score.dropCap !== null) {
           var dropCapY;
@@ -11269,7 +11288,7 @@ var exsurge = (() => {
         this.staffRight = width;
       else
         this.staffRight = 99999999;
-      if (this.notationsStartIndex === 0) {
+      if (this.notationsStartIndex === 0 || (this._lineIdx === 1 && this.score.initialLines === 2 && this.score.dropCap !== null)) {
         var padding = 0;
         if (this.score.dropCap !== null)
           padding = this.score.dropCap.bounds.width + this.score.dropCap.padding * 2;
@@ -11942,12 +11961,39 @@ var exsurge = (() => {
       setTimeout(() => this.layoutElementsAsync(ctxt2, index, finishedCallback), 0);
     }
     layoutChantLines(ctxt2, width, finishedCallback) {
+      // Notator: zweizeilige Initiale (wie Gregorio \gresetinitiallines{2}).
+      // Die Initiale überspannt die ersten zwei Systeme; ihre Grösse ergibt
+      // sich aus dem Abstand Oberkante System 1 bis Textgrundlinie System 2.
+      // Da die Grösse die Einrückung (und damit den Umbruch) beeinflusst,
+      // wird höchstens zweimal nachgerechnet.
+      for (var _dcPass = 0; _dcPass < 3; _dcPass++) {
+        this._layoutChantLinesOnce(ctxt2, width);
+        if (!(this.initialLines === 2 && this.dropCap && this.lines.length >= 2)) break;
+        var _l1 = this.lines[0], _l2 = this.lines[1];
+        var _base2 = (_l2.bounds.y - _l1.bounds.y) + (_l2._dcBaseY || 0);
+        var _top1 = -3 * ctxt2.staffInterval;
+        var _want = (_base2 - _top1) / 0.76; // Versalhöhe der Initialschrift ≈ 0,76 × Schriftgrösse (gemessen)
+        var _fit = Math.abs(_want - this.dropCap.fontSize) / _want < 0.04;
+        if (!_fit && _dcPass < 2) {
+          this.dropCap.fontSize = _want;
+          this.dropCap.recalculateMetrics(ctxt2);
+          continue;
+        }
+        this.dropCap.bounds.y = _base2;
+        if (this.annotation) this.annotation.bounds.y = _top1 - ctxt2.staffInterval * 1.2; // über der Initiale
+        break;
+      }
+      if (finishedCallback)
+        finishedCallback(this);
+    }
+    _layoutChantLinesOnce(ctxt2, width) {
       this.lines = [];
       var y = 0;
       var currIndex = 0;
       ctxt2.activeClef = this.startingClef;
       do {
         var line = new ChantLine(this);
+        line._lineIdx = this.lines.length;
         line.buildFromChantNotationIndex(ctxt2, currIndex, width);
         currIndex = line.notationsStartIndex + line.numNotationsOnLine;
         line.performLayout(ctxt2);
@@ -11968,8 +12014,6 @@ var exsurge = (() => {
       this.bounds.y = 0;
       this.bounds.width = lastLine.bounds.width;
       this.bounds.height = y;
-      if (finishedCallback)
-        finishedCallback(this);
     }
     draw(ctxt2) {
       var canvasCtxt = ctxt2.canvasCtxt;
@@ -13948,7 +13992,7 @@ if(typeof window!=='undefined'){window.exsurge=exsurge;}else if(typeof globalThi
       if (this.annotation && this.annotation.bounds) {
         this.annotation.bounds.y -= si * 0.6; // shift annotation up slightly
       }
-      if (this.dropCap && this.dropCap.bounds) {
+      if (this.dropCap && this.dropCap.bounds && this.initialLines !== 2) {
         this.dropCap.bounds.y += si * 0.6; // shift drop cap down slightly
       }
       if (cb) cb.call(this);
@@ -17055,6 +17099,7 @@ function renderGABC() {
     }
     const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, bodyGabc);
     const score = new exsurge.ChantScore(ctxt, mappings, useDropCap);
+    score.initialLines = gregInitialLinesOf(finalGabc);
     if (annotationText) score.annotation = new exsurge.Annotation(ctxt, annotationText);
 
     // Get available width
