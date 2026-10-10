@@ -502,7 +502,7 @@ input[type=file]{display:none}
     <span style="color:#3a4a30">|</span>
     <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
     <button class="b" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button>
-    <button class="b" id="cl-flat-btn" onclick="clToggleFlatScope()" style="font-size:11px;padding:3px 8px" title="Gültigkeit eines b-Vorzeichens aus dem Choral: bis Wortende (Solesmes-Regel, Standard) oder bis zum nächsten Trennstrich (für Quellen, die das b in einem neuen Wort nicht wiederholen)">♭ gilt bis Wortende</button>
+    <button class="b" id="cl-flat-btn" onclick="clToggleFlatScope()" style="font-size:11px;padding:3px 8px" title="Gültigkeit eines b-Vorzeichens aus dem Choral: bis zum nächsten Trennstrich (Standard – auch über Wortgrenzen) oder streng nach Solesmes nur bis Wortende">♭ gilt bis Trennstrich</button>
     <button class="b" id="cl-pedal-btn" onclick="clTogglePedal()" style="font-size:11px;padding:3px 8px;display:none" title="Bass als eigenes Pedalsystem (Orgelsatz mit 3 Systemen) oder im unteren Manualsystem">Pedal: im Bass-System</button>
     <button class="b" onclick="clResetChords()" style="font-size:11px;padding:3px 8px" title="Von Hand gewählte Akkorde zurücksetzen">&#8634; Akkorde</button>
     <button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Freitext einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Text</button>
@@ -7073,7 +7073,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '257';
+const NOTATOR_BUILD_ID = '258';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -14049,7 +14049,8 @@ function setGABCTab(mode) {
 //  - Quilisma: die VORANGEHENDE Note wird leicht gedehnt -> Tenuto dort;
 //    die Quilisma-Note selbst ist eine normale Note.
 //  - Liqueszenz: kleine Note mit normalem Wert.
-//  - b molle (x) gilt bis Wortende oder zum nächsten Trennstrich; y hebt auf.
+//  - b molle (x) gilt bis zum nächsten Trennstrich (Standard, opts.flatToBar)
+//    bzw. streng nach Solesmes bis Wortende; y hebt auf.
 //  - Divisio minima -> Atemzeichen, minor -> Taktstrich, maior ->
 //    Doppelstrich, finalis -> Doppelstrich (am Schluss Schlussstrich).
 //  - Noten einer Silbe werden gebalkt und bei Melisma mit Bogen verbunden.
@@ -15011,7 +15012,7 @@ const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-
 //        null = automatisch, sonst eigener Text (auch leer = ausgeblendet)
 var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] };
 function clNormalizeState() {
-  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: true, pedal: false, chordOverrides: {}, chordBreaks: {} }, clState || {}); // Begleitsatz standardmässig an
+  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: true, pedal: false, flatToBar: true, chordOverrides: {}, chordBreaks: {} }, clState || {}); // b gilt standardmässig bis zur nächsten Divisio (Nutzerentscheid 2026-10-10) // Begleitsatz standardmässig an
   if (!Array.isArray(clState.texts)) clState.texts = [];
   if (!clState.chordOverrides || typeof clState.chordOverrides !== 'object') clState.chordOverrides = {};
 }
@@ -15114,7 +15115,7 @@ function clSyncControls() {
   const ab = document.getElementById('cl-accomp-btn');
   if (ab) { ab.innerHTML = clState.accomp ? '&#127929; Begleitsatz: an' : '&#127929; Begleitsatz: aus'; ab.style.background = clState.accomp ? '#2a4a6a' : ''; ab.style.color = clState.accomp ? '#fff' : ''; }
   const fb = document.getElementById('cl-flat-btn');
-  if (fb) { fb.innerHTML = clState.flatToBar ? '♭ gilt bis Trennstrich' : '♭ gilt bis Wortende'; fb.style.background = clState.flatToBar ? '#2a4a6a' : ''; fb.style.color = clState.flatToBar ? '#fff' : ''; }
+  if (fb) { fb.innerHTML = clState.flatToBar ? '♭ gilt bis Trennstrich' : '♭ gilt bis Wortende (Solesmes)'; fb.style.background = clState.flatToBar ? '' : '#6a4a2a'; fb.style.color = clState.flatToBar ? '' : '#fff'; }
   const pb = document.getElementById('cl-pedal-btn');
   if (pb) { pb.style.display = clState.accomp ? '' : 'none'; pb.innerHTML = clState.pedal ? 'Pedal: eigenes System' : 'Pedal: im Bass-System'; pb.style.background = clState.pedal ? '#2a4a6a' : ''; pb.style.color = clState.pedal ? '#fff' : ''; }
   const octEl = document.getElementById('cl-oct');
@@ -15442,7 +15443,7 @@ function ntPlayToggle(source) {
     } else {
       const list = clCollectGabc();
       if (!clHasNotes(list)) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
-      const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400 });
+      const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, flatToBar: (typeof clState === 'undefined' || clState.flatToBar !== false) });
       r.abc.split(/(?=^X:)/m).filter(x => x.trim()).forEach(part => {
         const objs = ABCJS.renderAbc('*', part);
         if (objs && objs[0]) tunes.push({ obj: objs[0], highlight: false });
