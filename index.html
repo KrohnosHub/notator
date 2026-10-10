@@ -6860,6 +6860,12 @@ function gregAssemblePdf(pairList, filename) {
   const pageWpx = A4_W_MM * PX_PER_MM;
   const pageHpx = A4_H_MM * PX_PER_MM;
   const marginPx = 24;
+  // Auflösung des Rasterbilds im PDF (dpi). Früher fest ca. 192 dpi mit
+  // zweifacher Neuskalierung (unschärfer). Jetzt wird jedes Bild direkt in
+  // Zielauflösung gerendert.
+  const pdfDpi = ntPdfDpi();
+  const pdfScale = pdfDpi / 96;
+  const pdfTargetW = pageWpx - marginPx * 2;
   function svgStringToCanvas(svgStr, cb) {
     const tmp = document.createElement('div');
     tmp.innerHTML = svgStr;
@@ -6901,7 +6907,9 @@ function gregAssemblePdf(pairList, filename) {
     const img=new Image();
     img.onload=()=>{
       const canvas=document.createElement('canvas');
-      const scale=2;
+      // direkt in Zielauflösung – aber unter der Canvas-Grenze mobiler Browser
+      // (iOS: max. ~16,7 Mio. Pixel je Canvas), sonst bleibt das Bild leer.
+      const scale = Math.max(0.5, Math.min(pdfScale * pdfTargetW / w, Math.sqrt(16.0e6 / (w * h)), 16000 / h));
       canvas.width=w*scale; canvas.height=h*scale;
       const cx=canvas.getContext('2d');
       cx.scale(scale,scale); cx.fillStyle='#ffffff';
@@ -6935,7 +6943,7 @@ function gregAssemblePdf(pairList, filename) {
       // Kein grosser Gesamt-Streifen mehr (Browser begrenzen die Canvas-Höhe,
       // lange Mappen wären sonst abgeschnitten): jede Seite wird direkt aus
       // den Einzelbildern der Abschnitte zusammengesetzt.
-      const stripScale = 2;
+      const stripScale = pdfScale;
       const forcedBreaks = [];
       // Global list of "forbidden zones" — each individual staff system's
       // own vertical span, mapped into this strip's coordinate space (each
@@ -7073,8 +7081,37 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '258';
+const NOTATOR_BUILD_ID = '259';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
+
+// Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
+// unbemerkt mit altem Stand weiter (Nutzerberichte 2026-10-10). Prüft beim
+// Zurückkehren zur App und alle 15 Min.; «Neu laden» übernimmt das aktuelle
+// Stück in die Wiederherstellung der neuen Version.
+function ntCheckForUpdate() {
+  if (!/^https?:/.test(location.protocol) || document.getElementById('nt-update-bar')) return;
+  fetch(location.pathname.replace(/[^/]*$/, '') + 'index.html', { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(t => {
+    const m = /NOTATOR_BUILD_ID = '(\d+)'/.exec(t);
+    if (!m || +m[1] <= +NOTATOR_BUILD_ID || document.getElementById('nt-update-bar')) return;
+    const newId = m[1];
+    const bar = document.createElement('div');
+    bar.id = 'nt-update-bar';
+    bar.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:3000;background:#2a4a6a;color:#fff;padding:8px 12px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.4);font:13px system-ui,sans-serif;display:flex;gap:10px;align-items:center';
+    bar.innerHTML = '<span>Neue Notator-Version verfügbar (Build ' + newId + ')</span>';
+    const go = document.createElement('button'); go.className = 'b'; go.textContent = '↻ Neu laden'; go.style.cssText = 'font-size:12px;padding:3px 10px';
+    go.onclick = () => {
+      try { sessionStorage.setItem('notatorGregAutosave_v1_' + newId, JSON.stringify({ savedAt: Date.now(), state: gregBuildStateObject() })); } catch (e) {}
+      location.reload();
+    };
+    const later = document.createElement('button'); later.className = 'b'; later.textContent = 'Später'; later.style.cssText = 'font-size:12px;padding:3px 8px';
+    later.onclick = () => bar.remove();
+    bar.appendChild(go); bar.appendChild(later);
+    document.body.appendChild(bar);
+  }).catch(() => {});
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') ntCheckForUpdate(); });
+setInterval(ntCheckForUpdate, 15 * 60 * 1000);
+setTimeout(ntCheckForUpdate, 20000);
 
 function gregAutosaveNow() {
   try {
@@ -15511,6 +15548,9 @@ function ntPdfPrefs() {
   });
   return p;
 }
+// PDF-Auflösung (dpi), pro Gerät gespeichert
+const NT_PDF_DPI_OPTS = [150, 200, 300, 400];
+function ntPdfDpi() { const v = +(window._ntPdfDpi || (ntPdfPrefs().dpi)); return NT_PDF_DPI_OPTS.includes(v) ? v : 300; }
 function ntPdfSavePrefs(p) { try { localStorage.setItem(NT_PDF_PREF, JSON.stringify(p)); } catch (e) {} }
 function ntFsSupported() { return typeof window.showSaveFilePicker === 'function' && typeof window.showDirectoryPicker === 'function'; }
 
@@ -15576,7 +15616,10 @@ function ntPdfDialog(ctx) {
     row('local', '💻 Auf diesem Gerät', localTxt,
       ntFsSupported() ? '<button class="b" id="nt-pdf-localdir" style="font-size:11px;padding:2px 6px">Standard ändern</button>' : '') +
     row('drive', '☁ Google Drive', driveOn ? 'Ordner: ' + ntEscAttr(ntDrivePathText(pr[K.folder], K.n)) : 'Google Drive ist nicht eingerichtet',
-      driveOn ? '<button class="b" id="nt-pdf-drivedir" style="font-size:11px;padding:2px 6px">Ordner ändern</button>' : '');
+      driveOn ? '<button class="b" id="nt-pdf-drivedir" style="font-size:11px;padding:2px 6px">Ordner ändern</button>' : '') +
+    (K.n ? '' : '<label style="font-size:12px;display:flex;gap:6px;align-items:center;margin-top:6px">Druckqualität ' +
+      '<select id="nt-pdf-dpi" style="font-size:12px">' + NT_PDF_DPI_OPTS.map(d => '<option value="' + d + '"' + (d === ntPdfDpi() ? ' selected' : '') + '>' + d + ' dpi' +
+        ({150: ' – klein', 200: ' – Bildschirm', 300: ' – Druck (Standard)', 400: ' – sehr scharf'})[d] + '</option>').join('') + '</select></label>');
   const bEl = document.getElementById('modal-btns');
   const ok = document.createElement('button'); ok.className = 'b'; ok.textContent = 'Speichern';
   ok.style.cssText = 'background:#3d6b35;color:#fff;border-color:#3d6b35';
@@ -15601,7 +15644,9 @@ function ntPdfDialog(ctx) {
   ok.onclick = () => {
     sync();
     const name = ntSanitizeName(ctx.name, ext);
-    const p = ntPdfPrefs(); p[K.dest] = ctx.dest; ntPdfSavePrefs(p);
+    const p = ntPdfPrefs(); p[K.dest] = ctx.dest;
+    const dpiEl = document.getElementById('nt-pdf-dpi'); if (dpiEl) p.dpi = +dpiEl.value;
+    ntPdfSavePrefs(p);
     const what = K.n ? 'Gespeichert' : 'PDF gespeichert';
     if (ctx.dest === 'drive') {
       // Anmeldung im Klick (Popup), danach Datei erzeugen und hochladen
