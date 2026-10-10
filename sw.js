@@ -5,7 +5,7 @@
 //  - Bibliotheken von CDNs (abcjs, jsPDF, pdf.js) und Orgelklänge: aus dem
 //    Cache, im Hintergrund aktualisiert.
 //  - Google-Anmeldung/Drive, GregoBase-Proxy, KI-Schnittstelle: nie cachen.
-const CACHE = 'notator-v23';
+const CACHE = 'notator-v24';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 const CDN_HOSTS = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'paulrosen.github.io'];
 

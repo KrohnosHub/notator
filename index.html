@@ -2171,6 +2171,7 @@ function gregEditEntry(i) {
     const pitI = inp('input',36,(e.pitches||[]).join(''),'Töne','GABC a-m; Grossbuchstabe = Punctum inclinatum (Raute), z.B. efED');
     // Accidental
     const accSel = document.createElement('select');
+    accSel.id = 'greg-edit-acc';
     accSel.style.cssText='font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px';
     [['','—'],['x','b♭'],['#','♯'],['y','♮']].forEach(([v,l])=>{ // GABC: x=flat, y=natural
       const o=document.createElement('option'); o.value=v; o.textContent=l;
@@ -2867,6 +2868,18 @@ function gregToneHintText(nd) {
 let _gregAccidental = null; // 'y', '#', 'n' — applied to next note then cleared
 
 function gregSetAccidental(acc) {
+  // Ist gerade ein Eintrag zum Bearbeiten geöffnet, wirkt der Knopf auf
+  // diesen Eintrag (Feld "Vorz:") statt auf die nächste neue Note.
+  const editAcc = document.getElementById('greg-edit-acc');
+  if (editAcc && editAcc.isConnected) {
+    editAcc.value = (editAcc.value === acc) ? '' : acc;
+    editAcc.dispatchEvent(new Event('change', { bubbles: true }));
+    editAcc.style.outline = '2px solid #c09a30';
+    setTimeout(() => { editAcc.style.outline = 'none'; }, 900);
+    const lbl = {'x':'b\u266D','#':'\u266F','y':'\u266E'}[editAcc.value];
+    gregGst(lbl ? 'Vorzeichen ' + lbl + ' im bearbeiteten Eintrag gesetzt – mit ✓ übernehmen' : 'Vorzeichen im bearbeiteten Eintrag entfernt – mit ✓ übernehmen');
+    return;
+  }
   _gregAccidental = (_gregAccidental === acc) ? null : acc; // toggle
   // GABC native: 'x'=flat(b♭), '#'=sharp(♯), 'y'=natural(♮)
   const labels = {'x':'b\u266D','#':'\u266F','y':'\u266E'};
@@ -6879,7 +6892,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '251';
+const NOTATOR_BUILD_ID = '252';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
