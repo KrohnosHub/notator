@@ -47,7 +47,14 @@ html,body{height:100%;overflow:hidden}
 .nt-playing, .nt-playing path, .nt-playing text{fill:#c0392b !important;stroke:#c0392b}
 body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
 #shell{display:flex;flex-direction:column;height:100vh}
-#hdr{background:#1a1209;padding:6px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
+#hdr{background:#1a1209;padding:6px 12px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
+#hdr-left{display:flex;align-items:center;min-width:0;overflow:hidden;white-space:nowrap}
+#hdr-right{display:flex;justify-content:flex-end;min-width:0}
+#hdr-tabs{display:flex;gap:4px;grid-column:2;grid-row:1}
+#hdr-left{grid-column:1;grid-row:1}
+#hdr-right{grid-column:3;grid-row:1}
+#hdr-tabs .nt-tab{min-height:28px;padding:3px 14px;font-size:13px;background:#1a2018;color:#8b9a70;border-color:#3a5030}
+#hdr-tabs .nt-tab.nt-tab-on{background:#3d5a2c;color:#f0e8c8;border-color:#7a9a50;font-weight:600}
 #hdr h1{font-family:var(--fh);font-size:16px;font-weight:400;color:#e0d4b0;letter-spacing:.06em}
 #hdr h1 em{color:#c47a3e;font-style:italic}
 .tg{display:flex;gap:2px;align-items:center;padding-right:6px;border-right:1px solid var(--parch3);margin-right:1px}
@@ -102,7 +109,9 @@ input[type=file]{display:none}
 #greg-mobile-bar{display:flex}
 #greg-mobile-scale-wrap{transform-origin:top left}
 @media (max-width: 700px) {
-  #hdr-tabs button#tab-greg, #hdr-tabs button#tab-gabc, #hdr-tabs button#tab-editor { display:none; }
+  #hdr-tabs button#tab-gabc, #hdr-sub { display:none; }
+  #hdr{padding:5px 8px;gap:6px}
+  #hdr-tabs .nt-tab{padding:3px 10px}
   #greg-mobile-bar{display:flex}
   #greg-drag-handle{display:none}
   #greg-pdf-drag-handle,#greg-pdf-panel{display:none}
@@ -156,14 +165,15 @@ input[type=file]{display:none}
 </head>
 <body>
 <div id="shell">
-<div id="hdr">
-  <h1>Not<em>a</em>tor</h1>
-  <span style="font-size:10px;color:#6b7a60;margin-left:4px">Klassisch &amp; Gregorianisch</span>
-  <button class="b" id="nt-install-btn" onclick="ntInstall()" style="display:none;margin-left:10px;min-height:20px;padding:2px 10px;font-size:11px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Notator als App auf diesem Gerät installieren">&#128242; Installieren</button>
-  <div id="hdr-tabs" style="margin-left:auto;display:flex;gap:4px">
-    <button class="b" id="tab-greg" onclick="switchTab('greg')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#1a2018;color:#8b9a70;border-color:#3a5030">Greg-Editor</button>
-    <button class="b" id="tab-gabc" onclick="switchTab('gabc')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#2a1a08;color:#8b9a70;border-color:#4a5a30">GABC-Eingabe</button>
-    <button class="b" id="tab-editor" onclick="switchTab('editor')" style="min-height:20px;padding:2px 10px;font-size:11px;background:#3d3420;color:#e0d4b0;border-color:#6b5030" title="Choral in klassische Orgelnoten übertragen und transponieren">Orgel (klassisch)</button>
+ <div id="hdr">
+  <div id="hdr-left"><h1>Not<em>a</em>tor</h1>
+  <span id="hdr-sub" style="font-size:10px;color:#6b7a60;margin-left:4px">Klassisch &amp; Gregorianisch</span></div>
+  <div id="hdr-right"><button class="b" id="nt-install-btn" onclick="ntInstall()" style="display:none;margin-left:10px;min-height:20px;padding:2px 10px;font-size:11px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Notator als App auf diesem Gerät installieren">&#128242; Installieren</button>
+</div>
+  <div id="hdr-tabs">
+    <button class="b nt-tab" id="tab-greg" onclick="switchTab('greg')" title="Gregorianischer Choral (Quadratnotation)">&#128220; Choral</button>
+    <button class="b nt-tab" id="tab-editor" onclick="switchTab('editor')" title="Klassische Orgelnoten mit Transposition und Begleitsatz">&#127929; Orgel</button>
+    <button class="b nt-tab" id="tab-gabc" onclick="switchTab('gabc')" title="GABC-Quelltext direkt eingeben">&#9000;&#xFE0E; GABC</button>
   </div>
 </div>
 <div id="gabc-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
@@ -237,7 +247,6 @@ input[type=file]{display:none}
     <button class="b" onclick="document.getElementById('greg-load-in').click()" style="font-size:11px;padding:3px 8px" title="Stück aus Datei laden (.notator)">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
     <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-    <button class="b" onclick="switchTab('editor')" style="font-size:11px;padding:3px 8px" title="Klassische Orgelnoten">&#127929;</button>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
 <button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
@@ -463,7 +472,6 @@ input[type=file]{display:none}
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
-    <button class="b" onclick="switchTab('greg')" style="font-size:11px;padding:3px 8px" title="Zurück zum Choral-Editor">&#8592; Choral</button>
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
     <button class="b" onclick="document.getElementById('greg-load-in').click()" style="font-size:11px;padding:3px 8px" title="Stück aus Datei laden (.notator)">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925; Song importieren</button>
@@ -6871,7 +6879,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '250';
+const NOTATOR_BUILD_ID = '251';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -15217,9 +15225,17 @@ const NT_PDF_PREF = 'notatorPdfSave';
 const NT_PDF_DRIVE_DEFAULT_SUB = 'PDF';
 let _ntPdfLocalDir = null; // FileSystemDirectoryHandle oder null
 
+// Früherer Ordner "Liturgie › Notator-PDF" (2026-10-10 aufgelöst, Inhalt nach
+// Notator bzw. Notator › PDF verschoben) -> gespeicherte Wahl auf Standard zurück.
+const NT_OLD_PDF_FOLDER = '1Nx5MKl20eDdB50xcbq3sifNvAt6ylFpN';
 function ntPdfPrefs() {
   let p = null; try { p = JSON.parse(localStorage.getItem(NT_PDF_PREF) || 'null'); } catch (e) {}
-  return Object.assign({ dest: 'local', driveFolder: null }, p || {});
+  p = Object.assign({ dest: 'local', driveFolder: null }, p || {});
+  ['driveFolder', 'driveFolderNotator'].forEach(k => {
+    const f = p[k];
+    if (f && (f.id === NT_OLD_PDF_FOLDER || /Notator-PDF\s*$/.test(f.path || ''))) p[k] = null;
+  });
+  return p;
 }
 function ntPdfSavePrefs(p) { try { localStorage.setItem(NT_PDF_PREF, JSON.stringify(p)); } catch (e) {} }
 function ntFsSupported() { return typeof window.showSaveFilePicker === 'function' && typeof window.showDirectoryPicker === 'function'; }
@@ -16442,21 +16458,19 @@ function switchTab(tab) {
   const bgr=document.getElementById('tab-greg');
   gp.style.display='none';
   if(grp) grp.style.display='none';
-  be.style.background='#2a1a08';be.style.color='#8b9a70';
-  bg.style.background='#2a1a08';bg.style.color='#8b9a70';
-  if(bgr){bgr.style.background='#1a2018';bgr.style.color='#8b9a70';}
+  [be,bg,bgr].forEach(x => { if (x) { x.classList.remove('nt-tab-on'); x.style.background=''; x.style.color=''; } });
   if(tab==='gabc'){
     gp.style.cssText='display:flex;flex:1;overflow:hidden;flex-direction:column';
-    bg.style.background='#3d4a30';bg.style.color='#e0d4b0';
+    bg.classList.add('nt-tab-on');
     setTimeout(renderGABC, 100);
   } else if(tab==='greg'){
     if(grp) grp.style.cssText='display:flex;flex:1;overflow:hidden;flex-direction:column';
-    if(bgr){bgr.style.background='#2a3820';bgr.style.color='#e0d4b0';}
+    if(bgr) bgr.classList.add('nt-tab-on');
     setTimeout(gregRender, 150);
   } else {
     // Klassische Orgel-Fassung (abcjs-Notensatz)
     if(clp) clp.style.cssText='display:flex;flex:1;overflow:hidden;flex-direction:column;background:#1a2414';
-    be.style.background='#3d3420';be.style.color='#e0d4b0';
+    be.classList.add('nt-tab-on');
     clOpen();
   }
 }
