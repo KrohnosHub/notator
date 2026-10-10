@@ -6871,7 +6871,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '249';
+const NOTATOR_BUILD_ID = '250';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -15257,7 +15257,7 @@ function ntPdfSave(kind) {
   window._ntPdfDeliver = null;
   const base = kind === 'cl' ? clFileBase() + '_Orgel'
     : kind === 'mappe' ? (ntMappeCur().title || 'Mappe')
-    : (((document.getElementById('greg-title') || {}).value || '').trim() || 'gregorianisch');
+    : ((((document.getElementById('greg-title') || {}).value || '').trim() || 'Stueck') + '_Choral');
   ntLoadLocalDir().then(() => ntPdfDialog({ kind, name: ntSanitizeName(base), dest: ntPdfPrefs().dest }));
 }
 // Stück als Notator-Datei speichern: gleicher Dialog (Gerät oder Google Drive)
@@ -15794,7 +15794,7 @@ function ntShareDialog(ctx) {
   };
   document.getElementById('nt-sh-pdf').onclick = () => {
     const v = (body.querySelector('input[name=nt-sh-p]:checked') || {}).value || 'greg';
-    const name = ntSanitizeName(v === 'cl' ? clFileBase() + '_Orgel' : ctx.title);
+    const name = ntSanitizeName(v === 'cl' ? clFileBase() + '_Orgel' : ctx.title + '_Choral');
     pdfOut.textContent = 'PDF wird erstellt …';
     const prevTab = window._ntTab || 'greg';
     if (v === 'cl' && prevTab !== 'editor') switchTab('editor');
