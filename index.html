@@ -243,8 +243,7 @@ input[type=file]{display:none}
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
-    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
-    <button class="b" onclick="document.getElementById('greg-load-in').click()" style="font-size:11px;padding:3px 8px" title="Stück aus Datei laden (.notator)">&#128194; Öffnen</button>
+    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
     <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
@@ -480,8 +479,7 @@ input[type=file]{display:none}
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
-    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Bibliothek öffnen">&#128218; Bibliothek</button>
-    <button class="b" onclick="document.getElementById('greg-load-in').click()" style="font-size:11px;padding:3px 8px" title="Stück aus Datei laden (.notator)">&#128194; Öffnen</button>
+    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925; Song importieren</button>
     <span id="cl-vb-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
@@ -7099,7 +7097,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '261';
+const NOTATOR_BUILD_ID = '262';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7926,7 +7924,7 @@ function ntLibFilterBar(container, data, onChange) {
 function gregLibShowModal() {
   const driveOn = gdConfigured();
   const signed = driveOn && gdHasToken();
-  showModal('📚 Bibliothek',
+  showModal('📂 Öffnen · Bibliothek',
     driveOn ? 'Gesänge in Google Drive (Liturgie › Notator). Eine lokale Kopie bleibt im Browser für den Offline-Betrieb.'
             : 'Google Drive ist noch nicht eingerichtet – Stücke werden vorerst nur in diesem Browser gespeichert.', []);
   const bEl = document.getElementById('modal-btns');
@@ -7942,6 +7940,13 @@ function gregLibShowModal() {
   };
   const topRow = document.createElement('div');
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
+  const openRow = document.createElement('div');
+  openRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
+  openRow.appendChild(mkBtn('💻 Vom Gerät öffnen …', function() { ntOpenLocalFile(); }, 'background:#3d6b35;color:#fff;border-color:#3d6b35', '.notator-Datei aus einem lokalen Ordner öffnen'));
+  if (driveOn) openRow.appendChild(mkBtn('☁ Anderer Drive-Ordner …', function() {
+    gdGetToken(true).then(function() { ntDriveOpenBrowser(); }).catch(function(err) { gregGst(err.message); });
+  }, '', '.notator-Datei aus einem beliebigen Ordner in Google Drive öffnen'));
+  bEl.appendChild(openRow);
   topRow.appendChild(mkBtn('💾 Aktuelles Stück speichern', function() { gregLibSaveCurrent(); }));
   topRow.appendChild(mkBtn('📑 Mappe', function() { ntMappeShow(); }, '', 'Gottesdienst-Mappe: mehrere Stücke zu einem PDF'));
   topRow.appendChild(mkBtn('🔎 In NOH-Notenbibliothek suchen', function() {
@@ -15807,6 +15812,61 @@ function ntPdfToDrive(blob, name, ctx) {
 }
 
 // Einfacher Ordner-Browser für Google Drive (ohne Google-Picker / API-Schlüssel)
+// ── Öffnen: lokale Datei (mit Startordner, wo der Browser es kann) ──
+function ntOpenLocalFile() {
+  if (window.showOpenFilePicker) {
+    const opts = { id: 'notator-open', multiple: false, types: [{ description: 'Notator-Datei', accept: { 'application/json': ['.notator', '.json'] } }] };
+    try { opts.startIn = _ntPdfLocalDir || 'documents'; } catch (e) {}
+    window.showOpenFilePicker(opts).then(hs => hs[0].getFile()).then(f => {
+      closeModal(); gregLoadPiece({ files: [f], value: '' });
+    }).catch(err => { if (err && err.name !== 'AbortError') document.getElementById('greg-load-in').click(); });
+  } else {
+    closeModal();
+    document.getElementById('greg-load-in').click();
+  }
+}
+
+// ── Öffnen: .notator-Datei aus beliebigem Drive-Ordner ──
+function ntDriveOpenBrowser(chain) {
+  showModal('☁ Aus Google Drive öffnen', 'Lade Ordner …', []);
+  const body = document.getElementById('modal-body'), bEl = document.getElementById('modal-btns');
+  bEl.style.flexDirection = ''; bEl.style.alignItems = '';
+  bEl.innerHTML = '';
+  const back = document.createElement('button'); back.className = 'b'; back.textContent = 'Zurück zur Bibliothek'; back.onclick = () => gregLibShowModal();
+  bEl.appendChild(back);
+  const start = chain ? Promise.resolve(chain) : gdFolderChain(NOTATOR_GDRIVE_FOLDER_ID);
+  start.then(ch => {
+    const cur = ch[ch.length - 1];
+    const q = encodeURIComponent("'" + cur.id + "' in parents and trashed = false and (mimeType = 'application/vnd.google-apps.folder' or name contains '.notator')");
+    return gdFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&orderBy=folder,name&pageSize=500&fields=files(id,name,mimeType,modifiedTime,appProperties)', {}, false)
+      .then(r => r.json()).then(j => {
+        body.innerHTML = '';
+        const crumbs = document.createElement('div');
+        crumbs.style.cssText = 'font-size:11px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:2px;align-items:center';
+        ch.forEach((c, i) => {
+          const a = document.createElement('a'); a.href = '#'; a.textContent = c.name;
+          a.onclick = e => { e.preventDefault(); ntDriveOpenBrowser(ch.slice(0, i + 1)); };
+          if (i) crumbs.appendChild(document.createTextNode(' › '));
+          crumbs.appendChild(a);
+        });
+        body.appendChild(crumbs);
+        const list = document.createElement('div');
+        list.style.cssText = 'max-height:50vh;overflow-y:auto;border:1px solid var(--parch3);border-radius:4px';
+        const files = (j.files || []).filter(f => f.mimeType === 'application/vnd.google-apps.folder' || /\.notator$/i.test(f.name));
+        if (!files.length) list.innerHTML = '<div style="font-size:11px;color:var(--ink2);padding:6px">(keine Unterordner und keine .notator-Dateien)</div>';
+        files.forEach(f => {
+          const isDir = f.mimeType === 'application/vnd.google-apps.folder';
+          const b = document.createElement('button'); b.className = 'b';
+          b.textContent = (isDir ? '📁 ' : '🎼 ') + (isDir ? f.name : gdTitleFromName(f.name)) + (isDir ? '' : '  —  ' + gregLibFormatDate(Date.parse(f.modifiedTime)));
+          b.style.cssText = 'display:block;width:100%;text-align:left;border:none;border-bottom:1px solid var(--parch3);border-radius:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+          b.onclick = isDir ? () => ntDriveOpenBrowser(ch.concat([{ id: f.id, name: f.name }])) : () => { closeModal(); gregLibLoadDrive(f); };
+          list.appendChild(b);
+        });
+        body.appendChild(list);
+      });
+  }).catch(err => { body.textContent = 'Fehler: ' + err.message; });
+}
+
 function ntDriveFolderBrowser(ctx, chain) {
   const K = ntDestKeys(ctx);
   showModal(K.n ? '☁ Drive-Ordner für Notator-Dateien' : '☁ Drive-Ordner für PDFs', 'Lade Ordner …', []);
