@@ -4462,6 +4462,25 @@ async function gregSearchGregoBase(incipit) {
   return matches;
 }
 
+// Zusatzangaben je GregoBase-Treffer (Quelle/Buch mit Seite, Gattung, Modus)
+// aus dem Kopf der GABC-Datei – über den vorhandenen Download-Proxy, einmal
+// je Stück (zwischengespeichert).
+const _gregGbInfoCache = {};
+function gregGbInfo(id) {
+  if (_gregGbInfoCache[id]) return _gregGbInfoCache[id];
+  const gbProxyBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://notator-gregobase-proxy.matthias-krohn.workers.dev';
+  _gregGbInfoCache[id] = fetch(gbProxyBase + '/_gregobase_download?id=' + encodeURIComponent(id) + '&format=gabc&elem=1')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+    .then(txt => {
+      const head = txt.indexOf('%%') >= 0 ? txt.slice(0, txt.indexOf('%%')) : '';
+      const info = {};
+      head.split(/\r?\n/).forEach(l => { const m = l.match(/^\s*([a-z-]+)\s*:\s*(.*?)\s*;?\s*$/i); if (m) info[m[1].toLowerCase()] = m[2]; });
+      return info;
+    })
+    .catch(e => { delete _gregGbInfoCache[id]; return null; });
+  return _gregGbInfoCache[id];
+}
+
 function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel) {
   const GREG_GB_PAGE_SIZE = 8; // shown per page — matches the old hard cap, but more can be loaded on request
   return new Promise(resolve => {
@@ -4497,9 +4516,33 @@ function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel) {
         link.title = 'In GregoBase ansehen (neuer Tab)';
         const btn = document.createElement('button');
         btn.className = 'b';
-        btn.style.cssText = 'flex:1;text-align:left';
-        btn.textContent = m.title + ' — ' + (m.source || 'unbekannte Quelle') + ' (#' + m.id + ')';
+        btn.style.cssText = 'flex:1;text-align:left;min-width:0';
+        const t1 = document.createElement('div');
+        t1.textContent = m.title + ' — ' + (m.source || 'unbekannte Fassung') + ' (#' + m.id + ')';
+        const t2 = document.createElement('div');
+        t2.style.cssText = 'font-size:10px;color:#5a7a40;margin-top:1px';
+        t2.textContent = 'Quelle wird geladen …';
+        // Notenvorschau: Bild der Partitur direkt von GregoBase (nur oberer Teil)
+        const pv = document.createElement('div');
+        pv.style.cssText = 'height:58px;overflow:hidden;margin-top:3px;background:#fff;border-radius:2px';
+        const img = document.createElement('img');
+        img.src = 'https://gregobase.selapa.net/chant_img.php?id=' + encodeURIComponent(m.id);
+        img.alt = ''; img.loading = 'lazy';
+        img.style.cssText = 'width:100%;display:block';
+        img.onerror = () => pv.remove();
+        pv.appendChild(img);
+        btn.appendChild(t1); btn.appendChild(t2); btn.appendChild(pv);
+        gregGbInfo(m.id).then(info => {
+          if (!info) { t2.textContent = 'Quelle: nicht abrufbar'; return; }
+          m.book = info.book || ''; m.officePart = info['office-part'] || ''; m.mode = info.mode || '';
+          const parts = ['Quelle: ' + (m.book || 'unbekannt')];
+          if (m.officePart) parts.push(m.officePart);
+          if (m.mode) parts.push('Modus ' + m.mode);
+          t2.textContent = parts.join(' · ');
+          btn.title = parts.join('\n');
+        });
         btn.onclick = () => { closeModal(); bEl.style.flexDirection=''; bEl.style.alignItems=''; resolve(m); };
+        row.style.alignItems = 'flex-start';
         row.appendChild(link); row.appendChild(btn);
         listEl.appendChild(row);
       });
@@ -6822,7 +6865,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '247';
+const NOTATOR_BUILD_ID = '248';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
