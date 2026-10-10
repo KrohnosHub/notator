@@ -285,10 +285,10 @@ input[type=file]{display:none}
         <div id="greg-kopf-panel" style="display:flex;flex-direction:column;gap:4px">
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
             <span style="font-size:9px;color:#6b8a60;min-width:55px">Schlüssel</span>
-            <button class="b on" id="greg-clef-do" onclick="gregSetClef('do')" style="font-size:10px;padding:1px 5px">Do c3</button>
-            <button class="b" id="greg-clef-do4" onclick="gregSetClef('do4')" style="font-size:10px;padding:1px 5px">Do c4</button>
-            <button class="b" id="greg-clef-fa" onclick="gregSetClef('fa')" style="font-size:10px;padding:1px 5px">Fa f3</button>
-            <button class="b" id="greg-clef-fa4" onclick="gregSetClef('fa4')" style="font-size:10px;padding:1px 5px">Fa f4</button>
+            <button class="b on" id="greg-clef-do" onclick="gregClefRaw='';gregSetClef('do')" style="font-size:10px;padding:1px 5px">Do c3</button>
+            <button class="b" id="greg-clef-do4" onclick="gregClefRaw='';gregSetClef('do4')" style="font-size:10px;padding:1px 5px">Do c4</button>
+            <button class="b" id="greg-clef-fa" onclick="gregClefRaw='';gregSetClef('fa')" style="font-size:10px;padding:1px 5px">Fa f3</button>
+            <button class="b" id="greg-clef-fa4" onclick="gregClefRaw='';gregSetClef('fa4')" style="font-size:10px;padding:1px 5px">Fa f4</button>
           </div>
           <div style="display:flex;gap:6px;align-items:center">
             <span style="font-size:9px;color:#6b8a60;min-width:55px">Titel</span>
@@ -586,6 +586,8 @@ window.addEventListener('DOMContentLoaded',()=>{
 //  GREG EDITOR — Click-on-SVG-staff input → GABC → exsurge
 // ════════════════════════════════════════════════════════════════
 let gregEntries = [], gregHistory = [], gregRedoHistory = [], gregClefVal = 'c3';
+// Schlüssel aus dem Original, den die 4 Schlüssel-Knöpfe nicht abbilden (cb3 mit b, c2, f2, c3@f3 …)
+var gregClefRaw = '';
 // id of the library entry the currently open piece was loaded from/last
 // saved to (null = never saved to the library yet in this session, so the
 // next "In Bibliothek speichern" creates a new entry instead of updating).
@@ -632,6 +634,56 @@ function staffPosToGabc(sp) {
   return (code >= 97 && code <= 109) ? String.fromCharCode(code) : 'f';
 }
 
+
+// ── Verlustfreier Import (Gregorio-Abgleich 2026-10-10) ──────────────
+// exsurge versteht nicht alle gabc-Zeichen bzw. Notators Eintragsmodell
+// kennt nicht alle (Punctum cavum r, Linea R, Akzente r1–r5, Quadratum q,
+// Fusion @, Initio debilis -, Liqueszenz-Richtung < >, Oriscus o0/o1,
+// Inclinatum-Richtung G0–G2, kurze Episemen _0–_5, Klammern/Chorzeichen
+// [..], Feinabstände /0 /[n], Custos, Schlüsselwechsel, z/Z). Darum wird die
+// Notenschrift beim Einlesen zusätzlich selbst zerlegt und das Original je
+// Note gemerkt; beim Speichern wird es wieder ausgegeben, solange die Note
+// in Notator nicht verändert wurde.
+function gregGabcRawTokens(body) {
+  const notes = [], clefs = [], custos = [];
+  const groupRe = /\(([^)]*)\)/g; let g;
+  while ((g = groupRe.exec(body))) {
+    const t = g[1]; let i = 0, sep = '', pre = '', last = null;
+    while (i < t.length) {
+      const c = t[i];
+      if (c === '[') { const j = t.indexOf(']', i); const br = j < 0 ? t.slice(i) : t.slice(i, j + 1);
+        if (last && !sep && !pre) last.suf += br; else pre += br; i = j < 0 ? t.length : j + 1; continue; }
+      const clef = /^[cf]b?[1-5](@[cf]b?[1-5])?/.exec(t.slice(i));
+      if (clef && (i === 0 || /[\s/!]/.test(t[i - 1])) && !/^[a-m]/i.test(t.slice(i + clef[0].length))) {
+        clefs.push(clef[0]); i += clef[0].length; last = null; sep = ''; pre = ''; continue; }
+      if (/[a-mA-M]/.test(c)) {
+        const nx = t[i + 1] || '';
+        if (nx === 'x' || nx === 'y' || nx === '#') { i += 2; if (t[i] === '?') i++; last = null; continue; } // Vorzeichen
+        if (nx === '+') { custos.push(c + '+'); i += 2; last = null; continue; } // Custos
+        let j = i + 1;
+        while (j < t.length) {
+          const d = t[j];
+          if (/[vVwsoOrRq<>~.'_]/.test(d) || (/[0-9]/.test(d) && /[oO'_rRvVsSG0-9a-mA-M]/.test(t[j - 1]))) { j++; continue; }
+          if (d === '[') { const k = t.indexOf(']', j); j = k < 0 ? t.length : k + 1; continue; }
+          break;
+        }
+        last = { pitch: c.toLowerCase(), pre, suf: t.slice(i + 1, j), sep };
+        notes.push(last); i = j; sep = ''; pre = ''; continue;
+      }
+      if (c === '/') { let j = i + 1; if (t[j] === '/') j++; else if (t[j] === '0') j++; else if (t[j] === '[') { const k = t.indexOf(']', j); j = k < 0 ? t.length : k + 1; }
+        sep += t.slice(i, j); i = j; continue; }
+      if (c === '!') { sep += '!'; i++; continue; }
+      if (c === '-' || c === '@' || c === '{' || c === '}') { pre += c; i++; continue; }
+      if (c === ' ') { i++; continue; }
+      i++; sep = ''; pre = ''; last = null; // Divisio, z, Z, sonstiges
+    }
+  }
+  return { notes, clefs, custos };
+}
+function gregRawNoteSig(n) {
+  return [n.pitch, n.shape || 0, !!n.episema, !!n.ictus, n.ictusPos || '', !!n.liquescent, !!n.mora].join('|');
+}
+
 function buildSingleNeumeGABC(e) {
   // ── New path: use precise per-note data if available ──────────
   if (e.notes && e.notes.length) {
@@ -646,6 +698,11 @@ function buildSingleNeumeGABC(e) {
     // this neume's note pitches, e.g. "ix" priming I before an unrelated
     // "g" note).
     return e.notes.map((n, i) => {
+      // Original-gabc der Note, solange unverändert (siehe gregGabcRawTokens)
+      if (n.gabcSuf !== undefined && n.gabcSig === gregRawNoteSig(n)) {
+        const pc = (n.shape === 2) ? n.pitch.toUpperCase() : n.pitch;
+        return (n.gabcPre || '') + pc + n.gabcSuf;
+      }
       // ix prefix (ascending quilisma/oriscus variant) = shapeModifiers & Ascending
       let prefix = '';
       if (n.shapeModifiers) {
@@ -809,6 +866,7 @@ function buildSingleNeumeGABC(e) {
 }
 
 function gregEntriesToBody(entries, clefGabc) {
+  if (gregClefRaw && clefGabc === gregClefVal) clefGabc = gregClefRaw;
   // WICHTIG (Session 21, per echtem Rendering-Test widerlegt): ein
   // frueherer Versuch, ein Silben-"/" beim Export in <sp>/</sp> zu
   // escapen (um es vor exsurges Schraegstrich-Verschlucken bei einem
@@ -883,7 +941,10 @@ function gregEntriesToBody(entries, clefGabc) {
       if (!segmentParts.length) return;
       const gabcParts = segmentParts.map((p, i) => {
         const g = buildSingleNeumeGABC(p.e);
-        return (i === 0) ? g : (p.noGapBefore ? '!' : (p.gapWide ? '//' : '/')) + g;
+        if (i === 0) return g;
+        // Feinabstand aus dem Original (/0, /[n]) beibehalten
+        if (!p.noGapBefore && !p.gapWide && p.e.sepRaw && /^\/(0|\[-?[\d.]+\])$/.test(p.e.sepRaw)) return p.e.sepRaw + g;
+        return (p.noGapBefore ? '!' : (p.gapWide ? '//' : '/')) + g;
       });
       const syl = sylAttached ? '' : sylText;
       sylAttached = true;
@@ -1045,7 +1106,8 @@ function gregEntriesToBody(entries, clefGabc) {
     else if (e.type === 'directive') { frags.push({text: '<i>' + e.text + '</i>()', glue:false}); }
     else if (e.type === 'dropcapletter') { frags.push({text: '<sp>' + e.text + '</sp>()', glue:false}); }
     else if (e.type === 'comment')   { /* no GABC output */ }
-    else if (e.type === 'linebreak') { frags.push({text:'(Z)', glue:false}); lastWasLinebreak = true; continue; }
+    else if (e.type === 'linebreak') { frags.push({text: e.justify ? '(z)' : '(Z)', glue:false}); lastWasLinebreak = true; continue; }
+    else if (e.type === 'raw') { frags.push({text: e.gabc, glue:false}); }
     lastWasLinebreak = false;
   }
   if (inRun) endRun();
@@ -1959,6 +2021,7 @@ function gregEntryLabel(e) {
   if (e.type==='special') return '<span style="color:#a06030">'+e.text+'</span>';
   if (e.type==='textonly') return '<span style="color:#c8a060">'+e.text+'</span> <span style="color:#6b8a60;font-size:8px">standalone</span>';
   if (e.type==='linebreak') return '<span style="font-size:11px;color:#6b8a60">⏎ Neue Notenlinie</span>';
+  if (e.type==='raw') return '<span style="color:#c8a060">' + (e.label || e.gabc) + '</span> <span style="color:#6b8a60;font-size:8px">' + gregEscHtml(e.gabc) + '</span>';
   if (e.type==='dropcapletter') return '<span style="font-size:13px;font-weight:bold;color:#c0d890">'+e.text+'</span> <span style="color:#6b8a60;font-size:8px">Drop Cap (ohne Noten)</span>';
   if (e.type==='directive') return '<i style="color:#c8a060">'+e.text+'</i> <span style="color:#6b8a60;font-size:8px">kursiv</span>';
   if (e.type==='comment') return '<span style="color:#8b4513">&#128172; '+e.text+'</span>';
@@ -5733,7 +5796,7 @@ function gregSelfTest() {
   // silently dropped on export (only openParts[0] was ever checked).
   check('Vorzeichen nach "//" mitten in der Melisma', 'c4',
     "cén(gf//ixgig//hffd;fg//ig//hhgh>)tur(f) (::)",
-    "(c4) cén(gf)(ix)(gig//hf/fd)(;)(fg//ig//h/hgh~)tur(f) (::)");
+    "(c4) cén(gf)(ix)(gig//hf/fd)(;)(fg//ig//h/hgh>)tur(f) (::)");
 
   // Round 21: a syllable directly attached to a bare divisio (no notes of
   // its own) used to be silently dropped — the BAR_MAP import branch never
@@ -5766,7 +5829,7 @@ function gregSelfTest() {
   // text ("ij."), and ordinary multi-syllable words together in one piece.
   check('Vollständiger echter Chant (Alleluia Pfingsten)', 'c4',
     "(c4) AL(fd~)le(ef'g)lú(hgh){ia}.(ixhiHG'gf.0) <clear>*(,) <i>ij.</i>(ixhiHG'ge./ghGF'Ef_gffe.) (::) <sp>V/</sp>. E(h)mít(h)te(ixg'//ivHG'hffe.) (,) Spí(fh)ri(ghg'/hf)tum(e[ll:1]d~) tu(egF'D)um,(d.) (:) et(dc~) cre(f)a(ghg)bún(ixhiG'Eg./hiF'D//fffdgvFE.)(,)(df/h_f/!g_[oh:h]e/!fv.df!gvef~)tur :(e.) (:) et(f) re(f)no(f)vá(ef)bis(f) fá(ef'g)ci(gdgvFE)em(e.) (,) * ter(fd/ef!g'h)rae.(ixhiHG'gf.0) (,) (ixhiHG'ge./ghGF'Ef_gffe.) (::)",
-    "(c4) AL(fd~)le(ef'g)lú(hgh)(ix)ia.(hiHG'/gf.) (,) (ix)_ij._(hiHG'/ge./ghGF'E/f_gf/fe.) (::) V/. E(h)mít(h)(ix)te(g'//ivHG'/hf/fe.) (,) Spí(fh)ri(ghg'/hf)tum(ed~) tu(egF'D)um,(d.) (:) et(dc~) cre(f)a(ghg)(ix)bún(hiG'E/g./hiF'D//ff/fd/gvFE.)(,)(df/h_f/g_e/fv./df!gv/ef~)tur :(e.) (:) et(f) re(f)no(f)vá(ef)bis(f) fá(ef'g)ci(gd/gvFE)em(e.) (,) * ter(fd/ef!g'h)(ix)rae.(hiHG'/gf.) (,) (ix)(hiHG'/ge./ghGF'E/f_gf/fe.) (::)");
+    "(c4) AL(fd~)le(ef'g)lú(hgh)(ix){ia}.(hiHG'/gf.) (,) (ix)_ij._(hiHG'/ge./ghGF'E/f_gf/fe.) (::) V/. E(h)mít(h)(ix)te(g'//ivHG'/hf/fe.) (,) Spí(fh)ri(ghg'/hf)tum(e[ll:1]d~) tu(egF'D)um,(d.) (:) et(dc~) cre(f)a(ghg)(ix)bún(hiG'E/g./hiF'D//ff/fd/gvFE.)(,)(df/h_f/g_[oh:h]e/fv./df!gv/ef~)tur :(e.) (:) et(f) re(f)no(f)vá(ef)bis(f) fá(ef'g)ci(gd/gvFE)em(e.) (,) * ter(fd/ef!g'h)(ix)rae.(hiHG'/gf.) (,) (ix)(hiHG'/ge./ghGF'E/f_gf/fe.) (::)");
 
   // ── Orgelfassung (Choral → klassische Noten, Begleitsatz, MusicXML) ──
   // Reine Funktionstests am Konverter; das offene Stück bleibt unberührt.
@@ -5921,6 +5984,7 @@ function gregImportGABCString(gabcStr, opts) {
     s = s.replace(/<sp>aé<\/sp>/gi, 'ǽ');
     s = s.replace(/<sp>oe<\/sp>/gi, 'œ');
     s = s.replace(/<sp>([^<]+)<\/sp>/gi, '$1');
+    s = s.replace(/<\/?nlba>/gi, ''); // nlba: Gregorio-Umbruchsperre, ohne Gegenstück in exsurge
     // Standard gabc special-character tags for italic/bold/small-caps/
     // underline/colour/elision/euouae: Notator doesn't render distinct
     // styling for these (yet), so — same approach as <sp> above — strip the
@@ -5933,8 +5997,10 @@ function gregImportGABCString(gabcStr, opts) {
     // around that text, a layout feature exsurge has no equivalent for, so
     // treating it the same as the other unsupported styling tags (strip,
     // keep the plain text) is the safest option here.
-    s = s.replace(/<\/?(?:i|b|sc|ul|c|e|eu)>/gi, '');
-    s = s.replace(/\{([^}]*)\}/g, '$1');
+    // Seit 2026-10-10 stellt Notator <b>, <sc>, <ul>, <c>, <e> und die
+    // Vokal-Markierung {..} selbst dar -> beim Einlesen erhalten (nur <i> und
+    // <eu> werden weiterhin entfernt; <i> hat eigene Behandlung oben).
+    s = s.replace(/<\/?(?:i|eu)>/gi, '');
     s = s.replace(/<clear>/gi, '');
     return s.trim();
   }
@@ -5973,11 +6039,18 @@ function gregImportGABCString(gabcStr, opts) {
   const subEl = document.getElementById('greg-subtitle');
   if (subEl) subEl.value = subtitleStr;
 
-  const clefM = body.match(/\(([cf]b?[1-4])\)/);
+  const clefM = body.match(/\(([cf]b?[1-5](?:@[cf]b?[1-5])?)\)/);
   if (clefM) {
     const clefMap = {'c3':'do','c4':'do4','f3':'fa','f4':'fa4'};
     const key = clefMap[clefM[1]];
-    if (key) gregSetClef(key);
+    if (key) { gregSetClef(key); gregClefRaw = ''; }
+    else {
+      // z. B. "cb3" (Schlüssel mit b), "c2", "f2", "c3@f3": nächstliegenden
+      // Knopf wählen, das Original aber unverändert weitergeben.
+      const base = clefM[1].replace('b', '').split('@')[0];
+      gregSetClef(clefMap[base] || (base[0] === 'f' ? (base[1] === '4' ? 'fa4' : 'fa') : (base[1] === '4' ? 'do4' : 'do')));
+      gregClefRaw = clefM[1];
+    }
   }
 
   // Maps exsurge's AccidentalType enum (Flat:-1, Natural:0, Sharp:1) back to
@@ -6056,8 +6129,22 @@ function gregImportGABCString(gabcStr, opts) {
         notes[i - back].mora = true;
       }
     });
+    // Original-gabc je Note zuordnen (gleiche Reihenfolge wie im Quelltext)
+    let sepRaw;
+    notes.forEach((cn, i) => {
+      for (let k = _rawNote; k < Math.min(_rawNote + 4, _raw.notes.length); k++) {
+        if (_raw.notes[k].pitch === cn.pitch) {
+          const rt = _raw.notes[k];
+          if (rt.suf.indexOf('..') < 0) { cn.gabcPre = rt.pre; cn.gabcSuf = rt.suf; cn.gabcSig = gregRawNoteSig(cn); }
+          if (i === 0) sepRaw = rt.sep;
+          _rawNote = k + 1;
+          break;
+        }
+      }
+    });
     const typeName = nt.constructor.name.replace(/^_/, '');
     return {
+      sepRaw: sepRaw || undefined,
       type: 'note',
       syllable: syllable || '',
       hyphen: !!hyphen,
@@ -6101,6 +6188,8 @@ function gregImportGABCString(gabcStr, opts) {
   gregPush();
   gregEntries = [];
   const tokens = [];
+  const _raw = gregGabcRawTokens(body.replace(/(^|\s)\*(\s+)\(/g, '$1*()$2('));
+  let _rawNote = 0, _rawClef = 0, _rawCustos = 0, _seenClef = false;
 
   const ctxt = new exsurge.ChantContext();
   ctxt.autoColor = false;
@@ -6139,7 +6228,23 @@ function gregImportGABCString(gabcStr, opts) {
 
     for (const nt of (m.notations || [])) {
       const cname = nt.constructor.name.replace(/^_/, '');
-      if (cname === 'DoClef' || cname === 'FaClef') continue;
+      if (cname === 'DoClef' || cname === 'FaClef') {
+        // erster Schlüssel = Kopfschlüssel; jeder weitere = Schlüsselwechsel im Stück
+        const rc = _raw.clefs[_rawClef++];
+        if (_seenClef && rc) {
+          const clTxt = (nt.lyrics && nt.lyrics[0]) ? (nt.lyrics[0].gabcRaw || nt.lyrics[0].originalText || '') : '';
+          tokens.push({type: 'raw', gabc: clTxt + '(' + rc + ')', label: '𝄢 Schlüsselwechsel ' + rc + (clTxt ? ' · ' + clTxt : '')});
+        }
+        _seenClef = true;
+        continue;
+      }
+      if (cname === 'Virgula') { tokens.push({type: 'raw', gabc: '(`)', label: 'Virgula `'}); continue; }
+      if (cname === 'ChantLineBreak') { tokens.push({type: 'linebreak', justify: !!nt.justify}); continue; }
+      if (cname === 'Custos') {
+        const rcu = _raw.custos[_rawCustos++];
+        tokens.push({type: 'raw', gabc: rcu ? '(' + rcu + ')' : '(z0)', label: 'Custos'});
+        continue;
+      }
 
       // Standalone accidental (e.g. "ix" before a note): exsurge emits this
       // as its own notation with no notes of its own — remember it and
@@ -6201,7 +6306,7 @@ function gregImportGABCString(gabcStr, opts) {
           // constructor argument, independent of that scan, so it still
           // reliably contains the literal <i>...</i> (mirrors the existing,
           // already-verified originalText-based nativeItalicMatch check below).
-          const rawLyric = nt.lyrics[0].originalText || nt.lyrics[0].text;
+          const rawLyric = nt.lyrics[0].gabcRaw || nt.lyrics[0].originalText || nt.lyrics[0].text;
           // A TextOnly notation whose ENTIRE raw text is wrapped in <i>...</i>
           // (e.g. GregoBase's "<i>Ant.</i>()") is exactly the same concept as
           // Notator's own "ij."/"iij." buttons — italic, zero-note "Sonder"
@@ -6270,7 +6375,7 @@ function gregImportGABCString(gabcStr, opts) {
         // call to generateSpansFromText, so every <i>-detection regex below
         // (gluedDirectiveMatch, the plain /<i>/ test) would silently never
         // match if read from .text. originalText is untouched by that scan.
-        let rawText = lyric.originalText || lyric.text;
+        let rawText = lyric.gabcRaw || lyric.originalText || lyric.text;
         // Fix 2026-09-30 (Selbsttest "Alleluia Pfingsten", Nutzer-Report
         // "* * ter"): der führende "*" wurde oben bereits als eigener
         // 'special'-Eintrag übernommen -- exsurge lässt ihn aber (anders als
@@ -6892,7 +6997,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '252';
+const NOTATOR_BUILD_ID = '253';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -6976,6 +7081,7 @@ function gregBuildStateObject() {
     title, subtitle, annotation: ann,
     dropCap: dc, dropCapLetter: dcLetter,
     clef: clefKey,
+    clefRaw: gregClefRaw || undefined,
     canvasWidth,
     entries: JSON.parse(JSON.stringify(gregEntries)),
     classic: (typeof clState !== 'undefined') ? JSON.parse(JSON.stringify(clState)) : null,
@@ -7083,6 +7189,7 @@ function gregApplyLoadedState(state) {
     // the same "whatever was active at save time" leftover as the text
     // fields above, so it must stay scoped to the single-section case too.
     if (state.clef) gregSetClef(state.clef);
+    gregClefRaw = state.clefRaw || '';
   }
 }
 
@@ -9990,6 +10097,7 @@ var exsurge = (() => {
   var italicMarkup = "_";
   var redMarkup = "^";
   var smallCapsMarkup = "%";
+  var underlineMarkup = "\uE001";
   function MarkupStackFrame(symbol, startIndex, properties) {
     this.symbol = symbol;
     this.startIndex = startIndex;
@@ -10009,6 +10117,9 @@ var exsurge = (() => {
         break;
       case smallCapsMarkup:
         properties = "font-variant:small-caps;font-feature-settings:'smcp';-webkit-font-feature-settings:'smcp';";
+        break;
+      case underlineMarkup:
+        properties = "text-decoration:underline;";
         break;
     }
     return new MarkupStackFrame(symbol, startIndex, properties);
@@ -10054,6 +10165,12 @@ var exsurge = (() => {
       // (first occurrence opens, second closes) since gabc's <i>...</i> is
       // always a simple, non-nested open/close pair.
       text = text.replace(/<i>/gi, italicMarkup).replace(/<\/i>/gi, italicMarkup);
+      // Weitere gabc-Auszeichnungen (Notator 2026-10-10, nach Gregorio):
+      // <b> fett, <sc> Kapitälchen, <c> farbig (Rubrik rot), <ul> unterstrichen;
+      // <e> (Elision) behält nur den Text; <v> (TeX-Code), <nlba>, <pr> fallen weg.
+      text = text.replace(/<\/?b>/gi, boldMarkup).replace(/<\/?sc>/gi, smallCapsMarkup)
+        .replace(/<\/?c>/gi, redMarkup).replace(/<\/?ul>/gi, underlineMarkup)
+        .replace(/<v>[\s\S]*?<\/v>/gi, '').replace(/<\/?(e|nlba|pr)(:[^>]*)?>/gi, '');
       var markupStack = [];
       var spanStartIndex = 0;
       var filterFrames = (frame, symbol) => frame.Symbol === symbol;
@@ -10069,7 +10186,7 @@ var exsurge = (() => {
           properties = properties + extraProperties;
         that.spans.push(new TextSpan(spanText, properties));
       };
-      var markupRegex = /(\*|_|\^|%|[ARVarv]\/\.)/g;
+      var markupRegex = /(\*|_|\^|%|\uE001|[ARVarv]\/\.)/g;
       var match = null;
       while (match = markupRegex.exec(text)) {
         var markupSymbol = match[0];
@@ -10302,6 +10419,29 @@ var exsurge = (() => {
       return super.createSvgFragment(ctxt2);
     }
   };
+  // Übersetzungszeile (gabc "[…]"): kursiv, eigene Zeile unter dem Text,
+  // beginnt bei der Note und beeinflusst die Notenabstände nicht.
+  var TranslationLyric = class extends Lyric {
+    constructor(ctxt2, text) {
+      super(ctxt2, "_" + text + "_", LyricType.Directive);
+      this.isTranslation = true;
+    }
+    allowsConnector() { return false; }
+    setNeedsConnector() { this.needsConnector = false; }
+    recalculateMetrics(ctxt2) {
+      super.recalculateMetrics(ctxt2);
+      this.bounds.x = 0; this.origin.x = 0;
+      this.bounds.width = 0; this.widthWithoutConnector = 0; this.widthWithConnector = 0;
+    }
+    getCssClasses() { return "lyric translation "; }
+  };
+  // Text über dem System (gabc "<alt>…</alt>"), z. B. "Ps." oder Vortragshinweis
+  var AltText = class extends TextElement {
+    constructor(ctxt2, text) {
+      super(ctxt2, text, ctxt2.lyricTextFont, ctxt2.lyricTextSize * 0.8, "start");
+    }
+    getCssClasses() { return "altText"; }
+  };
   var DropCap = class extends TextElement {
     /**
      * @param {String} text
@@ -10411,8 +10551,10 @@ var exsurge = (() => {
     // a helper function for subclasses to call after they are done performing layout...
     finishLayout(ctxt2) {
       this.bounds.x = 0;
-      for (var i2 = 0; i2 < this.lyrics.length; i2++)
+      for (var i2 = 0; i2 < this.lyrics.length; i2++) {
         this.lyrics[i2].bounds.x = this.origin.x - this.lyrics[i2].origin.x;
+        if (this.lyrics[i2].altText) this.lyrics[i2].altText.bounds.x = this.origin.x - this.lyrics[i2].origin.x;
+      }
       this.needsLayout = false;
     }
     draw(ctxt2) {
@@ -10428,8 +10570,10 @@ var exsurge = (() => {
       var inner = "";
       for (var i2 = 0; i2 < this.visualizers.length; i2++)
         inner += this.visualizers[i2].createSvgFragment(ctxt2);
-      for (i2 = 0; i2 < this.lyrics.length; i2++)
+      for (i2 = 0; i2 < this.lyrics.length; i2++) {
         inner += this.lyrics[i2].createSvgFragment(ctxt2);
+        if (this.lyrics[i2].altText) inner += this.lyrics[i2].altText.createSvgFragment(ctxt2);
+      }
       return QuickSvg.createFragment("g", {
         // this.constructor.name will not be the same after being mangled by UglifyJS
         "class": "ChantNotationElement " + this.constructor.name,
@@ -10827,6 +10971,22 @@ var exsurge = (() => {
       }
       if (this.custos)
         this.notationBounds.union(this.custos.bounds);
+      // Text über dem System (<alt>): über den höchsten Noten der Zeile
+      var altTop = this.notationBounds.y, altH = 0;
+      for (i2 = this.notationsStartIndex; i2 < lastIndex; i2++) {
+        notation = notations[i2];
+        if (notation.lyrics.length && notation.lyrics[0].altText) {
+          var at = notation.lyrics[0].altText;
+          altH = Math.max(altH, at.fontSize * 1.1);
+        }
+      }
+      if (altH > 0) {
+        for (i2 = this.notationsStartIndex; i2 < lastIndex; i2++) {
+          notation = notations[i2];
+          if (notation.lyrics.length && notation.lyrics[0].altText) notation.lyrics[0].altText.bounds.y = altTop - altH * 0.25;
+        }
+        this.notationBounds.union(new Rect(this.notationBounds.x, altTop - altH, 1, altH));
+      }
       for (i2 = this.notationsStartIndex; i2 < lastIndex; i2++) {
         notation = notations[i2];
         var offset = this.notationBounds.y + this.notationBounds.height;
@@ -12851,6 +13011,11 @@ var exsurge = (() => {
     // returns an array of lyrics (an array because each syllable can have multiple lyrics)
     static createSyllableLyrics(ctxt2, text, proposedLyricType) {
       var lyrics = [];
+      var gabcRaw = text; // unveränderter gabc-Silbentext (für Notators Import)
+      // Text über dem System (<alt>…</alt>) und Übersetzung ([…]) abtrennen
+      var altText = null, translation = null;
+      text = text.replace(/<alt>([\s\S]*?)<\/alt>/gi, function(m0, a) { altText = (altText ? altText + " " : "") + a; return ""; });
+      text = text.replace(/\[([^\]]*)\]/g, function(m0, t) { if (t !== "/" && !/^alt:/i.test(t)) translation = t; return ""; });
       var lyricTexts = text.split("|");
       for (var i2 = 0; i2 < lyricTexts.length; i2++) {
         var lyricText = lyricTexts[i2];
@@ -12871,6 +13036,11 @@ var exsurge = (() => {
         }
         lyrics.push(lyric);
       }
+      if (translation !== null && translation.trim() !== "")
+        lyrics.push(new TranslationLyric(ctxt2, translation.trim()));
+      if (altText !== null && altText.trim() !== "" && lyrics.length)
+        lyrics[0].altText = new AltText(ctxt2, altText.trim());
+      if (lyrics.length && gabcRaw.indexOf("|") < 0) lyrics[0].gabcRaw = gabcRaw;
       return lyrics;
     }
     static makeLyric(ctxt2, text, lyricType) {
@@ -13821,6 +13991,8 @@ function clPcOf(step, alt) { return clMod(CL_NAT_PC[clMod(step, 7)] + alt, 12); 
 
 function clCleanText(t) {
   return String(t || '')
+    .replace(/<alt>[\s\S]*?<\/alt>/gi, '').replace(/<v>[\s\S]*?<\/v>/gi, '')
+    .replace(/\[[^\]]*\]/g, '') // Übersetzung [..] gehört nicht in die Orgel-Textzeile
     .replace(/<\/?(?:i|b|ul|c|sc|tt|v|e|nlba|clear|pr|alt|eu)[^>]*>/gi, '')
     .replace(/<sp>([^<]*)<\/sp>/gi, '$1')
     .replace(/<[^>]+>/g, '')
