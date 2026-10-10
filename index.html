@@ -7073,7 +7073,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '256';
+const NOTATOR_BUILD_ID = '257';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -15660,7 +15660,22 @@ function gdFolderChain(id) {
 function ntPdfDriveFolderId(ctx) {
   const K = ntDestKeys(ctx);
   const f = ntPdfPrefs()[K.folder];
-  if (f && f.id) return Promise.resolve(f.id);
+  const dflt = () => K.n ? Promise.resolve(NOTATOR_GDRIVE_FOLDER_ID) : gdFindOrCreateFolder(NT_PDF_DRIVE_DEFAULT_SUB, NOTATOR_GDRIVE_FOLDER_ID);
+  if (f && f.id) {
+    // Gewählten Ordner prüfen: gelöscht (Papierkorb) oder nicht mehr erreichbar
+    // -> Upload würde unbemerkt im Papierkorb landen. Dann auf Standard zurück.
+    return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(f.id) + '?fields=id,trashed', {}, false)
+      .then(r => r.json())
+      .catch(e => { const m = /Drive-Fehler (\d+)/.exec((e && e.message) || ''); return { error: { code: m ? +m[1] : 0 } }; })
+      .then(j => {
+        if (j && j.id && !j.trashed) return f.id;
+        const gone = j && (j.trashed || (j.error && (j.error.code === 404 || j.error.code === 403)));
+        if (!gone) return f.id; // Prüfung nicht möglich (Netz o.ä.) -> wie bisher versuchen
+        const p = ntPdfPrefs(); p[K.folder] = null; ntPdfSavePrefs(p);
+        ctx._folderFallback = (f.path || 'gewählter Ordner');
+        return dflt();
+      });
+  }
   if (K.n) return Promise.resolve(NOTATOR_GDRIVE_FOLDER_ID);
   return gdFindOrCreateFolder(NT_PDF_DRIVE_DEFAULT_SUB, NOTATOR_GDRIVE_FOLDER_ID);
 }
@@ -15690,7 +15705,8 @@ function ntPdfToDrive(blob, name, ctx) {
       return gdUploadBlob(finalName, blob, mime, folderId, existing, appProps);
     });
   }).then(f => {
-    gregGst((K.n ? 'In Google Drive gespeichert: ' : 'PDF in Google Drive gespeichert: ') + f.name + ' (' + ntDrivePathText(ntPdfPrefs()[K.folder], K.n).replace(' (Standard)', '') + ')');
+    gregGst((K.n ? 'In Google Drive gespeichert: ' : 'PDF in Google Drive gespeichert: ') + f.name + ' (' + ntDrivePathText(ntPdfPrefs()[K.folder], K.n).replace(' (Standard)', '') + ')'
+      + (ctx && ctx._folderFallback ? ' – Hinweis: «' + ctx._folderFallback + '» existiert nicht mehr, darum im Standardordner gespeichert.' : ''));
   }).catch(err => gregGst('Drive-Upload fehlgeschlagen: ' + err.message));
 }
 
