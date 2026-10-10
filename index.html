@@ -6800,6 +6800,21 @@ function gregExportPDF() {
               lineBoxes.push({ top: bb.y, bottom: bb.y + bb.height });
             });
           } catch (e) { /* no-op — comment boxes are a defensive addition, never fatal to the export */ }
+          // Build 256: getBBox() liefert SVG-Benutzerkoordinaten, das Bild
+          // beginnt aber am oberen viewBox-Rand – und addSvgPadding() schiebt
+          // diesen um den Titel-Abstand nach oben (viewBox-y negativ). Ohne
+          // Umrechnung lagen alle Sperrzonen um diesen Betrag zu hoch →
+          // Seitenumbruch mitten im System. Daher: in Bildkoordinaten umrechnen.
+          try {
+            const vbA = (svgEl.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+            if (vbA.length === 4 && vbA.every(isFinite)) {
+              const hAttr = parseFloat(svgEl.getAttribute('height')) || vbA[3];
+              const k = vbA[3] ? hAttr / vbA[3] : 1;
+              lineBoxes = lineBoxes.map(z => ({ top: (z.top - vbA[1]) * k, bottom: (z.bottom - vbA[1]) * k }));
+            }
+          } catch (e) { /* Boxen unverändert lassen */ }
+          // Sicherheitsrand: Hälse/Episeme ragen etwas über die Bounding-Box
+          lineBoxes = lineBoxes.map(z => ({ top: z.top - 4, bottom: z.bottom + 4 }));
           const finalSvg = new XMLSerializer().serializeToString(svgEl);
           document.body.removeChild(tmp);
           doneCallback(finalSvg, lineBoxes);
@@ -7058,7 +7073,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '255';
+const NOTATOR_BUILD_ID = '256';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
