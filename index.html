@@ -305,6 +305,10 @@ input[type=file]{display:none}
             <input id="greg-dropcap-letter" type="text" placeholder="Buchstabe" maxlength="1" title="Drop-Cap-Buchstabe ohne Noten (erzeugt X() vor erster Note)" style="width:55px;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
             <button class="b" onclick="gregInsertDropCapLetter()" style="font-size:10px;padding:1px 5px" title="Drop Cap ohne Noten einfügen">+DC</button>
           </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:9px;color:#6b8a60;min-width:55px">Kommentar</span>
+            <input id="greg-commentary" type="text" placeholder="oben rechts über den Noten, z.B. Ps. 117 · Cf. Mt 5,3" title="GABC-Kopffeld «commentary:» – wird rechtsbündig über dem ersten System gesetzt (wie bei Gregorio)" style="flex:1;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+          </div>
         </div>
       </div>
       <div style="padding:4px 8px;background:#0e1a0a;border-bottom:1px solid #2a3820">
@@ -589,6 +593,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 let gregEntries = [], gregHistory = [], gregRedoHistory = [], gregClefVal = 'c3';
 // Schlüssel aus dem Original, den die 4 Schlüssel-Knöpfe nicht abbilden (cb3 mit b, c2, f2, c3@f3 …)
 var gregClefRaw = '';
+var gregHdrExtra = ''; // unbekannte GABC-Kopffelder (mode, book, office-part …) – unverändert durchgereicht
 // id of the library entry the currently open piece was loaded from/last
 // saved to (null = never saved to the library yet in this session, so the
 // next "In Bibliothek speichern" creates a new entry instead of updating).
@@ -866,8 +871,9 @@ function buildSingleNeumeGABC(e) {
   }
 }
 
-function gregEntriesToBody(entries, clefGabc) {
-  if (gregClefRaw && clefGabc === gregClefVal) clefGabc = gregClefRaw;
+function gregEntriesToBody(entries, clefGabc, clefRaw) {
+  if (clefRaw === undefined) clefRaw = (entries === gregEntries && clefGabc === gregClefVal) ? gregClefRaw : '';
+  if (clefRaw) clefGabc = clefRaw;
   // WICHTIG (Session 21, per echtem Rendering-Test widerlegt): ein
   // frueherer Versuch, ein Silben-"/" beim Export in <sp>/</sp> zu
   // escapen (um es vor exsurges Schraegstrich-Verschlucken bei einem
@@ -1137,6 +1143,9 @@ function gregBuildGABC() {
   const subtitle = (document.getElementById('greg-subtitle')||{value:''}).value;
   let header = '';
   if (title) header += 'name: ' + title + '\n';
+  const comm = (document.getElementById('greg-commentary')||{value:''}).value.trim();
+  if (comm) header += 'commentary: ' + comm + ';\n';
+  if (gregHdrExtra) header += gregHdrExtra + '\n';
   if (subtitle.trim()) {
     // Custom (non-standard) header field — GABC allows arbitrary "key: value" header
     // lines; we round-trip it ourselves on import. Encode newlines as \\n escape.
@@ -1171,7 +1180,7 @@ function gregMakeSection(id) {
   return {
     id: id || ('s' + Date.now() + Math.floor(Math.random()*1000)),
     entries: [],
-    title: '', subtitle: '', annotation: '',
+    title: '', subtitle: '', annotation: '', commentary: '', hdrExtra: '', clefRaw: '',
     dropCap: false, dropCapLetter: '', // safer default (Runde 61) — a freshly added, not-yet-imported section shouldn't assume it wants a drop cap; the actual value is set correctly on import either way
     clef: 'do',
   };
@@ -1189,6 +1198,9 @@ function gregSectionFromUI() {
   s.dropCap       = (document.getElementById('greg-dropcap')||{checked:true}).checked;
   s.dropCapLetter = (document.getElementById('greg-dropcap-letter')||{value:''}).value;
   s.clef          = Object.keys(GREG_CLEF_MAP).find(k => GREG_CLEF_MAP[k] === gregClefVal) || 'do';
+  s.commentary    = (document.getElementById('greg-commentary')||{value:''}).value;
+  s.hdrExtra      = gregHdrExtra;
+  s.clefRaw       = gregClefRaw;
 }
 
 // Load gregSections[idx] INTO the UI/editor state (becomes the live/active data)
@@ -1203,7 +1215,10 @@ function gregLoadSectionToUI(idx) {
   set('greg-dropcap-letter',s.dropCapLetter);
   const dcEl = document.getElementById('greg-dropcap');
   if (dcEl) dcEl.checked = s.dropCap !== false;
+  set('greg-commentary',    s.commentary);
+  gregHdrExtra = s.hdrExtra || '';
   gregSetClef(s.clef || 'do', true); // silent: no render here — caller renders once, after this returns
+  gregClefRaw = s.clefRaw || '';
   gregRefreshListNoRender();
 }
 
@@ -1241,6 +1256,9 @@ function gregAddSection() {
     first.dropCap       = (document.getElementById('greg-dropcap')||{checked:true}).checked;
     first.dropCapLetter = (document.getElementById('greg-dropcap-letter')||{value:''}).value;
     first.clef          = Object.keys(GREG_CLEF_MAP).find(k => GREG_CLEF_MAP[k] === gregClefVal) || 'do';
+    first.commentary    = (document.getElementById('greg-commentary')||{value:''}).value;
+    first.hdrExtra      = gregHdrExtra;
+    first.clefRaw       = gregClefRaw;
     gregSections = [first];
     gregActiveIdx = 0;
     gregEnableMultiSection(); // sets display toggles AND window._gregMultiSection
@@ -1546,10 +1564,10 @@ function gregRenderSectionPreview(sec, container) {
           gregNeutralizeRubricRed(svgEl);
           const nativeW = parseFloat(svgEl.getAttribute('width')) || layoutWidth;
           svgEl.style.cssText = 'background:transparent;display:block;pointer-events:none;';
-          const neededPad = gregCalcTitlePad(nativeW, secTitle, secSubtitle);
+          const neededPad = gregCalcTitlePad(nativeW, secTitle, secSubtitle, sec.commentary || '');
           const _topPad = addSvgPadding(svgEl, 32, neededPad);
           svgEl._topPad = _topPad;
-          gregRenderTitle(svgEl, secTitle, secSubtitle);
+          gregRenderTitle(svgEl, secTitle, secSubtitle, sec.commentary || '');
           if (score._extraAnnotations && score._extraAnnotations.length) gregRenderExtraAnnotations(svgEl, score._extraAnnotations);
           // Apply zoom after all overlays
           if (zoom !== 1) {
@@ -1583,9 +1601,11 @@ function gregBuildGABCFor(sec) {
   const clefGabc = GREG_CLEF_MAP[sec.clef] || 'c3';
   let header = '';
   if (title) header += 'name: ' + title + '\n';
+  if ((sec.commentary || '').trim()) header += 'commentary: ' + sec.commentary.trim() + ';\n';
+  if (sec.hdrExtra) header += sec.hdrExtra + '\n';
   if (ann) ann.split('\n').filter(Boolean).forEach(function(line) { header += 'annotation: ' + line + '\n'; });
   if (dc) header += 'drop-cap: auto\n';
-  const body = gregEntriesToBody(sec.entries, clefGabc);
+  const body = gregEntriesToBody(sec.entries, clefGabc, sec.clefRaw || '');
   return header ? header + '%%\n' + body : body;
 }
 
@@ -2783,6 +2803,8 @@ function gregClear() {
   set('greg-title', '');
   set('greg-subtitle', '');
   set('greg-annotation', '');
+  set('greg-commentary', '');
+  gregHdrExtra = ''; gregClefRaw = '';
   set('greg-dropcap-letter', '');
   setChk('greg-dropcap', true);
   gregSetClef('do');
@@ -3097,9 +3119,13 @@ function gregGetContentLeftX(svgEl, vx, pad) {
 // ── Render title above SVG ───────────────────────────────────────
 // Call this BEFORE addSvgPadding so we can set the right topPad.
 // Returns the required topPad value.
-function gregCalcTitlePad(svgW, overrideTitle, overrideSubtitle) {
+function gregCommentaryText(overrideComm) {
+  return (overrideComm !== undefined ? overrideComm : (document.getElementById('greg-commentary')||{value:''}).value || '').trim();
+}
+function gregCalcTitlePad(svgW, overrideTitle, overrideSubtitle, overrideComm) {
   const title    = (overrideTitle !== undefined ? overrideTitle : (document.getElementById('greg-title')||{value:''}).value).trim();
   const bodyText = (overrideSubtitle !== undefined ? overrideSubtitle : (document.getElementById('greg-subtitle')||{value:''}).value);
+  const comm     = gregCommentaryText(overrideComm);
   const ctxt = _gregCtxtRef;
   const si = ctxt ? ctxt.staffInterval : 12;
   const fs    = si * 3.5;
@@ -3107,9 +3133,10 @@ function gregCalcTitlePad(svgW, overrideTitle, overrideSubtitle) {
   const subLineH = subFs * 1.4;
   const pad = 32;
   const textW = svgW - 2 * pad; // usable width for wrapping
-  if (!title && !bodyText.trim()) return pad * 1.5; // nothing to show, minimal space
+  if (!title && !bodyText.trim() && !comm) return pad * 1.5; // nothing to show, minimal space
 
   let totalH = 2; // top margin inside padding
+  if (comm) totalH += subFs * 1.3; // Kommentarzeile rechts über dem System
   if (title) totalH += fs * 1.1;
 
   if (bodyText.trim()) {
@@ -3128,10 +3155,11 @@ function gregCalcTitlePad(svgW, overrideTitle, overrideSubtitle) {
   return Math.max(totalH + gap, pad);
 }
 
-function gregRenderTitle(svgEl, overrideTitle, overrideSubtitle) {
+function gregRenderTitle(svgEl, overrideTitle, overrideSubtitle, overrideComm) {
   const title    = (overrideTitle !== undefined ? overrideTitle : (document.getElementById('greg-title')||{value:''}).value).trim();
   const bodyText = (overrideSubtitle !== undefined ? overrideSubtitle : (document.getElementById('greg-subtitle')||{value:''}).value);
-  if (!title && !bodyText.trim()) return;
+  const comm     = gregCommentaryText(overrideComm);
+  if (!title && !bodyText.trim() && !comm) return;
   if (!svgEl) return;
 
   const ctxt = _gregCtxtRef;
@@ -3188,6 +3216,21 @@ function gregRenderTitle(svgEl, overrideTitle, overrideSubtitle) {
         curY += subLineH;
       });
     });
+  }
+
+  if (comm) {
+    // Gregorio «commentary»: rechtsbündig, kursiv, knapp über dem ersten System
+    const ctx = document.createElementNS(ns, 'text');
+    ctx.setAttribute('x', String(vx + vw - pad));
+    ctx.setAttribute('y', String(vy + topPad - 6));
+    ctx.setAttribute('text-anchor', 'end');
+    ctx.setAttribute('font-family', "'Crimson Text', Palatino, serif");
+    ctx.setAttribute('font-style', 'italic');
+    ctx.setAttribute('font-size', String(Math.round(subFs * 0.9)));
+    ctx.setAttribute('fill', '#2a2a1a');
+    ctx.setAttribute('class', 'greg-commentary');
+    ctx.textContent = comm;
+    g.appendChild(ctx);
   }
 
   svgEl.appendChild(g);
@@ -6008,6 +6051,8 @@ function gregImportGABCString(gabcStr, opts) {
   }
 
   let annotation = '', useDropCap = false, titleStr = '', subtitleStr = '', body = gabcStr;
+  let commentaryStr = '', modeStr = '', modeDiff = '', bookStr = '';
+  const hdrExtraLines = [];
   if (gabcStr.includes('%%')) {
     const si = gabcStr.indexOf('%%');
     const hl = gabcStr.substring(0, si).trim().split('\n');
@@ -6021,7 +6066,16 @@ function gregImportGABCString(gabcStr, opts) {
       if (k === 'name') titleStr = v;
       if (k === 'notator-subtitle') subtitleStr = v.replace(/\\n/g, '\n');
       if (k === 'drop-cap' && v === 'auto') useDropCap = true;
+      if (k === 'commentary') commentaryStr = v;
+      if (k === 'mode') modeStr = v;
+      if (k === 'mode-differentia') modeDiff = v;
+      if (k === 'book') bookStr = v;
+      // alle übrigen Kopffelder unverändert mitführen (verlustfreier Export)
+      if (!/^(name|annotation|notator-subtitle|drop-cap|commentary)$/.test(k) && !/^%/.test(k)) hdrExtraLines.push(l.trim().replace(/;?$/, ';'));
     }
+    // Gregorio-Verhalten: ohne Annotation wird der Modus (+ Differentia) gesetzt
+    if (!annotationLines.length && modeStr) annotationLines.push(modeStr + (modeDiff ? ' ' + modeDiff : ''));
+    if (!subtitleStr && bookStr) subtitleStr = bookStr;
     annotation = annotationLines.join('\n');
   }
 
@@ -6040,6 +6094,9 @@ function gregImportGABCString(gabcStr, opts) {
   }
   const subEl = document.getElementById('greg-subtitle');
   if (subEl) subEl.value = subtitleStr;
+  const commEl = document.getElementById('greg-commentary');
+  if (commEl) commEl.value = commentaryStr;
+  gregHdrExtra = hdrExtraLines.join('\n');
 
   const clefM = body.match(/\(([cf]b?[1-5](?:@[cf]b?[1-5])?)\)/);
   if (clefM) {
@@ -6628,14 +6685,16 @@ function gregExportPDF() {
       // be ACTIVE (and thus showing in that live field) at export time.
       gabcList.push({gabc, sec,
         overrideTitle:    sec.title    || '',
-        overrideSubtitle: sec.subtitle || ''});
+        overrideSubtitle: sec.subtitle || '',
+        overrideComm:     sec.commentary || ''});
     }
   } else {
     const title    = (document.getElementById('greg-title')||{value:''}).value;
     const subtitle = (document.getElementById('greg-subtitle')||{value:''}).value;
     gabcList.push({gabc: gregBuildGABC(), sec: null,
       overrideTitle:    title    || '',
-      overrideSubtitle: subtitle || ''});
+      overrideSubtitle: subtitle || '',
+      overrideComm:     (document.getElementById('greg-commentary')||{value:''}).value || ''});
   }
 
   if (!gabcList.length) { gregGst('Erst rendern'); return; }
@@ -6680,9 +6739,9 @@ function gregExportPDF() {
           const savedCtxtRef = _gregCtxtRef;
           _gregCtxtRef = ctxt; // temporarily point to PDF ctxt for overlay functions
           const svgW = parseFloat(svgEl.getAttribute('width')) || layoutW;
-          const neededPad = gregCalcTitlePad(svgW, gabcEntry.overrideTitle, gabcEntry.overrideSubtitle);
+          const neededPad = gregCalcTitlePad(svgW, gabcEntry.overrideTitle, gabcEntry.overrideSubtitle, gabcEntry.overrideComm);
           svgEl._topPad = addSvgPadding(svgEl, 32, neededPad);
-          gregRenderTitle(svgEl, gabcEntry.overrideTitle, gabcEntry.overrideSubtitle);
+          gregRenderTitle(svgEl, gabcEntry.overrideTitle, gabcEntry.overrideSubtitle, gabcEntry.overrideComm);
           if (score._extraAnnotations && score._extraAnnotations.length)
             gregRenderExtraAnnotations(svgEl, score._extraAnnotations);
           _gregCtxtRef = savedCtxtRef;
@@ -6999,7 +7058,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '254';
+const NOTATOR_BUILD_ID = '255';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 function gregAutosaveNow() {
@@ -7084,6 +7143,8 @@ function gregBuildStateObject() {
     dropCap: dc, dropCapLetter: dcLetter,
     clef: clefKey,
     clefRaw: gregClefRaw || undefined,
+    commentary: (document.getElementById('greg-commentary')||{value:''}).value || undefined,
+    hdrExtra: gregHdrExtra || undefined,
     canvasWidth,
     entries: JSON.parse(JSON.stringify(gregEntries)),
     classic: (typeof clState !== 'undefined') ? JSON.parse(JSON.stringify(clState)) : null,
@@ -7192,6 +7253,8 @@ function gregApplyLoadedState(state) {
     // fields above, so it must stay scoped to the single-section case too.
     if (state.clef) gregSetClef(state.clef);
     gregClefRaw = state.clefRaw || '';
+    set('greg-commentary', state.commentary);
+    gregHdrExtra = state.hdrExtra || '';
   }
 }
 
@@ -8074,6 +8137,7 @@ setTimeout(function(){
   document.getElementById('greg-annotation')?.addEventListener('input',()=>{clearTimeout(window._gregAT);window._gregAT=setTimeout(gregRender,500);});
   document.getElementById('greg-title')?.addEventListener('input',()=>{clearTimeout(window._gregTT);window._gregTT=setTimeout(gregRender,500);});
   document.getElementById('greg-subtitle')?.addEventListener('input',()=>{clearTimeout(window._gregST);window._gregST=setTimeout(gregRender,500);});
+  document.getElementById('greg-commentary')?.addEventListener('input',()=>{clearTimeout(window._gregST);window._gregST=setTimeout(gregRender,500);});
   document.getElementById('greg-dropcap-letter')?.addEventListener('keydown',e=>{if(e.key==='Enter')gregInsertDropCapLetter();});
   document.getElementById('greg-dropcap')?.addEventListener('change',gregRender);
   // Neume grid (visual picker)
