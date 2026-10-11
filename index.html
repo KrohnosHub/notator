@@ -7097,7 +7097,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '262';
+const NOTATOR_BUILD_ID = '263';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14931,8 +14931,13 @@ function clGabcToAbc(gabcList, opts) {
           lastLyricLen = u.notes.length > 1 ? 0 : (u.text || '').length;
         } else if (u.kind === 'bar') {
           if (annTxt) { music += ' ' + annTxt; addLow(spacerOnly(annTxt)); }
-          if (u.t === 'minima' && !u.final) { music += ' !breath!y'; addLow(' y'); }
+          // Wiedergabe (opts.playRests): Divisiones als unsichtbare Pausen
+          // (x), damit nicht über die Atempause hinweggespielt wird.
+          // Dauer in Achteln: minima 1, minor 1, maior 2, finalis 3.
+          const pr = opts.playRests && !u.final ? ({ minima: 1, minor: 1, maior: 2 })[u.t] || 3 : 0;
+          if (u.t === 'minima' && !u.final) { music += pr ? ' !breath!x' : ' !breath!y'; addLow(pr ? ' x' : ' y'); }
           else {
+            if (pr) { const xr = ' x' + (pr > 1 ? pr : ''); music += xr; addLow(xr); }
             const bs = ' ' + (u.final ? '|]' : u.t === 'minor' ? '|' : '||');
             music += bs; measureAcc = {}; addLow(bs);
             lowAcc.A = {}; lowAcc.T = {}; lowAcc.B = {};
@@ -15172,12 +15177,12 @@ function clScoreWidth() {
   return Math.max(280, Math.min(w / vs, 1100 / Math.min(vs, 1)));
 }
 
-function clBuild() {
+function clBuild(extra) {
   const list = clCollectGabc();
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
   const headers = list.map((x, i) => i === 0 ? Object.assign({}, clEffectiveHead(), { left: clState.left, right: clState.right }) : { title: x.title, subtitle: x.subtitle });
-  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks });
+  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks, playRests: !!(extra && extra.playRests) });
 }
 
 function clFillTargetSelect() {
@@ -15532,10 +15537,26 @@ function ntPlayToggle(source) {
     let tunes = [];
     if (source === 'cl') {
       tunes = (window._clTuneObjs || []).map(t => ({ obj: t, highlight: true }));
+      // Automatisch erzeugte Fassung: zum Abspielen eine Variante mit
+      // Atempausen an den Divisiones (unsichtbar) erzeugen; die Hervorhebung
+      // läuft weiter im sichtbaren Notenbild (Zuordnung Note für Note).
+      if (!clState[clMK()]) {
+        try {
+          const pb = clBuild({ playRests: true });
+          const parts = pb ? pb.abc.split(/(?=^X:)/m).filter(x => x.trim()) : [];
+          if (parts.length === tunes.length) {
+            tunes = tunes.map((t, ti) => {
+              const objs = ABCJS.renderAbc('*', parts[ti]);
+              if (!objs || !objs[0]) return t;
+              return { obj: objs[0], highlight: true, map: ntPlayNoteMap(objs[0], t.obj) };
+            });
+          }
+        } catch (e) { console.warn('Wiedergabe mit Pausen nicht möglich:', e); }
+      }
     } else {
       const list = clCollectGabc();
       if (!clHasNotes(list)) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
-      const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, flatToBar: (typeof clState === 'undefined' || clState.flatToBar !== false) });
+      const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, playRests: true, flatToBar: (typeof clState === 'undefined' || clState.flatToBar !== false) });
       r.abc.split(/(?=^X:)/m).filter(x => x.trim()).forEach(part => {
         const objs = ABCJS.renderAbc('*', part);
         if (objs && objs[0]) tunes.push({ obj: objs[0], highlight: false });
@@ -15544,6 +15565,27 @@ function ntPlayToggle(source) {
     if (!tunes.length) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
     ntPlayRun(tunes, 0, token);
   });
+}
+
+// Ordnet die Noten einer Abspiel-Fassung (mit zusätzlichen Pausen) den
+// Noten im sichtbaren Notenbild zu: gleiche Reihenfolge je Stimme, Pausen
+// zählen nicht. Ergebnis: startChar (Abspiel-Fassung) -> SVG-Elemente.
+function ntPlayNoteMap(playObj, visObj) {
+  const collect = obj => {
+    const byVoice = {};
+    (obj.lines || []).forEach(line => (line.staff || []).forEach((sf, si) => (sf.voices || []).forEach((v, vi) => {
+      const k = si + ':' + vi;
+      (byVoice[k] = byVoice[k] || []);
+      v.forEach(el => { if (el.el_type === 'note' && !el.rest) byVoice[k].push(el); });
+    })));
+    return byVoice;
+  };
+  const P = collect(playObj), V = collect(visObj), map = new Map();
+  Object.keys(P).forEach(k => (P[k] || []).forEach((el, n) => {
+    const ve = (V[k] || [])[n];
+    if (ve && ve.abselem && ve.abselem.elemset) map.set(el.startChar, (map.get(el.startChar) || []).concat(ve.abselem.elemset));
+  }));
+  return map;
 }
 
 function ntPlayRun(tunes, i, token) {
@@ -15565,7 +15607,12 @@ function ntPlayRun(tunes, i, token) {
         qpm,
         eventCallback: ev => {
           ntClearHighlight();
-          if (!ev || !ev.elements) return;
+          if (!ev) return;
+          if (tunes[i].map) {
+            (ev.startCharArray || [ev.startChar]).forEach(c => (tunes[i].map.get(c) || []).forEach(el => { if (el && el.classList) el.classList.add('nt-playing'); }));
+            return;
+          }
+          if (!ev.elements) return;
           ev.elements.forEach(group => (group || []).forEach(el => { if (el && el.classList) el.classList.add('nt-playing'); }));
         },
       });
