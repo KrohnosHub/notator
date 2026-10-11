@@ -247,7 +247,7 @@ input[type=file]{display:none}
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
     <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
-<button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+<button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
@@ -484,7 +484,7 @@ input[type=file]{display:none}
     <span id="cl-vb-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
     <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
-<button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+<button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button>
@@ -1893,6 +1893,10 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const pt = svgEl.createSVGPoint();
   pt.x = clientX; pt.y = clientY;
   const svgP = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+  if (typeof ntPlay !== 'undefined' && ntPlay.pick === 'greg') {
+    ntPlayFromChoralEntry(gregFindEntryAtNativePoint(_gregScore, gregEntries, svgP.x, svgP.y, ctxt));
+    return;
+  }
 
   // Clicking on an EXISTING note's glyph (or its lyric text underneath)
   // opens its entry in the editor panel instead of adding a new one — but
@@ -7097,7 +7101,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '263';
+const NOTATOR_BUILD_ID = '264';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14933,9 +14937,9 @@ function clGabcToAbc(gabcList, opts) {
           if (annTxt) { music += ' ' + annTxt; addLow(spacerOnly(annTxt)); }
           // Wiedergabe (opts.playRests): Divisiones als unsichtbare Pausen
           // (x), damit nicht über die Atempause hinweggespielt wird.
-          // Dauer in Achteln: minima 1, minor 1, maior 2, finalis 3.
-          const pr = opts.playRests && !u.final ? ({ minima: 1, minor: 1, maior: 2 })[u.t] || 3 : 0;
-          if (u.t === 'minima' && !u.final) { music += pr ? ' !breath!x' : ' !breath!y'; addLow(pr ? ' x' : ' y'); }
+          // Dauer in Achteln: minima 2, minor 2, maior 2, finalis 3.
+          const pr = opts.playRests && !u.final ? ({ minima: 2, minor: 2, maior: 2 })[u.t] || 3 : 0;
+          if (u.t === 'minima' && !u.final) { music += pr ? ' !breath!x' + pr : ' !breath!y'; addLow(pr ? ' x' + pr : ' y'); }
           else {
             if (pr) { const xr = ' x' + (pr > 1 ? pr : ''); music += xr; addLow(xr); }
             const bs = ' ' + (u.final ? '|]' : u.t === 'minor' ? '|' : '||');
@@ -15512,13 +15516,81 @@ function ntPlayStop() {
 
 // Audio muss im Klick selbst "entsperrt" werden (Handy-Browser) -- darum
 // wird der AudioContext synchron hier angelegt, bevor geladen wird.
-function ntPlayToggle(source) {
-  if (ntPlay.source === source && ntPlay.state === 'play') {
+// ── Ab Stelle abspielen ──
+// Klick auf ▶| schaltet den Auswahlmodus ein; der nächste Klick auf eine
+// Note startet dort. Choral: Wiedergabe ab dem angeklickten Eintrag (der
+// aktive Abschnitt wird ab dort neu erzeugt, folgende Abschnitte danach).
+// Orgel: Sprung an die Zeitposition der angeklickten Note.
+function ntPlayPick(source) {
+  if (ntPlay.pick === source) { ntPlay.pick = null; ntPlayPickUi(); ntPlayStatus(source, 'Abspielen ab Stelle abgebrochen.'); return; }
+  ntPlayStop();
+  ntPlay.pick = source; ntPlayPickUi();
+  ntPlayStatus(source, 'Note anklicken, ab der abgespielt werden soll (nochmals ▶| = abbrechen)' + (source === 'greg' && window._gregMultiSection ? ' – bei mehreren Abschnitten zuerst den Abschnitt aktivieren' : ''));
+}
+function ntPlayPickUi() {
+  document.querySelectorAll('.nt-pick-btn').forEach(b => {
+    const on = ntPlay.pick === b.getAttribute('data-src');
+    b.style.background = on ? '#c8a040' : ''; b.style.color = on ? '#000' : '';
+  });
+  const sc = document.getElementById('cl-score'); if (sc) sc.style.cursor = ntPlay.pick === 'cl' ? 'crosshair' : '';
+}
+function ntPlayStatus(source, msg) {
+  const el = document.getElementById(source === 'cl' ? 'cl-status' : 'greg-status');
+  if (el) el.textContent = msg; else gregGst(msg);
+}
+// Choral: Klick auf Eintrag idx des aktiven Abschnitts
+function ntPlayFromChoralEntry(idx) {
+  ntPlay.pick = null; ntPlayPickUi();
+  if (idx == null || idx < 0) { ntPlayStatus('greg', 'Keine Note getroffen – nochmals ▶| und auf eine Note klicken.'); return; }
+  // letzter Schlüsselwechsel vor der Stelle gilt weiter
+  let clef = gregClefVal, clefRaw = gregClefRaw || '';
+  for (let k = 0; k < idx; k++) { const e = gregEntries[k]; const m = e && e.type === 'raw' && /^\(([cf]b?[1-5](?:@[cf]b?[1-5])?)\)$/.exec(e.gabc || ''); if (m) { clef = m[1]; clefRaw = ''; } }
+  const body = gregEntriesToBody(gregEntries.slice(idx), clef, clefRaw);
+  let list = [{ gabc: body }];
+  if (window._gregMultiSection && gregSections.length > 1) {
+    const all = clCollectGabc();
+    list = list.concat(all.slice(gregActiveIdx + 1));
+  }
+  ntPlayToggle('greg', { list });
+}
+// Orgel: Klick im Notenbild
+function ntPlayOrganPickHandler(ev) {
+  if (ntPlay.pick !== 'cl') return;
+  ev.stopPropagation();
+  if (!/^touch/.test(ev.type)) ev.preventDefault(); // sonst kein click auf Touch-Geräten
+  if (ev.type !== 'click') return;
+  let g = ev.target && ev.target.closest ? ev.target.closest('.abcjs-note') : null;
+  if (!g) {
+    // Klick neben den Notenkopf: nächstgelegene Note (max. 30 px)
+    let best = null, bd = 30;
+    document.querySelectorAll('#cl-score .abcjs-note').forEach(n => {
+      const r = n.getBoundingClientRect();
+      const dx = Math.max(r.left - ev.clientX, 0, ev.clientX - r.right), dy = Math.max(r.top - ev.clientY, 0, ev.clientY - r.bottom);
+      const d = Math.hypot(dx, dy);
+      if (d < bd) { bd = d; best = n; }
+    });
+    g = best;
+  }
+  let hit = null;
+  if (g) (window._clTuneObjs || []).forEach((t, ti) => (t.lines || []).forEach(line => (line.staff || []).forEach(sf => (sf.voices || []).forEach(v => v.forEach(el => {
+    if (hit || el.el_type !== 'note' || el.rest || !el.abselem || !el.abselem.elemset) return;
+    if (el.abselem.elemset.some(x => x === g || (x.contains && x.contains(g)) || (g.contains && g.contains(x)))) hit = { ti, el };
+  })))));
+  ntPlay.pick = null; ntPlayPickUi();
+  if (!hit) { ntPlayStatus('cl', 'Keine Note getroffen – nochmals ▶| und auf eine Note klicken.'); return; }
+  ntPlayToggle('cl', { tune: hit.ti, el: hit.el });
+}
+['click', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'pointerdown', 'pointerup'].forEach(tp =>
+  document.addEventListener(tp, ev => { if (ntPlay && ntPlay.pick === 'cl' && ev.target && ev.target.closest && ev.target.closest('#cl-score')) ntPlayOrganPickHandler(ev); }, true));
+
+function ntPlayToggle(source, from) {
+  if (ntPlay.pick) { ntPlay.pick = null; ntPlayPickUi(); }
+  if (!from && ntPlay.source === source && ntPlay.state === 'play') {
     try { ntPlay.synth.pause(); } catch (e) {}
     try { if (ntPlay.timer) ntPlay.timer.pause(); } catch (e) {}
     ntPlay.state = 'pause'; ntPlayUpdateButtons(); return;
   }
-  if (ntPlay.source === source && ntPlay.state === 'pause') {
+  if (!from && ntPlay.source === source && ntPlay.state === 'pause') {
     try { ntPlay.synth.resume(); } catch (e) {}
     try { if (ntPlay.timer) ntPlay.timer.start(); } catch (e) {}
     ntPlay.state = 'play'; ntPlayUpdateButtons(); return;
@@ -15540,6 +15612,7 @@ function ntPlayToggle(source) {
       // Automatisch erzeugte Fassung: zum Abspielen eine Variante mit
       // Atempausen an den Divisiones (unsichtbar) erzeugen; die Hervorhebung
       // läuft weiter im sichtbaren Notenbild (Zuordnung Note für Note).
+      let startEl = from && from.el ? from.el : null;
       if (!clState[clMK()]) {
         try {
           const pb = clBuild({ playRests: true });
@@ -15548,13 +15621,23 @@ function ntPlayToggle(source) {
             tunes = tunes.map((t, ti) => {
               const objs = ABCJS.renderAbc('*', parts[ti]);
               if (!objs || !objs[0]) return t;
-              return { obj: objs[0], highlight: true, map: ntPlayNoteMap(objs[0], t.obj) };
+              const map = ntPlayNoteMap(objs[0], t.obj);
+              const out = { obj: objs[0], highlight: true, map };
+              if (startEl && from.tune === ti) {
+                // sichtbare Note -> startChar in der Abspiel-Fassung
+                map.forEach((els, c) => { if (out.startChar == null && startEl.abselem.elemset.some(x => els.indexOf(x) >= 0)) out.startChar = c; });
+              }
+              return out;
             });
           }
         } catch (e) { console.warn('Wiedergabe mit Pausen nicht möglich:', e); }
       }
+      if (from && from.tune != null) {
+        if (tunes[from.tune] && tunes[from.tune].startChar == null) tunes[from.tune].startChar = startEl.startChar;
+        tunes = tunes.slice(from.tune);
+      }
     } else {
-      const list = clCollectGabc();
+      const list = from && from.list ? from.list : clCollectGabc();
       if (!clHasNotes(list)) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
       const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, playRests: true, flatToBar: (typeof clState === 'undefined' || clState.flatToBar !== false) });
       r.abc.split(/(?=^X:)/m).filter(x => x.trim()).forEach(part => {
@@ -15602,6 +15685,16 @@ function ntPlayRun(tunes, i, token) {
     options: { program: pref.instr, qpm, onEnded: () => { if (token === ntPlay.token && ntPlay.state !== 'pause') { ntClearHighlight(); ntPlayRun(tunes, i + 1, token); } } }, // pause() löst ebenfalls onEnded aus
   }).then(() => synth.prime()).then(() => {
     if (token !== ntPlay.token) return;
+    // Startposition (Ab Stelle abspielen, Orgel): Zeit der gewählten Note
+    let startSec = 0;
+    if (tunes[i].startChar != null) {
+      try {
+        const tc = new ABCJS.TimingCallbacks(tunes[i].obj, { qpm });
+        const evn = (tc.noteTimings || []).find(e => e.type === 'event' && (e.startCharArray || [e.startChar]).indexOf(tunes[i].startChar) >= 0);
+        if (evn) startSec = Math.max(0, evn.milliseconds / 1000);
+      } catch (e) {}
+      if (startSec > 0) synth.seek(startSec, 'seconds');
+    }
     if (tunes[i].highlight) {
       ntPlay.timer = new ABCJS.TimingCallbacks(tunes[i].obj, {
         qpm,
@@ -15616,7 +15709,7 @@ function ntPlayRun(tunes, i, token) {
           ev.elements.forEach(group => (group || []).forEach(el => { if (el && el.classList) el.classList.add('nt-playing'); }));
         },
       });
-      ntPlay.timer.start();
+      if (startSec > 0) ntPlay.timer.start(startSec, 'seconds'); else ntPlay.timer.start();
     }
     synth.start();
     gregGst('Wiedergabe' + (tunes.length > 1 ? ' (Abschnitt ' + (i + 1) + ' von ' + tunes.length + ')' : '') + ' – ' + (NT_INSTRUMENTS.find(x => x.p === pref.instr) || {}).n + ', ♪ = ' + pref.tempo);
