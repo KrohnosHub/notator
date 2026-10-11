@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '270';
+const NOTATOR_BUILD_ID = '271';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15163,7 +15163,7 @@ function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick) {
       })))));
     }
     const grand = /%%score/.test(part);
-    div.querySelectorAll('svg').forEach(sv => { clPlaceLyricAnnotations(sv, grand); clTightenHeader(sv); });
+    div.querySelectorAll('svg').forEach(sv => { clPlaceLyricAnnotations(sv, grand); clSystemEndLines(sv); clTightenHeader(sv); });
     all.push(...tunes);
   });
   return all;
@@ -15199,6 +15199,36 @@ function clTightenHeader(svg) {
 // Verschiebt Unter-Beschriftungen (iij., ij., Ant. …) auf die Grundlinie
 // der Textzeile desselben Systems und gibt ihnen dieselbe Schrift wie der
 // gesungene Text -- so stehen sie wie im Choralsatz direkt im Text.
+// Systemende ohne Trennstrich: gestrichelter Strich über alle Systeme der
+// Zeile (übliche Satzpraxis, wenn eine Phrase über den Zeilenumbruch läuft –
+// gestrichelter oder gar kein Strich; gestrichelt bleibt er von den
+// durchgezogenen Strichen der Divisiones unterscheidbar). abcjs kennt keinen
+// gestrichelten Taktstrich, darum nachträglich ins SVG gezeichnet.
+function clSystemEndLines(svg) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const lineOf = el => { const m = String(el.getAttribute('class') || '').match(/abcjs-l(\d+)/); return m ? m[1] : null; };
+  const bbox = el => { try { return el.getBBox(); } catch (e) { return null; } };
+  const staves = {};
+  svg.querySelectorAll('.abcjs-staff').forEach(st => {
+    const l = lineOf(st); const b = bbox(st); if (l === null || !b || !b.width) return;
+    const o = staves[l] || (staves[l] = { x2: 0, y1: Infinity, y2: -Infinity });
+    o.x2 = Math.max(o.x2, b.x + b.width); o.y1 = Math.min(o.y1, b.y); o.y2 = Math.max(o.y2, b.y + b.height);
+  });
+  Object.keys(staves).forEach(l => {
+    const o = staves[l];
+    let endsWithBar = false;
+    svg.querySelectorAll('.abcjs-bar.abcjs-l' + l).forEach(bEl => { const b = bbox(bEl); if (b && b.x + b.width >= o.x2 - 3) endsWithBar = true; });
+    if (endsWithBar) return;
+    const ln = document.createElementNS(ns, 'line');
+    ln.setAttribute('x1', o.x2 - 0.5); ln.setAttribute('x2', o.x2 - 0.5);
+    ln.setAttribute('y1', o.y1); ln.setAttribute('y2', o.y2);
+    ln.setAttribute('stroke', '#000'); ln.setAttribute('stroke-width', '0.8');
+    ln.setAttribute('stroke-dasharray', '3,2');
+    ln.setAttribute('class', 'cl-sysend');
+    svg.appendChild(ln);
+  });
+}
+
 function clPlaceLyricAnnotations(svg, grand) {
   const lineOf = el => { const m = String(el.getAttribute('class') || '').match(/abcjs-l(\d+)/); return m ? m[1] : null; };
   const lyricsByLine = {}, barsByLine = {};
