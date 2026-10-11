@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '271';
+const NOTATOR_BUILD_ID = '272';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15012,7 +15012,12 @@ function clGabcToAbc(gabcList, opts) {
           lowRanges[v].push({ s: start, e: low[v].length, key: sg.key });
         });
       };
-      ln.forEach(u => {
+      // letzter Trennstrich der Zeile: nichts mehr dahinter setzen, damit er
+      // direkt am Zeilenende steht (sonst endet die Zeile mit Leerraum nach dem Strich)
+      let lastBarIdx = -1; ln.forEach((u, ui) => { if (u.kind === 'bar') lastBarIdx = ui; });
+      const tailAfterBarEmpty = lastBarIdx >= 0 && ln.slice(lastBarIdx + 1).every(u => u.kind === 'ann');
+      ln.forEach((u, ui) => {
+        const barAtLineEnd = tailAfterBarEmpty && ui === lastBarIdx;
         // Notenlose Texte (iij., Ant., * ...) als Unter-Beschriftung auf einem
         // unsichtbaren Platzhalter; clPlaceLyricAnnotations() schiebt sie nach
         // dem Rendern exakt auf die Grundlinie der Textzeile.
@@ -15079,7 +15084,7 @@ function clGabcToAbc(gabcList, opts) {
             music += bs; measureAcc = {}; addLow(bs);
             lowAcc.A = {}; lowAcc.T = {}; lowAcc.B = {};
           }
-          if (annAfter && !u.final) { music += annAfter; addLow(annAfter); }
+          if (annAfter && !u.final && !barAtLineEnd) { music += annAfter; addLow(annAfter); }
         } else if (u.kind === 'ann') {
           music += ' ' + annTxt; addLow(spacerOnly(annTxt));
         }
