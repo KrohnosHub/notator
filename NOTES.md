@@ -1,4 +1,4 @@
-# Stand Build 237 (2026-10-05)
+# Stand Build 261 (2026-10-10)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator).
 Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
@@ -25,6 +25,21 @@ Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
   PDF (Senden über das Teilen-Menü des Geräts, Download oder Drive-Link
   «Jeder mit dem Link»).
 
+## Neu in Build 238–261 (Auszug, Details im Git-Log)
+
+- **253–255 Gregorio-Abgleich:** verlustfreier GABC-Import/-Export (Rohformen,
+  Sonderschlüssel, Virgula, Custos, alle Kopffelder), Übersetzung `[..]`,
+  `<alt>`, Textauszeichnung `<b> <sc> <c> <ul> <e>`; Kopffelder commentary
+  (oben rechts), mode/mode-differentia (Annotation), book (Untertitel).
+- **254/258 b-Regel:** ♭ gilt standardmässig bis zur nächsten Divisio
+  (Nutzerentscheid); Solesmes-Regel (bis Wortende) per Schalter im Orgelteil.
+- **256** PDF-Seitenumbruch nie im System (Sperrzonen in Bildkoordinaten).
+- **257** Drive-Upload prüft Zielordner (Papierkorb → Standardordner + Hinweis).
+- **259** PDF-Druckqualität wählbar (150–400 dpi, Standard 300); Banner
+  «Neue Version» mit Übernahme des offenen Stücks.
+- **260** Abschnittsabstand einstellbar; kein Leerraum bei Abschnitten ohne Titel.
+- **261** Zweizeilige Initiale (Option «2-zeilig», Kopffeld `notator-initial-lines: 2`).
+
 ## NOH-Notenbibliothek
 
 - Liegt unter `noh/` (https://krohnoshub.github.io/notator/noh/), gepflegt im Chat
@@ -37,6 +52,10 @@ Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
 
 - Mappe: Seitenzahlen, Inhaltsverzeichnis mit Seitenzahlen.
 - Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).
+- Zurückgelegt (Gregorio-Vergleich, optional): **NABC** (adiastematische
+  St.-Galler/Laon-Neumen über dem System, `|` in der Notenklammer) und
+  **TeX-/Gregorio-Export** (Druckvorlage in Verlagsqualität via GregorioTeX).
+  Verworfen: Chorzeichen, Klammern, Polyphonie, 2/5 Linien, Doppelschlüssel-Anzeige.
 
 ---
 
