@@ -4366,7 +4366,8 @@ function gregMapGregoBaseHeaderFields(gabcStr) {
   return header.trim() + '\n' + extra + body;
 }
 
-async function gregSearchGregoBase(incipit) {
+async function gregSearchGregoBase(incipit, opts) {
+  const loose = !!(opts && opts.loose);
   // CORRECTION (Session 17): an earlier version of this comment assumed
   // the CORS block only applied to file:// (a "null" origin). Real-world
   // testing from a proper http://localhost server showed the SAME
@@ -4423,9 +4424,18 @@ async function gregSearchGregoBase(incipit) {
     }
     const srcMatch = trailing.match(/\(([^)]*)\)/);
     const source = srcMatch ? srcMatch[1] : '';
-    if (norm(title).startsWith(incipitNorm) || incipitNorm.startsWith(norm(title))) {
+    let ok = norm(title).startsWith(incipitNorm) || incipitNorm.startsWith(norm(title));
+    let score = 0;
+    if (!ok && loose) {
+      // Ähnlichkeitssuche: gemeinsame Wörter (ab 4 Buchstaben, Wortanfang) zählen; erstes Wort zählt doppelt
+      const toks = s => norm(s).replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(w => w.length >= 4);
+      const qt = toks(incipit), tt = toks(title);
+      qt.forEach((w, i) => { if (tt.some(x => x.startsWith(w.slice(0, 5)) || w.startsWith(x.slice(0, 5)))) score += i === 0 ? 2 : 1; });
+      ok = score > 0;
+    }
+    if (ok) {
       seenIds.add(id);
-      matches.push({ id, title, source, url: 'https://gregobase.selapa.net/chant.php?id=' + id });
+      matches.push({ id, title, source, score, url: 'https://gregobase.selapa.net/chant.php?id=' + id });
     }
   });
   // Sort by relevance instead of leaving GregoBase's raw page order (which
@@ -4438,6 +4448,7 @@ async function gregSearchGregoBase(incipit) {
   // length (a near-exact-length match is far more likely to be the same
   // piece than one that's much longer or, unusually, shorter).
   matches.sort((a, b) => {
+    if (loose && (b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
     const an = norm(a.title), bn = norm(b.title);
     const aExact = an === incipitNorm ? 0 : 1;
     const bExact = bn === incipitNorm ? 0 : 1;
@@ -4452,10 +4463,10 @@ async function gregSearchGregoBase(incipit) {
   return matches;
 }
 
-function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel) {
+function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel, similar) {
   const GREG_GB_PAGE_SIZE = 8; // shown per page — matches the old hard cap, but more can be loaded on request
   return new Promise(resolve => {
-    showModal('📚 Treffer in GregoBase gefunden', 'Für "' + incipit + '" wurden folgende Einträge in der öffentlichen GregoBase-Chorendatenbank gefunden — bei Übereinstimmung wird die dort bereits geprüfte GABC-Transkription direkt übernommen (zuverlässiger als Bilderkennung). Zum Prüfen anklicken, dann auswählen oder ablehnen.', []);
+    showModal(similar ? '📚 Ähnliche Stücke in GregoBase' : '📚 Treffer in GregoBase gefunden', (similar ? 'Keine exakte Übereinstimmung — dies sind ähnliche Stücke (gleiche Wörter im Titel). Bitte genau prüfen, ob es das gesuchte Stück ist. ' : '') + 'Für "' + incipit + '" wurden folgende Einträge in der öffentlichen GregoBase-Chorendatenbank gefunden — bei Übereinstimmung wird die dort bereits geprüfte GABC-Transkription direkt übernommen (zuverlässiger als Bilderkennung). Zum Prüfen anklicken, dann auswählen oder ablehnen.', []);
     const bEl = document.getElementById('modal-btns');
     bEl.style.flexDirection = 'column';
     bEl.style.alignItems = 'stretch';
@@ -4510,6 +4521,25 @@ function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel) {
   });
 }
 
+// Deutlich sichtbares Popup, wenn GregoBase nichts findet (statt nur Statuszeile)
+function gregNoMatchModal(query, wasLoose, errMsg) {
+  return new Promise(resolve => {
+    const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    showModal(errMsg ? '⚠️ GregoBase nicht erreichbar' : '🔍 Keine Ergebnisse', '', []);
+    document.getElementById('modal-body').innerHTML =
+      '<p style="font-size:13px;margin:0 0 8px"><b>' + (errMsg ? esc(errMsg) : (wasLoose ? 'Auch keine ähnlichen Stücke in GregoBase gefunden.' : 'Keine Ergebnisse in GregoBase gefunden.')) + '</b></p>' +
+      '<p style="font-size:12px;color:var(--ink2);margin:0 0 8px">Gesucht: „' + esc(query) + '“</p>' +
+      '<input id="gb-retry-q" type="text" value="' + esc(query) + '" style="width:100%;box-sizing:border-box;margin-bottom:4px" placeholder="Anderen Titel / Textanfang eingeben">';
+    const bEl = document.getElementById('modal-btns');
+    bEl.innerHTML = '';
+    const done = v => { closeModal(); resolve(v); };
+    const mk = (label, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.onclick = fn; bEl.appendChild(b); };
+    if (!errMsg && !wasLoose) mk('Ähnliche Stücke suchen', () => done({ type: 'loose', q: document.getElementById('gb-retry-q').value.trim() || query }));
+    mk('Mit diesem Titel erneut suchen', () => done({ type: 'retry', q: document.getElementById('gb-retry-q').value.trim() || query }));
+    mk('Schliessen', () => done({ type: 'close' }));
+  });
+}
+
 // Eigenständiger "Song importieren"-Button (Runde 2026-09-29, Nutzerwunsch):
 // bisher war der GregoBase-Abgleich nur ein Zwischenschritt innerhalb von
 // "PDF lesen" (gregLoadPDF) -- dafür musste immer erst ein PDF ausgewählt
@@ -4527,9 +4557,20 @@ async function gregImportSongFromGregoBase(preset) {
   if (!incipit) return;
   try {
     gregGst('Suche "' + incipit + '" in GregoBase…');
-    const matches = await gregSearchGregoBase(incipit);
-    if (!matches.length) { gregGst('Kein GregoBase-Treffer für "' + incipit + '".'); return; }
-    const picked = await gregPickGregoBaseMatchModal(matches, incipit, 'Keine davon — abbrechen');
+    let query = incipit, loose = false, picked = null;
+    for (let guard = 0; guard < 8; guard++) {
+      let matches = [], err = '';
+      try { matches = await gregSearchGregoBase(query, { loose }); } catch (e) { err = e.message || String(e); }
+      if (matches.length) {
+        picked = await gregPickGregoBaseMatchModal(matches, query, 'Keine davon — abbrechen', loose);
+        break;
+      }
+      const act = await gregNoMatchModal(query, loose, err);
+      if (act.type === 'loose') { query = act.q; loose = true; gregGst('Suche ähnliche Stücke zu "' + query + '"…'); continue; }
+      if (act.type === 'retry') { query = act.q; loose = false; gregGst('Suche "' + query + '" in GregoBase…'); continue; }
+      gregGst('Kein GregoBase-Treffer für "' + query + '".');
+      return;
+    }
     if (!picked || picked === '__CANCEL__') { gregGst('Abgebrochen.'); return; }
     gregGst('Lade GABC von GregoBase (#' + picked.id + ')…');
     const gbProxyBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://notator-gregobase-proxy.matthias-krohn.workers.dev';
@@ -7336,9 +7377,9 @@ function gregLibLoadEntry(id) {
 
 // Öffnet eine Drive-Datei; aktualisiert/erstellt dabei die lokale Kopie.
 // Hat die lokale Kopie ungespeicherte (pending) Änderungen, wird nachgefragt.
-function gregLibLoadDrive(file) {
+function gregLibLoadDrive(file, onFail) {
   gregGst('Lade "' + file.name + '" aus Google Drive …');
-  Promise.all([gdDownload(file.id, true), gregLibFindByDriveId(file.id)]).then(function(res) {
+  return Promise.all([gdDownload(file.id, true), gregLibFindByDriveId(file.id)]).then(function(res) {
     const state = res[0], local = res[1];
     if (!state || !state.entries && !state.sections) throw new Error('keine gültige Notator-Datei');
     if (local && local.pending && !confirm('Die lokale Kopie von "' + local.title + '" enthält Änderungen, die noch nicht in Drive sind.\nOK = Drive-Version laden (lokale Änderungen verwerfen), Abbrechen = lokale Version laden.')) {
@@ -7348,7 +7389,7 @@ function gregLibLoadDrive(file) {
     const rec = Object.assign({}, local || {}, { title: gdTitleFromName(file.name), state: state, driveId: file.id, pending: false, updatedAt: Date.parse(file.modifiedTime) || Date.now() });
     if (!rec.savedAt) rec.savedAt = rec.updatedAt;
     return gregLibPut(rec).then(function(id) { rec.id = id; gregLibApplyRecord(rec, 'Google Drive'); });
-  }).catch(function(err) { gregGst('Drive-Ladefehler: ' + err.message); });
+  }).catch(function(err) { gregGst('Drive-Ladefehler: ' + err.message); if (onFail) onFail(err); });
 }
 
 function gregLibRenameEntry(id, currentTitle) {
@@ -15755,13 +15796,27 @@ window.addEventListener('hashchange', ntShareCheckIncoming);
 
 // Eingehender Link (#song=Titel), z. B. aus der NOH-Notenbibliothek: Greg-Editor öffnen und Titel in GregoBase suchen
 function ntSongCheckIncoming() {
-  const m = (location.hash || '').match(/[#&]song=([^&]+)/);
-  if (!m) return;
+  const hs = location.hash || '';
+  const m = hs.match(/[#&]song=([^&]+)/);
+  const dm = hs.match(/[#&]drive=([\w-]+)/);
+  if (!m && !dm) return;
   let title = '';
-  try { title = decodeURIComponent(m[1].replace(/\+/g, ' ')).trim(); } catch (e) { return; }
+  if (m) { try { title = decodeURIComponent(m[1].replace(/\+/g, ' ')).trim(); } catch (e) { if (!dm) return; } }
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
-  if (!title) return;
+  if (!title && !dm) return;
   try { switchTab('greg'); } catch (e) {}
+  if (dm) {
+    // Stück existiert bereits als Notator-Datei in Google Drive: diese öffnen, sonst GregoBase-Suche
+    const file = { id: dm[1], name: (title || 'Stück') + '.notator', modifiedTime: new Date().toISOString() };
+    const fallback = () => { if (title) gregImportSongFromGregoBase(title); };
+    if (typeof gdHasToken === 'function' && gdHasToken()) { gregLibLoadDrive(file, fallback); return; }
+    showModal('☁ Notator-Version in Google Drive', 'Für "' + (title || 'dieses Stück') + '" gibt es bereits eine gespeicherte Notator-Version in Google Drive. Zum Öffnen ist die Google-Anmeldung nötig.', [
+      { label: 'Aus Google Drive öffnen (anmelden)', fn: () => { closeModal(); gregLibLoadDrive(file, fallback); } },
+      ...(title ? [{ label: 'Stattdessen in GregoBase suchen', fn: () => { closeModal(); gregImportSongFromGregoBase(title); } }] : []),
+      { label: 'Schliessen', fn: closeModal }
+    ]);
+    return;
+  }
   gregImportSongFromGregoBase(title);
 }
 window.addEventListener('hashchange', ntSongCheckIncoming);
