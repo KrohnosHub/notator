@@ -284,10 +284,12 @@ input[type=file]{display:none}
         <div id="greg-kopf-panel" style="display:flex;flex-direction:column;gap:4px">
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
             <span style="font-size:9px;color:#6b8a60;min-width:55px">Schlüssel</span>
-            <button class="b on" id="greg-clef-do" onclick="gregClefRaw='';gregSetClef('do')" style="font-size:10px;padding:1px 5px">Do c3</button>
-            <button class="b" id="greg-clef-do4" onclick="gregClefRaw='';gregSetClef('do4')" style="font-size:10px;padding:1px 5px">Do c4</button>
-            <button class="b" id="greg-clef-fa" onclick="gregClefRaw='';gregSetClef('fa')" style="font-size:10px;padding:1px 5px">Fa f3</button>
-            <button class="b" id="greg-clef-fa4" onclick="gregClefRaw='';gregSetClef('fa4')" style="font-size:10px;padding:1px 5px">Fa f4</button>
+            <select id="greg-clef-sel" onchange="gregClefRaw='';gregSetClef(this.value)" title="Schlüssel: Do- (c) oder Fa-Schlüssel (f) auf Linie 1–4 (von unten), wahlweise mit b" style="font-size:10px;padding:1px 3px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30">
+              <optgroup label="Do-Schlüssel"><option value="c1">Do c1</option><option value="c2">Do c2</option><option value="c3" selected>Do c3</option><option value="c4">Do c4</option></optgroup>
+              <optgroup label="Fa-Schlüssel"><option value="f1">Fa f1</option><option value="f2">Fa f2</option><option value="f3">Fa f3</option><option value="f4">Fa f4</option></optgroup>
+              <optgroup label="mit b (Schlüssel-b)"><option value="cb1">Do c1 ♭</option><option value="cb2">Do c2 ♭</option><option value="cb3">Do c3 ♭</option><option value="cb4">Do c4 ♭</option><option value="fb1">Fa f1 ♭</option><option value="fb2">Fa f2 ♭</option><option value="fb3">Fa f3 ♭</option><option value="fb4">Fa f4 ♭</option></optgroup>
+            </select>
+            <span id="greg-clef-raw" style="font-size:9px;color:#e0a060" title="Sonderschlüssel aus der Vorlage – wird unverändert übernommen"></span>
           </div>
           <div style="display:flex;gap:6px;align-items:center">
             <span style="font-size:9px;color:#6b8a60;min-width:55px">Titel</span>
@@ -602,7 +604,10 @@ var gregHdrExtra = ''; // unbekannte GABC-Kopffelder (mode, book, office-part �
 let gregLibCurrentId = null;
 let _gregScore = null, _gregCtxtRef = null, _gregPending = null;
 
+// Schlüssel: alte Kurznamen (do/do4/fa/fa4, in gespeicherten Stücken) plus
+// alle gabc-Schlüssel auf 4 Linien: c1–c4, f1–f4, jeweils auch mit b (cb3 …).
 const GREG_CLEF_MAP = {'do':'c3','do4':'c4','fa':'f3','fa4':'f4'};
+['c', 'f', 'cb', 'fb'].forEach(l => [1, 2, 3, 4].forEach(n => { GREG_CLEF_MAP[l + n] = l + n; }));
 const NEUME_PITCHES = {
   punctum:1, virga:1, quilisma:1,
   podatus:2, clivis:2,
@@ -1223,7 +1228,7 @@ function gregLoadSectionToUI(idx) {
   { const d2 = document.getElementById('greg-dropcap2'); if (d2) d2.checked = s.initialLines === 2; }
   gregHdrExtra = s.hdrExtra || '';
   gregSetClef(s.clef || 'do', true); // silent: no render here — caller renders once, after this returns
-  gregClefRaw = s.clefRaw || '';
+  gregClefRaw = s.clefRaw || ''; gregClefUi();
   gregRefreshListNoRender();
 }
 
@@ -3544,9 +3549,14 @@ function gregInsertVers() {
 }
 
 function gregSetClef(v, silent) {
-  gregClefVal = GREG_CLEF_MAP[v]||'c3';
-  ['do','do4','fa','fa4'].forEach(k=>{const b=document.getElementById('greg-clef-'+k);if(b)b.className='b'+(k===v?' on':'');});
+  gregClefVal = GREG_CLEF_MAP[v] || (/^[cf]b?[1-4]$/.test(v || '') ? v : 'c3');
+  gregClefUi();
   if (!silent) gregRender();
+}
+function gregClefUi() {
+  const sel = document.getElementById('greg-clef-sel'); if (sel) sel.value = gregClefVal;
+  const raw = document.getElementById('greg-clef-raw');
+  if (raw) raw.textContent = (typeof gregClefRaw !== 'undefined' && gregClefRaw && gregClefRaw !== gregClefVal) ? 'Original: ' + gregClefRaw : '';
 }
 
 
@@ -4636,10 +4646,60 @@ function gregGbInfo(id) {
       const head = txt.indexOf('%%') >= 0 ? txt.slice(0, txt.indexOf('%%')) : '';
       const info = {};
       head.split(/\r?\n/).forEach(l => { const m = l.match(/^\s*([a-z-]+)\s*:\s*(.*?)\s*;?\s*$/i); if (m) info[m[1].toLowerCase()] = m[2]; });
+      info._gabc = txt;
       return info;
     })
     .catch(e => { delete _gregGbInfoCache[id]; return null; });
   return _gregGbInfoCache[id];
+}
+
+// Notenvorschau für einen GregoBase-Treffer: Anfang des Stücks (eine
+// Zeile) mit exsurge selbst setzen – vollständig sichtbar (Linien, Noten,
+// Text), unabhängig von Grösse/Auflösung des GregoBase-Bildes.
+function gregGbPreviewInto(container, gabc) {
+  return new Promise((resolve, reject) => {
+    try {
+      let body = gabc.indexOf('%%') >= 0 ? gabc.slice(gabc.indexOf('%%') + 2) : gabc;
+      body = body.replace(/%[^\n]*/g, ' ').replace(/\s+/g, ' ').trim();
+      // die ersten ~14 Silben/Gruppen
+      const re = /[^()\s]*\([^)]*\)/g; let m, n = 0, end = 0;
+      while ((m = re.exec(body)) && n < 15) { end = re.lastIndex; if (!/^\([cf]b?[1-5](@[cf]b?[1-5])?\)$/.test(m[0])) n++; }
+      const snippet = body.slice(0, end);
+      if (!/\(/.test(snippet)) { reject(new Error('leer')); return; }
+      const ctxt = new exsurge.ChantContext();
+      ctxt.lyricTextFont = "'Palatino Linotype', Palatino, serif";
+      const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, snippet);
+      const score = new exsurge.ChantScore(ctxt, mappings, false);
+      score.performLayoutAsync(ctxt, () => {
+        score.layoutChantLines(ctxt, 4000, () => {
+          container.innerHTML = score.createSvg(ctxt);
+          const svg = container.querySelector('svg');
+          if (!svg) { reject(new Error('kein SVG')); return; }
+          try {
+            // tatsächlich belegte Fläche (Noten + Text) – Linien enden sonst erst bei 4000
+            let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+            const inv = svg.getScreenCTM().inverse();
+            const toUser = (x, y) => { const p = svg.createSVGPoint(); p.x = x; p.y = y; return p.matrixTransform(inv); };
+            svg.querySelectorAll('use, text, path').forEach(el => {
+              if (el.closest('defs')) return;
+              const r = el.getBoundingClientRect();
+              if (!r.width && !r.height) return;
+              const a = toUser(r.left, r.top), z = toUser(r.right, r.bottom);
+              x1 = Math.min(x1, a.x); y1 = Math.min(y1, a.y); x2 = Math.max(x2, z.x); y2 = Math.max(y2, z.y);
+            });
+            if (isFinite(x1)) {
+              svg.querySelectorAll('line').forEach(l => { l.setAttribute('x2', Math.min(parseFloat(l.getAttribute('x2')) || 0, x2 + 8)); });
+              svg.setAttribute('viewBox', (x1 - 6) + ' ' + (y1 - 6) + ' ' + (x2 - x1 + 20) + ' ' + (y2 - y1 + 12));
+            }
+          } catch (e) {}
+          svg.removeAttribute('width'); svg.removeAttribute('height');
+          svg.style.cssText = 'display:block;width:100%;height:auto;max-height:90px';
+          svg.setAttribute('preserveAspectRatio', 'xMinYMid meet');
+          resolve();
+        });
+      });
+    } catch (e) { reject(e); }
+  });
 }
 
 function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel, similar) {
@@ -4683,18 +4743,23 @@ function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel, similar) {
         const t2 = document.createElement('div');
         t2.style.cssText = 'font-size:10px;color:#5a7a40;margin-top:1px';
         t2.textContent = 'Quelle wird geladen …';
-        // Notenvorschau: Bild der Partitur direkt von GregoBase (nur oberer Teil)
+        // Notenvorschau: Anfang des Stücks, selbst gesetzt (Fallback: Bild von GregoBase, ganz eingepasst)
         const pv = document.createElement('div');
-        pv.style.cssText = 'height:58px;overflow:hidden;margin-top:3px;background:#fff;border-radius:2px';
-        const img = document.createElement('img');
-        img.src = 'https://gregobase.selapa.net/chant_img.php?id=' + encodeURIComponent(m.id);
-        img.alt = ''; img.loading = 'lazy';
-        img.style.cssText = 'width:100%;display:block';
-        img.onerror = () => pv.remove();
-        pv.appendChild(img);
+        pv.style.cssText = 'margin-top:3px;background:#fff;border-radius:2px;overflow:hidden;min-height:20px;max-width:100%';
+        pv.textContent = '';
+        const imgFallback = () => {
+          pv.innerHTML = '';
+          const img = document.createElement('img');
+          img.src = 'https://gregobase.selapa.net/chant_img.php?id=' + encodeURIComponent(m.id);
+          img.alt = ''; img.loading = 'lazy';
+          img.style.cssText = 'display:block;width:100%;height:110px;object-fit:contain;object-position:left top';
+          img.onerror = () => pv.remove();
+          pv.appendChild(img);
+        };
         btn.appendChild(t1); btn.appendChild(t2); btn.appendChild(pv);
         gregGbInfo(m.id).then(info => {
-          if (!info) { t2.textContent = 'Quelle: nicht abrufbar'; return; }
+          if (!info) { t2.textContent = 'Quelle: nicht abrufbar'; imgFallback(); return; }
+          if (info._gabc) gregGbPreviewInto(pv, info._gabc).catch(imgFallback); else imgFallback();
           m.book = info.book || ''; m.officePart = info['office-part'] || ''; m.mode = info.mode || '';
           const parts = ['Quelle: ' + (m.book || 'unbekannt')];
           if (m.officePart) parts.push(m.officePart);
@@ -6160,15 +6225,13 @@ function gregImportGABCString(gabcStr, opts) {
 
   const clefM = body.match(/\(([cf]b?[1-5](?:@[cf]b?[1-5])?)\)/);
   if (clefM) {
-    const clefMap = {'c3':'do','c4':'do4','f3':'fa','f4':'fa4'};
-    const key = clefMap[clefM[1]];
-    if (key) { gregSetClef(key); gregClefRaw = ''; }
+    if (/^[cf]b?[1-4]$/.test(clefM[1])) { gregClefRaw = ''; gregSetClef(clefM[1]); }
     else {
-      // z. B. "cb3" (Schlüssel mit b), "c2", "f2", "c3@f3": nächstliegenden
-      // Knopf wählen, das Original aber unverändert weitergeben.
-      const base = clefM[1].replace('b', '').split('@')[0];
-      gregSetClef(clefMap[base] || (base[0] === 'f' ? (base[1] === '4' ? 'fa4' : 'fa') : (base[1] === '4' ? 'do4' : 'do')));
+      // Doppelschlüssel (c3@f3) oder Schlüssel auf Linie 5 (5-Linien-System):
+      // ersten Teil als Schlüssel wählen, Original unverändert weitergeben.
+      const first = clefM[1].split('@')[0].replace(/5$/, '4');
       gregClefRaw = clefM[1];
+      gregSetClef(first);
     }
   }
 
@@ -7142,7 +7205,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '264';
+const NOTATOR_BUILD_ID = '265';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7368,7 +7431,7 @@ function gregApplyLoadedState(state) {
     // the same "whatever was active at save time" leftover as the text
     // fields above, so it must stay scoped to the single-section case too.
     if (state.clef) gregSetClef(state.clef);
-    gregClefRaw = state.clefRaw || '';
+    gregClefRaw = state.clefRaw || ''; gregClefUi();
     set('greg-commentary', state.commentary);
     { const d2 = document.getElementById('greg-dropcap2'); if (d2) d2.checked = state.initialLines === 2; }
     gregHdrExtra = state.hdrExtra || '';
@@ -13059,7 +13122,7 @@ var exsurge = (() => {
 
   // exsurge/src/Exsurge.Gabc.js
   var __syllablesRegex = /(?=.)((?:[^(])*)(?:\(?([^)]*)\)?)?/g;
-  var __notationsRegex = /z0|z|Z|::[0-9]?|:[0-9]?|;[0-9]?|,[0-9]?|`|c1|c2|c3|c4|f3|f4|cb3|cb4|\/\/|\/| |\!|-?[a-mA-M][oOwWvVrRsxy#~\+><_\.'012345]*(?:\[[^\]]*\]?)*/g;
+  var __notationsRegex = /z0|z|Z|::[0-9]?|:[0-9]?|;[0-9]?|,[0-9]?|`|[cf]b?[1-4](?![0-9])|\/\/|\/| |\!|-?[a-mA-M][oOwWvVrRsxy#~\+><_\.'012345]*(?:\[[^\]]*\]?)*/g;
   var __braceSpecRegex = /([ou])(b|cb|cba):([01])(?:([{}])|;(\d*(?:\.\d+)?)mm)/;
   var Gabc = class {
     // takes gabc source code (without the header info) and returns an array
@@ -13350,30 +13413,21 @@ var exsurge = (() => {
             break;
           }
           // other gregorio dividers are not supported yet
-          case "c1":
-            addNotation(ctxt2.activeClef = new DoClef(-3, 2));
+          // Notator: alle Schlüssel auf 4 Linien (c1–c4, f1–f4, je auch mit b)
+          case "c1": case "c2": case "c3": case "c4": case "f1": case "f2": case "f3": case "f4":
+          case "cb1": case "cb2": case "cb3": case "cb4": case "fb1": case "fb2": case "fb3": case "fb4": {
+            var _cl = atom.match(/^([cf])(b?)([1-4])$/);
+            var _sp = 2 * parseInt(_cl[3], 10) - 5;
+            var _acc = null;
+            if (_cl[2]) {
+              // Schlüssel-b auf «si»: beim Do-Schlüssel einen Schritt darunter,
+              // beim Fa-Schlüssel drei darüber – jeweils im Liniensystem gehalten
+              var _bp = _cl[1] === "c" ? (_sp - 1 >= -3 ? _sp - 1 : _sp + 6) : (_sp + 3 <= 3 ? _sp + 3 : _sp - 4);
+              _acc = new Accidental(_bp, AccidentalType.Flat);
+            }
+            addNotation(ctxt2.activeClef = _cl[1] === "c" ? new DoClef(_sp, 2, _acc) : new FaClef(_sp, 2, _acc));
             break;
-          case "c2":
-            addNotation(ctxt2.activeClef = new DoClef(-1, 2));
-            break;
-          case "c3":
-            addNotation(ctxt2.activeClef = new DoClef(1, 2));
-            break;
-          case "c4":
-            addNotation(ctxt2.activeClef = new DoClef(3, 2));
-            break;
-          case "f3":
-            addNotation(ctxt2.activeClef = new FaClef(1, 2));
-            break;
-          case "f4":
-            addNotation(ctxt2.activeClef = new FaClef(3, 2));
-            break;
-          case "cb3":
-            addNotation(ctxt2.activeClef = new DoClef(1, 2, new Accidental(0, AccidentalType.Flat)));
-            break;
-          case "cb4":
-            addNotation(ctxt2.activeClef = new DoClef(3, 2, new Accidental(2, AccidentalType.Flat)));
-            break;
+          }
           case "z":
             addNotation(new ChantLineBreak(true));
             break;
@@ -14308,7 +14362,7 @@ function clParseGabc(gabc, popts) {
       const c = n[i];
       const rest = n.slice(i);
       // Schlüssel
-      const cm = rest.match(/^(c|f)(b?)([1-5])/);
+      const cm = rest.match(/^(c|f)(b?)([1-5])(?:@[cf]b?[1-5])?/); // Doppelschlüssel: erster Teil gilt
       if (cm && (i === 0 || /[\s:;,]/.test(n[i - 1]))) {
         clefType = cm[1]; clefFlat = cm[2] === 'b'; clefLine = parseInt(cm[3], 10);
         i += cm[0].length; continue;
