@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '269';
+const NOTATOR_BUILD_ID = '270';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15023,15 +15023,15 @@ function clGabcToAbc(gabcList, opts) {
         // Text direkt links vor dem Silbentext; vor einem Trennstrich (z.B.
         // "iij.") mittig unter dem Strich. Die Art wird per unsichtbarem
         // Markerzeichen an clPlaceLyricAnnotations() übergeben.
-        const annJoined = (u.ann || []).join(' ').replace(/"/g, "'");
+        const annJoined = (u.ann || []).join(' ').replace(/"/g, "'").replace(/~/g, ' ');
         let annTxt = '', annAfter = '';
         if (annJoined) {
           const tw = annJoined.length * 7.5;
           if (u.kind === 'syl') {
-            annTxt = '"_' + CL_MARK_SYL + annJoined + '"y' + Math.max(1, Math.round((tw + 12) / 8));
+            annTxt = '"@0,0' + CL_MARK_SYL + annJoined + '"y' + Math.max(1, Math.round((tw + 12) / 8));
           } else {
             const px = tw / 2 + lastLyricLen * 4 + 6;
-            annTxt = '"_' + CL_MARK_BAR + annJoined + '"y' + Math.max(1, Math.round(px / 8));
+            annTxt = '"@0,0' + CL_MARK_BAR + annJoined + '"y' + Math.max(1, Math.round(px / 8));
             annAfter = ' y' + Math.max(1, Math.round((tw / 2 + 6) / 8));
           }
         }
