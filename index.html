@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '267';
+const NOTATOR_BUILD_ID = '268';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15120,9 +15120,22 @@ function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick) {
         if (!hit || !elem.abselem || !elem.abselem.elemset) return;
         elem.abselem.elemset.forEach(g => {
           try {
-            const bb = g.getBBox();
-            const cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
-            g.setAttribute('transform', 'translate(' + cx + ',' + cy + ') scale(0.7) translate(' + (-cx) + ',' + (-cy) + ')');
+            // um die Mitte des Notenkopfs verkleinern, nicht um die Mitte der
+            // ganzen Gruppe (Hals/Balken) – sonst rutscht der Kopf auf eine
+            // falsche Tonhöhe
+            const heads = (g.classList && g.classList.contains('abcjs-notehead')) ? [g] : Array.from(g.querySelectorAll ? g.querySelectorAll('.abcjs-notehead') : []);
+            if (!heads.length) return; // Hals, Fähnchen, Balken unverändert lassen
+            // Nur den Notenkopf verkleinern, verankert an der Halsseite:
+            // Tonhöhe bleibt, Hals und Balken bleiben angeschlossen.
+            const stem = (g.querySelector && g.querySelector('.abcjs-stem')) ||
+              elem.abselem.elemset.find(x => x.classList && x.classList.contains('abcjs-stem'));
+            const sb = stem ? stem.getBBox() : null;
+            heads.forEach(h => {
+              const bb = h.getBBox();
+              const cy = bb.y + bb.height / 2;
+              const cx = sb ? ((sb.x + sb.width / 2) > (bb.x + bb.width / 2) ? bb.x + bb.width : bb.x) : bb.x + bb.width / 2;
+              h.setAttribute('transform', 'translate(' + cx + ',' + cy + ') scale(0.7) translate(' + (-cx) + ',' + (-cy) + ')');
+            });
           } catch (e) {}
         });
       })))));
