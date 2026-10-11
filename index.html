@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '268';
+const NOTATOR_BUILD_ID = '269';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14540,11 +14540,33 @@ const CL_MARK_SYL = '\u2060', CL_MARK_BAR = '\u200B';
 
 // T:-Zeilen für Titel + (mehrzeiligen) Untertitel. abcjs zeigt die erste
 // T:-Zeile als Titel, jede weitere als Untertitel.
+// Lange Titel/Untertitel umbrechen (abcjs setzt jede T:-Zeile einzeilig und
+// schneidet sonst am Rand ab). Zeichenzahl aus der Notenbreite geschätzt.
+function clWrapText(t, maxChars) {
+  const words = String(t).split(/\s+/).filter(Boolean), lines = [];
+  let cur = '';
+  words.forEach(w => {
+    if (cur && (cur + ' ' + w).length > maxChars) { lines.push(cur); cur = w; }
+    else cur = cur ? cur + ' ' + w : w;
+  });
+  if (cur) lines.push(cur);
+  return lines;
+}
 function clAbcTitleLines(title, subtitle) {
   const clean = t => String(t || '').replace(/[\r\n]+/g, ' ').replace(/%/g, '\\%').trim();
+  const sw = (typeof clScoreWidth === 'function' ? clScoreWidth() : 0) || 740;
+  const subMax = Math.max(25, Math.floor(sw / 7.2)), titleMax = Math.max(15, Math.floor(sw / 10.5));
+  // gemessen (wie im Choral), Schätzung als Rückfall
+  const wrap = (t, px, maxC) => {
+    try { if (typeof gregWordWrap === 'function') { const w = gregWordWrap(t, px + "px 'Palatino Linotype', Palatino, serif", sw - 40); if (w && w.length) return w; } } catch (e) {}
+    return clWrapText(t, maxC);
+  };
   let out = '';
-  const subs = String(subtitle || '').split(/\n/).map(clean).filter(Boolean);
-  if (clean(title)) out += 'T:' + clean(title) + '\n';
+  const subs = [];
+  String(subtitle || '').split(/\n/).map(clean).filter(Boolean).forEach(l => subs.push(...wrap(l, 18, subMax)));
+  const tls = clean(title) ? wrap(clean(title), 24, titleMax) : [];
+  // abcjs: erste T:-Zeile = Titel, weitere T:-Zeilen = Untertitel (Fortsetzung eines sehr langen Titels erscheint als Untertitelzeile)
+  if (tls.length) { out += 'T:' + tls[0] + '\n'; tls.slice(1).forEach(l => { out += 'T:' + l + '\n'; }); }
   else if (subs.length) out += 'T: \n';
   subs.forEach(l => { out += 'T:' + l + '\n'; });
   return out;
