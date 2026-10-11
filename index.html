@@ -7205,7 +7205,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '265';
+const NOTATOR_BUILD_ID = '266';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14420,7 +14420,12 @@ function clParseGabc(gabc, popts) {
           sepSinceLast = false;
           continue;
         }
-        if (quil && prevInGroup) prevInGroup.ten = true;
+        // Note vor dem Quilisma wird gedehnt – auch über die Silbengrenze
+        // hinweg (nicht über einen Trennstrich: dann ist das letzte Ereignis ein Strich)
+        if (quil) {
+          const pv = out.events[out.events.length - 1];
+          if (pv && pv.k === 'note') { pv.ten = true; pv.preQuil = true; }
+        }
         const ev = { k: 'note', D, alt, dur: 1 + mora, ten, liq };
         startSyllableIfNeeded(ev);
         out.events.push(ev);
@@ -14828,7 +14833,10 @@ function clGabcToAbc(gabcList, opts) {
           cur = { kind: 'syl', notes: [], text: e.sylStart ? e.text : null, hyphen: !!e.hyphen, ann: pendingAnn };
           pendingAnn = [];
         }
-        cur.notes.push({ pitch, dur: e.dur, ten: e.ten, liq: e.liq });
+        // Wiedergabe (opts.playRests): Episem und Note vor Quilisma gedehnt
+        // (mindestens 2 Achtel); das Notenbild zeigt dafür das Tenuto-Zeichen.
+        const pdur = opts.playRests && (e.ten || e.preQuil) && !e.liq ? Math.max(e.dur, 2) : e.dur;
+        cur.notes.push({ pitch, dur: pdur, ten: e.ten, liq: e.liq });
       } else if (e.k === 'bar') {
         flush();
         units.push({ kind: 'bar', t: e.t, ann: pendingAnn });
