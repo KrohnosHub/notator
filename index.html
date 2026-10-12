@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '276';
+const NOTATOR_BUILD_ID = '277';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14705,7 +14705,8 @@ function clVoicings(seg, ch, inv) {
     }
   }
   res.sort((a, b) => a.c - b.c);
-  return res.slice(0, 10);
+  // mehr Kandidaten, damit die Stimmführung (Übergangskosten) wählen kann
+  return res.slice(0, 24);
 }
 
 // Stimmen-Kopf des Begleitsatzes: 2 Systeme (Manual) oder Orgelsatz mit Pedal
@@ -14783,7 +14784,7 @@ function clHarmonize(segs, ctx) {
       states[k - 1].forEach((p, j) => {
         const pc = best[k - 1][j].cost;
         if (pc === Infinity) return;
-        let t = pc + clTransCost(p, s, spPrev, sCur);
+        let t = pc + clTransCost(p, s, spPrev, sCur, cSeg);
         // nach Atemzeichen/Viertelstrich hält die Orgel durch -> danach ein
         // hörbar anderer Akkord, damit klar ist, dass es weitergeht
         if ((pSeg.endBar === 'minima' || pSeg.endBar === 'minor') && p.ch && s.ch && p.ch.root === s.ch.root) t += (p.inv === s.inv ? 3 : 1.2);
@@ -14802,20 +14803,28 @@ function clHarmonize(segs, ctx) {
   }
 }
 
-function clTransCost(p, s, spPrev, sCur) {
+function clTransCost(p, s, spPrev, sCur, cSeg) {
+  // Ziel (2026-10-12, «klingt holprig»): ruhigere Begleitung – Akkord eher
+  // liegen lassen, Wechsel bevorzugt im Quint-/Quartabstand, kleine Schritte
+  // in Alt/Tenor, keine grossen Bass-Sprünge, kein Wechsel auf kurzer Einzelnote.
   let c = 0;
   if (!p.ch || !s.ch) return 2;
-  if (p.ch.root === s.ch.root) c += 0.3;
+  const pv = p.v, cv = s.v;
+  if (!pv.A || !cv.A) return 2;
+  const sameVoicing = pv.A.s === cv.A.s && pv.T.s === cv.T.s && pv.B.s === cv.B.s;
+  if (p.ch.root === s.ch.root) c += p.inv === s.inv ? (sameVoicing ? 0 : 0.25) : 0.5;
   else {
     const iv = clMod(s.ch.root - p.ch.root, 7);
-    c += (iv === 3 || iv === 4) ? 0 : (iv === 2 || iv === 5) ? 0.4 : 0.9;
+    c += 0.7 + ((iv === 3 || iv === 4) ? 0 : (iv === 2 || iv === 5) ? 0.3 : 0.7);
+    if (cSeg && cSeg.pulses <= 1) c += 0.6; // Akkordwechsel auf kurzer Einzelnote wirkt unruhig
   }
-  const pv = p.v, cv = s.v;
-  if (!pv.A || !cv.A) return c + 2;
   const P = [spPrev, pv.A.s, pv.T.s, pv.B.s], C = [sCur, cv.A.s, cv.T.s, cv.B.s];
-  c += 0.12 * (Math.abs(C[1] - P[1]) + Math.abs(C[2] - P[2])) + 0.05 * Math.abs(C[3] - P[3]);
-  if (Math.abs(C[1] - P[1]) > 7) c += 1;
-  if (Math.abs(C[2] - P[2]) > 7) c += 1;
+  const dA = Math.abs(C[1] - P[1]), dT = Math.abs(C[2] - P[2]), dB = Math.abs(C[3] - P[3]);
+  c += 0.15 * (dA + dT) + 0.08 * dB;
+  if (dA > 5) c += 0.8;
+  if (dT > 5) c += 0.8;
+  if (dB > 7) c += 1.2;
+  if (dB > 12) c += 2;
   for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) {
     const d1 = clMod(P[i] - P[j], 12), d2 = clMod(C[i] - C[j], 12);
     const mi = C[i] - P[i], mj = C[j] - P[j];
@@ -15006,10 +15015,16 @@ function clGabcToAbc(gabcList, opts) {
         if (u.kind === 'syl') u.notes.forEach(nt => {
           if ((nt.ten || nt.pq) && !nt.liq && nt.dur < 2) { const add = 2 - nt.dur; nt.dur += add; if (nt._seg) nt._seg.pulses += add; }
         });
-        if (u.kind === 'bar' && !u.final && (u.t === 'minima' || u.t === 'minor')) {
+        // Atemzeichen/Viertelstrich: ganz durchhalten (2 Achtel); halber Strich
+        // (2 Achtel): 1 halten + 1 Pause; ganzer Strich im Stück (3): 2 halten + 1 Pause
+        if (u.kind === 'bar' && !u.final) {
+          const hold = (u.t === 'minima' || u.t === 'minor') ? 2 : u.t === 'maior' ? 1 : 2;
           let pv = null;
           for (let k = ui - 1; k >= 0 && !pv; k--) if (ln[k].kind === 'syl' && ln[k].notes.length) pv = ln[k];
-          if (pv) { const nt = pv.notes[pv.notes.length - 1]; nt.dur += 2; if (nt._seg) nt._seg.pulses += 2; u._held = true; }
+          if (pv) {
+            const nt = pv.notes[pv.notes.length - 1]; nt.dur += hold; if (nt._seg) nt._seg.pulses += hold;
+            u._held = true; u._rest = (u.t === 'minima' || u.t === 'minor') ? 0 : 1;
+          }
         }
       }));
     }
@@ -15123,7 +15138,7 @@ function clGabcToAbc(gabcList, opts) {
           // Wiedergabe (opts.playRests): Divisiones als unsichtbare Pausen
           // (x), damit nicht über die Atempause hinweggespielt wird.
           // Dauer in Achteln: minima 2, minor 2, maior 2, finalis 3.
-          const pr = opts.playRests && !u.final && !u._held ? ({ minima: 2, minor: 2, maior: 2 })[u.t] || 3 : 0;
+          const pr = opts.playRests && !u.final ? (u._held ? (u._rest || 0) : (({ minima: 2, minor: 2, maior: 2 })[u.t] || 3)) : 0;
           if (u.t === 'minima' && !u.final) { music += pr ? ' !breath!x' + pr : ' !breath!y'; addLow(pr ? ' x' + pr : ' y'); }
           else {
             if (pr) { const xr = ' x' + (pr > 1 ? pr : ''); music += xr; addLow(xr); }
@@ -15713,7 +15728,21 @@ function clDownloadMusicXml() {
 // zwischengespeichert). Choral: die einstimmige Übertragung in Original-
 // lage; Orgel: genau die angezeigte Fassung (inkl. Transposition und
 // Begleitsatz) mit Mitlesen (gespielte Noten werden hervorgehoben).
-const NT_INSTRUMENTS = [{ p: 19, n: 'Orgel' }, { p: 52, n: 'Chor' }, { p: 73, n: 'Flöte' }, { p: 0, n: 'Klavier' }];
+// p >= 1000: «sanfte» Variante = Programm p-1000, leise Dynamik (Melodie mp,
+// Begleitstimmen p) – imitiert eine leichte Registrierung (Flöten 8').
+const NT_INSTRUMENTS = [{ p: 19, n: 'Orgel – volles Werk' }, { p: 1074, n: 'Orgel – sanft (Flöten 8′)' }, { p: 52, n: 'Chor' }, { p: 73, n: 'Flöte' }, { p: 0, n: 'Klavier' }];
+const ntPlayProgram = instr => instr >= 1000 ? instr - 1000 : instr;
+// Leise Dynamik in den Abspiel-Notentext einfügen (sanfte Registrierung)
+function ntSoftenAbc(abc) {
+  if (ntPlayPrefs().instr < 1000) return abc;
+  return abc.split('\n').map(l => {
+    if (/^\[V:S\]/.test(l)) return l.replace(/^\[V:S\]\s*/, '[V:S] !mp! ');
+    if (/^\[V:[ATB]\]/.test(l)) return l.replace(/^(\[V:[ATB]\])\s*/, '$1 !p! ');
+    // einstimmige Choral-Wiedergabe: Notenzeilen ohne Stimmangabe
+    if (l && !/^[A-Za-z]:|^%|^\[V:/.test(l) && /[A-Ga-g]/.test(l)) return '!mp! ' + l;
+    return l;
+  }).join('\n');
+}
 const ntPlay = { synth: null, timer: null, state: 'stop', source: null, token: 0, ac: null };
 
 function ntPlayPrefs() {
@@ -15847,7 +15876,7 @@ function ntPlayToggle(source, from) {
           const parts = pb ? pb.abc.split(/(?=^X:)/m).filter(x => x.trim()) : [];
           if (parts.length === tunes.length) {
             tunes = tunes.map((t, ti) => {
-              const objs = ABCJS.renderAbc('*', parts[ti]);
+              const objs = ABCJS.renderAbc('*', ntSoftenAbc(parts[ti]));
               if (!objs || !objs[0]) return t;
               const map = ntPlayNoteMap(objs[0], t.obj);
               const out = { obj: objs[0], highlight: true, map };
@@ -15874,7 +15903,7 @@ function ntPlayToggle(source, from) {
       if (!clHasNotes(list)) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
       const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, playRests: true, flatToBar: (typeof clState === 'undefined' || clState.flatToBar !== false) });
       r.abc.split(/(?=^X:)/m).filter(x => x.trim()).forEach(part => {
-        const objs = ABCJS.renderAbc('*', part);
+        const objs = ABCJS.renderAbc('*', ntSoftenAbc(part));
         if (objs && objs[0]) tunes.push({ obj: objs[0], highlight: false });
       });
     }
@@ -15932,7 +15961,7 @@ function ntPlayRun(tunes, i, token) {
   synth.init({
     audioContext: ntPlay.ac,
     visualObj: tunes[i].obj,
-    options: { program: pref.instr, qpm, onEnded: () => { if (token === ntPlay.token && ntPlay.state !== 'pause') { ntClearHighlight(); ntPlayRun(tunes, i + 1, token); } } }, // pause() löst ebenfalls onEnded aus
+    options: { program: ntPlayProgram(pref.instr), qpm, onEnded: () => { if (token === ntPlay.token && ntPlay.state !== 'pause') { ntClearHighlight(); ntPlayRun(tunes, i + 1, token); } } }, // pause() löst ebenfalls onEnded aus
   }).then(() => synth.prime()).then(() => {
     if (token !== ntPlay.token) return;
     // Startposition (Ab Stelle abspielen, Orgel): Zeit der gewählten Note
@@ -15966,7 +15995,7 @@ function ntPlayRun(tunes, i, token) {
       if (startSec > 0) ntPlay.timer.start(startSec, 'seconds'); else ntPlay.timer.start();
     }
     synth.start();
-    gregGst('Wiedergabe' + (tunes.length > 1 ? ' (Abschnitt ' + (i + 1) + ' von ' + tunes.length + ')' : '') + ' – ' + (NT_INSTRUMENTS.find(x => x.p === pref.instr) || {}).n + ', ♪ = ' + pref.tempo);
+    gregGst('Wiedergabe' + (tunes.length > 1 ? ' (Abschnitt ' + (i + 1) + ' von ' + tunes.length + ')' : '') + ' – ' + ((NT_INSTRUMENTS.find(x => x.p === pref.instr) || {}).n || '') + ', ♪ = ' + pref.tempo);
   }).catch(err => {
     if (token !== ntPlay.token) return;
     gregGst('Wiedergabe nicht möglich: ' + (err && err.message ? err.message : err) + ' (Klänge werden beim ersten Mal aus dem Internet geladen)');
