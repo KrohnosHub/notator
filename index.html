@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '272';
+const NOTATOR_BUILD_ID = '273';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7580,15 +7580,35 @@ function gdLoadGis() {
   return _gdGisLoading;
 }
 
+// Token (gültig ca. 1 h) in localStorage, damit er Tab-/App-Wechsel (z. B. Link aus
+// dem Schola-Planer) überlebt; sessionStorage nur als Ausweichlösung.
+const GD_HINT_KEY = 'notatorGdHint';
 function gdCachedToken() {
-  try {
-    const t = JSON.parse(sessionStorage.getItem(GD_TOKEN_KEY) || 'null');
-    if (t && t.token && t.exp > Date.now() + 60000) return t.token;
-  } catch (e) {}
+  for (const st of ['localStorage', 'sessionStorage']) {
+    try {
+      const t = JSON.parse(window[st].getItem(GD_TOKEN_KEY) || 'null');
+      if (t && t.token && t.exp > Date.now() + 60000) return t.token;
+    } catch (e) {}
+  }
   return null;
 }
 function gdHasToken() { return !!gdCachedToken(); }
-function gdClearToken() { try { sessionStorage.removeItem(GD_TOKEN_KEY); } catch (e) {} }
+function gdClearToken() { for (const st of ['localStorage', 'sessionStorage']) { try { window[st].removeItem(GD_TOKEN_KEY); } catch (e) {} } }
+function gdStoreToken(token, expiresIn) {
+  const v = JSON.stringify({ token, exp: Date.now() + (expiresIn || 3600) * 1000 });
+  try { localStorage.setItem(GD_TOKEN_KEY, v); } catch (e) { try { sessionStorage.setItem(GD_TOKEN_KEY, v); } catch (e2) {} }
+  // Konto merken: beim nächsten Mal ohne Kontoauswahl (und evtl. still) anmelden
+  try { localStorage.setItem(GD_HINT_KEY, localStorage.getItem(GD_HINT_KEY) || '1'); } catch (e) {}
+  fetch('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)', { headers: { Authorization: 'Bearer ' + token } })
+    .then(r => r.ok ? r.json() : null).then(j => { if (j && j.user && j.user.emailAddress) { try { localStorage.setItem(GD_HINT_KEY, j.user.emailAddress); } catch (e) {} } }).catch(() => {});
+}
+// Ohne Klick versuchen (nur wenn schon früher verbunden): liefert Token oder null
+function gdTrySilent() {
+  const c = gdCachedToken(); if (c) return Promise.resolve(c);
+  let h = ''; try { h = localStorage.getItem(GD_HINT_KEY) || ''; } catch (e) {}
+  if (!h || !gdConfigured()) return Promise.resolve(null);
+  return Promise.race([gdGetToken(true).catch(() => null), new Promise(r => setTimeout(() => r(null), 6000))]);
+}
 
 // interactive=true: darf ein Google-Anmeldefenster öffnen (nur aus einem
 // Klick heraus aufrufen, sonst blockiert der Browser das Popup).
@@ -7599,11 +7619,14 @@ function gdGetToken(interactive) {
   if (!gdConfigured()) return Promise.reject(new Error('Google Drive ist noch nicht eingerichtet (Client-ID fehlt)'));
   return gdLoadGis().then(() => new Promise((resolve, reject) => {
     if (!_gdTokenClient) {
-      _gdTokenClient = google.accounts.oauth2.initTokenClient({ client_id: gdClientId(), scope: GD_SCOPE, callback: () => {} });
+      let hint = ''; try { hint = localStorage.getItem(GD_HINT_KEY) || ''; } catch (e) {}
+      const cfg = { client_id: gdClientId(), scope: GD_SCOPE, callback: () => {} };
+      if (hint.indexOf('@') > 0) cfg.hint = hint;
+      _gdTokenClient = google.accounts.oauth2.initTokenClient(cfg);
     }
     _gdTokenClient.callback = resp => {
       if (resp.error) { reject(new Error('Google-Anmeldung: ' + resp.error)); return; }
-      try { sessionStorage.setItem(GD_TOKEN_KEY, JSON.stringify({ token: resp.access_token, exp: Date.now() + (resp.expires_in || 3600) * 1000 })); } catch (e) {}
+      gdStoreToken(resp.access_token, resp.expires_in);
       resolve(resp.access_token);
     };
     _gdTokenClient.error_callback = err => reject(new Error('Google-Anmeldung abgebrochen' + (err && err.type ? ' (' + err.type + ')' : '')));
@@ -8252,9 +8275,12 @@ function gregMobileInit() {
   // Landet man auf dem Handy auf einer leeren Seite (kein Autosave aus
   // einer vorherigen Sitzung), gleich die Bibliotheksliste zeigen statt
   // eines leeren Editors — auf dem PC bleibt das Verhalten unverändert.
-  if (gregIsMobileViewport() && gregEntries.length === 0) {
+  // Nicht bei eingehendem Link (#song=… / #drive=… / #n=…): dort öffnet ntSongCheckIncoming das Stück.
+  const incomingLink = /[#&](song|drive|n)=/.test(location.hash || '');
+  if (gregIsMobileViewport() && gregEntries.length === 0 && !incomingLink) {
     setTimeout(function() {
-      if (gregEntries.length === 0) gregLibShowModal();
+      const open = document.getElementById('modal-bg') && document.getElementById('modal-bg').classList.contains('open');
+      if (gregEntries.length === 0 && !open && !window._ntIncomingHandled) gregLibShowModal();
     }, 400);
   }
 }
@@ -16650,19 +16676,42 @@ function ntSongCheckIncoming() {
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   if (!title && !dm) return;
   try { switchTab('greg'); } catch (e) {}
-  if (dm) {
-    // Stück existiert bereits als Notator-Datei in Google Drive: diese öffnen, sonst GregoBase-Suche
-    const file = { id: dm[1], name: (title || 'Stück') + '.notator', modifiedTime: new Date().toISOString() };
-    const fallback = () => { if (title) gregImportSongFromGregoBase(title); };
-    if (typeof gdHasToken === 'function' && gdHasToken()) { gregLibLoadDrive(file, fallback); return; }
-    showModal('☁ Notator-Version in Google Drive', 'Für "' + (title || 'dieses Stück') + '" gibt es bereits eine gespeicherte Notator-Version in Google Drive. Zum Öffnen ist die Google-Anmeldung nötig.', [
-      { label: 'Aus Google Drive öffnen (anmelden)', fn: () => { closeModal(); gregLibLoadDrive(file, fallback); } },
-      ...(title ? [{ label: 'Stattdessen in GregoBase suchen', fn: () => { closeModal(); gregImportSongFromGregoBase(title); } }] : []),
+  window._ntIncomingHandled = true;
+  ntOpenSongDriveFirst(title, dm ? dm[1] : '');
+}
+// Reihenfolge: 1. vorhandene Notator-Datei in Google Drive (Datei-ID oder Titelsuche), 2. GregoBase.
+function ntOpenSongDriveFirst(title, driveId) {
+  const normT = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '');
+  const toGb = () => { if (title) gregImportSongFromGregoBase(title); else gregGst('Kein Titel im Link.'); };
+  const search = () => {
+    if (!title) { toGb(); return; }
+    gregGst('Suche "' + title + '" in Google Drive …');
+    gdList(false).then(files => {
+      const t = normT(title);
+      const exact = files.filter(f => normT(gdTitleFromName(f.name)) === t);
+      const part = t.length >= 5 ? files.filter(f => { const n = normT(gdTitleFromName(f.name)); return n.includes(t) || (n.length >= 5 && t.includes(n)); }) : [];
+      const pick = exact[0] || (part.length === 1 ? part[0] : null);
+      if (pick) { gregLibLoadDrive(pick, toGb); return; }
+      if (part.length > 1) { try { _libFilter = { q: title, season: '', genre: '', tag: '' }; } catch (e) {} gregLibShowModal(); return; }
+      gregGst('Nicht in Google Drive gefunden – suche in GregoBase …');
+      toGb();
+    }).catch(err => { gregGst('Drive-Suche nicht möglich (' + err.message + ')'); toGb(); });
+  };
+  const withToken = () => {
+    if (driveId) gregLibLoadDrive({ id: driveId, name: (title || 'Stück') + '.notator', modifiedTime: new Date().toISOString() }, search);
+    else search();
+  };
+  if (!gdConfigured()) { toGb(); return; }
+  if (gdHasToken()) { withToken(); return; }
+  gregGst('Prüfe Google-Anmeldung …');
+  gdTrySilent().then(tok => {
+    if (tok) { withToken(); return; }
+    showModal('☁ Google Drive', 'Für "' + (title || 'dieses Stück') + '" wird zuerst in deiner Notator-Ablage in Google Drive gesucht, danach in GregoBase. Dafür ist die Google-Anmeldung nötig (gilt etwa eine Stunde).', [
+      { label: '☁ Anmelden und in Drive öffnen', fn: () => { closeModal(); gdGetToken(true).then(withToken).catch(err => { gregGst(err.message); toGb(); }); } },
+      ...(title ? [{ label: 'Direkt in GregoBase suchen', fn: () => { closeModal(); toGb(); } }] : []),
       { label: 'Schliessen', fn: closeModal }
     ]);
-    return;
-  }
-  gregImportSongFromGregoBase(title);
+  });
 }
 window.addEventListener('hashchange', ntSongCheckIncoming);
 
