@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '275';
+const NOTATOR_BUILD_ID = '276';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14783,7 +14783,10 @@ function clHarmonize(segs, ctx) {
       states[k - 1].forEach((p, j) => {
         const pc = best[k - 1][j].cost;
         if (pc === Infinity) return;
-        const t = pc + clTransCost(p, s, spPrev, sCur);
+        let t = pc + clTransCost(p, s, spPrev, sCur);
+        // nach Atemzeichen/Viertelstrich hält die Orgel durch -> danach ein
+        // hörbar anderer Akkord, damit klar ist, dass es weitergeht
+        if ((pSeg.endBar === 'minima' || pSeg.endBar === 'minor') && p.ch && s.ch && p.ch.root === s.ch.root) t += (p.inv === s.inv ? 3 : 1.2);
         if (t < bc) { bc = t; bp = j; }
       });
       best[k][i].cost = bc + s.cost; best[k][i].prev = bp;
@@ -14891,8 +14894,9 @@ function clGabcToAbc(gabcList, opts) {
         }
         // Wiedergabe (opts.playRests): Episem und Note vor Quilisma gedehnt
         // (mindestens 2 Achtel); das Notenbild zeigt dafür das Tenuto-Zeichen.
-        const pdur = opts.playRests && (e.ten || e.preQuil) && !e.liq ? Math.max(e.dur, 2) : e.dur;
-        cur.notes.push({ pitch, dur: pdur, ten: e.ten, liq: e.liq });
+        // (Dehnung erst nach der Harmonisierung, siehe "Wiedergabe-Fassung" unten,
+        // damit Akkorde in Wiedergabe und Notenbild gleich sind)
+        cur.notes.push({ pitch, dur: e.dur, ten: e.ten, liq: e.liq, pq: !!e.preQuil });
       } else if (e.k === 'bar') {
         flush();
         units.push({ kind: 'bar', t: e.t, ann: pendingAnn });
@@ -14991,6 +14995,23 @@ function clGabcToAbc(gabcList, opts) {
           overridden: clOvLookup(opts.chordOverrides, sg) != null,
         };
       });
+    }
+
+    // Wiedergabe-Fassung (opts.playRests): Episem und Note vor Quilisma gedehnt;
+    // an Atemzeichen und Viertelstrich setzt die Orgel nicht ab, sondern hält
+    // den letzten Ton/Akkord über die Pause (2 Achtel). Erst NACH der
+    // Harmonisierung, damit die Akkorde dieselben bleiben wie im Notenbild.
+    if (opts.playRests) {
+      lines.forEach(ln => ln.forEach((u, ui) => {
+        if (u.kind === 'syl') u.notes.forEach(nt => {
+          if ((nt.ten || nt.pq) && !nt.liq && nt.dur < 2) { const add = 2 - nt.dur; nt.dur += add; if (nt._seg) nt._seg.pulses += add; }
+        });
+        if (u.kind === 'bar' && !u.final && (u.t === 'minima' || u.t === 'minor')) {
+          let pv = null;
+          for (let k = ui - 1; k >= 0 && !pv; k--) if (ln[k].kind === 'syl' && ln[k].notes.length) pv = ln[k];
+          if (pv) { const nt = pv.notes[pv.notes.length - 1]; nt.dur += 2; if (nt._seg) nt._seg.pulses += 2; u._held = true; }
+        }
+      }));
     }
 
     // ABC-Text
@@ -15102,7 +15123,7 @@ function clGabcToAbc(gabcList, opts) {
           // Wiedergabe (opts.playRests): Divisiones als unsichtbare Pausen
           // (x), damit nicht über die Atempause hinweggespielt wird.
           // Dauer in Achteln: minima 2, minor 2, maior 2, finalis 3.
-          const pr = opts.playRests && !u.final ? ({ minima: 2, minor: 2, maior: 2 })[u.t] || 3 : 0;
+          const pr = opts.playRests && !u.final && !u._held ? ({ minima: 2, minor: 2, maior: 2 })[u.t] || 3 : 0;
           if (u.t === 'minima' && !u.final) { music += pr ? ' !breath!x' + pr : ' !breath!y'; addLow(pr ? ' x' + pr : ' y'); }
           else {
             if (pr) { const xr = ' x' + (pr > 1 ? pr : ''); music += xr; addLow(xr); }
@@ -15833,6 +15854,11 @@ function ntPlayToggle(source, from) {
               if (startEl && from.tune === ti) {
                 // sichtbare Note -> startChar in der Abspiel-Fassung
                 map.forEach((els, c) => { if (out.startChar == null && startEl.abselem.elemset.some(x => els.indexOf(x) >= 0)) out.startChar = c; });
+                if (out.startChar == null && map._mel && startEl.abselem) {
+                  // Unterstimme mitten in einer Melodienote: letzte Melodienote links davon
+                  let kk = -1; map._mel.V.forEach((v, k) => { if (v.abselem && v.abselem.x <= startEl.abselem.x + 1) kk = k; });
+                  if (kk >= 0 && map._mel.P[kk]) out.startChar = map._mel.P[kk].startChar;
+                }
               }
               return out;
             });
@@ -15861,20 +15887,37 @@ function ntPlayToggle(source, from) {
 // Noten im sichtbaren Notenbild zu: gleiche Reihenfolge je Stimme, Pausen
 // zählen nicht. Ergebnis: startChar (Abspiel-Fassung) -> SVG-Elemente.
 function ntPlayNoteMap(playObj, visObj) {
-  const collect = obj => {
-    const byVoice = {};
-    (obj.lines || []).forEach(line => (line.staff || []).forEach((sf, si) => (sf.voices || []).forEach((v, vi) => {
-      const k = si + ':' + vi;
-      (byVoice[k] = byVoice[k] || []);
-      v.forEach(el => { if (el.el_type === 'note' && !el.rest) byVoice[k].push(el); });
-    })));
-    return byVoice;
+  // Zuordnung über die Melodie (Oberstimme): k-te Melodienote der
+  // Abspiel-Fassung <-> k-te Melodienote im Notenbild. Hervorgehoben wird
+  // alles, was im Notenbild mit dieser Melodienote zusammen anschlägt.
+  // (Die Unterstimmen können in der Abspiel-Fassung anders gebunden/geteilt
+  // sein – eine Zuordnung Note für Note pro Stimme lief dort auseinander.)
+  const melody = obj => {
+    const out = [];
+    (obj.lines || []).forEach(line => {
+      const sf = (line.staff || [])[0]; const v = sf && sf.voices && sf.voices[0];
+      (v || []).forEach(el => {
+        if (el.el_type !== 'note' || el.rest) return;
+        const p = el.pitches && el.pitches[0];
+        if (p && p.endTie && !p.startTie) return; // Fortsetzung einer Bindung
+        if (p && p.endTie && p.startTie) return;
+        out.push(el);
+      });
+    });
+    return out;
   };
-  const P = collect(playObj), V = collect(visObj), map = new Map();
-  Object.keys(P).forEach(k => (P[k] || []).forEach((el, n) => {
-    const ve = (V[k] || [])[n];
-    if (ve && ve.abselem && ve.abselem.elemset) map.set(el.startChar, (map.get(el.startChar) || []).concat(ve.abselem.elemset));
-  }));
+  const P = melody(playObj), V = melody(visObj), map = new Map();
+  let visEvents = [];
+  try { visEvents = (new ABCJS.TimingCallbacks(visObj, { qpm: 60 }).noteTimings || []).filter(e => e.type === 'event'); } catch (e) {}
+  const groupFor = el => {
+    const ev = visEvents.find(e => (e.startCharArray || [e.startChar]).indexOf(el.startChar) >= 0);
+    const els = [];
+    if (ev && ev.elements) ev.elements.forEach(g => (g || []).forEach(x => els.push(x)));
+    if (!els.length && el.abselem && el.abselem.elemset) el.abselem.elemset.forEach(x => els.push(x));
+    return els;
+  };
+  P.forEach((el, k) => { if (V[k]) map.set(el.startChar, groupFor(V[k])); });
+  map._mel = { P, V };
   return map;
 }
 
@@ -15906,12 +15949,16 @@ function ntPlayRun(tunes, i, token) {
       ntPlay.timer = new ABCJS.TimingCallbacks(tunes[i].obj, {
         qpm,
         eventCallback: ev => {
-          ntClearHighlight();
-          if (!ev) return;
+          if (!ev) { ntClearHighlight(); return; }
           if (tunes[i].map) {
-            (ev.startCharArray || [ev.startChar]).forEach(c => (tunes[i].map.get(c) || []).forEach(el => { if (el && el.classList) el.classList.add('nt-playing'); }));
+            const els = [];
+            (ev.startCharArray || [ev.startChar]).forEach(c => (tunes[i].map.get(c) || []).forEach(el => els.push(el)));
+            if (!els.length && ev.type !== 'end') return; // nur Unterstimmen wechseln: Hervorhebung stehen lassen
+            ntClearHighlight();
+            els.forEach(el => { if (el && el.classList) el.classList.add('nt-playing'); });
             return;
           }
+          ntClearHighlight();
           if (!ev.elements) return;
           ev.elements.forEach(group => (group || []).forEach(el => { if (el && el.classList) el.classList.add('nt-playing'); }));
         },
