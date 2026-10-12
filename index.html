@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '274';
+const NOTATOR_BUILD_ID = '275';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -16571,6 +16571,9 @@ function ntShareDialog(ctx) {
       '<label><input type="radio" name="nt-sh-v" value="cl"' + (ctx.from === 'cl' ? ' checked' : '') + '> Orgel</label></div>' +
       '<div style="display:flex;gap:4px;flex-wrap:wrap"><button class="b" id="nt-sh-link">Link erstellen</button></div>' +
       '<div id="nt-sh-linkout" style="margin-top:6px"></div>') +
+    box('<b>🗂 Link für den Schola-Planer</b><br><span style="color:var(--ink2);font-size:11px">Google-Drive-Link der gespeicherten Notator-Datei. Im Schola-Planer unter «Gesänge» bei «🔗 Datei» einfügen – dann öffnet «Notator ↗» immer genau diese Datei.</span>' +
+      '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px"><button class="b" id="nt-sh-plan">📋 Drive-Link kopieren</button></div>' +
+      '<div id="nt-sh-planout" style="margin-top:6px;font-size:11px"></div>') +
     box('<b>📄 Nur PDF</b><br><span style="color:var(--ink2);font-size:11px">Der Empfänger bekommt nur die Noten als PDF, ohne Zugriff auf Notator.</span>' +
       '<div style="margin:6px 0">Fassung: <label><input type="radio" name="nt-sh-p" value="greg"' + (ctx.from === 'greg' ? ' checked' : '') + '> Choral</label> ' +
       '<label><input type="radio" name="nt-sh-p" value="cl"' + (ctx.from === 'cl' ? ' checked' : '') + '> Orgel' + (clState && clState.accomp ? ' (mit Begleitsatz)' : '') + '</label></div>' +
@@ -16578,6 +16581,16 @@ function ntShareDialog(ctx) {
       '<div id="nt-sh-pdfout" style="margin-top:6px"></div>');
   const close = document.createElement('button'); close.className = 'b'; close.textContent = 'Schliessen'; close.onclick = () => closeModal(); bEl.appendChild(close);
   const linkOut = document.getElementById('nt-sh-linkout'), pdfOut = document.getElementById('nt-sh-pdfout');
+  document.getElementById('nt-sh-plan').onclick = () => {
+    const out = document.getElementById('nt-sh-planout');
+    Promise.resolve(gregLibCurrentId ? gregLibGet(gregLibCurrentId) : null).then(rec => {
+      if (!rec || !rec.driveId) { out.textContent = 'Dieses Stück ist noch nicht in Google Drive gespeichert. Zuerst «Speichern» → Bibliothek (mit Google-Anmeldung), dann hier nochmals.'; return; }
+      const url = 'https://drive.google.com/file/d/' + rec.driveId + '/view';
+      out.innerHTML = '<input type="text" readonly style="width:100%;box-sizing:border-box;font-size:11px;padding:3px" value="' + ntEscAttr(url) + '">';
+      const inp = out.querySelector('input'); inp.onclick = () => inp.select();
+      (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => { gregGst('Drive-Link kopiert.'); out.insertAdjacentHTML('beforeend', '<div>✓ Kopiert.</div>'); }).catch(() => { inp.select(); out.insertAdjacentHTML('beforeend', '<div>Zum Kopieren markiert – bitte manuell kopieren.</div>'); });
+    }).catch(err => { out.textContent = 'Fehler: ' + err.message; });
+  };
   const offer = (out, url, shareTitle) => {
     out.innerHTML = '<input type="text" readonly style="width:100%;box-sizing:border-box;font-size:11px;padding:3px" value="' + ntEscAttr(url) + '">' +
       '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px"><button class="b nt-copy">📋 Kopieren</button>' +
