@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '273';
+const NOTATOR_BUILD_ID = '274';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -16687,12 +16687,21 @@ function ntOpenSongDriveFirst(title, driveId) {
     if (!title) { toGb(); return; }
     gregGst('Suche "' + title + '" in Google Drive …');
     gdList(false).then(files => {
-      const t = normT(title);
+      const words = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z0-9]+/).filter(Boolean);
+      const t = normT(title), tw = words(title);
       const exact = files.filter(f => normT(gdTitleFromName(f.name)) === t);
-      const part = t.length >= 5 ? files.filter(f => { const n = normT(gdTitleFromName(f.name)); return n.includes(t) || (n.length >= 5 && t.includes(n)); }) : [];
-      const pick = exact[0] || (part.length === 1 ? part[0] : null);
-      if (pick) { gregLibLoadDrive(pick, toGb); return; }
-      if (part.length > 1) { try { _libFilter = { q: title, season: '', genre: '', tag: '' }; } catch (e) {} gregLibShowModal(); return; }
+      // Teiltreffer nur, wenn alle Wörter des gesuchten Titels als ganze Wörter im Dateinamen vorkommen
+      // (so ist «Asperges I» kein Treffer für «Asperges II» und umgekehrt).
+      const part = exact.length ? [] : files.filter(f => { const fw = words(gdTitleFromName(f.name)); return tw.length && tw.every(w => fw.includes(w)); });
+      if (exact.length) { gregLibLoadDrive(exact[0], toGb); return; }
+      if (part.length) {
+        showModal('☁ Ähnliche Datei in Google Drive', 'Für "' + title + '" gibt es keine Datei mit genau diesem Namen. Mögliche Treffer in Drive:', [
+          ...part.slice(0, 6).map(f => ({ label: '☁ ' + gdTitleFromName(f.name), fn: () => { closeModal(); gregLibLoadDrive(f, toGb); } })),
+          { label: 'In GregoBase suchen', fn: () => { closeModal(); toGb(); } },
+          { label: 'Schliessen', fn: closeModal }
+        ]);
+        return;
+      }
       gregGst('Nicht in Google Drive gefunden – suche in GregoBase …');
       toGb();
     }).catch(err => { gregGst('Drive-Suche nicht möglich (' + err.message + ')'); toGb(); });
