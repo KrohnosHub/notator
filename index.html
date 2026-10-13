@@ -15730,7 +15730,29 @@ function clDownloadMusicXml() {
 // Begleitsatz) mit Mitlesen (gespielte Noten werden hervorgehoben).
 // p >= 1000: «sanfte» Variante = Programm p-1000, leise Dynamik (Melodie mp,
 // Begleitstimmen p) – imitiert eine leichte Registrierung (Flöten 8').
-const NT_INSTRUMENTS = [{ p: 19, n: 'Orgel – volles Werk' }, { p: 1074, n: 'Orgel – sanft (Flöten 8′)' }, { p: 52, n: 'Chor' }, { p: 73, n: 'Flöte' }, { p: 0, n: 'Klavier' }];
+// Klangwahl nach Analyse der FluidR3-Samples (2026-10-13): «recorder» hat das
+// Spektrum eines Gedackt 8′ (fast reiner Grundton, schwache 3. Teiltöne) und
+// hält den Ton; «reed_organ» (Harmonium) setzt schnell an und hält ohne
+// Abklingen; «church_organ» ist hell (Mixturen) und schwillt langsam an.
+const NT_INSTRUMENTS = [{ p: 19, n: 'Orgel – volles Werk' }, { p: 1074, n: 'Orgel – sanft (Gedackt 8′ + Flöte 4′)' }, { p: 1020, n: 'Orgel – ruhig (Harmonium)' }, { p: 52, n: 'Chor' }, { p: 73, n: 'Flöte' }, { p: 0, n: 'Klavier' }];
+// Legato: jede Note klingt bis in die nächste hinein (kurzes Überlappen), damit
+// der Ansatz des nächsten Samples die Lücke nicht hörbar macht («abgehackt»).
+// Tonwiederholungen bleiben leicht abgesetzt, wie auf der Orgel.
+function ntLegato(tracks, qpm, program) {
+  if (program === 0) return; // Klavier: normaler Anschlag
+  const ov = 0.09 * qpm / 240;      // ~90 ms in Ganzen-Noten
+  const cut = 0.05 * qpm / 240;     // ~50 ms Absetzen bei Tonwiederholung
+  tracks.forEach(tr => {
+    const notes = tr.slice().sort((a, b) => a.start - b.start);
+    notes.forEach((n, i) => {
+      let nx = null;
+      for (let k = i + 1; k < notes.length; k++) if (notes[k].start > n.start + 1e-6) { nx = notes[k]; break; }
+      if (!nx || nx.start - n.end > 0.02) return; // Pause folgt: nicht verlängern
+      const sameP = notes.some(m => m.start === nx.start && m.pitch === n.pitch);
+      n.end = sameP ? Math.max(n.start + (n.end - n.start) * 0.5, nx.start - cut) : nx.start + ov;
+    });
+  });
+}
 const ntPlayProgram = instr => instr >= 1000 ? instr - 1000 : instr;
 // Leise Dynamik in den Abspiel-Notentext einfügen (sanfte Registrierung)
 function ntSoftenAbc(abc) {
@@ -15961,7 +15983,10 @@ function ntPlayRun(tunes, i, token) {
   synth.init({
     audioContext: ntPlay.ac,
     visualObj: tunes[i].obj,
-    options: { program: ntPlayProgram(pref.instr), qpm, onEnded: () => { if (token === ntPlay.token && ntPlay.state !== 'pause') { ntClearHighlight(); ntPlayRun(tunes, i + 1, token); } } }, // pause() löst ebenfalls onEnded aus
+    // «Orgel – sanft»: eigene, aufbereitete Samples (Gedackt 8′ + Flöte 4′ aus
+    // FluidR3 «recorder», ohne Einschwing-Buckel; siehe sf/LIESMICH.txt)
+    soundFontUrl: pref.instr === 1074 ? new URL('sf/', location.href).href : undefined,
+    options: { program: ntPlayProgram(pref.instr), qpm, sequenceCallback: tr => { try { ntLegato(tr, qpm, ntPlayProgram(pref.instr)); } catch (e) {} }, onEnded: () => { if (token === ntPlay.token && ntPlay.state !== 'pause') { ntClearHighlight(); ntPlayRun(tunes, i + 1, token); } } }, // pause() löst ebenfalls onEnded aus
   }).then(() => synth.prime()).then(() => {
     if (token !== ntPlay.token) return;
     // Startposition (Ab Stelle abspielen, Orgel): Zeit der gewählten Note
