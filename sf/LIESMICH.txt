@@ -1,14 +1,14 @@
-Klangdateien für «Orgel – sanft (Gedackt 8′ + Flöte 4′)» in Notator
-====================================================================
+Klangdateien für «Orgel – sanft» in Notator
+==========================================
 
-recorder-mp3/*.mp3 (A1–Eb6) wurden mit erzeugen.py aus den «recorder»-Samples
-des Fluid-Soundfonts erzeugt:
-  - Einschwing-«Buckel» entfernt (Ausschnitt ab 0,3 s, Pegel geglättet),
-    gleichmässiger Ansatz (35 ms), auf 5 s verlängert (Schleife mit Überblendung)
-  - Oktave darüber mit 28 % beigemischt (wirkt wie Flöte 4′ zum Gedackt 8′)
-  - Lautheit über alle Töne angeglichen
+recorder-mp3/*.mp3 (A1–Eb6) sind mit erzeugen.py additiv synthetisiert
+(keine Fremd-Samples): Rohrflöte 8′ (halbgedeckte Labialpfeife, kräftiger
+3. Teilton) mit leise beigemischter Flöte 4′ (12 %), gleichmässiger Ansatz
+(40 ms), stehender Ton (5 s) mit minimalem «Windleben», sehr leises Windrauschen.
 
-Quelle: FluidR3_GM (Frank Wen), vorgerendert von gleitz/midi-js-soundfonts
-(https://github.com/gleitz/midi-js-soundfonts), Lizenz: Creative Commons
-Attribution 3.0 (https://creativecommons.org/licenses/by/3.0/).
-Die Dateien hier sind bearbeitete Fassungen davon (gleiche Lizenz, mit Namensnennung).
+Der Ordnername «recorder» ergibt sich aus der Programmnummer 74, unter der
+abcjs den Klang lädt.
+
+Varianten: python3 erzeugen.py rohr|prin <Zielordner>
+  rohr = Rohrflöte 8′ + Flöte 4′ (Standard)
+  prin = weicher Prinzipal 8′ + Flöte 4′
