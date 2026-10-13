@@ -7244,7 +7244,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '284';
+const NOTATOR_BUILD_ID = '285';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8280,8 +8280,56 @@ function gregGbIds() {
   } else add(typeof gregHdrExtra !== 'undefined' ? gregHdrExtra : '');
   return ids;
 }
+// Ältere GregoBase-Importe (vor Build 284) haben die Nummer noch nicht: am
+// GregoBase-Kopf (transcriber/office-part/book …) erkennen und die Nummer im
+// Hintergrund ermitteln – Kandidaten mit gleichem Titelanfang laden und die
+// Tonfolge vergleichen. Treffer wird ins Stück übernommen (Kopffeld).
+let _ntGbResolveKey = null;
+function ntGbPitchSig(gabc) {
+  const body = String(gabc || '').split('%%').pop();
+  let sig = '';
+  (body.match(/\(([^)]*)\)/g) || []).forEach(g => { if (/^\([cf]b?[1-5]/.test(g)) return; sig += g.slice(1, -1).replace(/\[[^\]]*\]/g, '').replace(/[^a-mA-M]/g, '').toLowerCase(); });
+  return sig;
+}
+async function ntGbResolve() {
+  if (gregGbIds().length || location.protocol === 'file:') return;
+  const hx = typeof gregHdrExtra !== 'undefined' ? gregHdrExtra : '';
+  if (!/(^|\n)\s*(transcriber|office-part|book)\s*:/i.test(hx)) return;
+  const mySig = ntGbPitchSig(gregBuildGABC());
+  if (mySig.length < 6) return;
+  const key = mySig.slice(0, 80);
+  if (_ntGbResolveKey === key) return;
+  _ntGbResolveKey = key;
+  // Titelanfang: erstes Wort des Textes (GregoBase-Titel = Textanfang)
+  const firstSyl = (gregEntries.find(e => e.type === 'note' && e.syllable) || {}).syllable || '';
+  let word = '';
+  for (const e of gregEntries) { if (e.type !== 'note' || !e.syllable) continue; word += e.syllable; if (e.wordEnd !== false) break; }
+  word = (word || firstSyl).replace(/[^A-Za-zÀ-ÿ]/g, '');
+  if (!word) return;
+  let matches = [];
+  try { matches = await gregSearchGregoBase(word, {}); } catch (e) { return; }
+  const want = (/(^|\n)\s*office-part\s*:\s*([^;\n]*)/i.exec(hx) || [])[2];
+  let best = null;
+  for (const m of matches.slice(0, 40)) {
+    const info = await gregGbInfo(m.id);
+    if (!info || !info._gabc) continue;
+    if (want && info['office-part'] && info['office-part'].trim().toLowerCase() !== want.trim().toLowerCase()) continue;
+    const sig = ntGbPitchSig(info._gabc);
+    let k = 0; const n = Math.min(sig.length, mySig.length, 120);
+    while (k < n && sig[k] === mySig[k]) k++;
+    const score = k / Math.max(1, Math.min(n, 120));
+    if (score >= 0.95 && (!best || score > best.score)) best = { id: m.id, score };
+    if (best && best.score === 1) break;
+  }
+  if (!best || gregGbIds().length) return;
+  gregHdrExtra = (gregHdrExtra ? gregHdrExtra + '\n' : '') + 'notator-gregobase: ' + best.id + ';';
+  if (typeof gregAutosaveNow === 'function') try { gregAutosaveNow(); } catch (e) {}
+  ntUpdateGbLinks();
+  gregGst('GregoBase-Herkunft erkannt: #' + best.id + ' (Link oben neben dem Titel; wird beim nächsten Speichern im Stück abgelegt)');
+}
 function ntUpdateGbLinks() {
   const ids = gregGbIds();
+  if (!ids.length) { clearTimeout(window._ntGbResT); window._ntGbResT = setTimeout(() => { ntGbResolve().catch(() => {}); }, 1500); }
   document.querySelectorAll('.nt-gb-link').forEach(a => {
     if (!ids.length) { a.style.display = 'none'; return; }
     a.style.display = '';
