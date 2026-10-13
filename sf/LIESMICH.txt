@@ -1,14 +1,13 @@
 Klangdateien für «Orgel – sanft» in Notator
 ==========================================
 
-recorder-mp3/*.mp3 (A1–Eb6) sind mit erzeugen.py additiv synthetisiert
-(keine Fremd-Samples): Rohrflöte 8′ (halbgedeckte Labialpfeife, kräftiger
-3. Teilton) mit leise beigemischter Flöte 4′ (12 %), gleichmässiger Ansatz
-(40 ms), stehender Ton (5 s) mit minimalem «Windleben», sehr leises Windrauschen.
+recorder-mp3/*.mp3 (A1–Eb6) stammen aus einer echten Pfeifenorgel-Aufnahme:
+VSCO 2 Community Edition, Keys/Organ/Quiet (leise Registrierung, Manual III),
+aufgenommen von Simon Dalzell (Ivy Audio), Winter 2015/16; Weitergabe durch
+Versilian Studios LLC freigegeben (siehe QUELLE_Info.txt), VSCO 2 CE: CC0.
+Quelle: https://github.com/sgossner/VSCO-2-CE
 
-Der Ordnername «recorder» ergibt sich aus der Programmnummer 74, unter der
-abcjs den Klang lädt.
-
-Varianten: python3 erzeugen.py rohr|prin <Zielordner>
-  rohr = Rohrflöte 8′ + Flöte 4′ (Standard)
-  prin = weicher Prinzipal 8′ + Flöte 4′
+Aufbereitung mit erzeugen.py: je Halbton das nächste Original (Kleinterz-Raster)
+um höchstens einen Halbton umgestimmt, Anfangsstille entfernt, 6 s Länge,
+Lautheit leicht angeglichen. Der Ordnername «recorder» ergibt sich aus der
+Programmnummer 74, unter der abcjs den Klang lädt.

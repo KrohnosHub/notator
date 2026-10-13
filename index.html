@@ -2226,7 +2226,28 @@ function gregCloseEditForm() {
   gregClearEditHighlight();
 }
 
+// Nach dem Öffnen (fertig aufgebautes Formular) den Eintrag in der Liste
+// sichtbar machen – bei Klick auf eine Note im Notenbild lag er sonst oft
+// ausserhalb des sichtbaren Bereichs.
+function gregRevealEditRow(i) {
+  requestAnimationFrame(() => {
+    const el = document.getElementById('greg-entry-list');
+    const row = el && el.querySelectorAll('[data-idx]')[i];
+    if (!row) return;
+    // nur die Liste scrollen, nicht die ganze Seite
+    let sc = row.parentElement;
+    while (sc && sc !== document.body && !(sc.scrollHeight > sc.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+    if (!sc || sc === document.body) { row.scrollIntoView({ block: 'center' }); return; }
+    const r = row.getBoundingClientRect(), c = sc.getBoundingClientRect();
+    if (r.top < c.top + 4 || r.bottom > c.bottom - 4)
+      sc.scrollTo({ top: sc.scrollTop + (r.top - c.top) - Math.max(8, (c.height - Math.min(r.height, c.height)) / 2), behavior: 'smooth' });
+  });
+}
 function gregEditEntry(i) {
+  gregEditEntryInner(i);
+  gregRevealEditRow(i);
+}
+function gregEditEntryInner(i) {
   const e = gregEntries[i];
   if (!e) return;
   // Close any other entry's edit form first (rebuilds all rows back to
@@ -7213,7 +7234,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '280';
+const NOTATOR_BUILD_ID = '281';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -12486,7 +12507,33 @@ var exsurge = (() => {
       super.performLayout(ctxt2);
     }
     finishLayout(ctxt2) {
+      // Notator: ausdrücklich gesetzte Lagen (gabc _0/_1) merken
+      for (var e0 = 0; e0 < this.notes.length; e0++)
+        for (var e1 = 0; e1 < this.notes[e0].epismata.length; e1++) {
+          var ep0 = this.notes[e0].epismata[e1];
+          if (ep0._explicit === undefined) ep0._explicit = ep0.positionHint !== MarkingPositionHint.Default;
+        }
       this.positionMarkings();
+      // Notator (wie Gregorio): steht über einer Note eine weitere Note derselben
+      // Neume (z. B. erste Note eines Pes), würde ein Episem darüber in diese
+      // hineinlaufen -> unter die Note setzen (nur ohne ausdrückliche Lage).
+      for (var c0 = 0; c0 < this.notes.length; c0++) {
+        var cn = this.notes[c0];
+        if (!cn.epismata.length || !cn.bounds) continue;
+        var blocked = false;
+        for (var c1 = 0; c1 < this.notes.length && !blocked; c1++) {
+          if (c1 === c0) continue;
+          var on = this.notes[c1];
+          if (!on.bounds) continue;
+          var xOverlap = Math.min(cn.bounds.right(), on.bounds.right()) - Math.max(cn.bounds.x, on.bounds.x);
+          if (xOverlap > cn.bounds.width * 0.25 && on.bounds.y < cn.bounds.y && cn.bounds.y - on.bounds.bottom() < ctxt2.staffInterval * 1.6)
+            blocked = true;
+        }
+        if (!blocked) continue;
+        for (var c2 = 0; c2 < cn.epismata.length; c2++)
+          if (!cn.epismata[c2]._explicit && cn.epismata[c2].positionHint !== MarkingPositionHint.Below)
+            cn.epismata[c2].positionHint = MarkingPositionHint.Below;
+      }
       for (var i2 = 0; i2 < this.notes.length; i2++) {
         var note = this.notes[i2];
         var j2;
@@ -15734,7 +15781,7 @@ function clDownloadMusicXml() {
 // Spektrum eines Gedackt 8′ (fast reiner Grundton, schwache 3. Teiltöne) und
 // hält den Ton; «reed_organ» (Harmonium) setzt schnell an und hält ohne
 // Abklingen; «church_organ» ist hell (Mixturen) und schwillt langsam an.
-const NT_INSTRUMENTS = [{ p: 19, n: 'Orgel – volles Werk' }, { p: 1074, n: 'Orgel – sanft (Rohrflöte 8′ + Flöte 4′)' }, { p: 1020, n: 'Orgel – ruhig (Harmonium)' }, { p: 52, n: 'Chor' }, { p: 73, n: 'Flöte' }, { p: 0, n: 'Klavier' }];
+const NT_INSTRUMENTS = [{ p: 19, n: 'Orgel – volles Werk' }, { p: 1074, n: 'Orgel – sanft (Pfeifenorgel-Aufnahme)' }, { p: 1020, n: 'Orgel – ruhig (Harmonium)' }, { p: 52, n: 'Chor' }, { p: 73, n: 'Flöte' }, { p: 0, n: 'Klavier' }];
 // Legato: jede Note klingt bis in die nächste hinein (kurzes Überlappen), damit
 // der Ansatz des nächsten Samples die Lücke nicht hörbar macht («abgehackt»).
 // Tonwiederholungen bleiben leicht abgesetzt, wie auf der Orgel.
@@ -15985,11 +16032,12 @@ function ntPlayRun(tunes, i, token) {
   synth.init({
     audioContext: ntPlay.ac,
     visualObj: tunes[i].obj,
-    // «Orgel – sanft»: eigene, aufbereitete Samples (Gedackt 8′ + Flöte 4′ aus
-    // FluidR3 «recorder», ohne Einschwing-Buckel; siehe sf/LIESMICH.txt)
+    // «Orgel – sanft»: Samples einer echten Pfeifenorgel (VSCO 2 CE, leise
+    // Registrierung), aufbereitet in sf/ (siehe sf/LIESMICH.txt)
     options: { program: ntPlayProgram(pref.instr), qpm,
       soundFontUrl: pref.instr === 1074 ? new URL('sf/', location.href).href : undefined,
-      fadeLength: pref.instr >= 1000 ? 50 : undefined, sequenceCallback: tr => { try { ntLegato(tr, qpm, ntPlayProgram(pref.instr)); } catch (e) {} }, onEnded: () => { if (token === ntPlay.token && ntPlay.state !== 'pause') { ntClearHighlight(); ntPlayRun(tunes, i + 1, token); } } }, // pause() löst ebenfalls onEnded aus
+      fadeLength: pref.instr === 1074 ? 150 : pref.instr >= 1000 ? 50 : undefined, /* Aufnahme: kurzer natürlicher Ausklang */
+      sequenceCallback: tr => { try { ntLegato(tr, qpm, ntPlayProgram(pref.instr)); } catch (e) {} }, onEnded: () => { if (token === ntPlay.token && ntPlay.state !== 'pause') { ntClearHighlight(); ntPlayRun(tunes, i + 1, token); } } }, // pause() löst ebenfalls onEnded aus
   }).then(() => synth.prime()).then(() => {
     if (token !== ntPlay.token) return;
     // Startposition (Ab Stelle abspielen, Orgel): Zeit der gewählten Note
