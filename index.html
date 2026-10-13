@@ -245,7 +245,7 @@ input[type=file]{display:none}
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
-    <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
 <button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
@@ -483,7 +483,7 @@ input[type=file]{display:none}
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925; Song importieren</button>
-    <span id="cl-vb-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <span id="cl-vb-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
     <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
 <button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
@@ -4868,7 +4868,7 @@ async function gregImportSongFromGregoBase(preset) {
     if (!dlResp.ok) throw new Error('Download HTTP ' + dlResp.status);
     let gbGabc = (await dlResp.text()).trim();
     if (!gbGabc) { gregGst('GregoBase-Download war leer.'); return; }
-    gbGabc = gregMapGregoBaseHeaderFields(gbGabc);
+    gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
     const previousEntries = gregEntries;
     gregImportGABCString(gbGabc, { deferRender: true });
     if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); } // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
@@ -5206,7 +5206,7 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
             // recognised there). Per explicit request: show "mode" as the
             // on-score annotation (ignore "office-part" entirely), and put
             // "book" into the subtitle field.
-            gbGabc = gregMapGregoBaseHeaderFields(gbGabc);
+            gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
             const previousEntries = gregEntries;
             gregImportGABCString(gbGabc, { deferRender: true });
     if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); } // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
@@ -7244,7 +7244,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '283';
+const NOTATOR_BUILD_ID = '284';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8261,6 +8261,34 @@ function gregMobileSyncTitle() {
   const el = document.getElementById('greg-mobile-title');
   const src = document.getElementById('greg-title');
   if (el) el.textContent = (src && src.value) ? src.value : 'Unbenanntes Stück';
+  ntUpdateGbLinks();
+}
+
+// ── Herkunft GregoBase: Kopffeld «notator-gregobase: <id>» (wird beim Import
+// gesetzt, mit dem Stück gespeichert und im GABC-Export mitgeführt) ──
+function gregTagGregoBase(gabc, picked) {
+  if (!picked || !picked.id) return gabc;
+  const line = 'notator-gregobase: ' + picked.id + ';';
+  gabc = gabc.replace(/^\s*notator-gregobase:.*$/mi, '');
+  return gabc.indexOf('%%') >= 0 ? line + '\n' + gabc : line + '\n%%\n' + gabc;
+}
+function gregGbIds() {
+  const ids = [];
+  const add = t => { const m = /notator-gregobase:\s*(\d+)/i.exec(t || ''); if (m && ids.indexOf(m[1]) < 0) ids.push(m[1]); };
+  if (window._gregMultiSection && typeof gregSections !== 'undefined' && gregSections.length > 1) {
+    gregSections.forEach((sec, i) => add(i === gregActiveIdx ? gregHdrExtra : sec.hdrExtra));
+  } else add(typeof gregHdrExtra !== 'undefined' ? gregHdrExtra : '');
+  return ids;
+}
+function ntUpdateGbLinks() {
+  const ids = gregGbIds();
+  document.querySelectorAll('.nt-gb-link').forEach(a => {
+    if (!ids.length) { a.style.display = 'none'; return; }
+    a.style.display = '';
+    a.href = 'https://gregobase.selapa.net/chant.php?id=' + ids[0];
+    a.textContent = '↗ GregoBase #' + ids[0] + (ids.length > 1 ? ' +' + (ids.length - 1) : '');
+    a.title = 'In GregoBase öffnen (neuer Tab)' + (ids.length > 1 ? ' – weitere Abschnitte: ' + ids.slice(1).map(x => '#' + x).join(', ') : '');
+  });
 }
 
 // Schritt 4: Bearbeiten/Ansicht-Umschalter für die Mobile-Ansicht — zeigt
@@ -15638,6 +15666,7 @@ function clApplyUi() {
   if (nb) { nb.style.display = u.view ? 'none' : ''; nb.innerHTML = u.menu ? '&#9650; Menü' : '&#9660; Menü'; }
   const t = document.getElementById('cl-vb-title');
   if (t) { const h = clEffectiveHead(); t.textContent = h.title || 'Unbenanntes Stück'; }
+  ntUpdateGbLinks();
 }
 function clToggleView() { const u = clUi(); u.view = !u.view; if (!u.view) u.menu = true; clSaveUi(u); clApplyUi(); clRender(); }
 function clToggleMenu() { const u = clUi(); u.menu = !u.menu; clSaveUi(u); clApplyUi(); if (!clState.width) clRender(); }
