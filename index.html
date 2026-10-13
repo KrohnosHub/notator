@@ -1037,6 +1037,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
         openGroupGlue = prevRunHyphen;
       } else {
         openParts.push({e, noGapBefore: !!e.noGapBefore, gapWide: !!e.gapWide});
+        if (e.wordEnd === true) runWordEnd = true; // Wortende nach silbenloser Gruppe ("A(f)(g) B")
       }
       lastWasLinebreak = false;
       continue;
@@ -6103,6 +6104,10 @@ function gregSelfTest() {
   // Notenbild leer (exsurge "needsLayout"); alte Exporte ohne "()" einlesbar.
   // 2026-10-11: gestapelte Mora "dc.." = Mora auf beiden Noten (Nutzerentscheid);
   // die Rohform-Übernahme schrieb die erste Note ohne Punkt zurück.
+  // 2026-10-13: Wortende nach silbenloser Notengruppe ging verloren ("A(f/g)B")
+  check('Wortende nach silbenloser Gruppe ("le(g)(h) lu")', 'c4',
+    "Al(f)le(g)(h) lu(f) (::)",
+    "(c4) Al(f)le(g/h) lu(f) (::)");
   check('Gestapelte Mora ("am.(dc..)")', 'c4',
     "tu(fff) am.(dc..) (::)",
     "(c4) tu(fff) am.(d.c.) (::)");
@@ -6646,6 +6651,11 @@ function gregImportGABCString(gabcStr, opts) {
         const entry = makeNeumeEntry(nt, '', false, noGapBefore, false, accLetter, accPitch);
         entry.gapWide = gapWide;
         entry.mappingIdx = mappingIdx;
+        // Notengruppe ohne Silbe am Wortende (z. B. "A(f)(g) B"): Wortgrenze
+        // hier merken, sonst klebt das nächste Wort beim Export an ("A(f/g)B")
+        // und wird als Silbe desselben Wortes (mit Bindestrich) gesetzt.
+        const _mNotes = (m.notations || []).filter(x => x.notes && x.notes.length);
+        if (_mNotes.length && _mNotes[_mNotes.length - 1] === nt) entry.wordEnd = true; // Mappings enden immer an einem Leerzeichen
         tokens.push(entry);
       }
       prevTrailingSpace = nt.trailingSpace;
@@ -7234,7 +7244,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '282';
+const NOTATOR_BUILD_ID = '283';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -12075,6 +12085,7 @@ var exsurge = (() => {
     // process everything without yielding to any other workers/threads.
     // good for server side processing or very small chant pieces.
     performLayout(ctxt2) {
+      notatorEpisemaBeforePes(this.notations);
       if (this.needsLayout === false)
         return;
       ctxt2.activeClef = this.startingClef;
@@ -12094,6 +12105,7 @@ var exsurge = (() => {
     // apppropriate that the above performLayout, since it will process
     // the notations without locking up the UI thread.
     performLayoutAsync(ctxt2, finishedCallback) {
+      notatorEpisemaBeforePes(this.notations);
       if (this.needsLayout === false) {
         if (finishedCallback)
           setTimeout(() => finishedCallback(), 0);
@@ -12774,6 +12786,27 @@ var exsurge = (() => {
       this.finishLayout(ctxt2);
     }
   };
+  // Notator-Regel (Nutzervorgabe 2026-10-13): Ein Punctum mit Episem, dem
+  // direkt ein Podatus (aufsteigende Neume, oft mit Quilisma beginnend) folgt,
+  // erhält das Episem UNTER der Note – oben liefe es in die folgende Neume.
+  // Gilt nur ohne ausdrücklich gesetzte Lage (gabc _0/_1).
+  function notatorEpisemaBeforePes(notations) {
+    if (!notations) return;
+    for (var i = 0; i + 1 < notations.length; i++) {
+      var a = notations[i], b = notations[i + 1];
+      if (!a || !b || !a.isNeume || !b.isNeume) continue;
+      if (a.notes.length !== 1 || b.notes.length < 2) continue;
+      if (b.lyrics && b.lyrics.length && b.lyrics[0] && String(b.lyrics[0].text || '').trim()) continue; // neue Silbe: genug Abstand
+      var n0 = a.notes[0], p0 = b.notes[0], p1 = b.notes[1];
+      if (!n0.epismata || !n0.epismata.length) continue;
+      if (!(p1.staffPosition > p0.staffPosition) || !(p1.staffPosition > n0.staffPosition)) continue;
+      for (var k = 0; k < n0.epismata.length; k++) {
+        var ep = n0.epismata[k];
+        if (ep._explicit === undefined) ep._explicit = ep.positionHint !== MarkingPositionHint.Default;
+        if (!ep._explicit) ep.positionHint = MarkingPositionHint.Below;
+      }
+    }
+  }
   var Podatus = class extends Neume {
     positionMarkings() {
       var marking, i2;
