@@ -7213,7 +7213,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '277';
+const NOTATOR_BUILD_ID = '278';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -16815,12 +16815,14 @@ window.addEventListener('hashchange', ntSongCheckIncoming);
 
 // ── Bildschirm wach halten (Screen Wake Lock) ───────────────────────
 // Verhindert, dass das Tablet/Handy beim Notenlesen dunkel wird, solange
-// Notator sichtbar ist. Standard: an (pro Gerät abschaltbar über ☀).
+// Notator sichtbar ist. Standard: an auf Touchgeräten, aus am PC (pro Gerät umschaltbar über ☀).
 // Der Browser gibt die Sperre beim Wechsel in eine andere App/Tab frei;
 // beim Zurückkehren wird sie neu angefordert.
 const ntWake = { lock: null };
 function ntWakeSupported() { return 'wakeLock' in navigator; }
-function ntWakePref() { try { return localStorage.getItem('notatorWake') !== '0'; } catch (e) { return true; } }
+// Standard: an auf Tablet/Handy (Touch als Hauptzeiger), aus am PC; eine bewusste Wahl (☀) gilt pro Gerät.
+function ntWakeDefault() { try { return window.matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } }
+function ntWakePref() { try { const v = localStorage.getItem('notatorWake'); return v === null ? ntWakeDefault() : v === '1'; } catch (e) { return ntWakeDefault(); } }
 function ntWakeUpdate() {
   document.querySelectorAll('.nt-wake-btn').forEach(b => {
     if (!ntWakeSupported()) { b.style.display = 'none'; return; }
