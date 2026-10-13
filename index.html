@@ -245,9 +245,9 @@ input[type=file]{display:none}
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
-    <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
+    <span id="greg-mobile-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
-<button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+<select class="nt-play-sec" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
@@ -483,10 +483,10 @@ input[type=file]{display:none}
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925; Song importieren</button>
-    <span id="cl-vb-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
+    <span id="cl-vb-title" style="flex:1 1 60px;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
     <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
-<button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+<select class="nt-play-sec" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button>
@@ -497,6 +497,8 @@ input[type=file]{display:none}
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
     <button class="b" onclick="clRegenerate()" style="font-size:11px;padding:3px 8px" title="Klassische Fassung neu aus dem aktuellen Choral erzeugen">&#8635; Aus Choral übernehmen</button>
     <span style="color:#3a4a30">|</span>
+    <label id="cl-sec-wrap" style="font-size:11px;color:#e0c070;display:none;align-items:center;gap:4px" title="Grundton, Oktave, Titel, Untertitel und Kopfzeile gelten für den hier gewählten Abschnitt">Einstellungen für
+      <select id="cl-sec-sel" onchange="clSelectSection(this.value)" style="font-size:11px;background:#0a1406;color:#e0c070;border:1px solid #6a5a30;padding:2px"></select></label>
     <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Grundton
       <select id="cl-target" onchange="clSetTarget(this.value)" style="font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:2px"></select></label>
     <span style="font-size:11px;color:#a8d878">Oktave</span>
@@ -4871,7 +4873,7 @@ async function gregImportSongFromGregoBase(preset) {
     gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
     const previousEntries = gregEntries;
     gregImportGABCString(gbGabc, { deferRender: true });
-    if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); } // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
+    if (typeof clState !== 'undefined') ntResetOrganForImport(); // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
     if (gregEntries.length > 400) { // gleiche Sicherheitsgrenze wie beim PDF-Weg
       const proceed = await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Der GregoBase-Download ergibt ' + gregEntries.length + ' Einträge — ungewöhnlich viel. Trotzdem laden?');
       if (!proceed) { gregEntries = previousEntries; gregGst('Abgebrochen.'); return; }
@@ -5209,7 +5211,7 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
             gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
             const previousEntries = gregEntries;
             gregImportGABCString(gbGabc, { deferRender: true });
-    if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); } // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
+    if (typeof clState !== 'undefined') ntResetOrganForImport(); // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
             console.log('GregoBase: Import ergab ' + gregEntries.length + ' Einträge.');
             if (gregEntries.length > 400) { // sanity cap even for a trusted source — a malformed/huge download shouldn't render blindly either
               const proceed = await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Der GregoBase-Download ergibt ' + gregEntries.length + ' Einträge — ungewöhnlich viel. Trotzdem laden?');
@@ -7244,7 +7246,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '285';
+const NOTATOR_BUILD_ID = 1'285';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7254,7 +7256,7 @@ const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 function ntCheckForUpdate() {
   if (!/^https?:/.test(location.protocol) || document.getElementById('nt-update-bar')) return;
   fetch(location.pathname.replace(/[^/]*$/, '') + 'index.html', { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(t => {
-    const m = /NOTATOR_BUILD_ID = '(\d+)'/.exec(t);
+    const m = /NOTATOR_BUILD_ID = 1'(\d+)'/.exec(t);
     if (!m || +m[1] <= +NOTATOR_BUILD_ID || document.getElementById('nt-update-bar')) return;
     const newId = m[1];
     const bar = document.createElement('div');
@@ -8272,13 +8274,37 @@ function gregTagGregoBase(gabc, picked) {
   gabc = gabc.replace(/^\s*notator-gregobase:.*$/mi, '');
   return gabc.indexOf('%%') >= 0 ? line + '\n' + gabc : line + '\n%%\n' + gabc;
 }
-function gregGbIds() {
-  const ids = [];
-  const add = t => { const m = /notator-gregobase:\s*(\d+)/i.exec(t || ''); if (m && ids.indexOf(m[1]) < 0) ids.push(m[1]); };
+function gregGbIds(withLabels) {
+  const ids = [], labels = [];
+  const add = (t, lab) => { const m = /notator-gregobase:\s*(\d+)/i.exec(t || ''); if (m && ids.indexOf(m[1]) < 0) { ids.push(m[1]); labels.push(lab || ''); } };
   if (window._gregMultiSection && typeof gregSections !== 'undefined' && gregSections.length > 1) {
-    gregSections.forEach((sec, i) => add(i === gregActiveIdx ? gregHdrExtra : sec.hdrExtra));
+    gregSections.forEach((sec, i) => {
+      const ti = i === gregActiveIdx ? (document.getElementById('greg-title') || {}).value : sec.title;
+      add(i === gregActiveIdx ? gregHdrExtra : sec.hdrExtra, 'Abschnitt ' + (i + 1) + (ti ? ' – ' + String(ti).slice(0, 40) : ''));
+    });
   } else add(typeof gregHdrExtra !== 'undefined' ? gregHdrExtra : '');
-  return ids;
+  return withLabels ? { ids, labels } : ids;
+}
+// Mehrere GregoBase-Herkünfte: Klick öffnet eine Auswahl statt nur des ersten Links
+function ntGbLinkClick(ev, a) {
+  const { ids, labels } = gregGbIds(true);
+  if (ids.length < 2) return true;
+  ev.preventDefault(); ev.stopPropagation();
+  let m = document.getElementById('nt-gb-menu');
+  if (m) { const same = m._anchor === a; m.remove(); if (same) return false; }
+  m = document.createElement('div'); m.id = 'nt-gb-menu'; m._anchor = a;
+  m.style.cssText = 'position:fixed;z-index:10050;background:#142010;border:1px solid #6a8a50;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.5);padding:3px 0;font-size:12px;max-width:min(90vw,360px)';
+  m.innerHTML = ids.map((id, i) => '<a href="https://gregobase.selapa.net/chant.php?id=' + id + '" target="_blank" rel="noopener" style="display:block;padding:5px 10px;color:#9cc8ff;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">↗ #' + id + (labels[i] ? ' · ' + ntEscAttr(labels[i]) : '') + '</a>').join('');
+  document.body.appendChild(m);
+  const rc = a.getBoundingClientRect();
+  m.style.top = Math.round(rc.bottom + 3) + 'px';
+  m.style.left = Math.round(Math.max(4, Math.min(window.innerWidth - m.offsetWidth - 4, rc.left))) + 'px';
+  m.querySelectorAll('a').forEach(x => x.addEventListener('click', () => setTimeout(() => m.remove(), 0)));
+  setTimeout(() => {
+    const close = e => { if (!m.contains(e.target) && e.target !== a) { m.remove(); document.removeEventListener('pointerdown', close, true); } };
+    document.addEventListener('pointerdown', close, true);
+  }, 0);
+  return false;
 }
 // Ältere GregoBase-Importe (vor Build 284) haben die Nummer noch nicht: am
 // GregoBase-Kopf (transcriber/office-part/book …) erkennen und die Nummer im
@@ -8328,6 +8354,7 @@ async function ntGbResolve() {
   gregGst('GregoBase-Herkunft erkannt: #' + best.id + ' (Link oben neben dem Titel; wird beim nächsten Speichern im Stück abgelegt)');
 }
 function ntUpdateGbLinks() {
+  try { if (typeof ntPlaySecUi === 'function') ntPlaySecUi(); } catch (e) {}
   const ids = gregGbIds();
   if (!ids.length) { clearTimeout(window._ntGbResT); window._ntGbResT = setTimeout(() => { ntGbResolve().catch(() => {}); }, 1500); }
   document.querySelectorAll('.nt-gb-link').forEach(a => {
@@ -8335,7 +8362,8 @@ function ntUpdateGbLinks() {
     a.style.display = '';
     a.href = 'https://gregobase.selapa.net/chant.php?id=' + ids[0];
     a.textContent = '↗ GregoBase #' + ids[0] + (ids.length > 1 ? ' +' + (ids.length - 1) : '');
-    a.title = 'In GregoBase öffnen (neuer Tab)' + (ids.length > 1 ? ' – weitere Abschnitte: ' + ids.slice(1).map(x => '#' + x).join(', ') : '');
+    a.textContent = ids.length > 1 ? '↗ GregoBase (' + ids.length + ') ▾' : a.textContent;
+    a.title = ids.length > 1 ? 'Mehrere GregoBase-Stücke – klicken zur Auswahl' : 'In GregoBase öffnen (neuer Tab)';
   });
 }
 
@@ -15003,39 +15031,51 @@ function clGabcToAbc(gabcList, opts) {
   const models = [];    // internes Modell je Abschnitt (für MusicXML-Export)
   let abcAll = '';
   let info = null;
-  // Intervall aus erstem Abschnitt
+  // Transposition je Abschnitt (eigener Grundton/Oktave pro Abschnitt möglich:
+  // opts.sectionOpts[si] = {targetPc, octave}; sonst opts.targetPc/opts.octave)
   const firstParsed = clParseGabc(gabcList[0].gabc, opts);
-  const fin = clFinalis(firstParsed);
-  const baseFifths = clBaseKeyFifths(gabcList[0].gabc);
-  const origPc = clPcOf(clMod(fin.D, 7), fin.alt);
-  const targetPc = (opts.targetPc === null || opts.targetPc === undefined) ? origPc : opts.targetPc;
-  const tgt = clBestTarget(targetPc, fin, baseFifths) || { step: clMod(fin.D, 7), alt: fin.alt, sigFifths: baseFifths, modeIdx: clModeIndex(clMod(fin.D, 7), baseFifths) };
-  let d = clMod(tgt.step - clMod(fin.D, 7), 7);
-  let semi = clMod(clPcOf(tgt.step, tgt.alt) - origPc, 12);
-  // Aufwärts vs. abwärts: kleinste Bewegung wählen (Oktave korrigiert Auto-Oktave ohnehin)
-  if (d > 3) { d -= 7; semi -= 12; }
-  const sigFifths = tgt.sigFifths;
-  // Tonart-Vorzeichnung pro Stufe
-  const keyAlt = [0, 0, 0, 0, 0, 0, 0];
-  const SHARP_ORDER = [3, 0, 4, 1, 5, 2, 6], FLAT_ORDER = [6, 2, 5, 1, 4, 0, 3];
-  if (sigFifths > 0) for (let k = 0; k < sigFifths; k++) keyAlt[SHARP_ORDER[k]] = 1;
-  if (sigFifths < 0) for (let k = 0; k < -sigFifths; k++) keyAlt[FLAT_ORDER[k]] = -1;
-  const keyTonic = clKeyName(tgt.step, tgt.alt);
-  // K: bewusst als Dur-Tonart mit identischer Vorzeichnung (nicht als
-  // Modusname) -- so ist garantiert, dass die von abcjs gezeichnete
-  // Vorzeichnung exakt der hier berechneten (keyAlt) entspricht.
-  const abcKey = ['Cb','Gb','Db','Ab','Eb','Bb','F','C','G','D','A','E','B','F#','C#'][sigFifths + 7];
-  info = {
-    finalisOrig: clKeyName(clMod(fin.D, 7), fin.alt),
-    finalisTarget: keyTonic,
-    modeName: CL_MODE_DE[tgt.modeIdx],
-    sigFifths,
-    sigText: sigFifths === 0 ? 'keine Vorzeichen' : Math.abs(sigFifths) + (sigFifths > 0 ? '♯' : '♭'),
-    semitones: semi,
+  const infos = [];
+  let fin, origPc, targetPc, tgt, d, semi, sigFifths, keyAlt, keyTonic, abcKey;
+  const computeT = (parsedX, gabcX, tpc) => {
+    fin = clFinalis(parsedX);
+    const baseFifths = clBaseKeyFifths(gabcX);
+    origPc = clPcOf(clMod(fin.D, 7), fin.alt);
+    targetPc = (tpc === null || tpc === undefined) ? origPc : tpc;
+    tgt = clBestTarget(targetPc, fin, baseFifths) || { step: clMod(fin.D, 7), alt: fin.alt, sigFifths: baseFifths, modeIdx: clModeIndex(clMod(fin.D, 7), baseFifths) };
+    d = clMod(tgt.step - clMod(fin.D, 7), 7);
+    semi = clMod(clPcOf(tgt.step, tgt.alt) - origPc, 12);
+    // Aufwärts vs. abwärts: kleinste Bewegung wählen (Oktave korrigiert Auto-Oktave ohnehin)
+    if (d > 3) { d -= 7; semi -= 12; }
+    sigFifths = tgt.sigFifths;
+    // Tonart-Vorzeichnung pro Stufe
+    keyAlt = [0, 0, 0, 0, 0, 0, 0];
+    const SHARP_ORDER = [3, 0, 4, 1, 5, 2, 6], FLAT_ORDER = [6, 2, 5, 1, 4, 0, 3];
+    if (sigFifths > 0) for (let k = 0; k < sigFifths; k++) keyAlt[SHARP_ORDER[k]] = 1;
+    if (sigFifths < 0) for (let k = 0; k < -sigFifths; k++) keyAlt[FLAT_ORDER[k]] = -1;
+    keyTonic = clKeyName(tgt.step, tgt.alt);
+    // K: bewusst als Dur-Tonart mit identischer Vorzeichnung (nicht als
+    // Modusname) -- so ist garantiert, dass die von abcjs gezeichnete
+    // Vorzeichnung exakt der hier berechneten (keyAlt) entspricht.
+    abcKey = ['Cb','Gb','Db','Ab','Eb','Bb','F','C','G','D','A','E','B','F#','C#'][sigFifths + 7];
+    return {
+      finalisOrig: clKeyName(clMod(fin.D, 7), fin.alt),
+      finalisTarget: keyTonic,
+      modeName: CL_MODE_DE[tgt.modeIdx],
+      sigFifths,
+      sigText: sigFifths === 0 ? 'keine Vorzeichen' : Math.abs(sigFifths) + (sigFifths > 0 ? '♯' : '♭'),
+      semitones: semi,
+      targetPc, origPc,
+    };
   };
+  const secOpt = si => (opts.sectionOpts && opts.sectionOpts[si]) || {};
+  const secTpc = si => (secOpt(si).targetPc !== undefined ? secOpt(si).targetPc : opts.targetPc);
+  const secOct = si => (secOpt(si).octave !== undefined ? secOpt(si).octave : opts.octave) || 0;
+  info = computeT(firstParsed, gabcList[0].gabc, secTpc(0));
 
   gabcList.forEach((sec, si) => {
     const parsed = si === 0 ? firstParsed : clParseGabc(sec.gabc, opts);
+    const secInfo = si === 0 ? info : computeT(parsed, sec.gabc, secTpc(si));
+    infos.push(secInfo);
     const notes = parsed.events.filter(e => e.k === 'note').map(e => clSpellTranspose(e.D, e.alt, d, semi));
     // Auto-Oktave: Mittelwert möglichst nahe an H4 (Mitte Violinschlüssel)
     let shift = 0;
@@ -15043,7 +15083,7 @@ function clGabcToAbc(gabcList, opts) {
       const avg = notes.reduce((a, n) => a + n.D, 0) / notes.length;
       shift = Math.round((4 * 7 + 6 - avg) / 7) * 7;
     }
-    shift += 7 * (opts.octave || 0);
+    shift += 7 * secOct(si);
     // Silben-Einheiten bilden
     const units = []; // {music:'', lyrics:[], isBreakOk, width}
     let cur = null;
@@ -15213,10 +15253,10 @@ function clGabcToAbc(gabcList, opts) {
     // (links-/rechtsbündig), damit kollidieren sie nie mit Titel/Noten.
     const ann = (parsed.annotation || '').trim().replace(/;/g, '');
     const autoLeft = ann ? 'Ton ' + ann : '';
-    const autoRight = (si === 0 && targetPc !== origPc) ? 'transponiert ' + info.finalisOrig + ' → ' + info.finalisTarget : '';
+    const autoRight = (targetPc !== origPc) ? 'transponiert ' + secInfo.finalisOrig + ' → ' + secInfo.finalisTarget : '';
     const left = (hdr && hdr.left != null) ? hdr.left : autoLeft;
     const right = (hdr && hdr.right != null) ? hdr.right : autoRight;
-    if (si === 0) { info.autoLeft = autoLeft; info.autoRight = autoRight; }
+    secInfo.autoLeft = autoLeft; secInfo.autoRight = autoRight;
     head += clAbcSideLines(left, right);
     models.push({ title, subtitle, left, right, sigFifths, accomp: !!opts.accomp, pedal: !!(opts.accomp && opts.pedal), lines, segs });
     head += 'M:none\nL:1/8\n';
@@ -15343,7 +15383,7 @@ function clGabcToAbc(gabcList, opts) {
     });
     abcAll += head + body + '\n';
   });
-  return { abc: abcAll, liqChars, info, segRanges, segInfo, models };
+  return { abc: abcAll, liqChars, info, infos, segRanges, segInfo, models };
 }
 
 
@@ -15579,13 +15619,39 @@ function clHasNotes(list) {
   return list.some(x => /\([^)]*[a-mA-M][^)]*\)/.test((x.gabc.split('%%').pop() || '').replace(/\((?:c|f)b?[1-5]\)/g, '')));
 }
 
-function clChantHead() {
+function clChantHead(i) {
   const l = clCollectGabc();
-  return { title: l[0].title || '', subtitle: l[0].subtitle || '' };
+  const x = l[i || 0] || l[0];
+  return { title: x.title || '', subtitle: x.subtitle || '' };
 }
-function clEffectiveHead() {
-  return clState.head ? clState.head : clChantHead();
+// Orgel-Einstellungen je Abschnitt: Abschnitt 1 = bisherige Felder von
+// clState (kompatibel mit gespeicherten Stücken), weitere Abschnitte in
+// clState.secs[Abschnitts-ID] (Grundton, Oktave, Titel, Untertitel, Kopfzeile).
+let clSel = 0; // im Orgel-Tab gewählter Abschnitt
+function clCfg(i) {
+  i = i || 0;
+  if (i === 0) return clState;
+  const sec = (typeof gregSections !== 'undefined' && gregSections[i]) || null;
+  const id = sec && sec.id ? sec.id : 'i' + i;
+  if (!clState.secs || typeof clState.secs !== 'object') clState.secs = {};
+  if (!clState.secs[id]) clState.secs[id] = { targetPc: null, octave: 0, head: null, left: null, right: null };
+  return clState.secs[id];
 }
+function clSecCount() { return (window._gregMultiSection && typeof gregSections !== 'undefined' && gregSections.length > 1) ? gregSections.length : 1; }
+function clEffectiveHead(i) {
+  const c = clCfg(i);
+  return c.head ? c.head : clChantHead(i);
+}
+// Import in einen Abschnitt: bei mehreren Abschnitten nur dessen Orgel-Einstellungen zurücksetzen
+function ntResetOrganForImport() {
+  if (clSecCount() > 1) {
+    const i = typeof gregActiveIdx !== 'undefined' ? gregActiveIdx : 0;
+    const c = clCfg(i); c.targetPc = null; c.octave = 0; c.head = null; c.left = null; c.right = null;
+    return;
+  }
+  clState = {}; clNormalizeState();
+}
+function clSelectSection(v) { clSel = Math.max(0, Math.min(clSecCount() - 1, parseInt(v, 10) || 0)); clFillTargetSelect(); clSyncControls(); }
 
 function clScoreWidth() {
   if (clState.width) return clState.width;
@@ -15601,8 +15667,9 @@ function clBuild(extra) {
   const list = clCollectGabc();
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
-  const headers = list.map((x, i) => i === 0 ? Object.assign({}, clEffectiveHead(), { left: clState.left, right: clState.right }) : { title: x.title, subtitle: x.subtitle });
-  return clGabcToAbc(list, { targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks, playRests: !!(extra && extra.playRests) });
+  const headers = list.map((x, i) => Object.assign({}, clEffectiveHead(i), { left: clCfg(i).left, right: clCfg(i).right }));
+  const sectionOpts = list.map((x, i) => ({ targetPc: clCfg(i).targetPc, octave: clCfg(i).octave || 0 }));
+  return clGabcToAbc(list, { sectionOpts, targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks, playRests: !!(extra && extra.playRests) });
 }
 
 function clFillTargetSelect() {
@@ -15611,9 +15678,12 @@ function clFillTargetSelect() {
   const list = clCollectGabc();
   sel.innerHTML = '';
   if (!clHasNotes(list)) return;
-  const parsed = clParseGabc(list[0].gabc, { flatToBar: !!clState.flatToBar });
+  if (clSel >= list.length) clSel = 0;
+  const lsec = list[clSel];
+  const cfg = clCfg(clSel);
+  const parsed = clParseGabc(lsec.gabc, { flatToBar: !!clState.flatToBar });
   const fin = clFinalis(parsed);
-  const base = clBaseKeyFifths(list[0].gabc);
+  const base = clBaseKeyFifths(lsec.gabc);
   const origPc = clPcOf(clMod(fin.D, 7), fin.alt);
   for (let k = 0; k < 12; k++) {
     const pc = clMod(origPc + k, 12);
@@ -15623,7 +15693,7 @@ function clFillTargetSelect() {
     o.value = pc;
     const sig = t.sigFifths === 0 ? 'ohne Vorz.' : Math.abs(t.sigFifths) + (t.sigFifths > 0 ? '♯' : '♭');
     o.textContent = clKeyName(t.step, t.alt) + ' ' + CL_MODE_DE[t.modeIdx] + ' (' + sig + ')' + (pc === origPc ? ' – Original' : '');
-    if ((clState.targetPc === null && pc === origPc) || clState.targetPc === pc) o.selected = true;
+    if ((cfg.targetPc == null && pc === origPc) || cfg.targetPc === pc) o.selected = true;
     sel.appendChild(o);
   }
 }
@@ -15635,23 +15705,35 @@ function clSyncControls() {
   if (fb) { fb.innerHTML = clState.flatToBar ? '♭ gilt bis Trennstrich' : '♭ gilt bis Wortende (Solesmes)'; fb.style.background = clState.flatToBar ? '' : '#6a4a2a'; fb.style.color = clState.flatToBar ? '' : '#fff'; }
   const pb = document.getElementById('cl-pedal-btn');
   if (pb) { pb.style.display = clState.accomp ? '' : 'none'; pb.innerHTML = clState.pedal ? 'Pedal: eigenes System' : 'Pedal: im Bass-System'; pb.style.background = clState.pedal ? '#2a4a6a' : ''; pb.style.color = clState.pedal ? '#fff' : ''; }
+  // Abschnittswahl (nur bei mehreren Abschnitten)
+  const nSec = clSecCount();
+  if (clSel >= nSec) clSel = 0;
+  const sw = document.getElementById('cl-sec-wrap'), ss = document.getElementById('cl-sec-sel');
+  if (sw) sw.style.display = nSec > 1 ? 'flex' : 'none';
+  if (ss && nSec > 1) {
+    const list = clCollectGabc();
+    const want = list.map((x, i) => (i + 1) + (x.title ? ' – ' + x.title.slice(0, 30) : '')).join('|');
+    if (ss._k !== want) { ss.innerHTML = list.map((x, i) => '<option value="' + i + '">Abschnitt ' + (i + 1) + (x.title ? ' – ' + ntEscAttr(x.title.slice(0, 30)) : '') + '</option>').join(''); ss._k = want; }
+    ss.value = String(clSel);
+  }
+  const cfg = clCfg(clSel);
   const octEl = document.getElementById('cl-oct');
-  if (octEl) octEl.textContent = (clState.octave > 0 ? '+' : '') + clState.octave;
+  if (octEl) octEl.textContent = (cfg.octave > 0 ? '+' : '') + (cfg.octave || 0);
   const wr = document.getElementById('cl-width');
   const wv = document.getElementById('cl-width-val');
   const w = clScoreWidth();
   if (wr && document.activeElement !== wr) wr.value = w;
   if (wv) wv.textContent = clState.width ? w + ' px' : 'Auto (' + w + ' px)';
-  const h = clEffectiveHead();
+  const h = clEffectiveHead(clSel);
   const ti = document.getElementById('cl-title'), su = document.getElementById('cl-subtitle');
   if (ti && document.activeElement !== ti) ti.value = h.title || '';
   if (su && document.activeElement !== su) su.value = h.subtitle || '';
-  const inf = clLast && clLast.info;
+  const inf = clLast && ((clLast.infos && clLast.infos[clSel]) || clLast.info);
   const le = document.getElementById('cl-left'), ri = document.getElementById('cl-right');
-  if (le && document.activeElement !== le) le.value = clState.left != null ? clState.left : ((inf && inf.autoLeft) || '');
-  if (ri && document.activeElement !== ri) ri.value = clState.right != null ? clState.right : ((inf && inf.autoRight) || '');
+  if (le && document.activeElement !== le) le.value = cfg.left != null ? cfg.left : ((inf && inf.autoLeft) || '');
+  if (ri && document.activeElement !== ri) ri.value = cfg.right != null ? cfg.right : ((inf && inf.autoRight) || '');
   const hs = document.getElementById('cl-head-state');
-  if (hs) hs.textContent = clState.head ? 'eigene Fassung (unabhängig vom Choral)' : 'wird vom Choral übernommen';
+  if (hs) hs.textContent = (cfg.head ? 'eigene Fassung (unabhängig vom Choral)' : 'wird vom Choral übernommen') + (nSec > 1 ? ' · gilt für Abschnitt ' + (clSel + 1) : '');
 }
 
 function clRender() {
@@ -15941,7 +16023,23 @@ function ntSoftenAbc(abc) {
     return l;
   }).join('\n');
 }
-const ntPlay = { synth: null, timer: null, state: 'stop', source: null, token: 0, ac: null };
+const ntPlay = { synth: null, timer: null, state: 'stop', source: null, token: 0, ac: null, sec: -1 };
+// Abschnittswahl für die Wiedergabe (nur bei mehreren Abschnitten sichtbar):
+// -1 = alle Abschnitte nacheinander, sonst nur dieser Abschnitt.
+function ntPlaySecCount() { return (window._gregMultiSection && typeof gregSections !== 'undefined' && gregSections.length > 1) ? gregSections.length : 1; }
+function ntPlaySecUi() {
+  const n = ntPlaySecCount();
+  if (ntPlay.sec >= n) ntPlay.sec = -1;
+  let titles = [];
+  if (n > 1) { try { titles = clCollectGabc().map(x => x.title || ''); } catch (e) {} }
+  const opts = n > 1 ? ['<option value="-1">Alle Abschnitte</option>'].concat(Array.from({ length: n }, (_, i) => '<option value="' + i + '">Abschnitt ' + (i + 1) + (titles[i] ? ' – ' + ntEscAttr(titles[i].slice(0, 24)) : '') + '</option>')).join('') : '';
+  document.querySelectorAll('.nt-play-sec').forEach(sel => {
+    sel.style.display = n > 1 ? '' : 'none';
+    if (n > 1 && sel._k !== opts) { sel.innerHTML = opts; sel._k = opts; }
+    if (n > 1) sel.value = String(ntPlay.sec);
+  });
+}
+function ntPlaySecSet(v) { ntPlay.sec = parseInt(v, 10); if (isNaN(ntPlay.sec)) ntPlay.sec = -1; if (ntPlay.state !== 'stop') ntPlayStop(); ntPlaySecUi(); }
 
 function ntPlayPrefs() {
   let p = null; try { p = JSON.parse(localStorage.getItem('notatorPlay') || 'null'); } catch (e) {}
@@ -15950,6 +16048,7 @@ function ntPlayPrefs() {
 function ntPlaySavePrefs(p) { try { localStorage.setItem('notatorPlay', JSON.stringify(p)); } catch (e) {} }
 
 function ntPlayUpdateButtons() {
+  try { ntPlaySecUi(); } catch (e) {}
   document.querySelectorAll('.nt-play-btn').forEach(b => {
     const mine = ntPlay.source === b.getAttribute('data-src');
     b.innerHTML = (mine && ntPlay.state === 'play') ? '&#10074;&#10074;' : '&#9654;';
@@ -16002,7 +16101,7 @@ function ntPlayFromChoralEntry(idx) {
   for (let k = 0; k < idx; k++) { const e = gregEntries[k]; const m = e && e.type === 'raw' && /^\(([cf]b?[1-5](?:@[cf]b?[1-5])?)\)$/.exec(e.gabc || ''); if (m) { clef = m[1]; clefRaw = ''; } }
   const body = gregEntriesToBody(gregEntries.slice(idx), clef, clefRaw);
   let list = [{ gabc: body }];
-  if (window._gregMultiSection && gregSections.length > 1) {
+  if (window._gregMultiSection && gregSections.length > 1 && !(ntPlay.sec >= 0 && ntPlay.sec === gregActiveIdx)) {
     const all = clCollectGabc();
     list = list.concat(all.slice(gregActiveIdx + 1));
   }
@@ -16094,10 +16193,13 @@ function ntPlayToggle(source, from) {
       }
       if (from && from.tune != null) {
         if (tunes[from.tune] && tunes[from.tune].startChar == null) tunes[from.tune].startChar = startEl.startChar;
-        tunes = tunes.slice(from.tune);
+        tunes = (ntPlay.sec >= 0 && ntPlaySecCount() > 1 && from.tune === ntPlay.sec) ? [tunes[from.tune]] : tunes.slice(from.tune);
+      } else if (ntPlay.sec >= 0 && ntPlaySecCount() > 1) {
+        tunes = tunes[ntPlay.sec] ? [tunes[ntPlay.sec]] : [];
       }
     } else {
-      const list = from && from.list ? from.list : clCollectGabc();
+      let list = from && from.list ? from.list : clCollectGabc();
+      if (!from && ntPlay.sec >= 0 && ntPlaySecCount() > 1) list = list[ntPlay.sec] ? [list[ntPlay.sec]] : [];
       if (!clHasNotes(list)) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
       const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, playRests: true, flatToBar: (typeof clState === 'undefined' || clState.flatToBar !== false) });
       r.abc.split(/(?=^X:)/m).filter(x => x.trim()).forEach(part => {
@@ -17229,13 +17331,14 @@ function clConfirmDropManual() {
 
 function clSetTarget(v) {
   if (!clConfirmDropManual()) { clFillTargetSelect(); return; }
-  clState.targetPc = parseInt(v, 10);
+  clCfg(clSel).targetPc = parseInt(v, 10);
   clRender();
 }
 
 function clSetOctave(delta) {
   if (!clConfirmDropManual()) return;
-  clState.octave = Math.max(-2, Math.min(2, clState.octave + delta));
+  const c = clCfg(clSel);
+  c.octave = Math.max(-2, Math.min(2, (c.octave || 0) + delta));
   clRender();
 }
 
@@ -17255,8 +17358,9 @@ let _clHeadTimer = null;
 function clHeadInput() {
   const ti = document.getElementById('cl-title'), su = document.getElementById('cl-subtitle');
   // Erste Änderung im Orgel-Tab koppelt die Fassung dauerhaft vom Choral ab.
-  clState.head = { title: ti ? ti.value : '', subtitle: su ? su.value : '' };
-  if (clState[clMK()]) clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], clState.head.title, clState.head.subtitle);
+  const c = clCfg(clSel);
+  c.head = { title: ti ? ti.value : '', subtitle: su ? su.value : '' };
+  if (clState[clMK()] && clSel === 0) clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], c.head.title, c.head.subtitle);
   clSyncControls();
   clearTimeout(_clHeadTimer);
   _clHeadTimer = setTimeout(clRender, 300);
@@ -17265,17 +17369,19 @@ function clHeadInput() {
 // automatische Aktualisierung mehr, z.B. beim Transponieren).
 function clSideInput() {
   const le = document.getElementById('cl-left'), ri = document.getElementById('cl-right');
-  clState.left = le ? le.value : '';
-  clState.right = ri ? ri.value : '';
-  if (clState[clMK()]) { const h = clEffectiveHead(); clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], h.title, h.subtitle, clState.left, clState.right); }
+  const c = clCfg(clSel);
+  c.left = le ? le.value : '';
+  c.right = ri ? ri.value : '';
+  if (clState[clMK()] && clSel === 0) { const h = clEffectiveHead(0); clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], h.title, h.subtitle, c.left, c.right); }
   clearTimeout(_clHeadTimer);
   _clHeadTimer = setTimeout(clRender, 300);
 }
 
 function clHeadFromChant() {
   if (!confirm('Titel, Untertitel und Kopfzeile wieder automatisch aus dem Choral übernehmen? Deine eigene Fassung wird dabei ersetzt.')) return;
-  clState.head = null; clState.left = null; clState.right = null;
-  if (clState[clMK()]) { const h = clChantHead(); clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], h.title, h.subtitle); }
+  const c = clCfg(clSel);
+  c.head = null; c.left = null; c.right = null;
+  if (clState[clMK()] && clSel === 0) { const h = clChantHead(0); clState[clMK()] = clApplyHeaderToAbc(clState[clMK()], h.title, h.subtitle); }
   clRender();
 }
 
