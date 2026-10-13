@@ -7234,7 +7234,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '281';
+const NOTATOR_BUILD_ID = '282';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14796,7 +14796,7 @@ function clHarmonize(segs, ctx) {
     chords.forEach(ch => {
       let hc = 0;
       const chordPcs = ch.pcs;
-      seg.notes.slice(1).forEach(n => { if (!chordPcs.includes(clPcOf(clMod(n.pitch.D, 7), n.pitch.alt))) hc += n.dur >= 2 ? 3 : 0.6; });
+      seg.notes.slice(1).forEach(n => { if (!chordPcs.includes(clPcOf(clMod(n.pitch.D, 7), n.pitch.alt))) hc += n.dur >= 2 ? 6 : 0.6; });
       if (isLast && ch.root !== ctx.finalisStep) hc += 20;
       if (si === 0 && ch.root !== ctx.finalisStep) hc += 1;
       // Phrasenschluss an Doppel-/Schlussstrich: Finalis-Akkord deutlich bevorzugt
@@ -14859,11 +14859,13 @@ function clTransCost(p, s, spPrev, sCur, cSeg) {
   const pv = p.v, cv = s.v;
   if (!pv.A || !cv.A) return 2;
   const sameVoicing = pv.A.s === cv.A.s && pv.T.s === cv.T.s && pv.B.s === cv.B.s;
-  if (p.ch.root === s.ch.root) c += p.inv === s.inv ? (sameVoicing ? 0 : 0.25) : 0.5;
+  // Wechsel sind erwünscht (Nutzervorgabe): Liegenlassen kostet etwas, Wechsel
+  // im Quint-/Quartabstand nichts, Terz wenig, Sekunde etwas mehr.
+  if (p.ch.root === s.ch.root) c += p.inv === s.inv ? (sameVoicing ? 0.35 : 0.5) : 0.4;
   else {
     const iv = clMod(s.ch.root - p.ch.root, 7);
-    c += 0.7 + ((iv === 3 || iv === 4) ? 0 : (iv === 2 || iv === 5) ? 0.3 : 0.7);
-    if (cSeg && cSeg.pulses <= 1) c += 0.6; // Akkordwechsel auf kurzer Einzelnote wirkt unruhig
+    c += (iv === 3 || iv === 4) ? 0 : (iv === 2 || iv === 5) ? 0.15 : 0.45;
+    if (cSeg && cSeg.pulses <= 1) c += 1.5; // Akkordwechsel auf kurzer Einzelnote wirkt unruhig
   }
   const P = [spPrev, pv.A.s, pv.T.s, pv.B.s], C = [sCur, cv.A.s, cv.T.s, cv.B.s];
   const dA = Math.abs(C[1] - P[1]), dT = Math.abs(C[2] - P[2]), dB = Math.abs(C[3] - P[3]);
@@ -15007,10 +15009,11 @@ function clGabcToAbc(gabcList, opts) {
       const sylTxt = x => x ? String(x.text == null ? '~' : x.text).replace(/[|#:]/g, '') : '^';
       const anchorSeen = {}, noteSeen = {};
       const brk = opts.chordBreaks || {};
+      let lastNt = null;
       lines.forEach((ln, li) => {
         let lineStart = true;
         ln.forEach(u => {
-          if (u.kind === 'bar') { if (cur) { cur.endBar = u.t; cur.final = !!u.final; } cur = null; return; }
+          if (u.kind === 'bar') { if (cur) { cur.endBar = u.t; cur.final = !!u.final; } cur = null; lastNt = null; return; }
           if (u.kind !== 'syl') return;
           const wordStart = !!u.text && !prevHyphen;
           const ui = sylUnits.indexOf(u);
@@ -15021,7 +15024,21 @@ function clGabcToAbc(gabcList, opts) {
             noteSeen[a] = (noteSeen[a] || 0) + 1;
             nt._anchor = si + ':' + a + (noteSeen[a] > 1 ? '#' + noteSeen[a] : '');
             const hard = !cur || lineStart; // Anfang / neue Zeile: immer neuer Akkord
-            const auto = hard || (k === 0 && (wordStart || u.notes.length > 1)) || cur.pulses >= 8 || nt._cadence;
+            // Mögliche Akkordwechsel (2026-10-13, Nutzervorgabe): ein Akkord dauert
+            // mindestens 2 Achtel; Wechsel bevorzugt an Wort-/Melismenbeginn, auf
+            // Vierteln und längeren Noten, nach Sprüngen (ab kleiner Terz), am
+            // Phrasenschluss und spätestens nach 4 Achteln. Ob tatsächlich
+            // gewechselt wird, entscheidet die Harmonisierung (gleicher Akkord = liegen lassen).
+            // Achtel direkt vor einer längeren Note: lieber als Durchgang zum
+            // vorigen Akkord nehmen und auf der langen Note wechseln
+            if (!hard && nt.dur >= 2 && cur && cur.pulses === 1 && cur.notes.length === 1 && segs.length >= 2 && brk[cur.key] !== true) {
+              const pv = segs[segs.length - 2];
+              if (pv && !pv.endBar && pv.line === cur.line && pv === segs[segs.length - 2]) {
+                const mv = cur.notes[0]; pv.notes.push(mv); pv.pulses += mv.dur; mv._seg = pv; segs.pop(); cur = pv;
+              }
+            }
+            const leap = lastNt ? Math.abs(clSemi(nt.pitch.D, nt.pitch.alt) - clSemi(lastNt.pitch.D, lastNt.pitch.alt)) : 0;
+            const auto = hard || (cur.pulses >= 2 && ((k === 0 && (wordStart || u.notes.length > 1)) || nt.dur >= 2 || leap >= 3 || cur.pulses >= 4 || nt._cadence));
             const boundary = hard || brk[nt._anchor] === true || (auto && brk[nt._anchor] !== false);
             nt._mergeable = !hard;
             nt._autoBoundary = auto;
@@ -15031,7 +15048,7 @@ function clGabcToAbc(gabcList, opts) {
               cur = { notes: [], pulses: 0, line: li, key: nt._anchor, legacyKeys: [si + ':' + oa, si + ':' + segs.length] }; segs.push(cur);
             }
             cur.notes.push(nt); cur.pulses += nt.dur; nt._seg = cur;
-            lineStart = false;
+            lineStart = false; lastNt = nt;
           });
           if (u.text) prevHyphen = !!u.hyphen;
         });
