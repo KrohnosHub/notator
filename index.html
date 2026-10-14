@@ -107,6 +107,12 @@ input[type=file]{display:none}
     background-repeat:repeat-y !important;background-position:center calc(50% - 15px) !important}
 }
 #greg-mobile-bar{display:flex}
+.nt-mob-only{display:none}
+@media (max-width: 700px) {
+  /* Handy: Wiedergabe-/Anzeige-Extras im «⋯»-Menü statt eigener Knöpfe */
+  .nt-pm{display:none !important}
+  .nt-mob-only{display:inline-block !important}
+}
 #greg-mobile-scale-wrap{transform-origin:top left}
 @media (max-width: 700px) {
   #hdr-tabs button#tab-gabc, #hdr-sub { display:none; }
@@ -173,7 +179,7 @@ input[type=file]{display:none}
   <div id="hdr-tabs">
     <button class="b nt-tab" id="tab-greg" onclick="switchTab('greg')" title="Gregorianischer Choral (Quadratnotation)">&#128220; Choral</button>
     <button class="b nt-tab" id="tab-editor" onclick="switchTab('editor')" title="Klassische Orgelnoten mit Transposition und Begleitsatz">&#127929; Orgel</button>
-    <button class="b nt-tab" id="tab-gabc" onclick="switchTab('gabc')" title="GABC-Quelltext direkt eingeben">&#9000;&#xFE0E; GABC</button>
+    <button class="b nt-tab" id="tab-gabc" onclick="switchTab('gabc')" style="display:none" title="GABC-Quelltext direkt eingeben">&#9000;&#xFE0E; GABC</button>
   </div>
 </div>
 <div id="gabc-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
@@ -251,9 +257,9 @@ input[type=file]{display:none}
     <span id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
     <span class="nt-bar-spacer" style="flex:1 1 0;min-width:0"></span>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
-<select class="nt-play-sec" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
-    <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
-    <button class="b nt-zoom-btn" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
+<select class="nt-play-sec nt-pm" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+    <button class="b nt-wake-btn nt-pm" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
+    <button class="b nt-zoom-btn nt-pm" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
@@ -261,13 +267,18 @@ input[type=file]{display:none}
       <div style="padding:5px 8px 2px;background:#121c0e;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" onclick="gregUndo()" style="font-size:10px;padding:2px 6px" title="Letzte Aktion rückgängig machen">&#8617; Undo</button>
         <button class="b" onclick="gregRedo()" style="font-size:10px;padding:2px 6px" title="Rückgängig gemachte Aktion wiederherstellen">&#8618; Redo</button>
-        <button class="b" onclick="gregClear()" style="font-size:10px;padding:2px 6px" title="Neues, leeres Stück beginnen (aktuelles Stück wird verworfen)">&#10005; Neu</button>
         <input type="file" id="greg-load-in" accept=".notator,.json" style="display:none" onchange="gregLoadPiece(this)">
         <input type="file" id="greg-lib-import-in" accept=".json" style="display:none" onchange="gregLibImportFile(this)">
-        <button class="b" onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (benötigt API-Key rechts)">&#128196; PDF lesen</button>
+        <button class="b" id="greg-pdf-read-btn" onclick="gregPdfReadRow()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (API-Key wird darunter abgefragt)">&#128196; PDF lesen</button>
         <input type="file" id="greg-pdf-in" accept=".pdf" style="display:none" onchange="gregLoadPDF(this)">
         <button id="greg-pdf-panel-toggle" class="b" onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:2px 6px;display:none" title="Original-PDF-Panel ein-/ausblenden">&#128196; Original</button>
-        <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird nicht gespeichert" style="width:150px;font-size:9px;padding:1px 4px;background:#0a1406;color:#6b8a60;border:1px solid #2a3820;outline:none">
+      </div>
+      <div id="greg-pdf-read-row" style="display:none;padding:5px 8px;background:#18240f;border-bottom:1px solid #3a4a30;gap:5px;align-items:center;flex-wrap:wrap;font-size:10px;color:#a8c890">
+        <span title="Anthropic API-Key: console.anthropic.com → API Keys">&#128273; API-Key</span>
+        <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird von Notator nicht gespeichert (der Browser kann ihn als Kennwort merken)" style="flex:1 1 140px;min-width:120px;font-size:11px;padding:2px 5px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+        <button class="b" onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="PDF-Datei wählen und einlesen">&#128196; PDF wählen …</button>
+        <button class="b" onclick="gregPdfReadRow(false)" style="font-size:10px;padding:2px 6px" title="Zuklappen">&#10005;</button>
+        <span style="flex-basis:100%;color:#6b8a60;font-size:9px">Key erhältlich unter console.anthropic.com → API Keys. Das Feld bleibt offen, bis du es zuklappst.</span>
       </div>
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" onclick="gregAddSection()" style="font-size:10px;padding:2px 6px;background:#1a3a5a;color:#a0c0e0;border-color:#2a5a8a" title="Neuen Abschnitt hinzufügen">+ Abschnitt</button>
@@ -477,15 +488,14 @@ input[type=file]{display:none}
     <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
     <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925; Song importieren</button>
     <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190; Speichern</button>
-    <button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button>
+    <span class="nt-filegrp" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label></span>
     <button class="b" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279; Teilen</button>
     <span id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
     <span class="nt-bar-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
-    <button class="b" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü ein-/ausklappen">&#9650; Menü</button>
-<select class="nt-play-sec" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
-    <button class="b nt-wake-btn" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
-    <button class="b nt-zoom-btn" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
+<select class="nt-play-sec nt-pm" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+    <button class="b nt-wake-btn nt-pm" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
+    <button class="b nt-zoom-btn nt-pm" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -512,10 +522,7 @@ input[type=file]{display:none}
     <span id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:70px"></span>
     <button class="b" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button>
     <span style="color:#3a4a30">|</span>
-    <button class="b" onclick="clDownloadAbc()" style="font-size:11px;padding:3px 8px" title="Als ABC-Datei speichern (u.a. für MuseScore, EasyABC, abcjs)">&#8595; ABC</button>
-    <button class="b" onclick="clDownloadMusicXml()" style="font-size:11px;padding:3px 8px" title="Als MusicXML speichern (MuseScore, Sibelius, Finale, Dorico …)">&#8595; MusicXML</button>
-    <button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="Als PDF sichern (A4, gleiche Ausgabe wie beim Choral)">&#8595; PDF</button>
-    <label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext drucken</label>
+    <button class="b" onclick="clExportMenu(this)" style="font-size:11px;padding:3px 8px" title="Für andere Notenprogramme exportieren (ABC, MusicXML)">&#8595; Exportieren &#9662;</button>
     <span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
   </div>
   <div id="cl-headrow" style="padding:4px 10px;background:#151e10;border-bottom:1px solid #2a3820;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
@@ -2101,6 +2108,17 @@ function gregEntryLabel(e) {
 let _gregEditingEntryIdx = null;
 
 // Removes any red edit-highlight previously painted onto the score.
+// «PDF lesen»: Zeile mit API-Key-Feld (gleiches, vom Browser als Kennwort
+// merkbares Feld) und «PDF wählen» auf-/zuklappen – bleibt offen, bis man
+// es schliesst (z.B. während man den Key in einem anderen Fenster holt).
+function gregPdfReadRow(open) {
+  const row = document.getElementById('greg-pdf-read-row');
+  if (!row) return;
+  const isOpen = row.style.display !== 'none';
+  const want = open === undefined ? !isOpen : !!open;
+  row.style.display = want ? 'flex' : 'none';
+  if (want) { const k = document.getElementById('greg-api-key'); if (k && !k.value) setTimeout(() => k.focus(), 30); }
+}
 function gregClearEditHighlight() {
   const wrap = document.getElementById('greg-svg-wrap');
   const svgEl = wrap ? wrap.querySelector('svg') : null;
@@ -4918,7 +4936,8 @@ async function gregLoadPDF(input) {
 
     const apiKey = (document.getElementById('greg-api-key')||{value:''}).value.trim();
     if (!apiKey) {
-      gregGst('Bitte API-Key eingeben (Feld oben in der Toolbar) — wird nicht gespeichert');
+      gregPdfReadRow(true);
+      gregGst('Bitte API-Key eingeben (Feld «API-Key» unter der Werkzeugleiste) und das PDF nochmals wählen');
       return;
     }
 
@@ -7252,7 +7271,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '290';
+const NOTATOR_BUILD_ID = '291';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8120,6 +8139,7 @@ function gregLibShowModal() {
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
   const openRow = document.createElement('div');
   openRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
+  openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); if (window._ntTab !== 'greg') switchTab('greg'); gregClear(); }, '', 'Neues, leeres Stück beginnen (das offene Stück wird verworfen – vorher speichern)'));
   openRow.appendChild(mkBtn('💻 Vom Gerät öffnen …', function() { ntOpenLocalFile(); }, 'background:#3d6b35;color:#fff;border-color:#3d6b35', '.notator-Datei aus einem lokalen Ordner öffnen'));
   if (driveOn) openRow.appendChild(mkBtn('☁ Anderer Drive-Ordner …', function() {
     gdGetToken(true).then(function() { ntDriveOpenBrowser(); }).catch(function(err) { gregGst(err.message); });
@@ -15830,7 +15850,7 @@ function clApplyUi() {
   const u = clUi(), p = document.getElementById('classic-panel');
   if (!p) return;
   p.classList.toggle('cl-view', !!u.view);
-  p.classList.toggle('cl-menu-collapsed', !!u.view || !u.menu);
+  p.classList.toggle('cl-menu-collapsed', !!u.view); // Anzeige = ohne Menü, Bearbeiten = mit Menü
   const mb = document.getElementById('cl-mode-btn'), nb = document.getElementById('cl-menu-btn');
   if (mb) mb.innerHTML = u.view ? '&#9998; Bearbeiten' : '&#128065; Anzeige';
   if (nb) { nb.style.display = u.view ? 'none' : ''; nb.innerHTML = u.menu ? '&#9650; Menü' : '&#9660; Menü'; }
@@ -17306,6 +17326,36 @@ function ntViewScalePop(btn) {
 document.addEventListener('DOMContentLoaded', ntViewScaleUpdateButtons);
 
 // Einstellungen (Tempo, Instrument) als kleines Aufklappfeld
+// Handy: «⋯» neben ▶/■ – ab Stelle, Abschnitt, Tempo/Klang, wach halten, Grösse
+function ntPlayMore(btn) {
+  const old = document.getElementById('nt-pm-pop');
+  if (old) { old.remove(); return; }
+  const src = btn.getAttribute('data-src');
+  const d = document.createElement('div'); d.id = 'nt-pm-pop';
+  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:13px system-ui,sans-serif;color:#c0d890;display:flex;flex-direction:column;gap:5px;min-width:220px';
+  const rc = btn.getBoundingClientRect();
+  d.style.top = (rc.bottom + 4) + 'px'; d.style.right = Math.max(8, window.innerWidth - rc.right) + 'px';
+  const item = (label, fn) => { const b = document.createElement('button'); b.className = 'b'; b.innerHTML = label; b.style.cssText = 'text-align:left;font-size:13px;padding:7px 10px'; b.onclick = () => { d.remove(); setTimeout(() => fn(), 0); }; d.appendChild(b); };
+  if (ntPlaySecCount() > 1) {
+    const sel = document.querySelector('.nt-play-sec[data-src="' + src + '"]');
+    ntPlaySecUi();
+    if (sel) {
+      const s2 = document.createElement('select');
+      s2.innerHTML = sel.innerHTML; s2.value = String(ntPlay.sec);
+      s2.style.cssText = 'font-size:13px;padding:5px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30';
+      s2.onchange = () => ntPlaySecSet(s2.value);
+      d.appendChild(s2);
+    }
+  }
+  item('&#9654;&#8739; Ab Stelle abspielen …', () => ntPlayPick(src));
+  item('&#9834; Tempo und Klang', () => ntPlaySettings(btn));
+  item('&#9728;&#xFE0E; Bildschirm wach halten: ' + (ntWakePref() ? 'an' : 'aus'), () => ntWakeToggle());
+  item('&#128269; Anzeigegrösse', () => ntViewScalePop(btn));
+  document.body.appendChild(d);
+  d.style.right = ''; d.style.left = Math.max(8, Math.min(rc.left, window.innerWidth - d.offsetWidth - 8)) + 'px';
+  const close = e => { if (!d.contains(e.target) && e.target !== btn) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
+  setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+}
 function ntPlaySettings(btn) {
   const old = document.getElementById('nt-play-pop');
   if (old) { old.remove(); return; }
@@ -17496,6 +17546,21 @@ function clDownloadAbc() {
 }
 
 // Alte Akkord-Vorgaben (Schlüssel "Abschnitt:Nummer") auf Silbenanker umstellen
+// Exporte für andere Notenprogramme (selten gebraucht -> ein Menü)
+function clExportMenu(btn) {
+  const old = document.getElementById('cl-export-pop');
+  if (old) { old.remove(); return; }
+  const d = document.createElement('div'); d.id = 'cl-export-pop';
+  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:4px;min-width:230px';
+  const rc = btn.getBoundingClientRect();
+  d.style.top = (rc.bottom + 4) + 'px'; d.style.left = Math.max(8, Math.min(rc.left, window.innerWidth - 246)) + 'px';
+  const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:12px;padding:5px 8px'; b.onclick = () => { d.remove(); fn(); }; d.appendChild(b); };
+  item('↓ MusicXML (.musicxml)', 'MuseScore, Sibelius, Finale, Dorico …', () => clDownloadMusicXml());
+  item('↓ ABC (.abc)', 'u.a. für MuseScore, EasyABC, abcjs', () => clDownloadAbc());
+  document.body.appendChild(d);
+  const close = e => { if (!d.contains(e.target) && e.target !== btn) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
+  setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+}
 function clMigrateOverrides(r) {
   const ov = clState.chordOverrides || {};
   if (!r || !r.models) return;
@@ -17794,6 +17859,7 @@ window.addEventListener('resize', () => {
 });
 
 function switchTab(tab) {
+  if (tab === 'gabc') tab = 'greg'; // eigener GABC-Tab entfällt (GABC-Feld steht im Choral)
   window._ntTab = tab;
   if (typeof ntPlayStop === 'function') ntPlayStop();
   const clp=document.getElementById('classic-panel');
