@@ -1579,9 +1579,10 @@ function gregRenderSectionPreview(sec, container) {
           gregNeutralizeRubricRed(svgEl);
           const nativeW = parseFloat(svgEl.getAttribute('width')) || layoutWidth;
           svgEl.style.cssText = 'background:transparent;display:block;pointer-events:none;';
-          const neededPad = gregCalcTitlePad(nativeW, secTitle, secSubtitle, sec.commentary || '');
+          const _ext = gregSecTitleExtra(gregSections.indexOf(sec), secTitle, secSubtitle);
+          const neededPad = gregCalcTitlePad(nativeW, secTitle, secSubtitle, sec.commentary || '', _ext);
           const _topPad = addSvgPadding(svgEl, 32, neededPad, gregSecGap());
-          svgEl._topPad = _topPad;
+          svgEl._topPad = _topPad; svgEl._titleShift = _ext;
           gregRenderTitle(svgEl, secTitle, secSubtitle, sec.commentary || '');
           if (score._extraAnnotations && score._extraAnnotations.length) gregRenderExtraAnnotations(svgEl, score._extraAnnotations);
           // Apply zoom after all overlays
@@ -1788,9 +1789,10 @@ function gregRenderGABCInto(gabc, wrap, cb) {
           const nativeW = parseFloat(svgEl.getAttribute('width')) || width;
           // First apply padding and title at native scale
           svgEl.style.cssText = 'background:transparent;display:block;cursor:crosshair;';
-          const neededPad = gregCalcTitlePad(nativeW);
+          const _ext = window._gregMultiSection ? gregSecTitleExtra(gregActiveIdx, (document.getElementById('greg-title') || {}).value, (document.getElementById('greg-subtitle') || {}).value) : 0;
+          const neededPad = gregCalcTitlePad(nativeW, undefined, undefined, undefined, _ext);
           const _topPad = addSvgPadding(svgEl, 32, neededPad, window._gregMultiSection ? gregSecGap() : 32);
-          svgEl._topPad = _topPad;
+          svgEl._topPad = _topPad; svgEl._titleShift = _ext;
           gregRenderTitle(svgEl);
           if (score._extraAnnotations && score._extraAnnotations.length) gregRenderExtraAnnotations(svgEl, score._extraAnnotations);
           // Apply zoom: scale SVG via width/height attrs (viewBox keeps coordinate space)
@@ -3163,11 +3165,17 @@ function gregGetContentLeftX(svgEl, vx, pad) {
 // Call this BEFORE addSvgPadding so we can set the right topPad.
 // Returns the required topPad value.
 function gregInitialLinesOf(g) { return /(^|\n)\s*notator-initial-lines:\s*2/i.test(String(g || '').split('%%')[0]) ? 2 : 1; }
+// Folgeabschnitt mit Titel/Untertitel: ca. 0.5 cm mehr Abstand zum vorigen
+// Abschnitt (Nutzerwunsch 2026-10-14); ohne Titel bleibt der Abschnittsabstand.
+const GREG_SEC_TITLE_EXTRA = 19;
+function gregSecTitleExtra(idx, title, subtitle) {
+  return (idx > 0 && (String(title || '').trim() || String(subtitle || '').trim())) ? GREG_SEC_TITLE_EXTRA : 0;
+}
 function gregSecGap() { const el = document.getElementById('gs-secgap'); const v = el ? parseFloat(el.value) : 16; return isFinite(v) ? Math.max(0, v) : 16; }
 function gregCommentaryText(overrideComm) {
   return (overrideComm !== undefined ? overrideComm : (document.getElementById('greg-commentary')||{value:''}).value || '').trim();
 }
-function gregCalcTitlePad(svgW, overrideTitle, overrideSubtitle, overrideComm) {
+function gregCalcTitlePad(svgW, overrideTitle, overrideSubtitle, overrideComm, extraTop) {
   const title    = (overrideTitle !== undefined ? overrideTitle : (document.getElementById('greg-title')||{value:''}).value).trim();
   const bodyText = (overrideSubtitle !== undefined ? overrideSubtitle : (document.getElementById('greg-subtitle')||{value:''}).value);
   const comm     = gregCommentaryText(overrideComm);
@@ -3180,7 +3188,7 @@ function gregCalcTitlePad(svgW, overrideTitle, overrideSubtitle, overrideComm) {
   const textW = svgW - 2 * pad; // usable width for wrapping
   if (!title && !bodyText.trim() && !comm) return gregSecGap(); // kein Titel: nur der einstellbare Abschnittsabstand
 
-  let totalH = 2; // top margin inside padding
+  let totalH = 2 + (extraTop || 0); // top margin inside padding (+ Zusatzabstand Folgeabschnitt)
   if (comm) totalH += subFs * 1.3; // Kommentarzeile rechts über dem System
   if (title) totalH += fs * 1.1;
 
@@ -3215,7 +3223,8 @@ function gregRenderTitle(svgEl, overrideTitle, overrideSubtitle, overrideComm) {
   const subGap   = 6;
   const ns  = 'http://www.w3.org/2000/svg';
   const vb  = svgEl.getAttribute('viewBox');
-  const [vx, vy, vw] = vb ? vb.split(/[\s,]+/).map(Number) : [0, 0, 700];
+  const [vx, vy0, vw] = vb ? vb.split(/[\s,]+/).map(Number) : [0, 0, 700];
+  const vy = vy0 + (svgEl._titleShift || 0); // Zusatzabstand über dem Titel (Folgeabschnitt)
   const topPad = svgEl._topPad || (32 * 2.5);
   const pad  = 32;
   // Detect left edge of second chant line from SVG staff lines
@@ -6904,8 +6913,10 @@ function gregExportPDF() {
           const savedCtxtRef = _gregCtxtRef;
           _gregCtxtRef = ctxt; // temporarily point to PDF ctxt for overlay functions
           const svgW = parseFloat(svgEl.getAttribute('width')) || layoutW;
-          const neededPad = gregCalcTitlePad(svgW, gabcEntry.overrideTitle, gabcEntry.overrideSubtitle, gabcEntry.overrideComm);
+          const _ext = gabcEntry.sec ? gregSecTitleExtra(gabcList.indexOf(gabcEntry), gabcEntry.overrideTitle, gabcEntry.overrideSubtitle) : 0;
+          const neededPad = gregCalcTitlePad(svgW, gabcEntry.overrideTitle, gabcEntry.overrideSubtitle, gabcEntry.overrideComm, _ext);
           svgEl._topPad = addSvgPadding(svgEl, 32, neededPad, gregSecGap());
+          svgEl._titleShift = _ext;
           gregRenderTitle(svgEl, gabcEntry.overrideTitle, gabcEntry.overrideSubtitle, gabcEntry.overrideComm);
           if (score._extraAnnotations && score._extraAnnotations.length)
             gregRenderExtraAnnotations(svgEl, score._extraAnnotations);
@@ -7246,7 +7257,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '287';
+const NOTATOR_BUILD_ID = '288';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
