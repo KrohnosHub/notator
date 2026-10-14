@@ -1326,6 +1326,38 @@ function gregCloseSection(idx) {
   }
 }
 
+// Zurück in den Ein-Abschnitt-Modus, ohne den aktiven Abschnitt neu zu rendern (Build 292):
+// wird gebraucht, wenn ein neues Stück geladen/importiert wird -- sonst blieben die Abschnitte des
+// alten Stücks stehen und der Import landete unsichtbar im aktiven Abschnitt. Gibt die bisherigen
+// Abschnitte zurück (zum Wiederherstellen), oder null, wenn nur einer vorhanden war.
+function gregCollapseSections() {
+  if (!window._gregMultiSection && gregSections.length <= 1) { gregSections = []; gregActiveIdx = 0; return null; }
+  clearTimeout(window._gregAT); clearTimeout(window._gregTT);
+  clearTimeout(window._gregST); clearTimeout(window._gregRT);
+  clearTimeout(window._gregSzT);
+  gregCloseEditForm();
+  let prev = null;
+  if (window._gregMultiSection) { try { gregSectionFromUI(); } catch (e) {} prev = { sections: gregSections, idx: gregActiveIdx }; }
+  gregSections = []; gregActiveIdx = 0; window._gregMultiSection = false;
+  const realSvgWrap = document.getElementById('greg-svg-wrap');
+  const secContainer = document.getElementById('greg-sections-container');
+  const originalSlot = document.getElementById('greg-svg-original-slot');
+  if (originalSlot && realSvgWrap && realSvgWrap.parentElement !== originalSlot) originalSlot.appendChild(realSvgWrap);
+  if (originalSlot) originalSlot.style.display = '';
+  if (secContainer) { secContainer.style.display = 'none'; secContainer.innerHTML = ''; }
+  if (realSvgWrap) realSvgWrap.style.display = 'block';
+  return prev;
+}
+function gregRestoreSections(prev) {
+  if (!prev) return;
+  gregSections = prev.sections; gregActiveIdx = prev.idx;
+  gregLoadSectionToUI(gregActiveIdx);
+  const realSvgWrap = document.getElementById('greg-svg-wrap');
+  if (realSvgWrap && realSvgWrap.parentElement) realSvgWrap.parentElement.removeChild(realSvgWrap);
+  gregEnableMultiSection();
+  gregRenderAllSections();
+}
+
 function gregEnableMultiSection() {
   const svgWrapParent = document.getElementById('greg-svg-wrap').parentElement;
   const secContainer = document.getElementById('greg-sections-container');
@@ -4893,11 +4925,12 @@ async function gregImportSongFromGregoBase(preset) {
     if (!gbGabc) { gregGst('GregoBase-Download war leer.'); return; }
     gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
     const previousEntries = gregEntries;
+    const prevSections = gregCollapseSections();   // neues Stück ersetzt auch die weiteren Abschnitte des alten
     gregImportGABCString(gbGabc, { deferRender: true });
     if (typeof clState !== 'undefined') ntResetOrganForImport(); // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
     if (gregEntries.length > 400) { // gleiche Sicherheitsgrenze wie beim PDF-Weg
       const proceed = await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Der GregoBase-Download ergibt ' + gregEntries.length + ' Einträge — ungewöhnlich viel. Trotzdem laden?');
-      if (!proceed) { gregEntries = previousEntries; gregGst('Abgebrochen.'); return; }
+      if (!proceed) { gregEntries = previousEntries; gregRestoreSections(prevSections); gregGst('Abgebrochen.'); return; }
     }
     gregRefreshListNoRender();
     gregRender();
@@ -7271,7 +7304,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '291';
+const NOTATOR_BUILD_ID = '292';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7476,6 +7509,7 @@ function gregApplyLoadedState(state) {
     gregEnableMultiSection();
     setTimeout(gregRenderAllSections, 200);
   } else {
+    gregCollapseSections();   // war vorher ein Mehr-Abschnitt-Stück offen, dessen Abschnitte entfernen
     gregEntries = state.entries;
     // Restore UI fields — only for single-section files. For multi-section
     // files these top-level state.title/subtitle/annotation/dropCap fields
