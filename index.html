@@ -6047,7 +6047,8 @@ function gregSelfTest() {
   ocheck('Tonhöhen, Achtel, Mora, Melisma-Bogen', () => clMel("(c4) Ky(fg)ri(h.)e(h) (::)"), '(FG) A2 A |]');
   ocheck('b molle gilt bis Wortende', () => clMel("(c4) a(ixi)b(i) c(i) (::)"), '_B B =B |]');
   ocheck('b molle wahlweise bis Trennstrich', () => clMel("(c4) a(ixi)b(i) c(i) (,) d(i) (::)", {flatToBar: true}), '_B B B !breath!y =B |]');
-  ocheck('Episema → Tenuto, Divisio minima → Atemzeichen', () => clMel("(c4) Ky(f_)ri(gh~)e(h) (,) e(g'ih)le(f) (::)"), '!tenuto!F (GA) A !breath!y (GBA) F |]');
+  ocheck('Episema → Viertel (gedehnt), Divisio minima → Atemzeichen', () => clMel("(c4) Ky(f_)ri(gh~)e(h) (,) e(g'ih)le(f) (::)"), 'F2 (GA) A !breath!y (GBA) F |]');
+  ocheck('Note vor Quilisma → Viertel', () => clMel("(c4) Ky(fgwh)e(h) (::)"), '(F2GA) A |]');
   ocheck('Modale Transposition a-äolisch → c (3 ♭)', () => {
     const r = clGabcToAbc([{gabc: "(c4) Ky(fg)ri(h.)e(h) (::)"}], {targetPc: 0});
     return r.info.sigFifths + ' ' + clMel("(c4) Ky(fg)ri(h.)e(h) (::)", {targetPc: 0});
@@ -7257,7 +7258,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '288';
+const NOTATOR_BUILD_ID = '289';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15122,7 +15123,11 @@ function clGabcToAbc(gabcList, opts) {
         // (mindestens 2 Achtel); das Notenbild zeigt dafür das Tenuto-Zeichen.
         // (Dehnung erst nach der Harmonisierung, siehe "Wiedergabe-Fassung" unten,
         // damit Akkorde in Wiedergabe und Notenbild gleich sind)
-        cur.notes.push({ pitch, dur: e.dur, ten: e.ten, liq: e.liq, pq: !!e.preQuil });
+        // Episem / Note vor Quilisma: im Notenbild wie in der Wiedergabe als
+        // Viertel (mind. 2 Achtel) – das Tenuto-Zeichen allein war unter
+        // Balken/Bogen kaum sichtbar (Nutzerwunsch 2026-10-14).
+        const lng = (e.ten || e.preQuil) && !e.liq && e.dur < 2;
+        cur.notes.push({ pitch, dur: lng ? 2 : e.dur, ten: e.ten, liq: e.liq, pq: !!e.preQuil, lng });
       } else if (e.k === 'bar') {
         flush();
         units.push({ kind: 'bar', t: e.t, ann: pendingAnn });
@@ -15367,7 +15372,7 @@ function clGabcToAbc(gabcList, opts) {
             if (needAcc) measureAcc[key] = nt.pitch.alt;
             const parts = clAbcLen(nt.dur);
             let s = '';
-            if (nt.ten) s += '!tenuto!';
+            if (nt.ten && !nt.lng) s += '!tenuto!';
             parts.forEach((p, pi) => {
               if (pi > 0) s += '-';
               const pitchStr = clAbcPitch(nt.pitch.D, nt.pitch.alt, needAcc && pi === 0);
