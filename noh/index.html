@@ -210,7 +210,7 @@ h1{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:40px;line-he
     <div class="count" id="count"></div>
     <div class="list" id="list"></div>
     <div class="sentinel" id="sentinel"></div>
-    <div class="empty" id="empty" style="display:none">Kein Gesang gefunden.<br>Versuch einen kürzeren Suchbegriff.</div>
+    <div class="empty" id="empty" style="display:none">Kein Gesang gefunden.<br>Prüfe die Schreibweise oder lass ein Wort weg.</div>
   </section>
 
   <section id="view-set" style="display:none">
@@ -285,6 +285,8 @@ function saveState(){
 
 /* ---------- Helpers ---------- */
 const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+/* Suchschreibweise: lateinische Varianten gleichsetzen (alleluja=alleluia, caelum=coelum=celum, vita=uita) */
+const sn=s=>norm(s).replace(/æ|œ|ae|oe/g,'e').replace(/j/g,'i').replace(/v/g,'u').replace(/y/g,'i');
 function idOf(i){ return 'n'+NOH[i][0]; }
 function urlOf(e){ const fid=NOH_FILES[e[0]]; const id=fid?fid:NOH_BANDS[e[2]]; return 'https://drive.google.com/file/d/'+id+'/view'; }
 function hasOwnFile(e){ return !!NOH_FILES[e[0]]; }
@@ -299,8 +301,8 @@ function tagOf(i){ const t=TG.t[String(NOH[i][0])]; if(!t) return null;
   return {art:t[0]>=0?TG.art[t[0]]:'',modus:t[1]>=0?TG.modusAll[t[1]]:'',zeit:t[2]>=0?TG.zeit[t[2]]:'',fest:t[3]>=0?TG.fest[t[3]]:'',festI:t[3],ky:t[4]>=0?TG.ky[t[4]]:'',sich:SICH[t[5]]||'k',ber:t[6]>=0?TG.ber[t[6]]:''}; }
 const TAGS_I=NOH.map((e,i)=>tagOf(i));
 function ownTags(i){ return state.tags[idOf(i)]||[]; }
-const NOH_NORM=NOH.map((e,i)=>{ const t=TAGS_I[i]; return norm(e[1]+(t?' '+[t.art,t.fest,t.zeit,t.ky,t.ber,t.modus?'modus '+t.modus:''].join(' '):'')); });
-function hay(i){ const o=ownTags(i); return o.length?NOH_NORM[i]+' #'+norm(o.join(' #')):NOH_NORM[i]; }
+const NOH_NORM=NOH.map((e,i)=>{ const t=TAGS_I[i]; return sn(e[1]+(t?' '+[t.art,t.fest,t.zeit,t.ky,t.ber,t.modus?'modus '+t.modus:''].join(' '):'')); });
+function hay(i){ const o=ownTags(i); return o.length?NOH_NORM[i]+' #'+sn(o.join(' #')):NOH_NORM[i]; }
 function tagLine(i){
   const t=TAGS_I[i]; const o=ownTags(i); let h='';
   if(t){
@@ -354,7 +356,7 @@ let filtered=[];
 let renderLimit=60;
 
 function computeFiltered(){
-  const q=norm(document.getElementById('q').value.trim());
+  const q=sn(document.getElementById('q').value.trim());
   const toks=q?q.split(/\s+/):[];
   filtered=[];
   for(let i=0;i<NOH.length;i++){
@@ -549,13 +551,13 @@ if(HAS_CH) CHORAL.forEach((c,j)=>{ c[3].forEach(n=>{ (CH_BY_NOH[n]=CH_BY_NOH[n]|
 let choMode=false, choOnlyMissing=false;
 const CH_MODE=c=>{ const s=c[4]['1955']||c[4]['1926']; return s?s[0]:0; };
 const CH_MTXT=m=>m?(MROM[m-1]||(m===9?'IX':String(m))):'';
-const CH_NORM=HAS_CH?CHORAL.map(c=>norm(c[2]+' '+c[1]+' modus '+CH_MTXT(CH_MODE(c))+' '+Object.keys(c[4]).join(' ')+' '+Object.values(c[4]).map(s=>s[1].map(p=>p[2]).join(' ')).join(' '))):[];
+const CH_NORM=HAS_CH?CHORAL.map(c=>sn(c[2]+' '+c[1]+' modus '+CH_MTXT(CH_MODE(c))+' '+Object.keys(c[4]).join(' ')+' '+Object.values(c[4]).map(s=>s[1].map(p=>p[2]).join(' ')).join(' '))):[];
 function setChoMode(on,silent){
   choMode=!!on; renderLimit=60;
   if(!silent){ buildChips(); renderLib(); window.scrollTo(0,0); } else { try{ buildChips(); }catch(e){} }
 }
 function computeChoral(){
-  const q=norm(document.getElementById('q').value.trim()); const toks=q?q.split(/\s+/):[];
+  const q=sn(document.getElementById('q').value.trim()); const toks=q?q.split(/\s+/):[];
   filtered=[];
   for(let j=0;j<CHORAL.length;j++){
     const c=CHORAL[j];
