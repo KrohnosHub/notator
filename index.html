@@ -7246,7 +7246,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '286';
+const NOTATOR_BUILD_ID = '287';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14599,7 +14599,13 @@ function clParseGabc(gabc, popts) {
       if (c === '[') { const e = n.indexOf(']', i); i = e < 0 ? n.length : e + 1; continue; }
       if (c === '/' || c === ' ') { sepSinceLast = true; i++; continue; }
       if (c === '!') { i++; continue; }
-      if (c === 'z' || c === 'Z') { i++; if (n[i] === '0' || n[i] === '+' || n[i] === '-') i++; continue; }
+      if (c === 'z' || c === 'Z') {
+        i++;
+        if (n[i] === '0') { i++; continue; } // z0 = nur Custos, kein Umbruch
+        if (n[i] === '+' || n[i] === '-') i++;
+        out.events.push({ k: 'brk' }); // Zeilenumbruch im Choral (gilt standardmässig auch für die Orgel)
+        continue;
+      }
       if (/[a-mA-M]/.test(c)) {
         const nx = n[i + 1] || '';
         // Vorzeichen-Deklaration (z.B. "ix" = b auf i)
@@ -15027,6 +15033,7 @@ function clGabcToAbc(gabcList, opts) {
   const tunes = [];
   const liqChars = [];
   const segRanges = []; // Klickbereiche je Begleitsatz-Abschnitt {start,end,key}
+  const sylRanges = []; // Klickbereiche je Silbe (Oberstimme) für Zeilenumbrüche {start,end,lb}
   const segInfo = {};   // key -> {candidates:[{deg,name}], current, currentName}
   const models = [];    // internes Modell je Abschnitt (für MusicXML-Export)
   let abcAll = '';
@@ -15088,6 +15095,7 @@ function clGabcToAbc(gabcList, opts) {
     const units = []; // {music:'', lyrics:[], isBreakOk, width}
     let cur = null;
     let pendingAnn = [];
+    let pendingBrk = false;
     let ni = 0;
     const flush = () => { if (cur) { units.push(cur); cur = null; } };
     parsed.events.forEach((e, idx) => {
@@ -15096,8 +15104,8 @@ function clGabcToAbc(gabcList, opts) {
         const pitch = { D: tp.D + shift, alt: tp.alt };
         if (e.sylStart || !cur || cur.kind !== 'syl') {
           flush();
-          cur = { kind: 'syl', notes: [], text: e.sylStart ? e.text : null, hyphen: !!e.hyphen, ann: pendingAnn };
-          pendingAnn = [];
+          cur = { kind: 'syl', notes: [], text: e.sylStart ? e.text : null, hyphen: !!e.hyphen, ann: pendingAnn, chBrk: pendingBrk };
+          pendingAnn = []; pendingBrk = false;
         }
         // Wiedergabe (opts.playRests): Episem und Note vor Quilisma gedehnt
         // (mindestens 2 Achtel); das Notenbild zeigt dafür das Tenuto-Zeichen.
@@ -15110,6 +15118,9 @@ function clGabcToAbc(gabcList, opts) {
         pendingAnn = [];
       } else if (e.k === 'text') {
         pendingAnn.push(e.text);
+      } else if (e.k === 'brk') {
+        flush(); // nächste Silbe beginnt eine neue Zeile
+        pendingBrk = true;
       }
     });
     flush();
@@ -15120,7 +15131,21 @@ function clGabcToAbc(gabcList, opts) {
       if (units[k].kind === 'syl') { units.push({ kind: 'bar', t: 'finalis', final: true, ann: [] }); break; }
     }
 
-    // Zeilen umbrechen
+    // Zeilen umbrechen. Feste Umbrüche: aus dem Choral (⏎) oder in der Orgel
+    // gesetzt (opts.lineBreaks[Silbenanker] = true: Umbruch, false: Choral-
+    // Umbruch hier nicht übernehmen). Anker = vorige|eigene|nächste Silbe,
+    // übersteht Einfügen/Löschen anderer Silben.
+    const lbOpt = opts.lineBreaks || {};
+    const sylU = units.filter(x => x.kind === 'syl');
+    const lbT = x => x ? String(x.text == null ? '~' : x.text).replace(/[|#:]/g, '') : '^';
+    const lbSeen = {};
+    sylU.forEach((u, k) => {
+      const a = lbT(sylU[k - 1]) + '|' + lbT(u) + '|' + lbT(sylU[k + 1]);
+      lbSeen[a] = (lbSeen[a] || 0) + 1;
+      u.lbKey = si + ':' + a + (lbSeen[a] > 1 ? '#' + lbSeen[a] : '');
+      const v = lbOpt[u.lbKey];
+      u.lbWant = v === true || (!!u.chBrk && v !== false);
+    });
     const cap = opts.charsPerLine || 60;
     const lines = [];
     let line = [], w = 0;
@@ -15128,12 +15153,13 @@ function clGabcToAbc(gabcList, opts) {
       let uw = 0;
       if (u.kind === 'syl') uw = Math.max(u.notes.reduce((a, n) => a + (n.dur >= 2 ? 2.2 : 1.8), 0), (u.text || '').length * 0.9) + 1;
       else uw = u.t === 'minima' ? 1 : 2;
-      if (w + uw > cap && line.length && u.kind === 'syl') {
+      if (u.kind === 'syl' && line.some(x => x.kind === 'syl') && (u.lbWant || w + uw > cap)) {
         lines.push(line); line = []; w = 0;
       }
       line.push(u); w += uw;
     });
     if (line.length) lines.push(line);
+    lines.forEach(ln => { const f = ln.find(x => x.kind === 'syl'); if (f) f.lbStart = true; });
 
     // Begleitsatz: Abschnitte (Akkordwechsel an Schwerpunkten) bilden + harmonisieren
     const segs = [];
@@ -15267,7 +15293,7 @@ function clGabcToAbc(gabcList, opts) {
       let music = '', lyr = [];
       let measureAcc = {}; // "D" -> alt (Zeilenanfang = neue Messung)
       let lastLyricLen = 0;
-      const low = { A: '', T: '', B: '' }, lowAcc = { A: {}, T: {}, B: {} }, lowRanges = { A: [], T: [], B: [] }, sRanges = [];
+      const low = { A: '', T: '', B: '' }, lowAcc = { A: {}, T: {}, B: {} }, lowRanges = { A: [], T: [], B: [] }, sRanges = [], lbRanges = [];
       const spacerOnly = str => (String(str).replace(/"[^"]*"/g, '').match(/y\d*/g) || []).map(x => ' ' + x).join('');
       const addLow = str => { if (opts.accomp) ['A', 'T', 'B'].forEach(v => { low[v] += str; }); };
       const emitLow = (sg) => {
@@ -15320,6 +15346,7 @@ function clGabcToAbc(gabcList, opts) {
           if (annTxt) { music += annTxt + ' '; addLow(spacerOnly(annTxt)); }
           const multi = u.notes.length > 1;
           if (multi) music += '(';
+          const sylStartPos = music.length;
           u.notes.forEach((nt, k) => {
             if (opts.accomp && nt._seg && nt._seg.notes[0] === nt) emitLow(nt._seg);
             const noteStart = music.length;
@@ -15340,6 +15367,7 @@ function clGabcToAbc(gabcList, opts) {
             if (nt._seg) sRanges.push({ s: noteStart, e: music.length, key: nt._seg.key, note: { anchor: nt._anchor, segStart: nt._seg.notes[0] === nt, mergeable: !!nt._mergeable, auto: !!nt._autoBoundary } });
           });
           if (multi) music += ')';
+          lbRanges.push({ s: sylStartPos, e: music.length, lb: { key: u.lbKey, start: !!u.lbStart, want: !!u.lbWant, chBrk: !!u.chBrk, set: lbOpt[u.lbKey] } });
           // Lyrics: erste Note = Silbe, weitere Noten = "_" (Silbe gehalten)
           if (u.text) lyr.push(clAbcEscapeLyric(u.text) + (u.hyphen ? '-' : ''));
           else lyr.push('*');
@@ -15369,6 +15397,7 @@ function clGabcToAbc(gabcList, opts) {
       const lineStart = abcAll.length + head.length + body.length + sPrefix.length - lead;
       ln.forEach(u => (u._notesRef || []).forEach(nt => { if (nt._liqOffset !== undefined) liqChars.push(lineStart + nt._liqOffset); }));
       sRanges.forEach(r => segRanges.push({ start: lineStart + r.s, end: lineStart + r.e, key: r.key, note: r.note }));
+      lbRanges.forEach(r => sylRanges.push({ start: lineStart + r.s, end: lineStart + r.e, lb: r.lb }));
       body += sPrefix + music.trim() + '\n';
       body += 'w: ' + lyr.join(' ') + '\n';
       if (opts.accomp) {
@@ -15383,7 +15412,7 @@ function clGabcToAbc(gabcList, opts) {
     });
     abcAll += head + body + '\n';
   });
-  return { abc: abcAll, liqChars, info, infos, segRanges, segInfo, models };
+  return { abc: abcAll, liqChars, info, infos, segRanges, sylRanges, segInfo, models };
 }
 
 
@@ -15569,9 +15598,10 @@ const CL_ABCJS_URL = 'https://cdn.jsdelivr.net/npm/abcjs@6.7.1/dist/abcjs-basic-
 //        null = automatisch, sonst eigener Text (auch leer = ausgeblendet)
 var clState = { targetPc: null, octave: 0, manualAbc: null, width: null, head: null, left: null, right: null, texts: [] };
 function clNormalizeState() {
-  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: true, pedal: false, flatToBar: true, chordOverrides: {}, chordBreaks: {} }, clState || {}); // b gilt standardmässig bis zur nächsten Divisio (Nutzerentscheid 2026-10-10) // Begleitsatz standardmässig an
+  clState = Object.assign({ targetPc: null, octave: 0, manualAbc: null, manualAbcAcc: null, width: null, head: null, left: null, right: null, texts: [], accomp: true, pedal: false, flatToBar: true, chordOverrides: {}, chordBreaks: {}, lineBreaks: {} }, clState || {}); // b gilt standardmässig bis zur nächsten Divisio (Nutzerentscheid 2026-10-10) // Begleitsatz standardmässig an
   if (!Array.isArray(clState.texts)) clState.texts = [];
   if (!clState.chordOverrides || typeof clState.chordOverrides !== 'object') clState.chordOverrides = {};
+  if (!clState.lineBreaks || typeof clState.lineBreaks !== 'object') clState.lineBreaks = {};
 }
 // Handbearbeiteter Quelltext wird je Fassung (mit/ohne Begleitsatz) getrennt geführt
 function clMK() { return clState.accomp ? 'manualAbcAcc' : 'manualAbc'; }
@@ -15669,7 +15699,7 @@ function clBuild(extra) {
   const sw = clScoreWidth();
   const headers = list.map((x, i) => Object.assign({}, clEffectiveHead(i), { left: clCfg(i).left, right: clCfg(i).right }));
   const sectionOpts = list.map((x, i) => ({ targetPc: clCfg(i).targetPc, octave: clCfg(i).octave || 0 }));
-  return clGabcToAbc(list, { sectionOpts, targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks, playRests: !!(extra && extra.playRests) });
+  return clGabcToAbc(list, { sectionOpts, targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks, lineBreaks: clState.lineBreaks, playRests: !!(extra && extra.playRests) });
 }
 
 function clFillTargetSelect() {
@@ -15767,7 +15797,7 @@ function clRender() {
   const sw = clScoreWidth();
   const vs = ntViewScale('cl');
   el.style.width = Math.round(sw * vs + 40) + 'px';
-  window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clState.accomp && clLast && !clUi().view) ? clChordClick : null);
+  window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clLast && !clUi().view) ? clChordClick : null);
   if (vs !== 1) el.querySelectorAll('.cl-tune > svg').forEach(svg => {
     const w = parseFloat(svg.getAttribute('width')), h = parseFloat(svg.getAttribute('height'));
     if (!w || !h) return;
@@ -17440,16 +17470,18 @@ function clMigrateOverrides(r) {
 
 // ── Akkord per Klick ändern ──────────────────────────────────────
 function clChordClick(absChar, ev, absEnd) {
-  if (!clLast || !clLast.segRanges) return;
+  if (!clLast) return;
   // abcjs zählt vorangehende Leerzeichen/Bogenklammern "(" teils zur Note:
   // daher Überlappung des ganzen Noten-Textbereichs prüfen, nicht nur den Anfang.
   const end = Math.max(absEnd || 0, absChar + 1);
-  const r = clLast.segRanges.find(x => absChar >= x.start && absChar < x.end) ||
-            clLast.segRanges.find(x => x.start < end && x.end > absChar);
-  if (!r) return;
-  const inf = clLast.segInfo[r.key];
-  if (!inf) return;
+  const findR = arr => (arr || []).find(x => absChar >= x.start && absChar < x.end) || (arr || []).find(x => x.start < end && x.end > absChar);
+  const lr = findR(clLast.sylRanges); // Silbe der Oberstimme (Zeilenumbruch)
+  const r0 = clState.accomp ? findR(clLast.segRanges) : null;
+  const inf0 = r0 && clLast.segInfo ? clLast.segInfo[r0.key] : null;
+  if (!inf0 && !lr) return;
   clCloseChordMenu();
+  if (!inf0) { clLineBreakMenu(lr, ev); return; }
+  const r = r0, inf = inf0;
   const m = document.createElement('div');
   m.id = 'cl-chord-menu';
   m._t0 = Date.now();
@@ -17502,6 +17534,42 @@ function clChordClick(absChar, ev, absEnd) {
     else if (nt.mergeable) mk('⤺ Akkord der vorigen Note weiterklingen', () => setBrk(nt.auto ? false : null));
     if (brk[nt.anchor] != null) mk('↺ Wechsel wie automatisch', () => setBrk(null));
   }
+  if (lr) clLineBreakItems(m, mk, lr.lb);
+  document.body.appendChild(m);
+  setTimeout(() => document.addEventListener('mousedown', clMenuOutside), 0);
+}
+// Zeilenumbruch vor der angetippten Silbe setzen/entfernen
+function clLineBreakItems(m, mk, lb) {
+  if (!lb || !lb.key) return;
+  const sep = document.createElement('div');
+  sep.textContent = 'Zeile';
+  sep.style.cssText = 'font-weight:bold;margin:6px 0 2px;color:#e0d4b0;border-top:1px solid #3a4a30;padding-top:4px';
+  m.appendChild(sep);
+  const set = v => { const o = clState.lineBreaks || (clState.lineBreaks = {}); if (v == null) delete o[lb.key]; else o[lb.key] = v; clRender(); };
+  if (!lb.want) {
+    if (!lb.start) mk('⏎ Neue Zeile ab dieser Silbe', () => set(true));
+  } else {
+    mk('⤺ Zeilenumbruch hier entfernen', () => set(lb.chBrk ? false : null));
+  }
+  if (lb.set === false) mk('↺ Umbruch wie im Choral', () => set(null));
+}
+function clLineBreakMenu(lr, ev) {
+  const m = document.createElement('div');
+  m.id = 'cl-chord-menu';
+  m._t0 = Date.now();
+  m.style.cssText = 'position:fixed;z-index:1000;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;min-width:170px';
+  const x = (ev && ev.clientX) || 100, y = (ev && ev.clientY) || 100;
+  m.style.left = Math.min(x + 6, window.innerWidth - 220) + 'px';
+  m.style.top = Math.min(y + 6, window.innerHeight - 120) + 'px';
+  const mk = (label, onClick) => {
+    const bt = document.createElement('button');
+    bt.className = 'b'; bt.textContent = label;
+    bt.style.cssText = 'display:block;width:100%;text-align:left;margin:2px 0;font-size:12px;padding:3px 6px';
+    bt.onclick = () => { if (Date.now() - m._t0 < 350) return; clCloseChordMenu(); onClick(); };
+    m.appendChild(bt);
+  };
+  clLineBreakItems(m, mk, lr.lb);
+  if (m.children.length <= 1) { const d = document.createElement('div'); d.textContent = 'Automatischer Umbruch (Breite)'; d.style.cssText = 'font-size:11px;color:#8aa070'; m.appendChild(d); }
   document.body.appendChild(m);
   setTimeout(() => document.addEventListener('mousedown', clMenuOutside), 0);
 }
