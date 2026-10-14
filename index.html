@@ -1358,6 +1358,21 @@ function gregRestoreSections(prev) {
   gregRenderAllSections();
 }
 
+// Import (GregoBase / PDF) bei mehreren Abschnitten: leerer aktiver Abschnitt
+// -> dort einfügen (Arbeitsweise «+ Abschnitt», dann importieren); sonst
+// fragen: neues Stück (alle Abschnitte ersetzen) oder nur diesen Abschnitt.
+function gregImportTargetChoice() {
+  if (!window._gregMultiSection || gregSections.length <= 1) return Promise.resolve('new');
+  if (!gregEntries.some(e => e.type === 'note')) return Promise.resolve('section');
+  return new Promise(resolve => {
+    showModal('Stück mit ' + gregSections.length + ' Abschnitten',
+      'Das offene Stück hat ' + gregSections.length + ' Abschnitte. Wie soll der neue Gesang übernommen werden?\n\n«Neues Stück» ersetzt alle Abschnitte (vorher speichern, falls nötig).', [
+      { label: '✚ Neues Stück', fn: () => { closeModal(); resolve('new'); } },
+      { label: 'Nur Abschnitt ' + (gregActiveIdx + 1) + ' ersetzen', fn: () => { closeModal(); resolve('section'); } },
+      { label: 'Abbrechen', fn: () => { closeModal(); resolve(null); } }
+    ]);
+  });
+}
 function gregEnableMultiSection() {
   const svgWrapParent = document.getElementById('greg-svg-wrap').parentElement;
   const secContainer = document.getElementById('greg-sections-container');
@@ -4924,8 +4939,10 @@ async function gregImportSongFromGregoBase(preset) {
     let gbGabc = (await dlResp.text()).trim();
     if (!gbGabc) { gregGst('GregoBase-Download war leer.'); return; }
     gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
+    const target = await gregImportTargetChoice();
+    if (!target) { gregGst('Abgebrochen.'); return; }
     const previousEntries = gregEntries;
-    const prevSections = gregCollapseSections();   // neues Stück ersetzt auch die weiteren Abschnitte des alten
+    const prevSections = target === 'new' ? gregCollapseSections() : null;   // neues Stück ersetzt auch die weiteren Abschnitte des alten
     gregImportGABCString(gbGabc, { deferRender: true });
     if (typeof clState !== 'undefined') ntResetOrganForImport(); // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
     if (gregEntries.length > 400) { // gleiche Sicherheitsgrenze wie beim PDF-Weg
@@ -5264,13 +5281,16 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
             // on-score annotation (ignore "office-part" entirely), and put
             // "book" into the subtitle field.
             gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
+            const target = await gregImportTargetChoice();
+            if (!target) { gregGst('Abgebrochen.'); return _pieceSucceeded; }
             const previousEntries = gregEntries;
+            const prevSections = target === 'new' ? gregCollapseSections() : null;
             gregImportGABCString(gbGabc, { deferRender: true });
     if (typeof clState !== 'undefined') ntResetOrganForImport(); // neues Stück: Orgel-Einstellungen auf Standard (Begleitsatz an)
             console.log('GregoBase: Import ergab ' + gregEntries.length + ' Einträge.');
             if (gregEntries.length > 400) { // sanity cap even for a trusted source — a malformed/huge download shouldn't render blindly either
               const proceed = await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Der GregoBase-Download ergibt ' + gregEntries.length + ' Einträge — ungewöhnlich viel. Trotzdem laden?');
-              if (!proceed) { gregEntries = previousEntries; gregGst('Abgebrochen.'); console.log('GregoBase: Import vom Nutzer abgelehnt (zu viele Einträge).'); return _pieceSucceeded; }
+              if (!proceed) { gregEntries = previousEntries; gregRestoreSections(prevSections); gregGst('Abgebrochen.'); console.log('GregoBase: Import vom Nutzer abgelehnt (zu viele Einträge).'); return _pieceSucceeded; }
             }
             gregRefreshListNoRender();
             gregRender();
@@ -5883,6 +5903,7 @@ After all ${batch.length} system lines, output the line "===GABC===" on its own,
       // gregRender(). If it's unreasonably high, restore whatever was
       // there before and ask the user, so a render only ever happens once
       // we're confident it won't be on a runaway result.
+      { const target = await gregImportTargetChoice(); if (!target) { gregGst('Abgebrochen.'); return; } if (target === 'new') gregCollapseSections(); }
       const previousEntries = gregEntries;
       gregImportGABCString(cleaned, {deferRender: true});
       const realEntryCount = gregEntries.length;
@@ -7304,7 +7325,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '292';
+const NOTATOR_BUILD_ID = '293';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8173,7 +8194,7 @@ function gregLibShowModal() {
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
   const openRow = document.createElement('div');
   openRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
-  openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); if (window._ntTab !== 'greg') switchTab('greg'); gregClear(); }, '', 'Neues, leeres Stück beginnen (das offene Stück wird verworfen – vorher speichern)'));
+  openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); if (window._ntTab !== 'greg') switchTab('greg'); gregCollapseSections(); gregClear(); if (typeof gregMeta !== 'undefined') gregMeta = {}; }, '', 'Neues, leeres Stück beginnen (das offene Stück wird verworfen – vorher speichern)'));
   openRow.appendChild(mkBtn('💻 Vom Gerät öffnen …', function() { ntOpenLocalFile(); }, 'background:#3d6b35;color:#fff;border-color:#3d6b35', '.notator-Datei aus einem lokalen Ordner öffnen'));
   if (driveOn) openRow.appendChild(mkBtn('☁ Anderer Drive-Ordner …', function() {
     gdGetToken(true).then(function() { ntDriveOpenBrowser(); }).catch(function(err) { gregGst(err.message); });
