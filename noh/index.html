@@ -606,7 +606,7 @@ function openChModal(js){
       const up=[...new Set(s[1].map(p=>p[1]))];
       s[1].forEach(p=>{
         const lab='S. '+p[0]+(b==='1926'&&String(p[1])!==String(p[0])?' (PDF-S. '+p[1]+')':'')+(p[3]?' · '+(p[3]==='autre'?'anderer Ton':p[3]==='orne'?'ton plus orné':p[3]):'');
-        const f=b==='1961'?'choral/1961/p'+String(p[1]).padStart(4,'0')+'.pdf':'choral/'+b+'/'+s[2]+'#page='+(up.indexOf(p[1])+1);
+        const f=b==='1961'?'choral/1961/GR1961_p'+String(p[1]).padStart(4,'0')+'.pdf':'choral/'+b+'/'+s[2]+'#page='+(up.indexOf(p[1])+1);
         h+='<div class="chitem"><div class="t"><b>'+srcShort(b)+'</b> · '+lab+'<small>'+escapeHtml(p[2]||'')+'</small></div><div class="b">'
           +'<a class="openbtn chbtn" target="_blank" rel="noopener" href="'+f+'">Choral</a>'
           +(S.u?'<a class="openbtn" style="background:var(--paper);color:var(--ink2);border-color:var(--line)" target="_blank" rel="noopener" title="Ganzes Buch bei der Church Music Association (Seite '+p[1]+')" href="'+S.u+'#page='+p[1]+'">Buch</a>':'')+'</div></div>';
