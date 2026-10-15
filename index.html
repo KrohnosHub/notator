@@ -49,7 +49,7 @@ body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
 #shell{display:flex;flex-direction:column;height:100vh}
 #hdr{background:#1a1209;padding:6px 12px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
 #hdr-left{display:flex;align-items:center;min-width:0;overflow:hidden;white-space:nowrap}
-#hdr-right{display:flex;justify-content:flex-end;min-width:0}
+#hdr-right{display:flex;justify-content:flex-end;align-items:center;gap:6px;min-width:0}
 #hdr-tabs{display:flex;gap:4px;grid-column:2;grid-row:1}
 #hdr-left{grid-column:1;grid-row:1}
 #hdr-right{grid-column:3;grid-row:1}
@@ -60,8 +60,8 @@ body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
 .tg{display:flex;gap:2px;align-items:center;padding-right:6px;border-right:1px solid var(--parch3);margin-right:1px}
 .tg:last-child{border-right:none}
 .tl{font-size:9px;color:var(--ink3);font-variant:small-caps;letter-spacing:.04em;margin-right:2px;white-space:nowrap}
-button.b,select.b{font-family:var(--fu);font-size:11px;padding:2px 6px;min-height:22px;border:1px solid var(--parch3);border-radius:3px;background:var(--parch);color:var(--ink2);cursor:pointer;white-space:nowrap;user-select:none}
-button.b:hover{background:var(--parch3)}
+button.b,select.b,a.b{font-family:var(--fu);font-size:11px;padding:2px 6px;min-height:22px;border:1px solid var(--parch3);border-radius:3px;background:var(--parch);color:var(--ink2);cursor:pointer;white-space:nowrap;user-select:none}
+button.b:hover,a.b:hover{background:var(--parch3)}
 button.b.on{background:var(--acc1);color:#fff;border-color:var(--acc1)}
 button.b.on2{background:var(--acc2);color:#fff;border-color:var(--acc2)}
 button.b.on3{background:var(--acc3);color:#fff;border-color:var(--acc3)}
@@ -109,6 +109,8 @@ input[type=file]{display:none}
 #greg-mobile-bar{display:flex}
 .nt-mob-only{display:none}
 @media (max-width: 700px) {
+  .nt-noh-txt{display:none}
+  .nt-lbl{display:none}
   /* Handy: Wiedergabe-/Anzeige-Extras im «⋯»-Menü statt eigener Knöpfe */
   .nt-pm{display:none !important}
   .nt-mob-only{display:inline-block !important}
@@ -174,7 +176,7 @@ input[type=file]{display:none}
  <div id="hdr">
   <div id="hdr-left"><h1>Not<em>a</em>tor</h1>
   <span id="hdr-sub" style="font-size:10px;color:#6b7a60;margin-left:4px">Klassisch &amp; Gregorianisch</span></div>
-  <div id="hdr-right"><button class="b" id="nt-install-btn" onclick="ntInstall()" style="display:none;margin-left:10px;min-height:20px;padding:2px 10px;font-size:11px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Notator als App auf diesem Gerät installieren">&#128242; Installieren</button><button class="b" id="nt-more-btn" onclick="ntMoreMenu(this)" style="margin-left:6px;min-height:20px;padding:2px 9px;font-size:13px;line-height:1" title="Mehr: Version, Selbsttest, Aktualisieren">&#8942;</button>
+  <div id="hdr-right"><a class="b" id="nt-noh-link" href="https://krohnoshub.github.io/notator/noh/" target="_blank" rel="noopener" style="min-height:20px;padding:2px 10px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;white-space:nowrap" title="NOH-Notenbibliothek (Orgel- und Choralnoten) in neuem Tab öffnen">&#128218;<span class="nt-noh-txt">Notenbibliothek</span></a><button class="b" id="nt-install-btn" onclick="ntInstall()" style="display:none;margin-left:10px;min-height:20px;padding:2px 10px;font-size:11px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Notator als App auf diesem Gerät installieren">&#128242; Installieren</button><button class="b" id="nt-more-btn" onclick="ntMoreMenu(this)" style="margin-left:6px;min-height:20px;padding:2px 9px;font-size:13px;line-height:1" title="Mehr: Version, Selbsttest, Aktualisieren">&#8942;</button>
 </div>
   <div id="hdr-tabs">
     <button class="b nt-tab" id="tab-greg" onclick="switchTab('greg')" title="Gregorianischer Choral (Quadratnotation)">&#128220; Choral</button>
@@ -249,11 +251,11 @@ input[type=file]{display:none}
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
-    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
-    <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925; Song importieren</button>
-    <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190; Speichern</button>
+    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
+    <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925;<span class="nt-lbl"> Song importieren</span></button>
+    <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label></span>
-    <button class="b" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279; Teilen</button>
+    <button class="b" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
     <span id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
     <span class="nt-bar-spacer" style="flex:1 1 0;min-width:0"></span>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
@@ -485,11 +487,11 @@ input[type=file]{display:none}
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
-    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194; Öffnen</button>
-    <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925; Song importieren</button>
-    <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190; Speichern</button>
+    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
+    <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925;<span class="nt-lbl"> Song importieren</span></button>
+    <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label></span>
-    <button class="b" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279; Teilen</button>
+    <button class="b" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
     <span id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
     <span class="nt-bar-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
@@ -7325,7 +7327,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '293';
+const NOTATOR_BUILD_ID = '294';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
