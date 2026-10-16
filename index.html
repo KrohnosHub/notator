@@ -7302,7 +7302,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '298';
+const NOTATOR_BUILD_ID = '299';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -18242,6 +18242,7 @@ function clChordClick(absChar, ev, absEnd) {
   }
   if (lr) clLineBreakItems(m, mk, lr.lb);
   document.body.appendChild(m);
+  ntPlacePopup(m, x, y);
   setTimeout(() => document.addEventListener('mousedown', clMenuOutside), 0);
 }
 // Zeilenumbruch vor der angetippten Silbe setzen/entfernen
@@ -18277,7 +18278,22 @@ function clLineBreakMenu(lr, ev) {
   clLineBreakItems(m, mk, lr.lb);
   if (m.children.length <= 1) { const d = document.createElement('div'); d.textContent = 'Automatischer Umbruch (Breite)'; d.style.cssText = 'font-size:11px;color:#8aa070'; m.appendChild(d); }
   document.body.appendChild(m);
+  ntPlacePopup(m, x, y);
   setTimeout(() => document.addEventListener('mousedown', clMenuOutside), 0);
+}
+// Kontextmenü vollständig im sichtbaren Bereich halten (Handy/Tablet):
+// Grösse begrenzen (bei Bedarf scrollbar) und Position an den Rand schieben.
+function ntPlacePopup(m, x, y) {
+  const vv = window.visualViewport;
+  const vw = vv ? vv.width : window.innerWidth, vh = vv ? vv.height : window.innerHeight;
+  const ox = vv ? vv.offsetLeft : 0, oy = vv ? vv.offsetTop : 0;
+  m.style.maxWidth = (vw - 16) + 'px'; m.style.maxHeight = (vh - 16) + 'px';
+  m.style.overflowY = 'auto'; m.style.boxSizing = 'border-box';
+  const w = m.offsetWidth, h = m.offsetHeight;
+  let left = x + 6, top = y + 6;
+  if (left + w > ox + vw - 8) left = Math.max(ox + 8, Math.min(x - w - 6, ox + vw - w - 8));
+  if (top + h > oy + vh - 8) top = Math.max(oy + 8, oy + vh - h - 8);
+  m.style.left = Math.max(ox + 8, left) + 'px'; m.style.top = Math.max(oy + 8, top) + 'px';
 }
 function clMenuOutside(e) { const m = document.getElementById('cl-chord-menu'); if (m && !m.contains(e.target)) clCloseChordMenu(); }
 function clCloseChordMenu() {
