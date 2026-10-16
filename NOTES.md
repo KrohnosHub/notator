@@ -1,3 +1,17 @@
+# Stand Build 297 (2026-10-16)
+
+## Neu in Build 286–297 (Auszug, Details im Git-Log)
+
+- **286** Abschnitte einzeln abspielen; Orgel-Einstellungen (Grundton, Oktave, Titel, Kopfzeile) je Abschnitt; Auswahl bei mehreren GregoBase-Links.
+- **287** Orgel-Zeilenumbrüche: aus dem Choral (⏎) übernommen, per Klick setzen/entfernen.
+- **288–289** Abstand vor Folgeabschnitt mit Titel; Note vor Quilisma/Episem als Viertel notiert.
+- **290–291** Leisten aufgeräumt (Datei-Aktionen links, ⋮-Menü, Exportieren-Menü, API-Key-Zeile bei «PDF lesen», Handy-⋯-Menü).
+- **292–293** Import/Öffnen ersetzt alle Abschnitte (Rückfrage, leerer Abschnitt = einfügen).
+- **294** Link zur Notenbibliothek im Kopf.
+- **295** Schutz vor Datenverlust (Rückfrage, Warnung beim Schliessen, Wiederherstellung aus localStorage), Orgel rückgängig/wiederholen, Strg+Z/Y/S; alter GABC-Tab entfernt.
+- **296** Grundton für alle Abschnitte; Mappe mit Seitenzahlen + Inhaltsverzeichnis; NOH-Verknüpfung je Stück (📚 NOH ▾); Anfangston (♩); Psalmton-Assistent (Tondaten aus jgabc, gemeinfrei).
+- **297** Vorschläge nach Kirchenjahr (heutiger Kalender für die eigene Bibliothek, Kalender 1962 für die Notenbibliothek).
+
 # Stand Build 261 (2026-10-10)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator).
