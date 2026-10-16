@@ -7302,7 +7302,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '299';
+const NOTATOR_BUILD_ID = '300';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7769,6 +7769,39 @@ function gdTrySilent() {
   return Promise.race([gdGetToken(true).catch(() => null), new Promise(r => setTimeout(() => r(null), 6000))]);
 }
 
+// Automatische Anmeldung (Nutzerwunsch 2026-10-16): War Notator schon einmal
+// mit Google Drive verbunden, wird der Zugang ohne eigenen Klick erneuert –
+// beim Start sofort, falls der gespeicherte Zugang noch gilt, sonst bei der
+// ersten Berührung/dem ersten Klick irgendwo in der App (Browser erlauben das
+// kurze Google-Fenster nur nach einer Nutzeraktion; es schliesst sich von
+// selbst, ohne Kontoauswahl). Läuft der Zugang (ca. 1 h) bald ab, wird er bei
+// der nächsten Aktion ebenso still erneuert.
+function gdTokenExpiresIn() {
+  for (const st of ['localStorage', 'sessionStorage']) {
+    try { const t = JSON.parse(window[st].getItem(GD_TOKEN_KEY) || 'null'); if (t && t.token) return t.exp - Date.now(); } catch (e) {}
+  }
+  return -1;
+}
+let _gdAutoBusy = false;
+function gdAutoConnectInit() {
+  let h = ''; try { h = localStorage.getItem(GD_HINT_KEY) || ''; } catch (e) {}
+  if (!h || !gdConfigured()) return; // noch nie verbunden: erst über die Bibliothek anmelden
+  gdLoadGis().catch(() => {}); // Google-Skript schon laden, damit die Erneuerung im Klick sofort geht
+  const onAct = () => {
+    if (_gdAutoBusy || !navigator.onLine) return;
+    if (gdTokenExpiresIn() > 10 * 60000) return; // noch mind. 10 Min. gültig
+    if (!(window.google && google.accounts && google.accounts.oauth2)) { gdLoadGis().catch(() => {}); return; }
+    _gdAutoBusy = true;
+    let old = null; try { old = localStorage.getItem(GD_TOKEN_KEY); } catch (e) {}
+    gdClearToken();
+    gdGetToken(true).then(() => { gregGst('Mit Google Drive verbunden.'); })
+      .catch(() => { if (old) try { localStorage.setItem(GD_TOKEN_KEY, old); } catch (e) {} }) // alter Zugang gilt evtl. noch
+      .finally(() => { _gdAutoBusy = false; });
+  };
+  document.addEventListener('pointerdown', onAct, true);
+}
+setTimeout(() => { try { gdAutoConnectInit(); } catch (e) {} }, 800);
+
 // interactive=true: darf ein Google-Anmeldefenster öffnen (nur aus einem
 // Klick heraus aufrufen, sonst blockiert der Browser das Popup).
 function gdGetToken(interactive) {
@@ -7776,7 +7809,8 @@ function gdGetToken(interactive) {
   if (cached) return Promise.resolve(cached);
   if (!interactive) return Promise.reject(new Error('Nicht bei Google angemeldet'));
   if (!gdConfigured()) return Promise.reject(new Error('Google Drive ist noch nicht eingerichtet (Client-ID fehlt)'));
-  return gdLoadGis().then(() => new Promise((resolve, reject) => {
+  if (window._gdPending) return window._gdPending; // laufende Anmeldung teilen (z.B. automatische + Bibliothek gleichzeitig)
+  const p = gdLoadGis().then(() => new Promise((resolve, reject) => {
     if (!_gdTokenClient) {
       let hint = ''; try { hint = localStorage.getItem(GD_HINT_KEY) || ''; } catch (e) {}
       const cfg = { client_id: gdClientId(), scope: GD_SCOPE, callback: () => {} };
@@ -7790,7 +7824,12 @@ function gdGetToken(interactive) {
     };
     _gdTokenClient.error_callback = err => reject(new Error('Google-Anmeldung abgebrochen' + (err && err.type ? ' (' + err.type + ')' : '')));
     _gdTokenClient.requestAccessToken({ prompt: '' });
+    setTimeout(() => reject(new Error('Google-Anmeldung: keine Antwort (Popup blockiert?)')), 90000); // nie dauerhaft hängen bleiben
   }));
+  window._gdPending = p;
+  const done = () => { if (window._gdPending === p) window._gdPending = null; };
+  p.then(done, done);
+  return p;
 }
 
 function gdFetch(url, opts, interactive) {
@@ -15121,18 +15160,36 @@ function clOvLookup(ovs, sg) {
 function clOvParse(v) {
   if (v === undefined || v === null) return null;
   if (typeof v === 'number') return { d: v, i: null };
-  if (typeof v === 'object') return { d: v.d != null ? v.d : null, i: v.i != null ? v.i : null };
+  if (typeof v === 'object') return { d: v.d != null ? v.d : null, i: v.i != null ? v.i : null, x: v.x || null };
   return null;
 }
 // segs: [{notes:[{pitch,dur}], pulses, endBar, final, key}]
 // ctx: {keyAlt, finalisStep, overrides:{key: degree}}
+// Beliebiger Dur-/Moll-Dreiklang (freie Akkordwahl): Grundton als Stufe +
+// Tonhöhenklasse, Terz/Quinte richtig benannt (z.B. B-Dur = B–D–F)
+function clMakeChord(rootStep, rootPc, minor) {
+  const steps = [clMod(rootStep, 7), clMod(rootStep + 2, 7), clMod(rootStep + 4, 7)];
+  const pcs = [clMod(rootPc, 12), clMod(rootPc + (minor ? 3 : 4), 12), clMod(rootPc + 7, 12)];
+  const alts = steps.map((st, i) => { let a = clMod(pcs[i] - CL_NAT_PC[st], 12); if (a > 6) a -= 12; return a; });
+  return { root: steps[0], steps, alts, pcs, minor: !!minor, free: true };
+}
 function clHarmonize(segs, ctx) {
   if (!segs.length) return;
   const states = segs.map((seg, si) => {
     let chords = clSegChords(seg, ctx.keyAlt);
+    // Kommt die b/h-Stufe in der Melodie dieses Abschnitts nicht vor, sind
+    // auch Akkorde mit der anderen Form möglich (z.B. B-Dur/g-Moll in D-dorisch)
+    // – als Vorschlag im Menü; automatisch nur bei klarem Vorteil (Zusatzkosten).
+    if (ctx.bVar && !seg.notes.some(n => clMod(n.pitch.D, 7) === ctx.bVar.step)) {
+      const ka = ctx.keyAlt.slice(); ka[ctx.bVar.step] = ctx.bVar.alt;
+      clSegChords(seg, ka).forEach(c => { if (c.steps.includes(ctx.bVar.step) && !chords.some(x => x.pcs.join() === c.pcs.join())) { c.alt2 = true; chords.push(c); } });
+    }
     seg.candidates = chords;
     const ov = clOvParse(clOvLookup(ctx.overrides, seg));
-    if (ov && ov.d != null) {
+    if (ov && ov.x && ctx.finalisPc != null) {
+      // frei gewählter Akkord (auch ausserhalb der Vorschläge), relativ zur Finalis gespeichert -> transponierbar
+      chords = [clMakeChord(ctx.finalisStep + ov.x.d, ctx.finalisPc + ov.x.s, ov.x.m)];
+    } else if (ov && ov.d != null) {
       const want = clMod(ctx.finalisStep + ov.d, 7);
       const f = chords.filter(c => c.root === want);
       if (f.length) chords = f;
@@ -15145,6 +15202,7 @@ function clHarmonize(segs, ctx) {
       let hc = 0;
       const chordPcs = ch.pcs;
       seg.notes.slice(1).forEach(n => { if (!chordPcs.includes(clPcOf(clMod(n.pitch.D, 7), n.pitch.alt))) hc += n.dur >= 2 ? 6 : 0.6; });
+      if (ch.alt2) hc += 2.5; // andere b/h-Form: nur Vorschlag, automatisch selten
       if (isLast && ch.root !== ctx.finalisStep) hc += 20;
       if (si === 0 && ch.root !== ctx.finalisStep) hc += 1;
       // Phrasenschluss an Doppel-/Schlussstrich: Finalis-Akkord deutlich bevorzugt
@@ -15247,7 +15305,7 @@ function clGabcToAbc(gabcList, opts) {
   // opts.sectionOpts[si] = {targetPc, octave}; sonst opts.targetPc/opts.octave)
   const firstParsed = clParseGabc(gabcList[0].gabc, opts);
   const infos = [];
-  let fin, origPc, targetPc, tgt, d, semi, sigFifths, keyAlt, keyTonic, abcKey;
+  let fin, origPc, targetPc, tgt, d, semi, sigFifths, keyAlt, keyTonic, abcKey, bVar;
   const computeT = (parsedX, gabcX, tpc) => {
     fin = clFinalis(parsedX);
     const baseFifths = clBaseKeyFifths(gabcX);
@@ -15265,6 +15323,9 @@ function clGabcToAbc(gabcList, opts) {
     if (sigFifths > 0) for (let k = 0; k < sigFifths; k++) keyAlt[SHARP_ORDER[k]] = 1;
     if (sigFifths < 0) for (let k = 0; k < -sigFifths; k++) keyAlt[FLAT_ORDER[k]] = -1;
     keyTonic = clKeyName(tgt.step, tgt.alt);
+    // Choral-«b» (h/b ist im Choral wählbar): Stufe im Zielton und die jeweils
+    // andere Form (b statt h bzw. h statt b) für zusätzliche Akkordvorschläge
+    { const bs = clMod(6 + d, 7); bVar = { step: bs, alt: keyAlt[bs] + (baseFifths < 0 ? 1 : -1) }; }
     // K: bewusst als Dur-Tonart mit identischer Vorzeichnung (nicht als
     // Modusname) -- so ist garantiert, dass die von abcjs gezeichnete
     // Vorzeichnung exakt der hier berechneten (keyAlt) entspricht.
@@ -15320,7 +15381,7 @@ function clGabcToAbc(gabcList, opts) {
         // Viertel (mind. 2 Achtel) – das Tenuto-Zeichen allein war unter
         // Balken/Bogen kaum sichtbar (Nutzerwunsch 2026-10-14).
         const lng = (e.ten || e.preQuil) && !e.liq && e.dur < 2;
-        cur.notes.push({ pitch, dur: lng ? 2 : e.dur, ten: e.ten, liq: e.liq, pq: !!e.preQuil, lng });
+        cur.notes.push({ pitch, oD: e.D, dur: lng ? 2 : e.dur, ten: e.ten, liq: e.liq, pq: !!e.preQuil, lng });
       } else if (e.k === 'bar') {
         flush();
         units.push({ kind: 'bar', t: e.t, ann: pendingAnn });
@@ -15404,9 +15465,16 @@ function clGabcToAbc(gabcList, opts) {
           u.notes.forEach((nt, k) => {
             // Anker jeder Note (über alle Noten eindeutig) -> Schlüssel für
             // Abschnitts-Akkorde und für von Hand gesetzte Akkordwechsel.
-            const a = sylTxt(sylUnits[ui - 1]) + '|' + sylTxt(u) + '|' + sylTxt(sylUnits[ui + 1]) + '|' + k + '|' + nt.pitch.D;
+            // Tonhöhe im Anker = Choral-Tonhöhe (nicht transponiert), damit
+            // Akkordvorgaben einen Wechsel von Grundton/Oktave überstehen.
+            // Alter Anker (transponierte Tonhöhe, bis Build 299) bleibt als Ausweichschlüssel.
+            const a0 = sylTxt(sylUnits[ui - 1]) + '|' + sylTxt(u) + '|' + sylTxt(sylUnits[ui + 1]) + '|' + k + '|';
+            const a = a0 + 'o' + nt.oD, aOld = a0 + nt.pitch.D;
             noteSeen[a] = (noteSeen[a] || 0) + 1;
+            noteSeen['~' + aOld] = (noteSeen['~' + aOld] || 0) + 1;
             nt._anchor = si + ':' + a + (noteSeen[a] > 1 ? '#' + noteSeen[a] : '');
+            nt._anchorOld = si + ':' + aOld + (noteSeen['~' + aOld] > 1 ? '#' + noteSeen['~' + aOld] : '');
+            if (brk[nt._anchor] == null && brk[nt._anchorOld] != null) { brk[nt._anchor] = brk[nt._anchorOld]; delete brk[nt._anchorOld]; }
             const hard = !cur || lineStart; // Anfang / neue Zeile: immer neuer Akkord
             // Mögliche Akkordwechsel (2026-10-13, Nutzervorgabe): ein Akkord dauert
             // mindestens 2 Achtel; Wechsel bevorzugt an Wort-/Melismenbeginn, auf
@@ -15427,9 +15495,9 @@ function clGabcToAbc(gabcList, opts) {
             nt._mergeable = !hard;
             nt._autoBoundary = auto;
             if (boundary) {
-              let oa = a; anchorSeen[oa] = (anchorSeen[oa] || 0) + 1;
+              let oa = aOld; anchorSeen[oa] = (anchorSeen[oa] || 0) + 1;
               if (anchorSeen[oa] > 1) oa += '#' + anchorSeen[oa];
-              cur = { notes: [], pulses: 0, line: li, key: nt._anchor, legacyKeys: [si + ':' + oa, si + ':' + segs.length] }; segs.push(cur);
+              cur = { notes: [], pulses: 0, line: li, key: nt._anchor, legacyKeys: [nt._anchorOld, si + ':' + oa, si + ':' + segs.length] }; segs.push(cur);
             }
             cur.notes.push(nt); cur.pulses += nt.dur; nt._seg = cur;
             lineStart = false; lastNt = nt;
@@ -15437,7 +15505,8 @@ function clGabcToAbc(gabcList, opts) {
           if (u.text) prevHyphen = !!u.hyphen;
         });
       });
-      clHarmonize(segs, { keyAlt, finalisStep: tgt.step, overrides: opts.chordOverrides || {} });
+      const finalisPc = clPcOf(tgt.step, keyAlt[clMod(tgt.step, 7)]);
+      clHarmonize(segs, { keyAlt, finalisStep: tgt.step, finalisPc, bVar, overrides: opts.chordOverrides || {} });
       segs.forEach((sg, i) => {
         const nx = segs[i + 1];
         sg.tieNext = !!(nx && !sg.endBar && nx.line === sg.line);
@@ -15447,6 +15516,8 @@ function clGabcToAbc(gabcList, opts) {
           current: sg.chord ? clMod(sg.chord.root - tgt.step, 7) : null,
           currentName: sg.chord ? clChordName(sg.chord) + (sg.inv ? ' (Sextakkord)' : '') : '',
           inv: sg.inv || 0,
+          fStep: tgt.step, fPc: finalisPc,
+          curPcs: sg.chord ? sg.chord.pcs.slice() : null, curFree: !!(sg.chord && sg.chord.free),
           ov: clOvParse(clOvLookup(opts.chordOverrides, sg)),
           legacyKeys: sg.legacyKeys || [],
           overridden: clOvLookup(opts.chordOverrides, sg) != null,
@@ -18211,21 +18282,43 @@ function clChordClick(absChar, ev, absEnd) {
     m.appendChild(bt);
   };
   const cur = inf.ov || { d: null, i: null };
-  const setOv = (d, i) => {
+  const setOv = (d, i, x) => {
     (inf.legacyKeys || []).forEach(k => { if (k !== r.key) delete clState.chordOverrides[k]; });
-    if (d == null && i == null) delete clState.chordOverrides[r.key];
-    else clState.chordOverrides[r.key] = { d, i };
+    if (d == null && i == null && !x) delete clState.chordOverrides[r.key];
+    else clState.chordOverrides[r.key] = x ? { d, i, x } : { d, i };
     clRender();
   };
-  inf.candidates.forEach(c => mk(c.name, () => setOv(c.deg, cur.i), cur.d === c.deg));
-  mk('Akkord automatisch', () => setOv(null, cur.i), cur.d == null);
+  inf.candidates.forEach(c => mk(c.name, () => setOv(c.deg, cur.i), cur.d === c.deg && !cur.x));
+  // Freie Wahl: jeder Dur-/Moll-Dreiklang (auch ausserhalb der Vorschläge)
+  if (inf.fPc != null) {
+    const more = document.createElement('details');
+    more.style.cssText = 'margin:2px 0';
+    if (cur.x) more.open = true;
+    const sum = document.createElement('summary'); sum.textContent = 'Weitere Akkorde …'; sum.style.cssText = 'cursor:pointer;font-size:12px;padding:3px 2px;color:#e0d4b0';
+    more.appendChild(sum);
+    const grid = document.createElement('div'); grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:3px';
+    const ROOTS = [[0, 0], [0, 1], [1, 0], [2, -1], [2, 0], [3, 0], [3, 1], [4, 0], [5, -1], [5, 0], [6, -1], [6, 0]]; // C Cis D Es E F Fis G As A B H
+    ROOTS.forEach(([st, al]) => [false, true].forEach(minor => {
+      const ch = clMakeChord(st, clPcOf(st, al), minor);
+      const x = { d: clMod(st - inf.fStep, 7), s: clMod(clPcOf(st, al) - inf.fPc, 12), m: minor };
+      const on = !!(inf.curPcs && inf.curPcs.join() === ch.pcs.join() && cur.x);
+      const bt = document.createElement('button');
+      bt.className = 'b'; bt.textContent = clChordName(ch);
+      bt.style.cssText = 'font-size:11px;padding:3px 4px' + (on ? ';background:#3d6b35;color:#fff' : '');
+      bt.onclick = () => { if (Date.now() - m._t0 < 350) return; clCloseChordMenu(); (inf.legacyKeys || []).forEach(k => { if (k !== r.key) delete clState.chordOverrides[k]; }); clState.chordOverrides[r.key] = { d: x.d, i: cur.i, x }; clRender(); };
+      grid.appendChild(bt);
+    }));
+    more.appendChild(grid);
+    m.appendChild(more);
+  }
+  mk('Akkord automatisch', () => setOv(null, cur.i), cur.d == null && !cur.x);
   const sep = document.createElement('div');
   sep.textContent = 'Lage';
   sep.style.cssText = 'font-weight:bold;margin:6px 0 2px;color:#e0d4b0;border-top:1px solid #3a4a30;padding-top:4px';
   m.appendChild(sep);
-  mk('Grundstellung', () => setOv(cur.d, 0), cur.i === 0);
-  mk('Sextakkord', () => setOv(cur.d, 1), cur.i === 1);
-  mk('Lage automatisch' + (cur.i == null ? ' (' + (inf.inv ? 'Sextakkord' : 'Grundstellung') + ')' : ''), () => setOv(cur.d, null), cur.i == null);
+  mk('Grundstellung', () => setOv(cur.d, 0, cur.x), cur.i === 0);
+  mk('Sextakkord', () => setOv(cur.d, 1, cur.x), cur.i === 1);
+  mk('Lage automatisch' + (cur.i == null ? ' (' + (inf.inv ? 'Sextakkord' : 'Grundstellung') + ')' : ''), () => setOv(cur.d, null, cur.x), cur.i == null);
   mk('↺ Alles automatisch', () => setOv(null, null), !inf.overridden);
   // Akkordwechsel an der angetippten Melodienote setzen/entfernen
   const nt = r.note;
