@@ -191,10 +191,10 @@ input[type=file]{display:none}
     <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label></span>
     <button class="b" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
-    <span id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
+    <span id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
     <span class="nt-bar-spacer" style="flex:1 1 0;min-width:0"></span>
     <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
-<select class="nt-play-sec nt-pm" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+<select class="nt-play-sec nt-pm" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn nt-pm" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn nt-pm" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
@@ -219,6 +219,7 @@ input[type=file]{display:none}
       </div>
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" onclick="gregAddSection()" style="font-size:10px;padding:2px 6px;background:#1a3a5a;color:#a0c0e0;border-color:#2a5a8a" title="Neuen Abschnitt hinzufügen">+ Abschnitt</button>
+        <button class="b" onclick="ntPsalmToneShow()" style="font-size:10px;padding:2px 6px" title="Psalmton-Assistent: Text eingeben, Psalmton wählen – Notator setzt die Noten">&#9835; Psalmton …</button>
       </div>
       <div style="padding:4px 8px;background:#151e10;border-bottom:1px solid #2a3820">
         <div style="font-size:9px;color:#6b8a60;margin-bottom:3px;font-variant:small-caps;cursor:pointer" onclick="gregToggleKopf()" id="greg-kopf-hdr">&#9998; Kopf-Bereich ▾</div>
@@ -427,10 +428,10 @@ input[type=file]{display:none}
     <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label></span>
     <button class="b" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
-    <span id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a>
+    <span id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
     <span class="nt-bar-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
-<select class="nt-play-sec nt-pm" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+<select class="nt-play-sec nt-pm" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn" data-src="cl" onclick="ntPlayStartTone('cl')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn nt-pm" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn nt-pm" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
     <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
@@ -444,6 +445,7 @@ input[type=file]{display:none}
       <select id="cl-sec-sel" onchange="clSelectSection(this.value)" style="font-size:11px;background:#0a1406;color:#e0c070;border:1px solid #6a5a30;padding:2px"></select></label>
     <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Grundton
       <select id="cl-target" onchange="clSetTarget(this.value)" style="font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:2px"></select></label>
+    <button class="b" id="cl-target-all" onclick="clTargetToAll()" style="font-size:10px;padding:2px 6px;display:none" title="Diesen Grundton für alle Abschnitte übernehmen (danach je Abschnitt weiter einzeln änderbar)">&#8594; alle Abschnitte</button>
     <span style="font-size:11px;color:#a8d878">Oktave</span>
     <button class="b" onclick="clSetOctave(-1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave tiefer">&minus;</button>
     <span id="cl-oct" style="font-size:11px;color:#c0d890;min-width:18px;text-align:center">0</span>
@@ -7114,7 +7116,8 @@ function gregAssemblePdf(pairList, filename) {
     function nextCanvas() {
       if (ci >= pairList.length) { buildPages(); return; }
       svgStringToCanvas(pairList[ci].svg, function(canvas, w, h) {
-        if (canvas) canvases.push({canvas, w, h, lineBoxes: pairList[ci].lineBoxes || [], pageBreakBefore: !!pairList[ci].pageBreakBefore});
+        const pr = pairList[ci];
+        if (canvas) canvases.push({canvas, w, h, lineBoxes: pr.lineBoxes || [], pageBreakBefore: !!pr.pageBreakBefore, itemIdx: pr.itemIdx, cover: !!pr.cover, tocRows: pr.tocRows || null});
         ci++; nextCanvas();
       });
     }
@@ -7124,7 +7127,7 @@ function gregAssemblePdf(pairList, filename) {
       const targetW = pageWpx - marginPx * 2; // A4 content width for output scaling
       const scaledSections = canvases.map(s => {
         const scale = targetW / s.w;
-        return { canvas: s.canvas, scale, w: targetW, h: s.h * scale, lineBoxes: s.lineBoxes || [], pageBreakBefore: s.pageBreakBefore };
+        return { canvas: s.canvas, scale, w: targetW, h: s.h * scale, lineBoxes: s.lineBoxes || [], pageBreakBefore: s.pageBreakBefore, itemIdx: s.itemIdx, cover: s.cover, tocRows: s.tocRows };
       });
       const totalH = scaledSections.reduce((sum, s) => sum + s.h, 0);
       // Kein grosser Gesamt-Streifen mehr (Browser begrenzen die Canvas-Höhe,
@@ -7173,6 +7176,12 @@ function gregAssemblePdf(pairList, filename) {
         cursor = end;
       }
       const pageCount = Math.max(1, pageSlices.length);
+      // Mappe: Seitenzahlen unten (ausser Deckblatt) und im Inhaltsverzeichnis
+      const isMappe = scaledSections.some(s => s.itemIdx != null);
+      const pageOf = yy => pageSlices.findIndex(ps => yy >= ps.start - EPS && yy < ps.end - EPS);
+      const itemPage = {};
+      scaledSections.forEach(s => { if (s.itemIdx != null && itemPage[s.itemIdx] == null) itemPage[s.itemIdx] = pageOf(s.y0 + 1) + 1; });
+      const hasCover = scaledSections.length && scaledSections[0].cover;
       const pdf = new jsPDF({orientation: 'portrait', unit: 'mm', format: 'a4'});
       for (let p = 0; p < pageSlices.length; p++) {
         if (p > 0) pdf.addPage();
@@ -7201,6 +7210,18 @@ function gregAssemblePdf(pairList, filename) {
         pdf.setFillColor(255, 255, 255);
         pdf.rect(0, 0, A4_W_MM, A4_H_MM, 'F');
         pdf.addImage(png, 'PNG', marginMm, marginMm, wMm, hMm, undefined, 'FAST'); // FAST = Flate-Kompression (sonst mehrere MB je Seite)
+        if (isMappe) {
+          pdf.setTextColor(0, 0, 0); pdf.setFont('times', 'normal');
+          if (!(p === 0 && hasCover)) { pdf.setFontSize(10); pdf.text(String(p + 1), A4_W_MM / 2, A4_H_MM - 7, { align: 'center' }); }
+          if (p === 0 && hasCover && scaledSections[0].tocRows) {
+            const cs = scaledSections[0];
+            pdf.setFontSize(Math.round(14 * cs.scale * 0.75));
+            cs.tocRows.forEach(row => {
+              const pg = itemPage[row.idx]; if (!pg) return;
+              pdf.text(String(pg), marginMm + row.x * cs.scale / PX_PER_MM, marginMm + (cs.y0 - sliceYpx + row.y * cs.scale) / PX_PER_MM, { align: 'right' });
+            });
+          }
+        }
       }
       const deliver = window._ntPdfDeliver; window._ntPdfDeliver = null;
       if (deliver) { gregGst('PDF erstellt (' + pageCount + ' Seite' + (pageCount>1?'n':'') + ') – wird gespeichert …'); deliver(pdf.output('blob')); return; }
@@ -7268,7 +7289,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '295';
+const NOTATOR_BUILD_ID = '296';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8403,6 +8424,90 @@ function ntGbLinkClick(ev, a) {
   }, 0);
   return false;
 }
+// ── Verknüpfung zur Notenbibliothek (NOH) je Stück ──
+// Lädt bei Bedarf die Daten der Notenbibliothek (noh/index.html: Orgelsätze,
+// noh/choral.js: Choralbücher mit Zuordnung zu den Orgelsätzen) und sucht
+// zum offenen Stück (je Abschnitt) passende Einträge über den Textanfang,
+// bei mehrdeutigen Titeln zusätzlich über die Gattung (GregoBase office-part).
+let _ntNohData = null;
+function ntNohLoad() {
+  if (_ntNohData) return _ntNohData;
+  const get = (src, name) => { const m = src.match(new RegExp('^const ' + name + '\\s*=(.*)$', 'm')); return m ? JSON.parse(m[1].replace(/\/\*[^*]*\*\//g, '').trim().replace(/;$/, '')) : null; };
+  _ntNohData = Promise.all([fetch(NT_NOH_URL + 'index.html').then(r => r.ok ? r.text() : ''), fetch(NT_NOH_URL + 'choral.js').then(r => r.ok ? r.text() : '')]).then(([h, c]) => {
+    const d = { NOH: get(h, 'NOH') || [], FILES: get(h, 'NOH_FILES') || {}, BANDS: get(h, 'NOH_BANDS') || {}, CH: get(c, 'CHORAL') || [], CS: get(c, 'CHORAL_SRC') || {} };
+    d.idx = {}; d.NOH.forEach((e, i) => { d.idx[e[0]] = i; });
+    d.chN = d.CH.map(x => ntNohNorm(String(x[2]).split('.')[0]));
+    d.nohN = d.NOH.map(e => ntNohNorm(e[1]));
+    return d;
+  }).catch(e => { _ntNohData = null; throw e; });
+  return _ntNohData;
+}
+const ntNohNorm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/æ|œ|ae|oe/g, 'e').replace(/j/g, 'i').replace(/v/g, 'u').replace(/y/g, 'i').replace(/[^a-z ]+/g, ' ').replace(/\s+/g, ' ').trim();
+const NT_NOH_PART = { introitus: 'Introitus', graduale: 'Graduale', alleluia: 'Alleluia', alleluja: 'Alleluia', tractus: 'Tractus', sequentia: 'Sequenz', offertorium: 'Offertorium', communio: 'Communio', responsorium: 'Responsorium', antiphona: 'Antiphon', hymnus: 'Hymnus' };
+function ntNohMatches(d, gabc, title) {
+  const hdr = gabc.indexOf('%%') >= 0 ? gabc.slice(0, gabc.indexOf('%%')) : '';
+  const body = gabc.indexOf('%%') >= 0 ? gabc.slice(gabc.indexOf('%%') + 2) : gabc;
+  const txt = ntNohNorm(body.replace(/\([^)]*\)/g, '').replace(/<[^>]+>/g, '').replace(/[*{}]/g, ' ')).split(' ').slice(0, 10).join(' ');
+  const part = NT_NOH_PART[ntNohNorm((/(^|\n)\s*office-part\s*:\s*([^;\n]*)/i.exec(hdr) || [])[2] || '')] || '';
+  const tN = ntNohNorm(title);
+  const pre = (a, b) => a && b && (a === b || a.startsWith(b + ' '));
+  let ch = [];
+  d.CH.forEach((x, j) => {
+    const inc = d.chN[j]; if (!inc) return;
+    if (pre(txt, inc) || (inc.split(' ').length >= 2 && pre(inc, txt)) || pre(tN, inc)) ch.push(j);
+  });
+  if (part && ch.some(j => d.CH[j][1] === part)) ch = ch.filter(j => d.CH[j][1] === part);
+  const org = new Set();
+  ch.forEach(j => { (d.CH[j][3] || []).forEach(n => org.add(n)); });
+  if (!ch.length && txt.split(' ').length >= 3) {
+    d.NOH.forEach((e, i) => { const n = d.nohN[i]; if (n.split(' ').length >= 3 && (pre(txt, n) || pre(n, txt.split(' ').slice(0, 4).join(' ')))) org.add(e[0]); });
+  }
+  return { ch: ch.slice(0, 4), org: [...org].slice(0, 6), q: (title || body.replace(/\([^)]*\)/g, '').trim().split(/\s+/).slice(0, 3).join(' ')).trim() };
+}
+function ntUpdateNohLinks() {
+  const els = document.querySelectorAll('.nt-noh-piece');
+  let list = []; try { list = clCollectGabc(); } catch (e) {}
+  if (!list.length || !clHasNotes(list)) { els.forEach(a => a.style.display = 'none'); return Promise.resolve(); }
+  return ntNohLoad().then(d => {
+    const res = list.map(x => ntNohMatches(d, x.gabc, x.title));
+    window._ntNohRes = { d, res, list };
+    const any = res.some(m => m.ch.length || m.org.length);
+    els.forEach(a => { a.style.display = any ? '' : 'none'; });
+  }).catch(() => els.forEach(a => a.style.display = 'none'));
+}
+function ntNohPieceClick(ev, a) {
+  ev.preventDefault(); ev.stopPropagation();
+  const old = document.getElementById('nt-noh-menu'); if (old) { const same = old._a === a; old.remove(); if (same) return false; }
+  const R = window._ntNohRes; if (!R) return false;
+  const { d, res, list } = R;
+  const m = document.createElement('div'); m.id = 'nt-noh-menu'; m._a = a;
+  m.style.cssText = 'position:fixed;z-index:10050;background:#142010;border:1px solid #6a8a50;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.5);padding:4px 0;font-size:12px;max-width:min(94vw,420px);max-height:70vh;overflow:auto';
+  const esc = ntEscAttr;
+  const link = (href, label, sub) => '<a href="' + esc(href) + '" target="_blank" rel="noopener" style="display:block;padding:5px 10px;color:#9cc8ff;text-decoration:none">' + label + (sub ? '<br><span style="color:#8aa070;font-size:10px">' + esc(sub) + '</span>' : '') + '</a>';
+  const head = t => '<div style="padding:5px 10px 2px;color:#e0c070;font-weight:bold;font-size:11px">' + esc(t) + '</div>';
+  let h = '';
+  res.forEach((r, k) => {
+    if (!r.ch.length && !r.org.length) return;
+    if (list.length > 1) h += head('Abschnitt ' + (k + 1) + (list[k].title ? ' – ' + list[k].title.slice(0, 40) : ''));
+    r.org.forEach(n => { const i = d.idx[n]; if (i == null) return; const e = d.NOH[i]; const fid = d.FILES[e[0]] || d.BANDS[e[2]];
+      h += link('https://drive.google.com/file/d/' + fid + '/view', '🎹 Orgelsatz NOH Nr. ' + e[0], e[1] + ' · Band ' + e[2]); });
+    r.ch.forEach(j => { const c = d.CH[j];
+      ['1961', '1955', '1926'].forEach(b => { const s = c[4] && c[4][b]; if (!s) return; const p = s[1][0]; if (!p) return;
+        const up = [...new Set(s[1].map(x => x[1]))];
+        const f = b === '1961' ? 'choral/1961/GR1961_p' + String(p[1]).padStart(4, '0') + '.pdf' : 'choral/' + b + '/' + s[2] + '#page=' + (up.indexOf(p[1]) + 1);
+        h += link(NT_NOH_URL + f, '📜 Choral ' + (b === '1961' ? 'Graduale Romanum 1961' : (d.CS[b] ? d.CS[b].v : b)) + ', S. ' + p[0], c[2] + ' · ' + c[1] + (p[2] ? ' · ' + p[2] : '')); }); });
+    h += link(NT_NOH_URL + '#q=' + encodeURIComponent(r.q), '🔎 In der Notenbibliothek suchen', '«' + r.q + '»');
+  });
+  m.innerHTML = h || '<div style="padding:6px 10px;color:#8aa070">Keine Einträge gefunden.</div>';
+  document.body.appendChild(m);
+  const rc = a.getBoundingClientRect();
+  m.style.top = Math.round(rc.bottom + 3) + 'px';
+  m.style.left = Math.round(Math.max(4, Math.min(window.innerWidth - m.offsetWidth - 4, rc.left))) + 'px';
+  m.querySelectorAll('a').forEach(x => x.addEventListener('click', () => setTimeout(() => m.remove(), 0)));
+  setTimeout(() => { const close = e => { if (!m.contains(e.target) && e.target !== a) { m.remove(); document.removeEventListener('pointerdown', close, true); } }; document.addEventListener('pointerdown', close, true); }, 0);
+  return false;
+}
+
 // Ältere GregoBase-Importe (vor Build 284) haben die Nummer noch nicht: am
 // GregoBase-Kopf (transcriber/office-part/book …) erkennen und die Nummer im
 // Hintergrund ermitteln – Kandidaten mit gleichem Titelanfang laden und die
@@ -8451,6 +8556,7 @@ async function ntGbResolve() {
   gregGst('GregoBase-Herkunft erkannt: #' + best.id + ' (Link oben neben dem Titel; wird beim nächsten Speichern im Stück abgelegt)');
 }
 function ntUpdateGbLinks() {
+  clearTimeout(window._ntNohT); window._ntNohT = setTimeout(() => { ntUpdateNohLinks().catch(() => {}); }, 600);
   try { if (typeof ntPlaySecUi === 'function') ntPlaySecUi(); } catch (e) {}
   const ids = gregGbIds();
   if (!ids.length) { clearTimeout(window._ntGbResT); window._ntGbResT = setTimeout(() => { ntGbResolve().catch(() => {}); }, 1500); }
@@ -15770,6 +15876,16 @@ function ntResetOrganForImport() {
   }
   clState = {}; clNormalizeState(); clUndoReset();
 }
+// Grundton des gewählten Abschnitts auf alle Abschnitte übertragen
+// (Oktave bleibt je Abschnitt; danach weiter einzeln änderbar)
+function clTargetToAll() {
+  const n = clSecCount(); if (n < 2) return;
+  const tp = clCfg(clSel).targetPc;
+  if (!clConfirmDropManual()) return;
+  for (let i = 0; i < n; i++) clCfg(i).targetPc = tp;
+  clRender();
+  gregGst('Grundton für alle ' + n + ' Abschnitte übernommen' + (tp == null ? ' (Original)' : ''));
+}
 function clSelectSection(v) { clSel = Math.max(0, Math.min(clSecCount() - 1, parseInt(v, 10) || 0)); clFillTargetSelect(); clSyncControls(); }
 
 function clScoreWidth() {
@@ -15829,6 +15945,7 @@ function clSyncControls() {
   if (clSel >= nSec) clSel = 0;
   const sw = document.getElementById('cl-sec-wrap'), ss = document.getElementById('cl-sec-sel');
   if (sw) sw.style.display = nSec > 1 ? 'flex' : 'none';
+  const ta = document.getElementById('cl-target-all'); if (ta) ta.style.display = nSec > 1 ? '' : 'none';
   if (ss && nSec > 1) {
     const list = clCollectGabc();
     const want = list.map((x, i) => (i + 1) + (x.title ? ' – ' + x.title.slice(0, 30) : '')).join('|');
@@ -16412,6 +16529,40 @@ function ntPlayNoteMap(playObj, visObj) {
   return map;
 }
 
+// Anfangston: erster Ton des Stücks (Choral) bzw. erster Akkord samt
+// Melodieton (Orgel mit Begleitsatz) in der eingestellten Tonart, ca. 2 s lang.
+function ntPlayStartTone(src) {
+  let list = []; try { list = clCollectGabc(); } catch (e) {}
+  if (!list.length || !clHasNotes(list)) { gregGst('Keine Noten vorhanden.'); return; }
+  const multi = list.length > 1;
+  let k = ntPlay.sec >= 0 && ntPlay.sec < list.length ? ntPlay.sec : 0;
+  if (src === 'greg' && multi && ntPlay.sec < 0 && typeof gregActiveIdx !== 'undefined') k = gregActiveIdx;
+  let model = null;
+  try {
+    if (src === 'cl' && !clState[clMK()]) { const r = clBuild(); model = r && r.models[k]; }
+    else { const r = clGabcToAbc([list[k]], { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, flatToBar: clState.flatToBar !== false }); model = r && r.models[0]; }
+  } catch (e) { console.warn(e); }
+  let first = null;
+  (model && model.lines || []).some(ln => ln.some(u => { if (u.kind === 'syl' && u.notes && u.notes.length) { first = u.notes[0]; return true; } return false; }));
+  if (!first) { gregGst('Anfangston nicht ermittelbar.'); return; }
+  const pitches = [clAbcPitch(first.pitch.D, first.pitch.alt, true)];
+  const vc = src === 'cl' && clState.accomp && first._seg && first._seg.voicing;
+  if (vc) ['A', 'T', 'B'].forEach(v => { if (vc[v]) pitches.push(clAbcPitch(vc[v].D, vc[v].alt, true)); });
+  const abc = 'X:1\nM:none\nL:1/8\nK:C\n' + (pitches.length > 1 ? '[' + pitches.join('') + ']' : pitches[0]) + '6|]\n';
+  ntPlayStop();
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) { gregGst('Wiedergabe wird von diesem Browser nicht unterstützt.'); return; }
+  if (!ntPlay.ac || ntPlay.ac.state === 'closed') ntPlay.ac = new AC();
+  try { ntPlay.ac.resume(); } catch (e) {}
+  ntPlay.source = 'tone'; ntPlay.state = 'play';
+  const token = ntPlay.token;
+  clEnsureAbcjs(() => {
+    if (token !== ntPlay.token) return;
+    try { ABCJS.synth.registerAudioContext(ntPlay.ac); } catch (e) {}
+    const objs = ABCJS.renderAbc('*', abc);
+    if (objs && objs[0]) ntPlayRun([{ obj: objs[0], highlight: false }], 0, token);
+  });
+}
 function ntPlayRun(tunes, i, token) {
   if (token !== ntPlay.token) return;
   if (i >= tunes.length) { ntPlayStop(); gregGst('Wiedergabe beendet.'); return; }
@@ -16981,13 +17132,17 @@ function ntMappeCoverSvg(m) {
   s += '<line x1="' + (W / 2 - 120) + '" y1="' + y + '" x2="' + (W / 2 + 120) + '" y2="' + y + '" stroke="#000" stroke-width="0.8"/>';
   y += 60;
   s += '<text x="120" y="' + y + '" font-size="15" font-weight="bold">Inhalt</text>';
+  s += '<text x="' + (W - 120) + '" y="' + y + '" font-size="11" font-style="italic" text-anchor="end">Seite</text>';
   y += 30;
+  const rows = [];
   m.items.forEach((it, i) => {
     if (y > H - 40) return;
     s += '<text x="120" y="' + y + '" font-size="14">' + (i + 1) + '.  ' + esc(it.title) + '</text>' +
-      '<text x="' + (W - 120) + '" y="' + y + '" font-size="11" font-style="italic" text-anchor="end">' + esc(NT_MAPPE_VERSIONS[it.version] || '') + '</text>';
+      '<text x="' + (W - 160) + '" y="' + y + '" font-size="11" font-style="italic" text-anchor="end">' + esc(NT_MAPPE_VERSIONS[it.version] || '') + '</text>';
+    rows.push({ idx: i, x: W - 120, y }); // Seitenzahl wird beim Zusammensetzen des PDF ergänzt
     y += 24;
   });
+  ntMappeCoverSvg._rows = rows;
   return s + '</g></svg>';
 }
 
@@ -17017,7 +17172,7 @@ function ntMappeBuild() {
     if (typeof gregRefreshList === 'function') gregRefreshList();
     gregRender();
   };
-  if (m.cover) allPairs.push({ svg: ntMappeCoverSvg(m), lineBoxes: [], pageBreakBefore: false, cover: true });
+  if (m.cover) allPairs.push({ svg: ntMappeCoverSvg(m), lineBoxes: [], pageBreakBefore: false, cover: true, tocRows: ntMappeCoverSvg._rows });
   let i = 0;
   const next = () => {
     if (i >= m.items.length) {
@@ -17034,7 +17189,8 @@ function ntMappeBuild() {
       if (typeof gregRefreshList === 'function') gregRefreshList();
       const collect = pairs => {
         const firstPiece = !allPairs.some(x => !x.cover);
-        pairs.forEach((p, k) => allPairs.push(Object.assign({}, p, { pageBreakBefore: k === 0 && (m.newPage || (m.cover && firstPiece)) })));
+        const itemIdx = i;
+        pairs.forEach((p, k) => allPairs.push(Object.assign({}, p, { itemIdx, pageBreakBefore: k === 0 && (m.newPage || (m.cover && firstPiece)) })));
         resolve();
       };
       if (it.version === 'greg') {
@@ -17058,6 +17214,189 @@ function ntMappeBuild() {
     });
   };
   next();
+}
+
+
+// ── Psalmton-Assistent ───────────────────────────────────────────
+// Setzt Psalmverse (oder Cantica) auf einen gregorianischen Psalmton.
+// Tondaten (Mediante, feierliche Mediante, Endungen) aus dem gemeinfreien
+// Projekt jgabc von Benjamin Bloomfield (github.com/bbloomf/jgabc,
+// psalmtone.js, «Unlicense»). Schreibweise je Halbvers: Töne durch
+// Leerzeichen getrennt; «r» = Rezitationston (beliebig viele Silben),
+// «'» = Akzentsilbe, sonst genau eine Silbe; Töne vor dem ersten «r» = Initium.
+const NT_PSALM_TONES = {"1.":{"c":"c4","m":"f gh hr 'ixi hr 'g hr h.","s":"f gh hr hg ixgi h hr 'hg gh..","e":{"D":"hr g f 'gh gr gvFED.","D-":"hr g f 'g gr gvFED.","D2":"hr g f gr 'gf d.","f":"hr g f 'gh gr gf..","g":"hr g f 'gh gr g.","g2":"hr g f 'g gr ghg.","g3":"hr g f 'g gr g.","a":"hr g f 'g hr h.","a2":"hr g f 'g gr gh..","a3":"hr g f 'gh gr gh.."}},"2.":{"c":"f3","m":"e f hr 'i hr h.","s":"e fe eh hr hg hi i 'hi hr h.","e":{"":"hr g 'e fr f."}},"3.":{"c":"c4","m":"g hj jr 'k jr jr 'ih j.","s":"g hj jr 'jk jr jr 'ih hj..","e":{"b":"jr h 'j jr i.","a":"jr h 'j jr ih..","a2":"jr ji hi 'h gr gh..","g":"jr ji hi 'h gr g.","g2":"jr h j i 'h gr g."}},"4.":{"c":"c4","m":"h gh hr g h 'i hr h.","s":"h gh hr hg gi i 'hi hr h.","e":{"g":"hr 'h gr g.","E":"hr g h ih gr 'gf e."}},"4. alt":{"c":"c3","m":"i hi ir h i 'j ir i.","s":"i hi ir ih hj j 'ij ir i.","e":{"c":"ir 'i hr h.","A":"ir h i j 'h fr f.","A*":"ir h i j 'h fr fg..","d":"ir h i j 'h ir i."}},"5.":{"c":"c3","m":"d f hr 'i hr h.","s":"d f hr i 'i hr h.","e":{"":"hr 'i gr 'h fr f."}},"6.":{"c":"c4","m":"f gh hr 'ixi hr 'g hr h.","s":"f gh hr hg ixgi h hr 'hg gh..","e":{"":"hr f gh 'g fr f."}},"7.":{"c":"c3","m":"hg hi ir 'k jr 'i jr j.","s":"ehg hi ir 'ik jr jr 'ji ij..","e":{"a":"ir 'j ir 'h hr gf..","b":"ir 'j ir 'h hr g.","c":"ir 'j ir 'h hr gh..","c2":"ir 'j ir 'h hr ih..","d":"ir 'j ir 'h hr gi.."}},"8.":{"c":"c4","m":"g h jr 'k jr j.","s":"g hg gj jr ji jk k 'jk jr j.","e":{"G":"jr i j 'h gr g.","G*":"jr i j 'h gr gh..","c":"jr h j 'k jr j."}},"per.":{"c":"c4","m":"ixhi hr g ixi h 'g fr f.","e":{"":"gr d 'f fr ed.."}},"in dir. romanus":{"c":"c3","m":"hr g f 'h hr h.","e":{"":"hr 'h fr f."}}};
+const NT_PT_ACUTE = /[áéíóúýǽÁÉÍÓÚÝǼ]/;
+// Silbentrennung: Bindestriche im Text haben Vorrang, sonst einfache
+// Regeln für Latein (Diphthonge ae/oe/au, qu/gu, Muta cum liquida).
+function ntPtSyllabify(word) {
+  if (word.indexOf('-') > 0) return word.split('-').filter(x => x);
+  const lw = word.toLowerCase();
+  const VOW = 'aeiouyáéíóúýàèìòùǽæœäöüëï';
+  const isV = i => {
+    const c = lw[i]; if (!c || VOW.indexOf(c) < 0) return false;
+    const nxtV = lw[i + 1] && VOW.indexOf(lw[i + 1]) >= 0;
+    if (c === 'u' && i > 0 && (lw[i - 1] === 'q' || (lw[i - 1] === 'g' && i > 1 && lw[i - 2] === 'n')) && nxtV) return false; // qu, ngu
+    if (c === 'i' && nxtV && (i === 0 || (i > 0 && VOW.indexOf(lw[i - 1]) >= 0))) return false; // konsonantisches i (iam, eius)
+    return true;
+  };
+  const nuc = [];
+  for (let i = 0; i < lw.length; i++) {
+    if (!isV(i)) continue;
+    let e = i;
+    const two = lw.slice(i, i + 2).normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (/^(ae|oe|au)$/.test(two) && isV(i + 1) && !NT_PT_ACUTE.test(lw[i + 1]) && 'ëïüö'.indexOf(lw[i + 1]) < 0) e = i + 1; // Trema = getrennt (Is-ra-ël)
+    nuc.push([i, e]); i = e;
+  }
+  if (nuc.length <= 1) return [word];
+  const cuts = [];
+  for (let k = 0; k < nuc.length - 1; k++) {
+    const a = nuc[k][1] + 1, b = nuc[k + 1][0];
+    const cl = lw.slice(a, b).replace(/[^a-z]/g, '');
+    let cut;
+    if (b - a <= 1) cut = b - a === 0 ? b : a;
+    else {
+      const last2 = lw.slice(b - 2, b);
+      cut = (/^[bcdfgpt][lr]$/.test(last2) || /^(ch|ph|th|gn|qu|gu)$/.test(last2)) ? b - 2 : b - 1; // kirchenlateinisch: a-gnus, ex-quí-ro
+      if (cl === 'x') cut = a;
+    }
+    cuts.push(cut);
+  }
+  const out = []; let p = 0;
+  cuts.forEach(c => { out.push(word.slice(p, c)); p = c; });
+  out.push(word.slice(p));
+  return out.filter(x => x);
+}
+// Halbvers -> Silbenliste mit Akzent (Akut im Text; sonst 2-silbig: 1. Silbe,
+// mehrsilbig: vorletzte; Einsilbler unbetont)
+function ntPtSyllables(text) {
+  const syls = [];
+  text.trim().split(/\s+/).filter(w => /[A-Za-zÀ-ÿǽǼæœÆŒ]/.test(w)).forEach(w => {
+    const parts = ntPtSyllabify(w);
+    let acc = parts.findIndex(x => NT_PT_ACUTE.test(x));
+    if (acc < 0) acc = parts.length === 2 ? 0 : parts.length >= 3 ? parts.length - 2 : -1;
+    parts.forEach((t, i) => syls.push({ t, acc: i === acc, wordStart: i === 0, wordEnd: i === parts.length - 1 }));
+  });
+  return syls;
+}
+function ntPtParse(pattern) {
+  return pattern.trim().split(/\s+/).map(tok => {
+    const accent = tok[0] === "'"; let t = accent ? tok.slice(1) : tok;
+    const open = /r$/.test(t); // «r» ist kein Notenbuchstabe (a–m): Rezitationston
+    if (open) t = t.replace(/r$/, '');
+    return { notes: t, accent, open };
+  });
+}
+// Einen Halbvers setzen: Initium vorn, Kadenz von hinten, Rest auf dem Rezitationston
+function ntPtApply(syls, pattern, withIntonation) {
+  const toks = ntPtParse(pattern);
+  const firstOpen = toks.findIndex(t => t.open);
+  const inton = firstOpen > 0 ? toks.slice(0, firstOpen) : [];
+  const cad = toks.slice(firstOpen >= 0 ? firstOpen : 0);
+  const notes = new Array(syls.length).fill(null);
+  let pos = syls.length - 1;
+  for (let k = cad.length - 1; k >= 1 && pos >= 0; k--) {
+    const tk = cad[k];
+    if (tk.open) {
+      const prev = cad[k - 1];
+      if (prev && prev.accent) { while (pos >= 0 && !syls[pos].acc) { notes[pos] = tk.notes; pos--; } }
+      continue;
+    }
+    notes[pos] = tk.notes; pos--;
+  }
+  const tenor = cad[0] ? cad[0].notes : 'h';
+  let start = 0;
+  if (withIntonation) inton.forEach((tk, i) => { if (i <= pos) { notes[i] = tk.notes; start = i + 1; } });
+  for (let i = start; i <= pos; i++) notes[i] = tenor;
+  return { notes, tenor };
+}
+function ntPtGabcSyls(syls, notes) {
+  let out = '';
+  syls.forEach((s, i) => { out += (s.wordStart && i > 0 ? ' ' : '') + s.t.replace(/[()]/g, '') + '(' + (notes[i] || 'h') + ')'; });
+  return out;
+}
+function ntPtFlexNote(tenor, clef) {
+  // Flexa: eine Stufe unter dem Rezitationston, kleine Terz, wenn darunter ein Halbton liegt (wie jgabc)
+  const ci = (clef[0] === 'f' ? 6 : 1) + parseInt(clef.slice(-1), 10) * 2;
+  const tn = ((parseInt(tenor[0], 36) - 10) + 16 - ci) % 8;
+  return String.fromCharCode(tenor.charCodeAt(0) - ((tn === 0 || tn === 3) ? 2 : 1));
+}
+function ntPsalmToneGabc(o) {
+  const T = NT_PSALM_TONES[o.tone]; if (!T) throw new Error('Unbekannter Psalmton');
+  const term = T.e[o.ending] != null ? T.e[o.ending] : T.e[Object.keys(T.e)[0]];
+  const med = o.solemn && T.s ? T.s : T.m;
+  const lines = o.text.split(/\n/).map(l => l.replace(/^\s*\d+[.)]?\s*/, '').trim()).filter(l => l);
+  if (o.gloria) lines.push('Glória Patri, et Fílio, * et Spirítui Sancto.', 'Sicut erat in princípio, et nunc, et semper, * et in sǽcula sæculórum. Amen.');
+  if (!lines.length) throw new Error('Kein Text');
+  const verses = lines.map((l, vi) => {
+    const parts = l.split('*');
+    if (parts.length < 2) throw new Error('Vers ' + (vi + 1) + ': Stern * für die Mitte fehlt');
+    let first = parts[0], flex = null;
+    const fx = first.split(/[†+]/);
+    if (fx.length > 1) { flex = fx[0]; first = fx.slice(1).join(' '); }
+    const into = vi === 0 || o.everyIntonation;
+    let g = '';
+    const medT = ntPtParse(med); const tenor = (medT.find(t => t.open) || { notes: 'h' }).notes;
+    if (flex && flex.trim()) {
+      const fs = ntPtSyllables(flex);
+      const fn = ntPtFlexNote(tenor, T.c);
+      const r = ntPtApply(fs, (into ? med.split(/\s+/).slice(0, Math.max(0, medT.findIndex(t => t.open))).join(' ') + ' ' : '') + tenor + 'r \'' + tenor + ' ' + fn + 'r ' + fn + '.', into);
+      g += ntPtGabcSyls(fs, r.notes) + ' †(,) ';
+    }
+    const ms = ntPtSyllables(first);
+    g += ntPtGabcSyls(ms, ntPtApply(ms, med, into && !flex).notes) + ' *(:) ';
+    const ts = ntPtSyllables(parts.slice(1).join(' '));
+    g += ntPtGabcSyls(ts, ntPtApply(ts, term, false).notes) + ' (::)';
+    return g;
+  });
+  const ann = o.tone.replace(/\.$/, '').replace(/^per$/, 'per.') + (o.ending ? ' ' + o.ending : '');
+  return 'name: ' + (o.title || 'Psalm') + ';\nannotation: ' + ann + ';\nmode: ' + o.tone.replace(/\..*$/, '') + ';\n%%\n(' + T.c + ') ' + verses.join(' (z)\n');
+}
+function ntPsalmToneShow() {
+  let p = {}; try { p = JSON.parse(localStorage.getItem('notatorPsalmTone') || '{}'); } catch (e) {}
+  showModal('♫ Psalmton-Assistent', '', []);
+  const body = document.getElementById('modal-body');
+  const tones = Object.keys(NT_PSALM_TONES);
+  body.innerHTML =
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12px;align-items:center">' +
+    '<label>Ton <select id="pt-tone" style="font-size:13px">' + tones.map(t => '<option' + (t === (p.tone || '8.') ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></label>' +
+    '<label>Endung <select id="pt-end" style="font-size:13px"></select></label>' +
+    '<label>Titel <input id="pt-title" type="text" value="' + ntEscAttr(p.title || '') + '" placeholder="z.B. Psalm 109" style="font-size:13px;width:150px"></label></div>' +
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;margin:6px 0">' +
+    '<label><input type="checkbox" id="pt-every"' + (p.every ? ' checked' : '') + '> Initium in jedem Vers (Canticum)</label>' +
+    '<label><input type="checkbox" id="pt-solemn"' + (p.solemn ? ' checked' : '') + '> feierliche Mediante (Magnificat/Benedictus)</label>' +
+    '<label><input type="checkbox" id="pt-gloria"' + (p.gloria ? ' checked' : '') + '> Gloria Patri anhängen</label></div>' +
+    '<textarea id="pt-text" rows="9" style="width:100%;box-sizing:border-box;font-size:13px;font-family:inherit" placeholder="Ein Vers pro Zeile, Mitte mit *, Flexa mit †, z.B.\nDixit Dóminus Dómino méo: * Sede a déxtris méis.\nDonec ponam inimícos túos, * scabéllum pédum tuórum.">' + ntEscAttr(p.text || '') + '</textarea>' +
+    '<div style="font-size:11px;color:var(--ink2);margin:4px 0;line-height:1.4">Betonte Silben mit Akut markieren (Dóminus); zweisilbige Wörter ohne Akut werden auf der 1. Silbe betont, längere auf der vorletzten. Silbentrennung automatisch (Latein) – mit Bindestrich selbst festlegen, z.B. «Herr-lich-keit». Ergebnis bitte prüfen.</div>' +
+    '<div id="pt-msg" style="font-size:11px;color:#a03020;min-height:14px"></div>';
+  const fillEnd = () => {
+    const T = NT_PSALM_TONES[document.getElementById('pt-tone').value];
+    const es = Object.keys(T.e);
+    document.getElementById('pt-end').innerHTML = es.map(e => '<option' + (e === p.ending ? ' selected' : '') + ' value="' + ntEscAttr(e) + '">' + (e || '–') + '</option>').join('');
+    document.getElementById('pt-solemn').disabled = !T.s;
+  };
+  fillEnd();
+  document.getElementById('pt-tone').onchange = fillEnd;
+  const bEl = document.getElementById('modal-btns');
+  const mk = (label, fn, css) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; if (css) b.style.cssText = css; b.onclick = fn; bEl.appendChild(b); };
+  mk('Abbrechen', () => closeModal());
+  mk('♫ Noten setzen', async () => {
+    const o = { tone: document.getElementById('pt-tone').value, ending: document.getElementById('pt-end').value, title: document.getElementById('pt-title').value.trim(),
+      everyIntonation: document.getElementById('pt-every').checked, solemn: document.getElementById('pt-solemn').checked && !document.getElementById('pt-solemn').disabled,
+      gloria: document.getElementById('pt-gloria').checked, text: document.getElementById('pt-text').value };
+    try { localStorage.setItem('notatorPsalmTone', JSON.stringify({ tone: o.tone, ending: o.ending, title: o.title, every: o.everyIntonation, solemn: o.solemn, gloria: o.gloria, text: o.text })); } catch (e) {}
+    let gabc;
+    try { gabc = ntPsalmToneGabc(o); } catch (e) { document.getElementById('pt-msg').textContent = e.message; return; }
+    closeModal();
+    if (window._ntTab !== 'greg') switchTab('greg');
+    const target = await gregImportTargetChoice();
+    if (!target) return;
+    if (target === 'new' && !(await ntConfirmDiscard())) return;
+    if (target === 'new' && typeof gregCollapseSections === 'function') gregCollapseSections();
+    gregPush();
+    gregImportGABCString(gabc);
+    if (target === 'new' && typeof clState !== 'undefined') ntResetOrganForImport();
+    gregGst('Psalmton ' + o.tone + (o.ending ? ' ' + o.ending : '') + ' gesetzt – bitte Silbentrennung und Akzente prüfen.');
+  }, 'background:#3d6b35;color:#fff;border-color:#3d6b35');
 }
 
 // ── Teilen: Notator-Link (Stück im Link) oder nur PDF ───────────────
