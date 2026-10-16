@@ -108,9 +108,20 @@ input[type=file]{display:none}
 }
 #greg-mobile-bar{display:flex}
 .nt-mob-only{display:none}
+.nt-o-break{display:none}
+@media (max-width: 1000px) {
+  /* Schmale Bildschirme: oben Datei-Aktionen + Anzeige/Vollbild, darunter
+     die Wiedergabe-Knöpfe gesammelt, dann Titel/Links */
+  .nt-o-file{order:1} .nt-o-view{order:2} .nt-o-full{order:3}
+  .nt-o-break{display:block;order:4;flex-basis:100%;height:0}
+  .nt-o-play{order:5} .nt-o-title{order:6} .nt-o-spacer{display:none}
+}
 @media (max-width: 700px) {
   .nt-noh-txt{display:none}
   .nt-lbl{display:none}
+  /* Handy: Freitext-Schalter im PDF-Dialog statt in der Leiste */
+  #greg-mobile-bar .nt-filegrp label, #cl-viewbar .nt-filegrp label{display:none !important}
+  #greg-mobile-bar, #cl-viewbar{gap:4px !important}
   /* Handy: Wiedergabe-/Anzeige-Extras im «⋯»-Menü statt eigener Knöpfe */
   .nt-pm{display:none !important}
   .nt-mob-only{display:inline-block !important}
@@ -186,18 +197,19 @@ input[type=file]{display:none}
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
-    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
-    <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925;<span class="nt-lbl"> Song importieren</span></button>
-    <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
-    <span class="nt-filegrp" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label></span>
-    <button class="b" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
-    <span id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
-    <span class="nt-bar-spacer" style="flex:1 1 0;min-width:0"></span>
-    <button id="greg-mobile-edit-toggle" class="b" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
-<select class="nt-play-sec nt-pm" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
-    <button class="b nt-wake-btn nt-pm" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
-    <button class="b nt-zoom-btn nt-pm" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
-    <button class="b" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
+    <button class="b nt-o-file" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
+    <button class="b nt-o-file" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925;<span class="nt-lbl"> Song importieren</span></button>
+    <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
+    <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label></span>
+    <button class="b nt-o-file" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
+    <span class="nt-o-title" id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
+    <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
+    <button id="greg-mobile-edit-toggle" class="b nt-o-view" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
+<select class="nt-play-sec nt-pm nt-o-play" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+    <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
+    <button class="b nt-zoom-btn nt-pm nt-o-play" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
+    <button class="b nt-o-full" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
+    <span class="nt-o-break"></span>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
     <div id="greg-input-panel" style="width:540px;min-width:200px;flex-shrink:0;background:#1a2414;border-right:1px solid #3a4a30;display:flex;flex-direction:column;overflow:hidden">
@@ -423,18 +435,19 @@ input[type=file]{display:none}
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
-    <button class="b" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
-    <button class="b" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925;<span class="nt-lbl"> Song importieren</span></button>
-    <button class="b" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
-    <span class="nt-filegrp" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label></span>
-    <button class="b" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
-    <span id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
-    <span class="nt-bar-spacer" style="flex:1 1 0;min-width:0"></span>
-    <button class="b" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
-<select class="nt-play-sec nt-pm" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn" data-src="cl" onclick="ntPlayStartTone('cl')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
-    <button class="b nt-wake-btn nt-pm" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
-    <button class="b nt-zoom-btn nt-pm" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
-    <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
+    <button class="b nt-o-file" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
+    <button class="b nt-o-file" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925;<span class="nt-lbl"> Song importieren</span></button>
+    <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
+    <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label></span>
+    <button class="b nt-o-file" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
+    <span class="nt-o-title" id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
+    <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
+    <button class="b nt-o-view" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
+<select class="nt-play-sec nt-pm nt-o-play" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="cl" onclick="ntPlayStartTone('cl')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
+    <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
+    <button class="b nt-zoom-btn nt-pm nt-o-play" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
+    <button class="b nt-o-full" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
+    <span class="nt-o-break"></span>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
     <button class="b" onclick="clUndo()" style="font-size:11px;padding:3px 8px" title="Orgel: letzte Änderung rückgängig (Strg+Z)">&#8617;</button>
@@ -7289,7 +7302,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '297';
+const NOTATOR_BUILD_ID = '298';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8583,7 +8596,7 @@ function gregMobileSetEditMode(on) {
   const wasView = panel.classList.contains('greg-view');
   panel.classList.toggle('greg-mobile-edit', !!on); // Handy: Eingabespalte statt Notation
   panel.classList.toggle('greg-view', !on);         // PC: Eingabespalte aus-/einblenden
-  if (btn) btn.innerHTML = on ? '&#128065; Anzeige' : '&#9998; Bearbeiten';
+  if (btn) btn.innerHTML = on ? '&#128065;<span class="nt-lbl"> Anzeige</span>' : '&#9998;<span class="nt-lbl"> Bearbeiten</span>';
   if (!on) gregScheduleMobileScale(); // Notation war während des Bearbeitens display:none, Grösse neu messen
   // Am PC ändert sich die Notenbreite -> neu setzen
   if (!gregIsMobileViewport() && wasView !== !on && typeof gregRender === 'function') setTimeout(gregRender, 60);
@@ -16072,7 +16085,7 @@ function clApplyUi() {
   p.classList.toggle('cl-view', !!u.view);
   p.classList.toggle('cl-menu-collapsed', !!u.view); // Anzeige = ohne Menü, Bearbeiten = mit Menü
   const mb = document.getElementById('cl-mode-btn'), nb = document.getElementById('cl-menu-btn');
-  if (mb) mb.innerHTML = u.view ? '&#9998; Bearbeiten' : '&#128065; Anzeige';
+  if (mb) mb.innerHTML = u.view ? '&#9998;<span class="nt-lbl"> Bearbeiten</span>' : '&#128065;<span class="nt-lbl"> Anzeige</span>';
   if (nb) { nb.style.display = u.view ? 'none' : ''; nb.innerHTML = u.menu ? '&#9650; Menü' : '&#9660; Menü'; }
   const t = document.getElementById('cl-vb-title');
   if (t) { const h = clEffectiveHead(); t.textContent = h.title || 'Unbenanntes Stück'; }
@@ -16717,6 +16730,13 @@ function ntPdfDialog(ctx) {
     (K.n ? '' : '<label style="font-size:12px;display:flex;gap:6px;align-items:center;margin-top:6px">Druckqualität ' +
       '<select id="nt-pdf-dpi" style="font-size:12px">' + NT_PDF_DPI_OPTS.map(d => '<option value="' + d + '"' + (d === ntPdfDpi() ? ' selected' : '') + '>' + d + ' dpi' +
         ({150: ' – klein', 200: ' – Bildschirm', 300: ' – Druck (Standard)', 400: ' – sehr scharf'})[d] + '</option>').join('') + '</select></label>');
+  // Freitext mitdrucken: derselbe Schalter wie neben «↓ PDF» (auf dem Handy nur hier sichtbar)
+  const ftSrc = document.getElementById(ctx.kind === 'cl' ? 'cl-pdf-print-texts' : ctx.kind === 'greg' ? 'greg-pdf-print-comments' : '');
+  if (ftSrc && !K.n) {
+    const lab = document.createElement('label'); lab.style.cssText = 'font-size:12px;display:flex;gap:6px;align-items:center;margin-top:6px';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = ftSrc.checked; cb.onchange = () => { ftSrc.checked = cb.checked; };
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(' Freitext mitdrucken')); body.appendChild(lab);
+  }
   const bEl = document.getElementById('modal-btns');
   const ok = document.createElement('button'); ok.className = 'b'; ok.textContent = 'Speichern';
   ok.style.cssText = 'background:#3d6b35;color:#fff;border-color:#3d6b35';
