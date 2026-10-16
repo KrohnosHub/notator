@@ -35,7 +35,7 @@ html,body{height:100%;overflow:hidden}
    (Samsung Internet), sehen hier, dass Notator das tut -- Notenflächen
    bleiben bewusst weiss mit schwarzer Schrift. */
 @media (prefers-color-scheme: dark) {
-  #greg-canvas-wrap, #cl-score-wrap, #gabc-canvas-wrap { background:#ffffff !important; color:#000000 !important; }
+  #greg-canvas-wrap, #cl-score-wrap { background:#ffffff !important; color:#000000 !important; }
 }
 .nt-pseudo-fs{position:fixed !important;inset:0 !important;z-index:9999 !important;width:auto !important;height:auto !important;background:#fff !important;overflow:auto !important}
 #nt-fs-exit{position:fixed;top:8px;right:8px;z-index:10001;font-size:13px;padding:5px 10px;background:#1a2414;color:#e0d4b0;border:1px solid #5a8a40;border-radius:3px;opacity:.85}
@@ -100,9 +100,9 @@ input[type=file]{display:none}
    die interne, für Layout-Stabilität sorgfältig austarierte Render-
    Breitenlogik anzufassen. */
 /* Ziehleisten: auch mit dem Finger verschiebbar (Tablet) */
-#greg-drag-handle,#greg-pdf-drag-handle,#gabc-drag-handle{touch-action:none}
+#greg-drag-handle,#greg-pdf-drag-handle{touch-action:none}
 @media (pointer:coarse){
-  #greg-drag-handle,#greg-pdf-drag-handle,#gabc-drag-handle{width:18px !important;background:#22301a !important;
+  #greg-drag-handle,#greg-pdf-drag-handle{width:18px !important;background:#22301a !important;
     background-image:radial-gradient(circle,#8aa870 1.6px,transparent 2px) !important;background-size:18px 10px !important;
     background-repeat:repeat-y !important;background-position:center calc(50% - 15px) !important}
 }
@@ -117,7 +117,7 @@ input[type=file]{display:none}
 }
 #greg-mobile-scale-wrap{transform-origin:top left}
 @media (max-width: 700px) {
-  #hdr-tabs button#tab-gabc, #hdr-sub { display:none; }
+  #hdr-sub { display:none; }
   #hdr{padding:5px 8px;gap:6px}
   #hdr-tabs .nt-tab{padding:3px 10px}
   #greg-mobile-bar{display:flex}
@@ -181,73 +181,8 @@ input[type=file]{display:none}
   <div id="hdr-tabs">
     <button class="b nt-tab" id="tab-greg" onclick="switchTab('greg')" title="Gregorianischer Choral (Quadratnotation)">&#128220; Choral</button>
     <button class="b nt-tab" id="tab-editor" onclick="switchTab('editor')" title="Klassische Orgelnoten mit Transposition und Begleitsatz">&#127929; Orgel</button>
-    <button class="b nt-tab" id="tab-gabc" onclick="switchTab('gabc')" style="display:none" title="GABC-Quelltext direkt eingeben">&#9000;&#xFE0E; GABC</button>
   </div>
 </div>
-<div id="gabc-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
-  <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
-    <!-- Left: input panes -->
-    <div id="gabc-input-panel" style="width:320px;min-width:180px;flex-shrink:0;background:#1a2414;border-right:1px solid #3a4a30;display:flex;flex-direction:column">
-      <!-- Controls -->
-      <div style="padding:5px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
-        <button class="b" onclick="renderGABC()" style="font-size:10px;padding:2px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35">&#9654; Rendern</button>
-        <button class="b" onclick="loadGABCExample(0)" style="font-size:10px;padding:2px 5px">Bsp 1</button>
-        <button class="b" onclick="loadGABCExample(1)" style="font-size:10px;padding:2px 5px">Bsp 2</button>
-        <select class="b" id="gabc-clef" style="font-size:10px;padding:1px 3px;height:20px" onchange="renderGABC()">
-          <option value="c3">Do c3</option><option value="c4">Do c4</option>
-          <option value="c2">Do c2</option><option value="f3">Fa f3</option><option value="f4">Fa f4</option>
-        </select>
-        <select class="b" id="gabc-zoom" style="font-size:10px;padding:1px 3px;height:20px" onchange="renderGABC()">
-          <option value="14">Klein</option><option value="18" selected>Normal</option><option value="22">Gross</option>
-        </select>
-      </div>
-      <!-- Mode tabs -->
-      <div style="display:flex;background:#121c0e;border-bottom:1px solid #3a4a30">
-        <button id="gtab-inline" onclick="setGABCTab('inline')" style="flex:1;font-size:10px;padding:3px;background:#1a2414;color:#c0d890;border:none;border-right:1px solid #3a4a30;cursor:pointer">Inline</button>
-        <button id="gtab-sep" onclick="setGABCTab('sep')" style="flex:1;font-size:10px;padding:3px;background:#121c0e;color:#6b8a60;border:none;cursor:pointer">Separated</button>
-      </div>
-      <!-- Inline mode: two fields side by side labels + textareas -->
-      <div id="gabc-inline-pane" style="display:flex;flex-direction:column;flex:1">
-        <div style="padding:3px 8px;background:#121c0e;border-bottom:1px solid #2a3820;font-size:9px;color:#6b8a60;font-variant:small-caps;letter-spacing:.05em">
-          GABC &mdash; Text und Noten in einem String: <code>Silbe(noten) Silbe(noten)</code>
-        </div>
-        <textarea id="gabc-lyrics-inline" style="display:none"></textarea>
-        <textarea id="gabc-notes-inline" spellcheck="false" style="flex:1;min-height:240px;background:#0a1406;color:#a8d878;font-family:monospace;font-size:12px;padding:8px;border:none;outline:none;resize:none;line-height:1.7" placeholder="(c3) Ky(fg)ri(g)e(f.) (,) e(fg)lé(g)i(f)son.(e.) (::)"></textarea>
-        <div style="padding:5px 8px;background:#121c0e;border-top:1px solid #2a3820;font-size:9px;color:#506840;line-height:1.5">
-          <b style="color:#8b9a70">Syntax:</b> <code>(c3)</code> Schl&uuml;ssel &middot; <code>a-m</code> Tonh&ouml;hen (a=tief, m=hoch) &middot;
-          <code>A-M</code> punctum inclinatum &middot; <code>.</code> Mora &middot; <code>'</code> Iktus &middot;
-          <code>_</code> Episema &middot; <code>w</code> Quilisma &middot; <code>~</code> Liqueszenz &middot;
-          <code>!</code> Fusion &middot; <code>/</code> kleiner Schnitt &middot; <code>//</code> grosser Schnitt &middot;
-          <code>&amp;</code> verbindet Silben &middot; <code>(,)</code> Komma &middot; <code>(;)</code> Semikolon &middot;
-          <code>(:)</code> Kolon &middot; <code>(::)</code> Doppelstrich
-        </div>
-      </div>
-      <!-- Separated mode -->
-      <div id="gabc-sep-pane" style="display:none;flex-direction:column;flex:1">
-        <div style="padding:3px 8px;background:#121c0e;border-bottom:1px solid #2a3820;font-size:9px;color:#6b8a60;font-variant:small-caps;letter-spacing:.05em">Lyrics &mdash; eine Silbe pro Zeile</div>
-        <textarea id="gabc-lyrics-sep" spellcheck="false" style="flex:1;min-height:80px;background:#0c1608;color:#c0d890;font-family:monospace;font-size:11px;padding:7px;border:none;border-bottom:1px solid #2a3820;outline:none;resize:none;line-height:1.65" placeholder="Ky-&#10;ri-&#10;e&#10;e-&#10;le-&#10;i-&#10;son"></textarea>
-        <div style="padding:3px 8px;background:#121c0e;border-bottom:1px solid #2a3820;font-size:9px;color:#6b8a60;font-variant:small-caps;letter-spacing:.05em">Gabc &mdash; eine Gruppe pro Zeile</div>
-        <textarea id="gabc-notes-sep" spellcheck="false" style="flex:2;min-height:140px;background:#0a1406;color:#a8d878;font-family:monospace;font-size:11px;padding:7px;border:none;outline:none;resize:none;line-height:1.65" placeholder="(c3)&#10;fg&#10;gh&#10;f&#10;(,)&#10;fgh&#10;g&#10;f&#10;e.&#10;(::)"></textarea>
-      </div>
-      <!-- Bottom -->
-      <div style="padding:5px 8px;background:#121c0e;border-top:1px solid #3a4a30;display:flex;gap:4px;flex-shrink:0">
-        <button class="b" onclick="exportGABCasPDF()" style="font-size:10px;padding:2px 6px;background:#3d6b35;color:#fff;border-color:#3d6b35">&#8595; PDF</button>
-        <button class="b" onclick="copyGABC()" style="font-size:10px;padding:2px 6px">&#128203; Kopieren</button>
-        <button class="b" onclick="downloadGABC()" style="font-size:10px;padding:2px 6px" title="GABC als .gabc-Datei speichern">&#8595; .gabc</button>
-      </div>
-    </div>
-    <!-- Drag handle -->
-    <div id="gabc-drag-handle" style="width:5px;flex-shrink:0;background:#2a3820;cursor:col-resize;position:relative;z-index:10;transition:background .15s" onmouseenter="this.style.background='#4a7a40'" onmouseleave="this.style.background='#2a3820'"></div>
-    <!-- Drag handle -->
-    <div id="gabc-drag-handle" style="width:5px;flex-shrink:0;background:#2a3820;cursor:col-resize;position:relative;z-index:10;transition:background .15s" onmouseenter="this.style.background='#4a7a40'" onmouseleave="this.style.background='#2a3820'"></div>
-    <!-- Right: rendered SVG (via exsurge) -->
-    <div id="gabc-canvas-wrap" style="flex:1;overflow:auto;background:#ffffff;padding:20px;display:flex;align-items:flex-start;justify-content:center">
-      <div id="gabc-svg-wrap" style="background:transparent;padding:0;width:100%;min-height:200px;box-sizing:border-box"></div>
-    </div>
-  </div>
-  <div id="gabc-status" style="font-size:10px;color:#8b9a70;padding:3px 10px;background:#121c0e;border-top:1px solid #3a4a30">Bereit</div>
-</div>
-
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
@@ -267,8 +202,8 @@ input[type=file]{display:none}
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
     <div id="greg-input-panel" style="width:540px;min-width:200px;flex-shrink:0;background:#1a2414;border-right:1px solid #3a4a30;display:flex;flex-direction:column;overflow:hidden">
       <div style="padding:5px 8px 2px;background:#121c0e;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
-        <button class="b" onclick="gregUndo()" style="font-size:10px;padding:2px 6px" title="Letzte Aktion rückgängig machen">&#8617; Undo</button>
-        <button class="b" onclick="gregRedo()" style="font-size:10px;padding:2px 6px" title="Rückgängig gemachte Aktion wiederherstellen">&#8618; Redo</button>
+        <button class="b" onclick="gregUndo()" style="font-size:10px;padding:2px 6px" title="Letzte Aktion rückgängig machen (Strg+Z)">&#8617; Undo</button>
+        <button class="b" onclick="gregRedo()" style="font-size:10px;padding:2px 6px" title="Rückgängig gemachte Aktion wiederherstellen (Strg+Y)">&#8618; Redo</button>
         <input type="file" id="greg-load-in" accept=".notator,.json" style="display:none" onchange="gregLoadPiece(this)">
         <input type="file" id="greg-lib-import-in" accept=".json" style="display:none" onchange="gregLibImportFile(this)">
         <button class="b" id="greg-pdf-read-btn" onclick="gregPdfReadRow()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (API-Key wird darunter abgefragt)">&#128196; PDF lesen</button>
@@ -501,6 +436,8 @@ input[type=file]{display:none}
     <button class="b" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+    <button class="b" onclick="clUndo()" style="font-size:11px;padding:3px 8px" title="Orgel: letzte Änderung rückgängig (Strg+Z)">&#8617;</button>
+    <button class="b" onclick="clRedo()" style="font-size:11px;padding:3px 8px" title="Orgel: wiederholen (Strg+Y)">&#8618;</button>
     <button class="b" onclick="clRegenerate()" style="font-size:11px;padding:3px 8px" title="Klassische Fassung neu aus dem aktuellen Choral erzeugen">&#8635; Aus Choral übernehmen</button>
     <span style="color:#3a4a30">|</span>
     <label id="cl-sec-wrap" style="font-size:11px;color:#e0c070;display:none;align-items:center;gap:4px" title="Grundton, Oktave, Titel, Untertitel und Kopfzeile gelten für den hier gewählten Abschnitt">Einstellungen für
@@ -2914,7 +2851,7 @@ function gregClear() {
   set('greg-dropcap-letter', '');
   setChk('greg-dropcap', true);
   gregSetClef('do');
-  if (!window._gregMultiSection && typeof clState !== 'undefined') { clState = {}; clNormalizeState(); gregMeta = {}; } // neues Stück: Orgel-Standard (Begleitsatz an)
+  if (!window._gregMultiSection && typeof clState !== 'undefined') { clState = {}; clNormalizeState(); gregMeta = {}; clUndoReset(); } // neues Stück: Orgel-Standard (Begleitsatz an)
   gregRefreshList();
   if (window._gregMultiSection) gregSectionFromUI();
   gregRender();
@@ -4943,6 +4880,7 @@ async function gregImportSongFromGregoBase(preset) {
     gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
     const target = await gregImportTargetChoice();
     if (!target) { gregGst('Abgebrochen.'); return; }
+    if (target === 'new' && !(await ntConfirmDiscard())) { gregGst('Abgebrochen.'); return; }
     const previousEntries = gregEntries;
     const prevSections = target === 'new' ? gregCollapseSections() : null;   // neues Stück ersetzt auch die weiteren Abschnitte des alten
     gregImportGABCString(gbGabc, { deferRender: true });
@@ -4953,6 +4891,7 @@ async function gregImportSongFromGregoBase(preset) {
     }
     gregRefreshListNoRender();
     gregRender();
+    if (target === 'new') { gregLibCurrentId = null; setTimeout(() => ntMarkClean(), 50); }
     gregGst('Aus GregoBase geladen: "' + picked.title + '" (' + picked.source + ', #' + picked.id + ') — ' + gregEntries.length + ' Einträge. Bitte trotzdem gegenprüfen.');
   } catch (err) {
     gregGst('GregoBase-Fehler: ' + err.message);
@@ -5285,6 +5224,7 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
             gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
             const target = await gregImportTargetChoice();
             if (!target) { gregGst('Abgebrochen.'); return _pieceSucceeded; }
+            if (target === 'new' && !(await ntConfirmDiscard())) { gregGst('Abgebrochen.'); return _pieceSucceeded; }
             const previousEntries = gregEntries;
             const prevSections = target === 'new' ? gregCollapseSections() : null;
             gregImportGABCString(gbGabc, { deferRender: true });
@@ -5296,6 +5236,7 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
             }
             gregRefreshListNoRender();
             gregRender();
+            if (target === 'new') { gregLibCurrentId = null; setTimeout(() => ntMarkClean(), 50); }
             gregGst('Aus GregoBase geladen: "' + picked.title + '" (' + picked.source + ', #' + picked.id + ') — ' + gregEntries.length + ' Einträge. Bitte trotzdem gegenprüfen.');
             console.log('GregoBase: erfolgreich geladen, Bilderkennung wird übersprungen.');
             _pieceSucceeded = true;
@@ -5905,7 +5846,7 @@ After all ${batch.length} system lines, output the line "===GABC===" on its own,
       // gregRender(). If it's unreasonably high, restore whatever was
       // there before and ask the user, so a render only ever happens once
       // we're confident it won't be on a runaway result.
-      { const target = await gregImportTargetChoice(); if (!target) { gregGst('Abgebrochen.'); return; } if (target === 'new') gregCollapseSections(); }
+      { const target = await gregImportTargetChoice(); if (!target) { gregGst('Abgebrochen.'); return; } if (target === 'new' && !(await ntConfirmDiscard())) { gregGst('Abgebrochen.'); return; } if (target === 'new') gregCollapseSections(); }
       const previousEntries = gregEntries;
       gregImportGABCString(cleaned, {deferRender: true});
       const realEntryCount = gregEntries.length;
@@ -7327,7 +7268,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '294';
+const NOTATOR_BUILD_ID = '295';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7362,6 +7303,7 @@ setTimeout(ntCheckForUpdate, 20000);
 function gregAutosaveNow() {
   try {
     const state = gregBuildStateObject();
+    if (!window._ntMappeBusy) ntRecoveryWrite(state);
     sessionStorage.setItem(NOTATOR_AUTOSAVE_KEY, JSON.stringify({ savedAt: Date.now(), state }));
   } catch (err) {
     // Best-effort only — e.g. Safari private browsing throws on setItem,
@@ -7370,6 +7312,71 @@ function gregAutosaveNow() {
     console.warn('Autosave fehlgeschlagen:', err.message);
   }
 }
+
+// ── Ungespeicherte Änderungen / Wiederherstellung nach dem Schliessen ──
+// Grundlage ist ein Prüfwert über den Stückzustand beim letzten Speichern,
+// Öffnen oder Importieren. Weicht der aktuelle Zustand ab, gilt das Stück als
+// «ungespeichert»: Rückfrage vor Neu/Öffnen/Import, Warnung beim Schliessen
+// und eine Sicherungskopie in localStorage (übersteht auch das Schliessen).
+const NT_RECOVERY_KEY = 'notatorRecovery_v1';
+let _ntBaseSig = null;
+function ntHash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + ':' + str.length; }
+function ntStateHasContent(st) {
+  return !!st && ((st.entries && st.entries.some(e => e && e.type === 'note')) || (st.multiSection && st.sections && st.sections.some(x => (x.entries || []).some(e => e && e.type === 'note'))));
+}
+function ntStateSig(st) {
+  const c = Object.assign({}, st); delete c.canvasWidth; delete c.secGap;
+  if (c.meta) { c.meta = Object.assign({}, c.meta); delete c.meta.txt; }
+  return ntHash(JSON.stringify(c));
+}
+function ntMarkClean(st) {
+  try { _ntBaseSig = ntStateSig(st || gregBuildStateObject()); sessionStorage.setItem('notatorBaseSig', _ntBaseSig); } catch (e) {}
+  try { localStorage.removeItem(NT_RECOVERY_KEY); } catch (e) {}
+}
+function ntIsDirty(st) {
+  try { st = st || gregBuildStateObject(); return ntStateHasContent(st) && ntStateSig(st) !== _ntBaseSig; } catch (e) { return false; }
+}
+// Rückfrage vor dem Verwerfen ungespeicherter Änderungen -> Promise<boolean>
+function ntConfirmDiscard(what) {
+  if (window._ntMappeBusy || !ntIsDirty()) return Promise.resolve(true);
+  return new Promise(resolve => {
+    showModal('⚠️ Ungespeicherte Änderungen', 'Das offene Stück hat Änderungen, die noch nicht gespeichert sind.' + (what ? '\n' + what : ''), [
+      { label: '💾 Zuerst speichern', fn: () => { closeModal(); resolve(false); gregLibSaveCurrent(); } },
+      { label: 'Verwerfen und fortfahren', fn: () => { closeModal(); resolve(true); } },
+      { label: 'Abbrechen', fn: () => { closeModal(); resolve(false); } }
+    ]);
+  });
+}
+function ntRecoveryWrite(st) {
+  try {
+    if (ntIsDirty(st)) localStorage.setItem(NT_RECOVERY_KEY, JSON.stringify({ savedAt: Date.now(), state: st }));
+    else localStorage.removeItem(NT_RECOVERY_KEY);
+  } catch (e) {}
+}
+window.addEventListener('beforeunload', e => {
+  try { gregAutosaveNow(); } catch (err) {}
+  if (ntIsDirty()) { e.preventDefault(); e.returnValue = ''; }
+});
+// Start: Prüfwert aus dieser Sitzung übernehmen (Neuladen) oder leeres Blatt
+// als «gespeichert» werten; ggf. Wiederherstellung nach dem Schliessen anbieten.
+function ntInitDirtyTracking(restoredFromSession) {
+  let base = null; try { base = sessionStorage.getItem('notatorBaseSig'); } catch (e) {}
+  if (restoredFromSession && base) _ntBaseSig = base; else if (!restoredFromSession) ntMarkCleanKeepRecovery();
+  if (restoredFromSession) return;
+  let rec = null; try { rec = JSON.parse(localStorage.getItem(NT_RECOVERY_KEY) || 'null'); } catch (e) {}
+  if (!rec || !ntStateHasContent(rec.state) || /[#&](n|song)=/.test(location.hash || '')) return;
+  const when = new Date(rec.savedAt || Date.now()).toLocaleString('de-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const t = (rec.state.title || (rec.state.sections && rec.state.sections[0] && rec.state.sections[0].title) || 'Unbenanntes Stück');
+  const bar = document.createElement('div'); bar.id = 'nt-recovery-bar';
+  bar.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:3000;background:#6a4a1a;color:#fff;padding:8px 12px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.4);font:13px system-ui,sans-serif;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 24px);box-sizing:border-box';
+  const sp = document.createElement('span'); sp.textContent = 'Nicht gespeicherter Stand gefunden: «' + t + '» (' + when + ')'; bar.appendChild(sp);
+  const go = document.createElement('button'); go.className = 'b'; go.textContent = '↺ Wiederherstellen'; go.style.cssText = 'font-size:12px;padding:3px 10px';
+  go.onclick = () => { bar.remove(); gregApplyLoadedState(rec.state); gregLibCurrentId = null; gregRefreshList(); gregRender(); gregGst('Nicht gespeicherten Stand wiederhergestellt – bitte speichern.'); gregScheduleAutosave(); };
+  const no = document.createElement('button'); no.className = 'b'; no.textContent = 'Verwerfen'; no.style.cssText = 'font-size:12px;padding:3px 8px';
+  no.onclick = () => { bar.remove(); try { localStorage.removeItem(NT_RECOVERY_KEY); } catch (e) {} };
+  bar.appendChild(go); bar.appendChild(no); document.body.appendChild(bar);
+}
+function ntMarkCleanKeepRecovery() { try { _ntBaseSig = ntStateSig(gregBuildStateObject()); sessionStorage.setItem('notatorBaseSig', _ntBaseSig); } catch (e) {} }
 
 // Debounced wrapper — called from gregRender(), which itself already runs
 // after most edits (some already debounced upstream, some not), so this
@@ -7391,22 +7398,24 @@ function gregScheduleAutosave() {
 // gregScheduleAutosave() call, so it never traps the user on old content.
 function gregTryRestoreAutosave() {
   let raw;
-  try { raw = sessionStorage.getItem(NOTATOR_AUTOSAVE_KEY); } catch (err) { return; }
-  if (!raw) return;
+  try { raw = sessionStorage.getItem(NOTATOR_AUTOSAVE_KEY); } catch (err) { return false; }
+  if (!raw) return false;
   try {
     const saved = JSON.parse(raw);
     const state = saved && saved.state;
     if (!state || !state.entries || !Array.isArray(state.entries)) return;
     const hasContent = state.entries.length > 0 ||
       (state.multiSection && state.sections && state.sections.some(s => s.entries && s.entries.length > 0));
-    if (!hasContent) return; // nothing worth restoring — leave the blank sheet as-is
+    if (!hasContent) return false; // nothing worth restoring — leave the blank sheet as-is
     gregApplyLoadedState(state);
     gregRefreshList();
     const when = saved.savedAt ? new Date(saved.savedAt).toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'}) : '';
     gregGst('Letzter Stand automatisch wiederhergestellt' + (when ? ' (' + when + ' Uhr)' : '') + ' — bei Bedarf über "Neu" oder "Öffnen" verwerfen');
+    return true;
   } catch (err) {
     console.warn('Autosave-Wiederherstellung fehlgeschlagen:', err.message);
   }
+  return false;
 }
 
 // ── Save / Load piece ────────────────────────────────────────────
@@ -7508,7 +7517,7 @@ function gregApplyLoadedState(state) {
     gregFixDoubleAsterisk(state.entries);
     (state.sections || []).forEach(sec => gregFixDoubleAsterisk(sec && sec.entries));
   }
-  if (typeof clState !== 'undefined') { clState = Object.assign({}, (state && state.classic) || {}); clNormalizeState(); }
+  if (typeof clState !== 'undefined') { clState = Object.assign({}, (state && state.classic) || {}); clNormalizeState(); clUndoReset(); }
   gregMeta = ntMetaNorm(state && state.meta);
   { const sg = document.getElementById('gs-secgap'); if (sg) { sg.value = (state && isFinite(state.secGap)) ? state.secGap : 16; const sv = document.getElementById('gs-secgap-v'); if (sv) sv.textContent = Math.round(sg.value) + 'px'; } }
   // NOTE: this file may contain a saved `canvasWidth` from an older
@@ -7585,6 +7594,7 @@ function gregLoadPiece(input) {
       input.value = ''; // reset so same file can be loaded again
       gregRefreshList();
       gregGst('Geladen: ' + (state.title || file.name) + ' (' + gregEntries.length + ' Einträge)');
+      ntMarkClean();
       gregScheduleAutosave(); // the autosave should reflect THIS file from now on, not the old content
     } catch(err) {
       gregGst('Ladefehler: "' + file.name + '" ist keine gültige Notator-Projektdatei. (' + err.message + ')');
@@ -7867,6 +7877,7 @@ function gregLibSaveCurrent() {
     gregLibPut(record).then(function(newId) {
       record.id = newId;
       gregLibCurrentId = newId;
+      ntMarkClean(state);
       if (!gdConfigured()) {
         gregGst('In Bibliothek gespeichert (nur lokal – Google Drive noch nicht eingerichtet): "' + record.title + '"');
         if (document.getElementById('modal-bg').classList.contains('open')) gregLibShowModal();
@@ -7904,10 +7915,12 @@ function gregLibApplyRecord(rec, sourceLabel) {
   closeModal();
   if (typeof gregMobileSetEditMode === 'function' && gregIsMobileViewport()) gregMobileSetEditMode(false); // Handy: frisch geladenes Stück erst in der Ansicht zeigen
   gregGst('Geladen (' + sourceLabel + '): "' + rec.title + '"');
+  ntMarkClean();
   gregScheduleAutosave();
 }
 
-function gregLibLoadEntry(id) {
+function gregLibLoadEntry(id, _ok) {
+  if (!_ok && ntIsDirty()) { ntConfirmDiscard().then(ok => { if (ok) gregLibLoadEntry(id, true); }); return; }
   gregLibGet(id).then(function(rec) {
     if (!rec) { gregGst('Eintrag nicht gefunden (evtl. gelöscht).'); return; }
     gregLibApplyRecord(rec, rec.pending ? 'lokale Kopie, noch nicht in Drive' : 'lokale Kopie');
@@ -7916,7 +7929,8 @@ function gregLibLoadEntry(id) {
 
 // Öffnet eine Drive-Datei; aktualisiert/erstellt dabei die lokale Kopie.
 // Hat die lokale Kopie ungespeicherte (pending) Änderungen, wird nachgefragt.
-function gregLibLoadDrive(file, onFail) {
+function gregLibLoadDrive(file, onFail, _ok) {
+  if (!_ok && ntIsDirty()) { return ntConfirmDiscard().then(ok => { if (ok) return gregLibLoadDrive(file, onFail, true); }); }
   gregGst('Lade "' + file.name + '" aus Google Drive …');
   return Promise.all([gdDownload(file.id, true), gregLibFindByDriveId(file.id)]).then(function(res) {
     const state = res[0], local = res[1];
@@ -8196,7 +8210,7 @@ function gregLibShowModal() {
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
   const openRow = document.createElement('div');
   openRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
-  openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); if (window._ntTab !== 'greg') switchTab('greg'); gregCollapseSections(); gregClear(); if (typeof gregMeta !== 'undefined') gregMeta = {}; }, '', 'Neues, leeres Stück beginnen (das offene Stück wird verworfen – vorher speichern)'));
+  openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); ntConfirmDiscard().then(ok => { if (!ok) return; if (window._ntTab !== 'greg') switchTab('greg'); gregCollapseSections(); gregClear(); if (typeof gregMeta !== 'undefined') gregMeta = {}; gregLibCurrentId = null; ntMarkClean(); }); }, '', 'Neues, leeres Stück beginnen (das offene Stück wird verworfen – vorher speichern)'));
   openRow.appendChild(mkBtn('💻 Vom Gerät öffnen …', function() { ntOpenLocalFile(); }, 'background:#3d6b35;color:#fff;border-color:#3d6b35', '.notator-Datei aus einem lokalen Ordner öffnen'));
   if (driveOn) openRow.appendChild(mkBtn('☁ Anderer Drive-Ordner …', function() {
     gdGetToken(true).then(function() { ntDriveOpenBrowser(); }).catch(function(err) { gregGst(err.message); });
@@ -8582,7 +8596,8 @@ setTimeout(function(){
   // Neume grid (visual picker)
   gregBuildNeumeGrid();
   gregUpdateMoraUI();
-  gregTryRestoreAutosave(); // before the initial render, so it renders the restored content (if any)
+  const _restored = gregTryRestoreAutosave(); // before the initial render, so it renders the restored content (if any)
+  try { ntInitDirtyTracking(_restored); } catch (e) { console.warn(e); }
   setTimeout(gregRender,200);
   setTimeout(() => { if (typeof ntShareCheckIncoming === 'function') ntShareCheckIncoming(); }, 900); // geteilter Link (#n=…)
   setTimeout(() => { if (typeof ntSongCheckIncoming === 'function') ntSongCheckIncoming(); }, 1000); // Titel-Link (#song=…)
@@ -14514,19 +14529,6 @@ if(typeof window!=='undefined'){window.exsurge=exsurge;}else if(typeof globalThi
 
 </script>
 <script>
-// ── GABC TAB MODE ──────────────────────────────────────────────────
-let gabcTabMode = 'inline';
-function setGABCTab(mode) {
-  gabcTabMode = mode;
-  document.getElementById('gabc-inline-pane').style.display = mode==='inline'?'flex':'none';
-  document.getElementById('gabc-sep-pane').style.display   = mode==='sep'  ?'flex':'none';
-  document.getElementById('gtab-inline').style.background  = mode==='inline'?'#1a2414':'#121c0e';
-  document.getElementById('gtab-inline').style.color       = mode==='inline'?'#c0d890':'#6b8a60';
-  document.getElementById('gtab-sep').style.background     = mode==='sep'  ?'#1a2414':'#121c0e';
-  document.getElementById('gtab-sep').style.color          = mode==='sep'  ?'#c0d890':'#6b8a60';
-  renderGABC();
-}
-
 // ── TAB SWITCHING (editor ↔ GABC) ──────────────────────────────────
 // ══════════════════════════════════════════════════════════════
 // ── KLASSISCHE ÜBERTRAGUNG (Choral → moderne Notation, ABC/abcjs) ──
@@ -15766,7 +15768,7 @@ function ntResetOrganForImport() {
     const c = clCfg(i); c.targetPc = null; c.octave = 0; c.head = null; c.left = null; c.right = null;
     return;
   }
-  clState = {}; clNormalizeState();
+  clState = {}; clNormalizeState(); clUndoReset();
 }
 function clSelectSection(v) { clSel = Math.max(0, Math.min(clSecCount() - 1, parseInt(v, 10) || 0)); clFillTargetSelect(); clSyncControls(); }
 
@@ -15853,7 +15855,50 @@ function clSyncControls() {
   if (hs) hs.textContent = (cfg.head ? 'eigene Fassung (unabhängig vom Choral)' : 'wird vom Choral übernommen') + (nSec > 1 ? ' · gilt für Abschnitt ' + (clSel + 1) : '');
 }
 
+// ── Rückgängig/Wiederholen für die Orgelfassung ──
+// Jede Darstellung (clRender) vergleicht den Orgelzustand mit dem zuletzt
+// gesehenen; hat er sich geändert, kommt der alte Zustand auf den Stapel.
+const _clUndo = { last: null, stack: [], redo: [] };
+function clUndoReset() { _clUndo.last = null; _clUndo.stack = []; _clUndo.redo = []; }
+function clUndoTrack() {
+  if (window._ntMappeBusy) return;
+  const sig = JSON.stringify(clState);
+  if (_clUndo.last == null) { _clUndo.last = sig; return; }
+  if (sig === _clUndo.last) return;
+  _clUndo.stack.push(_clUndo.last); if (_clUndo.stack.length > 100) _clUndo.stack.shift();
+  _clUndo.redo = []; _clUndo.last = sig;
+}
+function clUndoApply(from, to, msg) {
+  if (!from.length) { gregGst(msg); return; }
+  to.push(_clUndo.last);
+  _clUndo.last = from.pop();
+  clState = JSON.parse(_clUndo.last); clNormalizeState();
+  clFillTargetSelect(); clRender();
+  if (typeof gregScheduleAutosave === 'function') gregScheduleAutosave();
+}
+function clUndo() { clUndoApply(_clUndo.stack, _clUndo.redo, 'Orgel: nichts rückgängig zu machen'); }
+function clRedo() { clUndoApply(_clUndo.redo, _clUndo.stack, 'Orgel: nichts zu wiederholen'); }
+// Tastenkürzel: Strg/⌘+Z rückgängig, Strg/⌘+Y bzw. Strg/⌘+Umschalt+Z wiederholen
+// (Choral oder Orgel, je nach Ansicht), Strg/⌘+S in die Bibliothek speichern.
+document.addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const k = (e.key || '').toLowerCase();
+  if (k === 's') { e.preventDefault(); gregLibSaveCurrent(); return; }
+  if (k !== 'z' && k !== 'y') return;
+  const t = e.target, tag = t && t.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return; // Texteingabe: eigenes Rückgängig
+  e.preventDefault();
+  const redo = k === 'y' || e.shiftKey;
+  if (window._ntTab === 'editor') { redo ? clRedo() : clUndo(); }
+  else { redo ? gregRedo() : gregUndo(); }
+});
 function clRender() {
+  clNormalizeState();
+  clUndoTrack();
+  try { clRenderInner(); }
+  finally { if (_clUndo.last != null && !window._ntMappeBusy) _clUndo.last = JSON.stringify(clState); } // interne Anpassungen beim Setzen nicht als Änderung zählen
+}
+function clRenderInner() {
   if (typeof ntPlay !== 'undefined' && ntPlay.source === 'cl') ntPlayStop(); // Notenbild wird ersetzt
   clNormalizeState();
   const el = document.getElementById('cl-score');
@@ -16575,7 +16620,7 @@ function ntPdfDialog(ctx) {
 }
 
 function ntPdfRun(kind, deliver) {
-  if (kind === 'notator') { deliver(new Blob([JSON.stringify(gregBuildStateObject(), null, 2)], { type: 'application/json' })); return; }
+  if (kind === 'notator') { const st = gregBuildStateObject(); ntMarkClean(st); deliver(new Blob([JSON.stringify(st, null, 2)], { type: 'application/json' })); return; }
   window._ntPdfDeliver = deliver;
   if (kind === 'cl') clExportPDF(); else if (kind === 'mappe') ntMappeBuild(); else gregExportPDF();
 }
@@ -16658,7 +16703,8 @@ function ntPdfToDrive(blob, name, ctx) {
 
 // Einfacher Ordner-Browser für Google Drive (ohne Google-Picker / API-Schlüssel)
 // ── Öffnen: lokale Datei (mit Startordner, wo der Browser es kann) ──
-function ntOpenLocalFile() {
+function ntOpenLocalFile(_ok) {
+  if (!_ok && ntIsDirty()) { ntConfirmDiscard().then(ok => { if (ok) ntOpenLocalFile(true); }); return; }
   if (window.showOpenFilePicker) {
     const opts = { id: 'notator-open', multiple: false, types: [{ description: 'Notator-Datei', accept: { 'application/json': ['.notator', '.json'] } }] };
     try { opts.startIn = _ntPdfLocalDir || 'documents'; } catch (e) {}
@@ -17167,6 +17213,7 @@ function ntShareCheckIncoming() {
     gregRender();
     if (toCl) { switchTab('editor'); if (!clUi().view) clToggleView(); }
     const t = state.title || 'Stück';
+    ntMarkClean();
     gregGst('Geteiltes Stück geöffnet: "' + t + '"');
     showModal('🔗 Geteiltes Stück', '«' + t + '» wurde mit dir geteilt und ist jetzt geöffnet.', [
       { label: '📚 In meine Bibliothek übernehmen', fn: () => { closeModal(); gregLibSaveCurrent(); } },
@@ -17921,19 +17968,12 @@ function switchTab(tab) {
   if (typeof ntPlayStop === 'function') ntPlayStop();
   const clp=document.getElementById('classic-panel');
   if(clp) clp.style.display='none';
-  const gp=document.getElementById('gabc-panel');
   const grp=document.getElementById('greg-panel');
   const be=document.getElementById('tab-editor');
-  const bg=document.getElementById('tab-gabc');
   const bgr=document.getElementById('tab-greg');
-  gp.style.display='none';
   if(grp) grp.style.display='none';
-  [be,bg,bgr].forEach(x => { if (x) { x.classList.remove('nt-tab-on'); x.style.background=''; x.style.color=''; } });
-  if(tab==='gabc'){
-    gp.style.cssText='display:flex;flex:1;overflow:hidden;flex-direction:column';
-    bg.classList.add('nt-tab-on');
-    setTimeout(renderGABC, 100);
-  } else if(tab==='greg'){
+  [be,bgr].forEach(x => { if (x) { x.classList.remove('nt-tab-on'); x.style.background=''; x.style.color=''; } });
+  if(tab==='greg'){
     if(grp) grp.style.cssText='display:flex;flex:1;overflow:hidden;flex-direction:column';
     if(bgr) bgr.classList.add('nt-tab-on');
     setTimeout(gregRender, 150);
@@ -17943,24 +17983,6 @@ function switchTab(tab) {
     be.classList.add('nt-tab-on');
     clOpen();
   }
-}
-
-// ── EXAMPLES ───────────────────────────────────────────────────────
-const GABC_EX=[
-  {
-    lyrics:'(c3) Ky(fg)ri(g)e(f.) (,) e(fg)lé(g)i(f)son.(e.) (::)',
-    name:'Kyrie (kurz)'
-  },
-  {
-    lyrics:'(c3) SPe(e)ci(fhg)ó(h)sus(h.) (,) for(hh)ma(hhh.f!gwh/ih/jijvIG) (,) præ(ig) fí(hi/jh)li(hhhih/ihhg.)is(.) (;) hó(fhg)mi(hihhf)num:(hig hiffe.) (,) dif(fhg/hfi)fú(hg)sa(gv.eg/ihh/fgf.) est(.) (:) grá(f)ti(hf/ghg)a(ge/f!hhhvFEec) (,) in(de) lá(eg)bi(g)is(fgFE&f!hh/&f!hh&hvGF&heed.) (;) tu(f)is.(hf/gh!ivFE feec efe/f!hh) (::)',
-    name:'Speciósus (Antiphon)'
-  },
-];
-function loadGABCExample(i){
-  const ex=GABC_EX[i]||GABC_EX[0];
-  document.getElementById('gabc-notes-inline').value=ex.lyrics;
-  setGABCTab('inline');
-  renderGABC();
 }
 
 // ── RENDERER: uses exsurge ─────────────────────────────────────────
@@ -18126,222 +18148,7 @@ function getExsurgeCtxt() {
   }
 }
 
-function renderGABC() {
-  const ctxt = getExsurgeCtxt();
-  if (!ctxt) return;
-
-  // Build the gabc input string based on current tab mode
-  let gabcSource = '';
-  if (gabcTabMode === 'inline') {
-    gabcSource = document.getElementById('gabc-notes-inline').value.trim();
-  } else {
-    // Separated mode: combine lyrics+notes line by line into inline gabc syntax
-    const lyrics = document.getElementById('gabc-lyrics-sep').value.split('\n').map(s=>s.trim());
-    const notes  = document.getElementById('gabc-notes-sep').value.split('\n').map(s=>s.trim()).filter(Boolean);
-    let li = 0;
-    const parts = [];
-    for (const n of notes) {
-      // If it's a bar or clef, just emit it
-      if (/^\([cf]b?[1-4]\)$/.test(n)) { parts.push(n); continue; }
-      if (/^\((,+|;+|:+)\)$/.test(n)) { parts.push(n); continue; }
-      // Else combine: "syllable(notes)"
-      const t = lyrics[li] || '';
-      parts.push(t + '(' + n + ')');
-      li++;
-    }
-    gabcSource = parts.join(' ');
-  }
-
-  if (!gabcSource) { gst('Keine Eingabe.'); return; }
-
-  let finalGabc = gabcSource
-    .replace(/<clear>/g, '')
-    .replace(/<sp>V\/<\/sp>/g, '\u2123')
-    .replace(/<sp>R\/<\/sp>/g, '\u211f')
-    .replace(/<sp>([^<]*)<\/sp>/g, '$1');
-
-  try {
-    let bodyGabc = finalGabc;
-    let annotationText = null;
-    let useDropCap = false;
-    if (finalGabc.includes('%%')) {
-      const sepIdx = finalGabc.indexOf('%%');
-      const headerLines = finalGabc.substring(0, sepIdx).trim().split('\n');
-      bodyGabc = finalGabc.substring(sepIdx + 2).trim();
-      for (const line of headerLines) {
-        const m = line.match(/^([^:]+):\s*(.*)$/);
-        if (!m) continue;
-        const key = m[1].trim().toLowerCase();
-        const val = m[2].trim().replace(/;$/, '').trim();
-        if (key === 'annotation') annotationText = val;
-        if (key === 'drop-cap' && val === 'auto') useDropCap = true;
-      }
-      if (!useDropCap) useDropCap = true;
-    }
-    if (!/\([cf]b?[1-4]\)/.test(bodyGabc)) {
-      const defaultClef = (document.getElementById('gabc-clef')||{value:'c3'}).value || 'c3';
-      bodyGabc = '(' + defaultClef + ') ' + bodyGabc;
-    }
-    const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, bodyGabc);
-    const score = new exsurge.ChantScore(ctxt, mappings, useDropCap);
-    score.initialLines = gregInitialLinesOf(finalGabc);
-    if (annotationText) score.annotation = new exsurge.Annotation(ctxt, annotationText);
-
-    // Get available width
-    const container = document.getElementById('gabc-canvas-wrap');
-    const width = Math.max(container ? container.clientWidth - 80 : 700, 400);
-
-    score.performLayoutAsync(ctxt, function() {
-      score.layoutChantLines(ctxt, width, function() {
-        const svg = score.createSvg(ctxt);
-        const wrap = document.getElementById('gabc-svg-wrap');
-        wrap.innerHTML = svg;
-        const svgEl = wrap.querySelector('svg');
-        if (svgEl) {
-          svgEl.style.background = 'transparent';
-          svgEl.style.maxWidth = '100%';
-          svgEl.style.width = '100%';
-          svgEl.style.height = 'auto';
-          svgEl.style.display = 'block';
-          addSvgPadding(svgEl, 32);
-        }
-        gst('Gerendert mit exsurge — ' + (score.lines ? score.lines.length : 0) + ' Zeile(n)');
-      });
-    });
-  } catch (err) {
-    gst('Render-Fehler: ' + err.message);
-    console.error(err);
-  }
-}
-
 function gst(t) { const e=document.getElementById('gabc-status'); if(e) e.textContent=t; }
 
-// Keep this stub so the main editor still works
-function drawGABCClef(ctx,lx,SY,GLS,isDo,clefLine,ink){
-  // Inline draw: simple square-notation clef on staff
-  const refY = SY + (4-clefLine)*GLS;
-  const bw=3.2, sh=2.1, x=lx+3;
-  ctx.fillStyle=ink; ctx.strokeStyle=ink;
-  if(isDo){
-    const top=refY-GLS, bot=refY+GLS;
-    ctx.fillRect(x,top,bw,bot-top);
-    ctx.fillRect(x,top,GLS*.9,sh);
-    ctx.fillRect(x,refY-sh/2,GLS*.72,sh);
-    ctx.fillRect(x,bot-sh,GLS*.9,sh);
-  } else {
-    const top=refY-GLS*1.5, bot=refY+GLS*.5;
-    ctx.fillRect(x,top,bw,bot-top);
-    ctx.fillRect(x,top,GLS*1.05,sh);
-    ctx.fillRect(x,refY-sh/2,GLS*.7,sh);
-    const dotX=x+GLS*.7+GLS*.26, dotR=1.9;
-    ctx.beginPath();ctx.arc(dotX,refY-GLS*.3,dotR,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(dotX,refY+GLS*.3,dotR,0,Math.PI*2);ctx.fill();
-  }
-}
-
-// ── COPY & EXPORT ──────────────────────────────────────────────────
-function copyGABC(){
-  const txt=(gabcTabMode==='inline'
-    ?document.getElementById('gabc-notes-inline').value
-    :document.getElementById('gabc-notes-sep').value)||'';
-  navigator.clipboard&&navigator.clipboard.writeText(txt).catch(()=>{});
-  gst('Kopiert');
-}
-
-function downloadGABC(){
-  const txt=(gabcTabMode==='inline'
-    ?document.getElementById('gabc-notes-inline').value
-    :document.getElementById('gabc-notes-sep').value)||'';
-  if (!txt) { gst('Nichts zu exportieren'); return; }
-  gregDownloadTextAsFile(txt, 'gregorianisch.gabc');
-  gst('Gespeichert: gregorianisch.gabc');
-}
-
-async function exportGABCasPDF(){
-  const{jsPDF}=window.jspdf||{};
-  if(!jsPDF){gst('jsPDF nicht geladen');return;}
-  const svgEl = document.querySelector('#gabc-svg-wrap svg');
-  if (!svgEl) { gst('Nichts zu exportieren - erst rendern'); return; }
-  // Serialise SVG to image data via canvas
-  // Gleicher Fix wie in gregExportPDF()/svgStringToCanvas() (2026-07-22):
-  // ohne die @font-face-Regel für 'Exsurge Characters' direkt im
-  // serialisierten SVG mitzuliefern, rastert der Browser das "Vorsänger-V"
-  // (aus "V/.") beim eigenständigen Blob/Image-Laden mit einer Standard-
-  // schrift statt dem dekorativen Glyph — auf dem Bildschirm sieht es
-  // richtig aus, weil dort das globale <style id="exsurge-fonts"> greift,
-  // das dieses eigenständige SVG-Dokument aber nicht mitbekommt.
-  const svgElClone = svgEl.cloneNode(true);
-  const fontStyleSrcGabc = document.getElementById('exsurge-fonts');
-  if (fontStyleSrcGabc && fontStyleSrcGabc.textContent) {
-    const nsGabc = 'http://www.w3.org/2000/svg';
-    const styleElGabc = document.createElementNS(nsGabc, 'style');
-    styleElGabc.textContent = fontStyleSrcGabc.textContent;
-    const defsElGabc = document.createElementNS(nsGabc, 'defs');
-    defsElGabc.appendChild(styleElGabc);
-    svgElClone.insertBefore(defsElGabc, svgElClone.firstChild);
-  }
-  const svgData = new XMLSerializer().serializeToString(svgElClone);
-  const svgBlob = new Blob([svgData], {type:'image/svg+xml;charset=utf-8'});
-  const url = URL.createObjectURL(svgBlob);
-  const img = new Image();
-  img.onload = function() {
-    const canvas = document.createElement('canvas');
-    const scale = 2;
-    canvas.width = img.width*scale;
-    canvas.height = img.height*scale;
-    const cx = canvas.getContext('2d');
-    cx.fillStyle='#ffffff'; cx.fillRect(0,0,canvas.width,canvas.height);
-    cx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    URL.revokeObjectURL(url);
-    const doc = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    const pdfW = 277;
-    doc.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',10,10,pdfW,canvas.height/canvas.width*pdfW);
-    doc.save('GABC_Partitur.pdf');
-    gst('PDF exportiert');
-  };
-  img.onerror = ()=>gst('SVG-Bild-Fehler');
-  img.src = url;
-}
-
-// ── AUTO-RENDER ───────────────────────────────────────────────────
-// ── GABC panel drag-resize ─────────────────────────────────────────────
-(function() {
-  let dragging = false, startX = 0, startW = 0;
-  document.addEventListener('pointerdown', function(e) {
-    if (e.target.id !== 'gabc-drag-handle') return;
-    dragging = true;
-    startX = e.clientX;
-    startW = document.getElementById('gabc-input-panel').offsetWidth;
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-    e.preventDefault();
-  });
-  document.addEventListener('pointermove', function(e) {
-    if (!dragging) return;
-    const panel = document.getElementById('gabc-input-panel');
-    const newW = Math.max(180, Math.min(startW + (e.clientX - startX), window.innerWidth - 300));
-    panel.style.width = newW + 'px';
-    clearTimeout(window._gabcResizeTimer);
-    window._gabcResizeTimer = setTimeout(renderGABC, 120);
-  });
-  const _up = function() {
-    if (!dragging) return;
-    dragging = false;
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-    renderGABC();
-  };
-  document.addEventListener('pointerup', _up);
-  document.addEventListener('pointercancel', _up);
-})();
-
-setTimeout(()=>{
-  ['gabc-lyrics-inline','gabc-notes-inline','gabc-lyrics-sep','gabc-notes-sep'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.addEventListener('input',()=>{clearTimeout(window._grt);window._grt=setTimeout(renderGABC,700);});
-  });
-  document.getElementById('gabc-clef')?.addEventListener('change',renderGABC);
-  document.getElementById('gabc-zoom')?.addEventListener('change',renderGABC);
-},300);
 </script>
 </body></html>
