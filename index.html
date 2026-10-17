@@ -43,6 +43,8 @@ html,body{height:100%;overflow:hidden}
 #greg-panel.greg-view #greg-input-panel, #greg-panel.greg-view #greg-drag-handle{display:none !important}
 /* Orgel: Menü einklappen / Anzeigeansicht */
 #classic-panel.cl-menu-collapsed #cl-toolbar, #classic-panel.cl-menu-collapsed #cl-headrow, #classic-panel.cl-menu-collapsed #cl-info, #classic-panel.cl-view #cl-src-panel{display:none !important}
+/* Menü «kompakt»: nur Rückgängig, Grundton/Oktave, Begleitsatz, Breite */
+#classic-panel.cl-menu-compact #cl-toolbar > :not(.cl-ess), #classic-panel.cl-menu-compact #cl-headrow, #classic-panel.cl-menu-compact #cl-info{display:none !important}
 #classic-panel.cl-view text.cl-text{pointer-events:none}
 .nt-playing, .nt-playing path, .nt-playing text{fill:#c0392b !important;stroke:#c0392b}
 body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
@@ -443,6 +445,7 @@ input[type=file]{display:none}
     <span class="nt-o-title" id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
     <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b nt-o-view" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
+    <button class="b nt-o-view" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü: voll → kompakt → ausgeblendet">&#9776;<span class="nt-lbl"> Menü</span></button>
 <select class="nt-play-sec nt-pm nt-o-play" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="cl" onclick="ntPlayStartTone('cl')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn nt-pm nt-o-play" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
@@ -450,31 +453,31 @@ input[type=file]{display:none}
     <span class="nt-o-break"></span>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-    <button class="b" onclick="clUndo()" style="font-size:11px;padding:3px 8px" title="Orgel: letzte Änderung rückgängig (Strg+Z)">&#8617;</button>
-    <button class="b" onclick="clRedo()" style="font-size:11px;padding:3px 8px" title="Orgel: wiederholen (Strg+Y)">&#8618;</button>
+    <button class="b cl-ess" onclick="clUndo()" style="font-size:11px;padding:3px 8px" title="Orgel: letzte Änderung rückgängig (Strg+Z)">&#8617;</button>
+    <button class="b cl-ess" onclick="clRedo()" style="font-size:11px;padding:3px 8px" title="Orgel: wiederholen (Strg+Y)">&#8618;</button>
     <button class="b" onclick="clRegenerate()" style="font-size:11px;padding:3px 8px" title="Klassische Fassung neu aus dem aktuellen Choral erzeugen">&#8635; Aus Choral übernehmen</button>
     <span style="color:#3a4a30">|</span>
-    <label id="cl-sec-wrap" style="font-size:11px;color:#e0c070;display:none;align-items:center;gap:4px" title="Grundton, Oktave, Titel, Untertitel und Kopfzeile gelten für den hier gewählten Abschnitt">Einstellungen für
+    <label class="cl-ess" id="cl-sec-wrap" style="font-size:11px;color:#e0c070;display:none;align-items:center;gap:4px" title="Grundton, Oktave, Titel, Untertitel und Kopfzeile gelten für den hier gewählten Abschnitt">Einstellungen für
       <select id="cl-sec-sel" onchange="clSelectSection(this.value)" style="font-size:11px;background:#0a1406;color:#e0c070;border:1px solid #6a5a30;padding:2px"></select></label>
-    <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Grundton
+    <label class="cl-ess" style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Grundton
       <select id="cl-target" onchange="clSetTarget(this.value)" style="font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:2px"></select></label>
-    <button class="b" id="cl-target-all" onclick="clTargetToAll()" style="font-size:10px;padding:2px 6px;display:none" title="Diesen Grundton für alle Abschnitte übernehmen (danach je Abschnitt weiter einzeln änderbar)">&#8594; alle Abschnitte</button>
-    <span style="font-size:11px;color:#a8d878">Oktave</span>
-    <button class="b" onclick="clSetOctave(-1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave tiefer">&minus;</button>
-    <span id="cl-oct" style="font-size:11px;color:#c0d890;min-width:18px;text-align:center">0</span>
-    <button class="b" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button>
+    <button class="b cl-ess" id="cl-target-all" onclick="clTargetToAll()" style="font-size:10px;padding:2px 6px;display:none" title="Diesen Grundton für alle Abschnitte übernehmen (danach je Abschnitt weiter einzeln änderbar)">&#8594; alle Abschnitte</button>
+    <span class="cl-ess" style="font-size:11px;color:#a8d878">Oktave</span>
+    <button class="b cl-ess" onclick="clSetOctave(-1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave tiefer">&minus;</button>
+    <span class="cl-ess" id="cl-oct" style="font-size:11px;color:#c0d890;min-width:18px;text-align:center">0</span>
+    <button class="b cl-ess" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button>
     <span style="color:#3a4a30">|</span>
     <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
-    <button class="b" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button>
+    <button class="b cl-ess" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button>
     <button class="b" id="cl-flat-btn" onclick="clToggleFlatScope()" style="font-size:11px;padding:3px 8px" title="Gültigkeit eines b-Vorzeichens aus dem Choral: bis zum nächsten Trennstrich (Standard – auch über Wortgrenzen) oder streng nach Solesmes nur bis Wortende">♭ gilt bis Trennstrich</button>
     <button class="b" id="cl-pedal-btn" onclick="clTogglePedal()" style="font-size:11px;padding:3px 8px;display:none" title="Bass als eigenes Pedalsystem (Orgelsatz mit 3 Systemen) oder im unteren Manualsystem">Pedal: im Bass-System</button>
     <button class="b" onclick="clResetChords()" style="font-size:11px;padding:3px 8px" title="Von Hand gewählte Akkorde zurücksetzen">&#8634; Akkorde</button>
     <button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Freitext einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Text</button>
     <span style="color:#3a4a30">|</span>
-    <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)">Breite
-      <input type="range" id="cl-width" min="300" max="1600" step="10" oninput="clSetWidth(this.value)" style="width:110px;accent-color:#5a8a40"></label>
-    <span id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:70px"></span>
-    <button class="b" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button>
+    <label class="cl-ess" style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)">Breite
+      <input type="range" id="cl-width" min="160" max="1600" step="10" oninput="clSetWidth(this.value)" style="width:110px;accent-color:#5a8a40"></label>
+    <span class="cl-ess" id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:70px"></span>
+    <button class="b cl-ess" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button>
     <span style="color:#3a4a30">|</span>
     <button class="b" onclick="clExportMenu(this)" style="font-size:11px;padding:3px 8px" title="Für andere Notenprogramme exportieren (ABC, MusicXML)">&#8595; Exportieren &#9662;</button>
     <span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
@@ -7302,7 +7305,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '300';
+const NOTATOR_BUILD_ID = '301';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15989,7 +15992,7 @@ function clBuild(extra) {
   const sw = clScoreWidth();
   const headers = list.map((x, i) => Object.assign({}, clEffectiveHead(i), { left: clCfg(i).left, right: clCfg(i).right }));
   const sectionOpts = list.map((x, i) => ({ targetPc: clCfg(i).targetPc, octave: clCfg(i).octave || 0 }));
-  return clGabcToAbc(list, { sectionOpts, targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(18, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks, lineBreaks: clState.lineBreaks, playRests: !!(extra && extra.playRests) });
+  return clGabcToAbc(list, { sectionOpts, targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(10, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks, lineBreaks: clState.lineBreaks, playRests: !!(extra && extra.playRests) });
 }
 
 function clFillTargetSelect() {
@@ -16129,7 +16132,15 @@ function clRenderInner() {
   const src = document.getElementById('cl-src');
   if (src && document.activeElement !== src) src.value = abc;
   const sw = clScoreWidth();
-  const vs = ntViewScale('cl');
+  let vs = ntViewScale('cl');
+  // Handy: kleinere Breite als der Bildschirm = weniger Noten pro Zeile, dafür
+  // grösser – das Notenbild wird auf die Bildschirmbreite vergrössert (nur Anzeige)
+  if (clState.width && gregIsMobileViewport() && !ntViewScale._override) {
+    const wrap = document.getElementById('cl-score-wrap');
+    const avail = wrap ? wrap.clientWidth - 24 : 0;
+    const f = avail / (sw * vs + 40);
+    if (f > 1) vs *= f;
+  }
   el.style.width = Math.round(sw * vs + 40) + 'px';
   window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clLast && !clUi().view) ? clChordClick : null);
   if (vs !== 1) el.querySelectorAll('.cl-tune > svg').forEach(svg => {
@@ -16147,6 +16158,7 @@ function clRenderInner() {
 function clUi() {
   let u = null; try { u = JSON.parse(localStorage.getItem('notatorClUi') || 'null'); } catch (e) {}
   if (!u) u = { view: gregIsMobileViewport(), menu: !gregIsMobileViewport() };
+  if (u.lvl == null) u.lvl = gregIsMobileViewport() ? 1 : 2; // Menü im Bearbeiten: 2 voll, 1 kompakt, 0 aus
   return u;
 }
 function clSaveUi(u) { try { localStorage.setItem('notatorClUi', JSON.stringify(u)); } catch (e) {} }
@@ -16154,16 +16166,22 @@ function clApplyUi() {
   const u = clUi(), p = document.getElementById('classic-panel');
   if (!p) return;
   p.classList.toggle('cl-view', !!u.view);
-  p.classList.toggle('cl-menu-collapsed', !!u.view); // Anzeige = ohne Menü, Bearbeiten = mit Menü
+  p.classList.toggle('cl-menu-collapsed', !!u.view || u.lvl === 0); // Anzeige = ohne Menü
+  p.classList.toggle('cl-menu-compact', !u.view && u.lvl === 1);
   const mb = document.getElementById('cl-mode-btn'), nb = document.getElementById('cl-menu-btn');
   if (mb) mb.innerHTML = u.view ? '&#9998;<span class="nt-lbl"> Bearbeiten</span>' : '&#128065;<span class="nt-lbl"> Anzeige</span>';
-  if (nb) { nb.style.display = u.view ? 'none' : ''; nb.innerHTML = u.menu ? '&#9650; Menü' : '&#9660; Menü'; }
+  if (nb) {
+    nb.style.display = u.view ? 'none' : '';
+    nb.innerHTML = (u.lvl === 2 ? '&#9776;' : u.lvl === 1 ? '&#9776;&#189;' : '&#9776;&#8230;') + '<span class="nt-lbl"> Menü: ' + ['aus', 'kompakt', 'voll'][u.lvl] + '</span>';
+    nb.title = 'Menü ' + ['ausgeblendet', 'kompakt', 'voll'][u.lvl] + ' – tippen: ' + ['voll', 'aus', 'kompakt'][u.lvl];
+    nb.style.background = u.lvl === 2 ? '' : '#6a5a30'; nb.style.color = u.lvl === 2 ? '' : '#fff';
+  }
   const t = document.getElementById('cl-vb-title');
   if (t) { const h = clEffectiveHead(); t.textContent = h.title || 'Unbenanntes Stück'; }
   ntUpdateGbLinks();
 }
 function clToggleView() { const u = clUi(); u.view = !u.view; if (!u.view) u.menu = true; clSaveUi(u); clApplyUi(); clRender(); }
-function clToggleMenu() { const u = clUi(); u.menu = !u.menu; clSaveUi(u); clApplyUi(); if (!clState.width) clRender(); }
+function clToggleMenu() { const u = clUi(); u.lvl = u.lvl === 2 ? 1 : u.lvl === 1 ? 0 : 2; clSaveUi(u); clApplyUi(); if (!clState.width) clRender(); }
 
 // ── MusicXML-Export der Orgelfassung (für MuseScore, Sibelius, Finale …) ──
 // Erzeugt aus demselben internen Modell wie die Notenanzeige (nicht aus dem
@@ -18138,7 +18156,7 @@ function clSetOctave(delta) {
 //    die Seite auf A4-Breite, d.h. breiter = kleinere Noten, mehr pro Zeile)
 let _clWidthTimer = null;
 function clSetWidth(v) {
-  clState.width = Math.max(300, Math.min(2000, parseInt(v, 10) || 740));
+  clState.width = Math.max(160, Math.min(2000, parseInt(v, 10) || 740));
   clSyncControls();
   clearTimeout(_clWidthTimer);
   _clWidthTimer = setTimeout(clRender, 120);
