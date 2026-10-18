@@ -7305,7 +7305,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '302';
+const NOTATOR_BUILD_ID = '303';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -18669,6 +18669,11 @@ function addSvgPadding(svgEl, pad, neededTopPad, bottomPad) {
     svgEl.setAttribute('viewBox', (x-pad)+' '+(y-topPad)+' '+(w+pad*2)+' '+(h+topPad+botPad));
     svgEl.setAttribute('width', w+pad*2);
     svgEl.setAttribute('height', h+topPad+botPad);
+    // Wird das SVG per CSS (max-width) schmaler angezeigt als seine Breite
+    // (Handy), darf die Höhe mitschrumpfen und der Inhalt oben anliegen –
+    // sonst wird er vertikal zentriert und es entsteht oben Leerraum.
+    svgEl.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+    svgEl.style.height = 'auto';
     return topPad;
   } catch(e) { return pad * 2.5; }
 }
