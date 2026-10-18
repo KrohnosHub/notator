@@ -7305,7 +7305,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '301';
+const NOTATOR_BUILD_ID = '303';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15977,11 +15977,14 @@ function clTargetToAll() {
 function clSelectSection(v) { clSel = Math.max(0, Math.min(clSecCount() - 1, parseInt(v, 10) || 0)); clFillTargetSelect(); clSyncControls(); }
 
 function clScoreWidth() {
-  if (clState.width) return clState.width;
   const wrap = document.getElementById('cl-score-wrap');
+  if (clState.width) {
+    // Anpassen: gespeicherte Breite nur verwenden, wenn sie auf den Bildschirm passt
+    if (!(ntFit('cl') && wrap && wrap.clientWidth > 0 && clState.width * ntViewScale('cl') + 60 > wrap.clientWidth - 24)) return clState.width;
+  }
   // clientWidth enthält das Padding (2x12) des Wrappers; abcjs addiert
   // paddingleft/right (2x10) zur staffwidth -> Rest als Sicherheitsrand.
-  const w = wrap ? wrap.clientWidth - 24 - 20 - 16 : 740;
+  const w = wrap ? wrap.clientWidth - 24 - 20 - 16 - (ntFit('cl') ? 6 : 0) : 740;
   const vs = ntViewScale('cl'); // kleiner -> mehr Noten pro Zeile
   return Math.max(280, Math.min(w / vs, 1100 / Math.min(vs, 1)));
 }
@@ -17980,6 +17983,22 @@ function ntViewScale(src) {
   const v = o && o[src];
   return (typeof v === 'number' && v >= 0.3 && v <= 2) ? v : 1;
 }
+// Orgel: «An Seitenbreite anpassen» – ein gespeicherter, breiterer Zeilenumbruch
+// (clState.width) wird am Bildschirm ignoriert, sobald er nicht auf die Seite
+// passt (kein Seitwärts-Scrollen). Standard: ein auf dem Handy, sonst aus.
+// PDF/Druck (ntViewScale._override) bleibt unverändert.
+function ntFit(src) {
+  if (ntViewScale._override) return false;
+  let o = null; try { o = JSON.parse(localStorage.getItem('notatorViewScale') || 'null'); } catch (e) {}
+  const f = o && o.fit && o.fit[src];
+  return typeof f === 'boolean' ? f : (typeof gregIsMobileViewport === 'function' && gregIsMobileViewport());
+}
+function ntSetFit(src, on) {
+  let o = null; try { o = JSON.parse(localStorage.getItem('notatorViewScale') || 'null'); } catch (e) {}
+  o = o || {}; o.fit = o.fit || {}; o.fit[src] = !!on;
+  try { localStorage.setItem('notatorViewScale', JSON.stringify(o)); } catch (e) {}
+  if (src === 'greg') gregRender(); else clRender();
+}
 let _ntVsTimer = null;
 function ntSetViewScale(src, v) {
   let o = null; try { o = JSON.parse(localStorage.getItem('notatorViewScale') || 'null'); } catch (e) {}
@@ -18005,6 +18024,15 @@ function ntViewScalePop(btn) {
   const cur = Math.round(ntViewScale(src) * 100);
   d.innerHTML = '<span>Grösse</span><input type="range" min="40" max="160" step="5" value="' + cur + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
     '<span class="v" style="min-width:36px;text-align:right">' + cur + '%</span><button class="b" style="font-size:11px;padding:3px 6px" title="Zurück auf 100 %">100%</button>';
+  if (src === 'cl') {
+    const fl = document.createElement('label');
+    fl.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;cursor:pointer';
+    fl.title = 'Notenblatt auf Bildschirmbreite umbrechen, damit nicht seitwärts gescrollt werden muss (PDF unverändert)';
+    fl.innerHTML = '<input type="checkbox"' + (ntFit('cl') ? ' checked' : '') + ' style="accent-color:#5a8a40"> an Breite anpassen';
+    fl.querySelector('input').onchange = e => ntSetFit('cl', e.target.checked);
+    d.style.flexWrap = 'wrap';
+    d.appendChild(fl);
+  }
   document.body.appendChild(d);
   const inp = d.querySelector('input'), val = d.querySelector('.v');
   inp.oninput = () => { val.textContent = inp.value + '%'; ntSetViewScale(src, parseInt(inp.value, 10) / 100); };
@@ -18641,6 +18669,11 @@ function addSvgPadding(svgEl, pad, neededTopPad, bottomPad) {
     svgEl.setAttribute('viewBox', (x-pad)+' '+(y-topPad)+' '+(w+pad*2)+' '+(h+topPad+botPad));
     svgEl.setAttribute('width', w+pad*2);
     svgEl.setAttribute('height', h+topPad+botPad);
+    // Wird das SVG per CSS (max-width) schmaler angezeigt als seine Breite
+    // (Handy), darf die Höhe mitschrumpfen und der Inhalt oben anliegen –
+    // sonst wird er vertikal zentriert und es entsteht oben Leerraum.
+    svgEl.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+    svgEl.style.height = 'auto';
     return topPad;
   } catch(e) { return pad * 2.5; }
 }
