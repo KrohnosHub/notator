@@ -7307,7 +7307,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '304';
+const NOTATOR_BUILD_ID = '305';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15296,6 +15296,7 @@ function clTransCost(p, s, spPrev, sCur, cSeg) {
 // opts: { targetPc (0-11 oder null = Original), octave (int), charsPerLine, headers:[{title,subtitle}],
 //         accomp (bool: Begleitsatz), chordOverrides ({segKey: Stufe relativ zur Finalis}) }
 // liefert { abc, liqChars:[startChar...], info }
+var NT_LB_PAD = 11.5; // Platzhalterbreite je Breiteneinheit des Zeilenumbruchs (px)
 function clGabcToAbc(gabcList, opts) {
   opts = opts || {};
   const tunes = [];
@@ -15429,11 +15430,12 @@ function clGabcToAbc(gabcList, opts) {
       if (u.kind === 'syl') uw = Math.max(u.notes.reduce((a, n) => a + (n.dur >= 2 ? 2.2 : 1.8), 0), (u.text || '').length * 0.9) + 1;
       else uw = u.t === 'minima' ? 1 : 2;
       if (u.kind === 'syl' && line.some(x => x.kind === 'syl') && (u.lbWant || w + uw > cap)) {
+        line._w = w; line._forced = !!u.lbWant && w + uw <= cap; // fester Umbruch vor vollem Zeilenende
         lines.push(line); line = []; w = 0;
       }
       line.push(u); w += uw;
     });
-    if (line.length) lines.push(line);
+    if (line.length) { line._w = w; lines.push(line); }
     lines.forEach(ln => { const f = ln.find(x => x.kind === 'syl'); if (f) f.lbStart = true; });
 
     // Begleitsatz: Abschnitte (Akkordwechsel an Schwerpunkten) bilden + harmonisieren
@@ -15677,6 +15679,13 @@ function clGabcToAbc(gabcList, opts) {
           music += ' ' + annTxt; addLow(spacerOnly(annTxt));
         }
       });
+      // Fester Zeilenumbruch (Choral ⏎ / Orgel): abcjs würde die kurze Zeile auf
+      // die ganze Breite ziehen – unsichtbarer Platzhalter am Ende hält die Noten
+      // in normalem Abstand, der Rest der Notenlinie bleibt leer.
+      if (ln._forced && ln._w < cap * 0.85) {
+        const pad = ' y' + Math.max(1, Math.round((cap - ln._w) * NT_LB_PAD));
+        music += pad; addLow(pad);
+      }
       const sPrefix = opts.accomp ? '[V:S] ' : '';
       const lead = music.length - music.trimStart().length;
       const lineStart = abcAll.length + head.length + body.length + sPrefix.length - lead;
