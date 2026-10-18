@@ -1601,7 +1601,7 @@ function gregRenderSectionPreview(sec, container) {
             svgEl.setAttribute('width',  String(Math.round(finalW * zoom)));
             svgEl.setAttribute('height', String(Math.round(finalH * zoom)));
           }
-          svgEl.style.cssText = 'background:transparent;display:block;pointer-events:none;max-width:100%;';
+          svgEl.style.cssText = 'background:transparent;display:block;pointer-events:none;max-width:100%;height:auto;';
         }
         // Comments are embedded directly into the svg's own coordinate
         // system (see gregEmbedCommentsIntoSvg) — no longer sensitive to
@@ -1811,7 +1811,7 @@ function gregRenderGABCInto(gabc, wrap, cb) {
             svgEl.setAttribute('width',  String(Math.round(finalW * zoom)));
             svgEl.setAttribute('height', String(Math.round(finalH * zoom)));
           }
-          svgEl.style.cssText = 'background:transparent;display:block;cursor:crosshair;max-width:100%;';
+          svgEl.style.cssText = 'background:transparent;display:block;cursor:crosshair;max-width:100%;height:auto;';
         }
         if (cb) cb(svgEl, score);
       });
@@ -7307,7 +7307,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '306';
+const NOTATOR_BUILD_ID = '307';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15737,7 +15737,7 @@ function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick) {
       add_classes: true,
       clickListener: onNoteClick ? function(abcelem, tuneNumber, classes, analysis, drag, ev) { onNoteClick(st + (abcelem.startChar || 0), ev, st + (abcelem.endChar || abcelem.startChar || 0)); } : undefined,
       staffwidth: staffwidth || 740,
-      paddingleft: 10, paddingright: 10, paddingbottom: 20,
+      paddingleft: 10, paddingright: 10, paddingbottom: 6, // unten wenig Rand: Abstand zum nächsten Abschnitt wie im Choral
       format: { titlefont: '"Palatino Linotype", Palatino, serif 18', subtitlefont: '"Palatino Linotype", Palatino, serif 13', composerfont: '"Palatino Linotype", Palatino, serif 11 italic', infofont: '"Palatino Linotype", Palatino, serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: '"Palatino Linotype", Palatino, serif 13' },
     });
     const liq = new Set((liqChars || []).filter(c => c >= st && c < en).map(c => c - st));
@@ -15771,6 +15771,10 @@ function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick) {
     }
     const grand = /%%score/.test(part);
     div.querySelectorAll('svg').forEach(sv => { clPlaceLyricAnnotations(sv, grand); clSystemEndLines(sv); clTightenHeader(sv); });
+    // abcjs fixiert die Höhe des Containers auf die ursprüngliche SVG-Höhe;
+    // nach clTightenHeader ist das SVG niedriger -> sonst Leerraum zwischen
+    // den Abschnitten (Höhe folgt jetzt dem SVG).
+    div.style.height = 'auto';
     all.push(...tunes);
   });
   return all;
