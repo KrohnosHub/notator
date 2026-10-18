@@ -476,6 +476,8 @@ input[type=file]{display:none}
     <span style="color:#3a4a30">|</span>
     <label class="cl-ess" style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)">Breite
       <input type="range" id="cl-width" min="160" max="1600" step="10" oninput="clSetWidth(this.value)" style="width:110px;accent-color:#5a8a40"></label>
+    <button class="b cl-ess" onclick="clWidthStep(-20)" style="font-size:11px;padding:2px 7px" title="Breite verkleinern (weniger Noten pro Zeile)">&minus;</button>
+    <button class="b cl-ess" onclick="clWidthStep(20)" style="font-size:11px;padding:2px 7px" title="Breite vergrössern (mehr Noten pro Zeile)">+</button>
     <span class="cl-ess" id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:70px"></span>
     <button class="b cl-ess" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button>
     <span style="color:#3a4a30">|</span>
@@ -7305,7 +7307,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '303';
+const NOTATOR_BUILD_ID = '304';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15980,7 +15982,8 @@ function clScoreWidth() {
   const wrap = document.getElementById('cl-score-wrap');
   if (clState.width) {
     // Anpassen: gespeicherte Breite nur verwenden, wenn sie auf den Bildschirm passt
-    if (!(ntFit('cl') && wrap && wrap.clientWidth > 0 && clState.width * ntViewScale('cl') + 60 > wrap.clientWidth - 24)) return clState.width;
+    // Ausnahme: Breite wurde auf diesem Gerät gerade von Hand eingestellt -> gilt (Anzeige wird eingepasst)
+    if (window._clWidthTouched || !(ntFit('cl') && wrap && wrap.clientWidth > 0 && clState.width * ntViewScale('cl') + 60 > wrap.clientWidth - 24)) return clState.width;
   }
   // clientWidth enthält das Padding (2x12) des Wrappers; abcjs addiert
   // paddingleft/right (2x10) zur staffwidth -> Rest als Sicherheitsrand.
@@ -16049,6 +16052,7 @@ function clSyncControls() {
   const wr = document.getElementById('cl-width');
   const wv = document.getElementById('cl-width-val');
   const w = clScoreWidth();
+  if (wr) wr.max = gregIsMobileViewport() ? 1000 : 1600; // Handy: feinere Regelung
   if (wr && document.activeElement !== wr) wr.value = w;
   if (wv) wv.textContent = clState.width ? w + ' px' : 'Auto (' + w + ' px)';
   const h = clEffectiveHead(clSel);
@@ -16067,7 +16071,7 @@ function clSyncControls() {
 // Jede Darstellung (clRender) vergleicht den Orgelzustand mit dem zuletzt
 // gesehenen; hat er sich geändert, kommt der alte Zustand auf den Stapel.
 const _clUndo = { last: null, stack: [], redo: [] };
-function clUndoReset() { _clUndo.last = null; _clUndo.stack = []; _clUndo.redo = []; }
+function clUndoReset() { window._clWidthTouched = false; _clUndo.last = null; _clUndo.stack = []; _clUndo.redo = []; }
 function clUndoTrack() {
   if (window._ntMappeBusy) return;
   const sig = JSON.stringify(clState);
@@ -16138,11 +16142,13 @@ function clRenderInner() {
   let vs = ntViewScale('cl');
   // Handy: kleinere Breite als der Bildschirm = weniger Noten pro Zeile, dafür
   // grösser – das Notenbild wird auf die Bildschirmbreite vergrössert (nur Anzeige)
-  if (clState.width && gregIsMobileViewport() && !ntViewScale._override) {
+  // Von Hand eingestellte Breite mit «An Seitenbreite anpassen»: breiter als der
+  // Bildschirm = mehr Noten pro Zeile, verkleinert eingepasst (kein Seitwärts-Scrollen)
+  if (clState.width && !ntViewScale._override && (gregIsMobileViewport() || (ntFit('cl') && window._clWidthTouched))) {
     const wrap = document.getElementById('cl-score-wrap');
     const avail = wrap ? wrap.clientWidth - 24 : 0;
     const f = avail / (sw * vs + 40);
-    if (f > 1) vs *= f;
+    if (f > 1 || (f > 0 && f < 1 && ntFit('cl') && window._clWidthTouched)) vs *= f;
   }
   el.style.width = Math.round(sw * vs + 40) + 'px';
   window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clLast && !clUi().view) ? clChordClick : null);
@@ -18184,12 +18190,14 @@ function clSetOctave(delta) {
 //    die Seite auf A4-Breite, d.h. breiter = kleinere Noten, mehr pro Zeile)
 let _clWidthTimer = null;
 function clSetWidth(v) {
+  window._clWidthTouched = true; // Nutzer stellt die Breite bewusst ein -> nicht durch «Anpassen» übersteuern
   clState.width = Math.max(160, Math.min(2000, parseInt(v, 10) || 740));
   clSyncControls();
   clearTimeout(_clWidthTimer);
   _clWidthTimer = setTimeout(clRender, 120);
 }
-function clWidthAuto() { clState.width = null; clRender(); }
+function clWidthStep(dv) { clSetWidth(clScoreWidth() + dv); }
+function clWidthAuto() { clState.width = null; window._clWidthTouched = false; clRender(); }
 
 // ── Titel / Untertitel der klassischen Fassung ─────────────────────
 let _clHeadTimer = null;
