@@ -7307,7 +7307,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '305';
+const NOTATOR_BUILD_ID = '306';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15630,7 +15630,7 @@ function clGabcToAbc(gabcList, opts) {
         }
         if (u.kind === 'syl') {
           music += ' ';
-          if (annTxt) { music += annTxt + ' '; addLow(spacerOnly(annTxt)); }
+          if (annTxt) { music += annTxt + ' '; addLow(spacerOnly(annTxt)); lyr.push('*'); } // abcjs vergibt «*» auch an Platzhalter (y)
           const multi = u.notes.length > 1;
           if (multi) music += '(';
           const sylStartPos = music.length;
@@ -15642,6 +15642,7 @@ function clGabcToAbc(gabcList, opts) {
             const needAcc = shown !== nt.pitch.alt;
             if (needAcc) measureAcc[key] = nt.pitch.alt;
             const parts = clAbcLen(nt.dur);
+            nt._np = parts.length; // übergebundene Teilnoten belegen in abcjs je eine Textsilbe
             let s = '';
             if (nt.ten && !nt.lng) s += '!tenuto!';
             parts.forEach((p, pi) => {
@@ -15658,25 +15659,28 @@ function clGabcToAbc(gabcList, opts) {
           // Lyrics: erste Note = Silbe, weitere Noten = "_" (Silbe gehalten)
           if (u.text) lyr.push(clAbcEscapeLyric(u.text) + (u.hyphen ? '-' : ''));
           else lyr.push('*');
-          for (let k = 1; k < u.notes.length; k++) lyr.push(u.hyphen || !u.text ? '*' : '_');
+          for (let k = 0; k < u.notes.length; k++) {
+            if (k > 0) lyr.push(u.hyphen || !u.text ? '*' : '_');
+            for (let q = 1; q < (u.notes[k]._np || 1); q++) lyr.push('*'); // Bindebogen-Fortsetzung: Silbe nicht verschieben
+          }
           u._notesRef = u.notes;
           lastLyricLen = u.notes.length > 1 ? 0 : (u.text || '').length;
         } else if (u.kind === 'bar') {
-          if (annTxt) { music += ' ' + annTxt; addLow(spacerOnly(annTxt)); }
+          if (annTxt) { music += ' ' + annTxt; addLow(spacerOnly(annTxt)); lyr.push('*'); }
           // Wiedergabe (opts.playRests): Divisiones als unsichtbare Pausen
           // (x), damit nicht über die Atempause hinweggespielt wird.
           // Dauer in Achteln: minima 2, minor 2, maior 2, finalis 3.
           const pr = opts.playRests && !u.final ? (u._held ? (u._rest || 0) : (({ minima: 2, minor: 2, maior: 2 })[u.t] || 3)) : 0;
-          if (u.t === 'minima' && !u.final) { music += pr ? ' !breath!x' + pr : ' !breath!y'; addLow(pr ? ' x' + pr : ' y'); }
+          if (u.t === 'minima' && !u.final) { music += pr ? ' !breath!x' + pr : ' !breath!y'; addLow(pr ? ' x' + pr : ' y'); lyr.push('*'); }
           else {
-            if (pr) { const xr = ' x' + (pr > 1 ? pr : ''); music += xr; addLow(xr); }
+            if (pr) { const xr = ' x' + (pr > 1 ? pr : ''); music += xr; addLow(xr); lyr.push('*'); }
             const bs = ' ' + (u.final ? '|]' : u.t === 'minor' ? '|' : '||');
             music += bs; measureAcc = {}; addLow(bs);
             lowAcc.A = {}; lowAcc.T = {}; lowAcc.B = {};
           }
-          if (annAfter && !u.final && !barAtLineEnd) { music += annAfter; addLow(annAfter); }
+          if (annAfter && !u.final && !barAtLineEnd) { music += annAfter; addLow(annAfter); lyr.push('*'); }
         } else if (u.kind === 'ann') {
-          music += ' ' + annTxt; addLow(spacerOnly(annTxt));
+          music += ' ' + annTxt; addLow(spacerOnly(annTxt)); lyr.push('*');
         }
       });
       // Fester Zeilenumbruch (Choral ⏎ / Orgel): abcjs würde die kurze Zeile auf
@@ -15684,7 +15688,7 @@ function clGabcToAbc(gabcList, opts) {
       // in normalem Abstand, der Rest der Notenlinie bleibt leer.
       if (ln._forced && ln._w < cap * 0.85) {
         const pad = ' y' + Math.max(1, Math.round((cap - ln._w) * NT_LB_PAD));
-        music += pad; addLow(pad);
+        music += pad; addLow(pad); lyr.push('*');
       }
       const sPrefix = opts.accomp ? '[V:S] ' : '';
       const lead = music.length - music.trimStart().length;
