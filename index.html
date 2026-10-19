@@ -7307,7 +7307,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '307';
+const NOTATOR_BUILD_ID = '308';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15995,8 +15995,15 @@ function clTargetToAll() {
 }
 function clSelectSection(v) { clSel = Math.max(0, Math.min(clSecCount() - 1, parseInt(v, 10) || 0)); clFillTargetSelect(); clSyncControls(); }
 
+// Handy: ohne eigene Breite gilt 950 px (Nutzerwunsch 2026-10-19) -- das
+// Notenbild wird auf die Bildschirmbreite eingepasst (nur Anzeige, PDF wie bisher).
+const CL_MOBILE_DEFAULT_W = 950;
+// Gilt auch, wenn das Stück eine (am Computer gespeicherte) Breite mitbringt; erst
+// eine auf dem Handy von Hand eingestellte Breite übersteuert sie.
+function clMobileDefaultW() { return (!window._clWidthTouched && !ntViewScale._override && typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) ? CL_MOBILE_DEFAULT_W : 0; }
 function clScoreWidth() {
   const wrap = document.getElementById('cl-score-wrap');
+  if (clMobileDefaultW()) return CL_MOBILE_DEFAULT_W;
   if (clState.width) {
     // Anpassen: gespeicherte Breite nur verwenden, wenn sie auf den Bildschirm passt
     // Ausnahme: Breite wurde auf diesem Gerät gerade von Hand eingestellt -> gilt (Anzeige wird eingepasst)
@@ -16161,11 +16168,12 @@ function clRenderInner() {
   // grösser – das Notenbild wird auf die Bildschirmbreite vergrössert (nur Anzeige)
   // Von Hand eingestellte Breite mit «An Seitenbreite anpassen»: breiter als der
   // Bildschirm = mehr Noten pro Zeile, verkleinert eingepasst (kein Seitwärts-Scrollen)
-  if (clState.width && !ntViewScale._override && (gregIsMobileViewport() || (ntFit('cl') && window._clWidthTouched))) {
+  const mobDef = clMobileDefaultW();
+  if ((clState.width || mobDef) && !ntViewScale._override && (gregIsMobileViewport() || (ntFit('cl') && window._clWidthTouched))) {
     const wrap = document.getElementById('cl-score-wrap');
     const avail = wrap ? wrap.clientWidth - 24 : 0;
-    const f = avail / (sw * vs + 40);
-    if (f > 1 || (f > 0 && f < 1 && ntFit('cl') && window._clWidthTouched)) vs *= f;
+    const f = (avail - 40) / (sw * vs); // Ergebnis: sw*vs+40 = avail (kein Seitwärts-Scrollen)
+    if (f > 1 || (f > 0 && f < 1 && (mobDef || (ntFit('cl') && window._clWidthTouched)))) vs *= f;
   }
   el.style.width = Math.round(sw * vs + 40) + 'px';
   window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clLast && !clUi().view) ? clChordClick : null);
@@ -18579,10 +18587,13 @@ function clExportPDF() {
   // PDF die Bildschirmbreite übernehmen (riesige Noten, viele Seiten).
   // Dann für den Export einmalig in Standard-Druckbreite neu setzen.
   // Ebenso bei verkleinerter/vergrösserter Anzeige: PDF immer in Originalgrösse.
-  if (!clExportPDF._printPass && (ntViewScale('cl') !== 1 || (!clState.width && clScoreWidth() < 700))) {
-    clExportPDF._printPass = true; ntViewScale._override = true;
+  // Handy-Standardbreite (950, nur Anzeige): PDF weiterhin in Standard-Druckbreite 740.
+  const mobDef = clMobileDefaultW();
+  // Ebenso, wenn «An Seitenbreite anpassen» die gespeicherte Breite am Bildschirm übersteuert.
+  if (!clExportPDF._printPass && (mobDef || ntViewScale('cl') !== 1 || (!clState.width && clScoreWidth() < 700) || (clState.width && clScoreWidth() !== clState.width))) {
     const oldW = clState.width;
-    if (!clState.width && clScoreWidth() < 700) clState.width = 740;
+    if (!clState.width && (mobDef || clScoreWidth() < 700)) clState.width = 740;
+    clExportPDF._printPass = true; ntViewScale._override = true;
     clRender();
     try { clExportPDF(); } finally { clExportPDF._printPass = false; ntViewScale._override = false; clState.width = oldW; setTimeout(clRender, 50); }
     return;
