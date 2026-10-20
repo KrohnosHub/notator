@@ -4746,6 +4746,13 @@ function gregGbPreviewInto(container, gabc) {
           svg.removeAttribute('width'); svg.removeAttribute('height');
           svg.style.cssText = 'display:block;width:100%;height:auto;max-height:90px';
           svg.setAttribute('preserveAspectRatio', 'xMinYMid meet');
+          // feste Pixelhöhe statt height:auto (Seitenverhältnis-abhängige Höhe verrechnete sich im Button
+          // → Folgeelemente ("Weitere Treffer laden") überlappten die letzte Vorschau)
+          try {
+            const vb = (svg.getAttribute('viewBox') || '').split(/\s+/).map(parseFloat);
+            const w = container.clientWidth || container.getBoundingClientRect().width;
+            if (vb.length === 4 && vb[2] > 0 && w > 0) { svg.style.height = Math.min(90, Math.max(20, Math.round(w * vb[3] / vb[2]))) + 'px'; svg.style.maxHeight = 'none'; }
+          } catch (e) {}
           resolve();
         });
       });
@@ -4764,6 +4771,8 @@ function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel, similar) {
     const listEl = document.createElement('div');
     bEl.appendChild(listEl);
     const moreWrap = document.createElement('div');
+    moreWrap.style.cssText = 'flex-shrink:0;position:relative;margin-top:6px';
+    listEl.style.cssText = 'flex-shrink:0';
     bEl.appendChild(moreWrap);
     function renderMoreRow() {
       moreWrap.innerHTML = '';
@@ -4796,7 +4805,7 @@ function gregPickGregoBaseMatchModal(matches, incipit, noneBtnLabel, similar) {
         t2.textContent = 'Quelle wird geladen …';
         // Notenvorschau: Anfang des Stücks, selbst gesetzt (Fallback: Bild von GregoBase, ganz eingepasst)
         const pv = document.createElement('div');
-        pv.style.cssText = 'margin-top:3px;background:#fff;border-radius:2px;overflow:hidden;min-height:20px;max-width:100%';
+        pv.style.cssText = 'margin-top:3px;background:#fff;border-radius:2px;overflow:hidden;min-height:20px;max-width:100%;contain:paint';
         pv.textContent = '';
         const imgFallback = () => {
           pv.innerHTML = '';
@@ -7307,7 +7316,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '308';
+const NOTATOR_BUILD_ID = '309';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
