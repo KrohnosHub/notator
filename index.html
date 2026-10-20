@@ -7316,7 +7316,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '309';
+const NOTATOR_BUILD_ID = '310';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14755,6 +14755,7 @@ function clCleanText(t) {
 // events: {k:'note', D, alt, dur, ten, liq, quil, sylStart, text, wordEnd, hyphen}
 //         {k:'bar', t:'minima'|'minor'|'maior'|'finalis'}
 //         {k:'text', text}   (Silbe ohne Noten, z.B. "iij.", "Ant.", "*")
+const CL_VR_RE = /^\s*(?:[VR]\s*\/|[℣℟])/;
 function clParseGabc(gabc, popts) {
   const flatToBar = !!(popts && popts.flatToBar); // ♭ gilt bis zum nächsten Trennstrich statt bis Wortende
   const out = { title: '', subtitle: '', annotation: '', mode: '', events: [] };
@@ -15399,8 +15400,12 @@ function clGabcToAbc(gabcList, opts) {
         cur.notes.push({ pitch, oD: e.D, dur: lng ? 2 : e.dur, ten: e.ten, liq: e.liq, pq: !!e.preQuil, lng });
       } else if (e.k === 'bar') {
         flush();
-        units.push({ kind: 'bar', t: e.t, ann: pendingAnn });
-        pendingAnn = [];
+        // Vorsänger-/Antwortzeichen (V/., R/., ℣, ℟) unter einem Trennstrich
+        // gehören zum folgenden Abschnitt: hinter den Strich, direkt vor die
+        // erste Silbe (wandert bei einem Zeilenumbruch mit dieser Silbe mit).
+        const vr = pendingAnn.filter(t => CL_VR_RE.test(t));
+        units.push({ kind: 'bar', t: e.t, ann: pendingAnn.filter(t => !CL_VR_RE.test(t)) });
+        pendingAnn = vr;
       } else if (e.k === 'text') {
         pendingAnn.push(e.text);
       } else if (e.k === 'brk') {
@@ -15410,6 +15415,16 @@ function clGabcToAbc(gabcList, opts) {
     });
     flush();
     if (pendingAnn.length) units.push({ kind: 'ann', ann: pendingAnn });
+    // V/. am Ende einer Silbe (z.B. "ia. V/." vor dem Doppelstrich) ebenfalls
+    // abtrennen und vor die erste Silbe des nächsten Abschnitts setzen.
+    units.forEach((u, k) => {
+      if (u.kind !== 'syl' || !u.text) return;
+      const mm = /^(.*\S)\s+((?:[VR]\s*\/|[℣℟])\.?)\s*$/.exec(u.text);
+      if (!mm) return;
+      const nx = units.slice(k + 1).find(x => x.kind === 'syl');
+      if (!nx || !units.slice(k + 1, units.indexOf(nx)).some(x => x.kind === 'bar')) return;
+      u.text = mm[1]; nx.ann = [mm[2]].concat(nx.ann || []);
+    });
     // letzte Divisio am Ende -> Schlussstrich
     for (let k = units.length - 1; k >= 0; k--) {
       if (units[k].kind === 'bar') { units[k].final = true; break; }
