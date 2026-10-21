@@ -361,6 +361,7 @@ input[type=file]{display:none}
         <button class="b" onclick="gregSetAccidental('x')" style="font-size:10px;padding:0px 5px" title="b molle (Halbton tiefer) — gilt für nächste Note">b&#x266D;</button>
         <button class="b" onclick="gregSetAccidental('#')" style="font-size:10px;padding:0px 5px" title="Diesis (Halbton höher) — gilt für nächste Note">&#x266F;</button>
         <button class="b" onclick="gregSetAccidental('y')" style="font-size:10px;padding:0px 5px" title="Auflösungszeichen — gilt für nächste Note">&#x266E;</button>
+        <select id="greg-acc-pos" title="Vorzeichen vor welcher Note der nächsten Neume (z.B. b auf der 2. Note einer Clivis); «auto» = wie bisher" style="display:none;font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px"><option value="">auto</option><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option><option value="4">auf N4</option></select>
         <button class="b" onclick="gregAddDirective('Ant.')" style="font-size:10px;padding:0px 5px" title="Ant. (Antiphon-Rubrik, kursiv, eigene Silbe ohne Note)"><i>Ant.</i></button>
         <button class="b" onclick="gregAddDirective('Ps.')" style="font-size:10px;padding:0px 5px" title="Ps. (Psalm-Rubrik, kursiv, eigene Silbe ohne Note)"><i>Ps.</i></button>
         <button class="b" onclick="gregAddDirective('ij.')" style="font-size:10px;padding:0px 5px" title="ij. (Doppel-Antiphon, kursiv)"><i>ij.</i></button>
@@ -664,6 +665,15 @@ function gregRawNoteSig(n) {
   return [n.pitch, n.shape || 0, !!n.episema, !!n.ictus, n.ictusPos || '', !!n.liquescent, !!n.mora].join('|');
 }
 
+// Note (1-basiert), vor der das Vorzeichen steht: gespeichert, aus der
+// importierten Tonhöhe abgeleitet oder wie bisher geschätzt (Clivis: 1. Note,
+// sonst 2. Note bei mehrtönigen Neumen).
+function gregAccPosOf(e) {
+  const ps = (e.pitches || []).map(x => String(x).toLowerCase());
+  if (e.accidentalPos) return e.accidentalPos;
+  if (e.accidentalPitch) { const k = ps.indexOf(String(e.accidentalPitch).toLowerCase()); return k >= 0 ? k + 1 : 0; }
+  return ps.length > 1 && e.neume !== 'clivis' ? 2 : 1;
+}
 function buildSingleNeumeGABC(e) {
   // ── New path: use precise per-note data if available ──────────
   if (e.notes && e.notes.length) {
@@ -937,6 +947,10 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
 
     function pushAccidentalGroup(e) {
       let accPitch = e.accidentalPitch;
+      if (!accPitch && e.accidentalPos && e.pitches && e.pitches[e.accidentalPos - 1]) {
+        // Vorzeichen gezielt vor einer bestimmten Note (z.B. b auf der 2. Note einer Clivis)
+        accPitch = String(e.pitches[e.accidentalPos - 1]).toLowerCase();
+      }
       if (!accPitch) {
         // No stored accidental pitch (e.g. click-editor entry, or legacy
         // data): fall back to guessing from the neume's own note pitches.
@@ -1996,6 +2010,7 @@ function gregHandleClick(svgEl, clientX, clientY) {
     if (nPitch === 1) {
       const ne = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, accidental};
       if (wordEnd) ne.wordEnd = true;
+      { const ap = parseInt((document.getElementById('greg-acc-pos')||{}).value); if (accidental && ap) ne.accidentalPos = ap; }
       gregEntries.push(ne);
       if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
       _gregAccidental = null; // consume accidental
@@ -2035,6 +2050,7 @@ function gregFinishPendingNeume() {
   if (!_gregPending) return;
   const e = _gregPending; delete e._need;
   e.accidental = _gregAccidental || null;
+  { const ap = parseInt((document.getElementById('greg-acc-pos')||{}).value); if (e.accidental && ap) e.accidentalPos = ap; }
   gregEntries.push(e);
   if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
   _gregAccidental = null;
@@ -2046,6 +2062,7 @@ function gregFinishPendingNeume() {
 // Vorzeichen-Knöpfe nicht mehr hervorgehoben).
 function gregInputConsumed() {
   const we = document.getElementById('greg-wordend'); if (we) we.checked = false;
+  const ap = document.getElementById('greg-acc-pos'); if (ap) { ap.value = ''; ap.style.display = 'none'; }
   ['x','#','y'].forEach(a => { const btn = document.querySelector(`button[onclick="gregSetAccidental('${a}')"]`); if (btn) btn.style.background = ''; });
 }
 
@@ -2340,6 +2357,23 @@ function gregEditEntryInner(i) {
       const o=document.createElement('option'); o.value=v; o.textContent=l;
       if(v===(e.accidental||'')) o.selected=true; accSel.appendChild(o);
     });
+    // Vorzeichen auf welcher Note (z.B. b auf der 2. Note einer Clivis)
+    const accPosSel = document.createElement('select');
+    accPosSel.title = 'Vorzeichen vor welcher Note (z.B. b auf der 2. Note einer Clivis)';
+    accPosSel.style.cssText = 'font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px';
+    const accPos0 = gregAccPosOf(e);
+    function fillAccPos() {
+      const cur = accPosSel.value || (accPos0 ? String(accPos0) : (e.accidentalPitch ? 'p:' + e.accidentalPitch : '1'));
+      const n = Math.max(1, pitI.value.split('').filter(c=>c.toLowerCase()>='a'&&c.toLowerCase()<='m').length);
+      accPosSel.innerHTML = '';
+      for (let k = 1; k <= Math.max(n, 1); k++) { const o = document.createElement('option'); o.value = String(k); o.textContent = 'auf N' + k; accPosSel.appendChild(o); }
+      if (!accPos0 && e.accidentalPitch) { const o = document.createElement('option'); o.value = 'p:' + e.accidentalPitch; o.textContent = 'Linie ' + e.accidentalPitch; accPosSel.appendChild(o); }
+      accPosSel.value = [...accPosSel.options].some(o => o.value === cur) ? cur : '1';
+      accPosSel.style.display = (accSel.value && n > 1) || (accSel.value && !accPos0 && e.accidentalPitch) ? '' : 'none';
+    }
+    accSel.addEventListener('change', fillAccPos);
+    pitI.addEventListener('input', fillAccPos);
+    fillAccPos();
     // Mora (.): unified N1..N4 model (2026-08-10, Runde 2 -- Nutzerwunsch:
     // "der Standard-Mora-Hacken sollte ganz verschwinden, stattdessen
     // Mora N1/N2/N3 gesetzt werden"). No separate ".mora"/"letzte Note"
@@ -2500,6 +2534,13 @@ function gregEditEntryInner(i) {
       e.pitches=pitI.value.split('').filter(c=>c.toLowerCase()>='a'&&c.toLowerCase()<='m');
       if(!e.pitches.length) e.pitches=['f'];
       e.accidental=accSel.value||null;
+      if (e.accidental && !/^p:/.test(accPosSel.value)) {
+        const ap = parseInt(accPosSel.value) || 1;
+        // Nur ändern, wenn die Position wirklich anders ist als die bisherige
+        // (importierte Vorzeichen-Tonhöhe bleibt sonst unverändert erhalten)
+        if (ap !== accPos0) { e.accidentalPos = ap; delete e.accidentalPitch; }
+      }
+      if (!e.accidental) { delete e.accidentalPos; delete e.accidentalPitch; }
       // Derive e.mora (last note) / e.moraExtra (earlier notes) from the
       // unified N1..N4 checkbox set -- "last" is whichever position equals
       // the just-updated e.pitches.length, so buildSingleNeumeGABC's
@@ -2542,7 +2583,7 @@ function gregEditEntryInner(i) {
       gregRefreshList();
     };
     const lbl = n => { const s=document.createElement('span'); s.textContent=n; s.style.cssText='font-size:9px;color:#6b8a60'; return s; };
-    [lbl('Neume:'),neuSel,lbl(' Silbe:'),sylI,lbl(' Töne:'),pitI,lbl(' Vorz:'),accSel,
+    [lbl('Neume:'),neuSel,lbl(' Silbe:'),sylI,lbl(' Töne:'),pitI,lbl(' Vorz:'),accSel,accPosSel,
      moraW,iktW,iktPosSel,epW,epPosW,liqW,orisW,strW,presW,quilW,quilPosW,weW,save].forEach(n=>row.appendChild(n));
   } else if (e.type === 'divisio') {
     const sel = document.createElement('select');
@@ -3048,6 +3089,7 @@ function gregSetAccidental(acc) {
     return;
   }
   _gregAccidental = (_gregAccidental === acc) ? null : acc; // toggle
+  { const ap = document.getElementById('greg-acc-pos'); if (ap) ap.style.display = _gregAccidental ? '' : 'none'; }
   // GABC native: 'x'=flat(b♭), '#'=sharp(♯), 'y'=natural(♮)
   const labels = {'x':'b\u266D','#':'\u266F','y':'\u266E'};
   ['x','#','y'].forEach(a => {
@@ -7338,7 +7380,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '313';
+const NOTATOR_BUILD_ID = '314';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
