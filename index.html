@@ -7322,7 +7322,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '311';
+const NOTATOR_BUILD_ID = '312';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15435,12 +15435,14 @@ function clGabcToAbc(gabcList, opts) {
         cur.notes.push({ pitch, oD: e.D, dur: lng ? 2 : e.dur, ten: e.ten, liq: e.liq, pq: !!e.preQuil, lng });
       } else if (e.k === 'bar') {
         flush();
-        // Vorsänger-/Antwortzeichen (V/., R/., ℣, ℟) unter einem Trennstrich
-        // gehören zum folgenden Abschnitt: hinter den Strich, direkt vor die
-        // erste Silbe (wandert bei einem Zeilenumbruch mit dieser Silbe mit).
-        const vr = pendingAnn.filter(t => CL_VR_RE.test(t));
-        units.push({ kind: 'bar', t: e.t, ann: pendingAnn.filter(t => !CL_VR_RE.test(t)) });
-        pendingAnn = vr;
+        // Beschriftungen unter einem Trennstrich (V/., R/., iij., ij., *, Ps.,
+        // Ant. …) stehen in der Orgelfassung hinter dem Strich, direkt vor der
+        // ersten Silbe des folgenden Abschnitts und wandern bei einem
+        // Zeilenumbruch mit dieser Silbe mit (Nutzerwunsch 2026-10-20/21).
+        // Folgt keine Silbe mehr (Schluss), bleiben sie unter dem Strich.
+        const bu = { kind: 'bar', t: e.t, ann: [] };
+        units.push(bu);
+        if (pendingAnn.length) { pendingAnn._bar = bu; }
       } else if (e.k === 'text') {
         pendingAnn.push(e.text);
       } else if (e.k === 'brk') {
@@ -15449,12 +15451,13 @@ function clGabcToAbc(gabcList, opts) {
       }
     });
     flush();
-    if (pendingAnn.length) units.push({ kind: 'ann', ann: pendingAnn });
+    if (pendingAnn.length && pendingAnn._bar && units.indexOf(pendingAnn._bar) === units.length - 1) pendingAnn._bar.ann = pendingAnn; // Schluss: unter dem letzten Strich
+    else if (pendingAnn.length) units.push({ kind: 'ann', ann: pendingAnn });
     // V/. am Ende einer Silbe (z.B. "ia. V/." vor dem Doppelstrich) ebenfalls
     // abtrennen und vor die erste Silbe des nächsten Abschnitts setzen.
     units.forEach((u, k) => {
       if (u.kind !== 'syl' || !u.text) return;
-      const mm = /^(.*\S)\s+((?:[VR]\s*\/|[℣℟])\.?)\s*$/.exec(u.text);
+      const mm = /^(.*\S)\s+((?:[VR]\s*\/|[℣℟])\.?|i{1,3}j\.|Ps\.|Ant\.)\s*$/.exec(u.text);
       if (!mm) return;
       const nx = units.slice(k + 1).find(x => x.kind === 'syl');
       if (!nx || !units.slice(k + 1, units.indexOf(nx)).some(x => x.kind === 'bar')) return;
