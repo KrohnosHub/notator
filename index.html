@@ -343,6 +343,8 @@ input[type=file]{display:none}
           <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px"><input type="checkbox" id="greg-iktus" onchange="gregUpdateIktusUI()"> Iktus (')</label>
           <span id="greg-iktus-pos-w" style="font-size:9px;color:#6b8a60;display:none;align-items:center;gap:2px"><select id="greg-iktus-pos" style="font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px"><option value="">Standard</option><option value="above">oben</option><option value="below">unten</option></select></span>
           <label style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px"><input type="checkbox" id="greg-episema" onchange="gregUpdateEpisemaUI()"> Episema (_)</label>
+          <select id="greg-episema-pos" title="Episema-Position: auf welcher Note" style="display:none;font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px"><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option></select>
+          <label style="font-size:9px;color:#c0a060;display:flex;align-items:center;gap:2px;cursor:pointer" title="Wortende: nach dieser Silbe beginnt ein neues Wort (gilt nur für die nächste gesetzte Neume, danach automatisch wieder aus)"><input type="checkbox" id="greg-wordend"> Wortende</label>
         </div>
       </div>
       <div style="padding:4px 8px;background:#151e10;border-bottom:1px solid #2a3820;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
@@ -351,6 +353,7 @@ input[type=file]{display:none}
         <button class="b" onclick="gregAddDiv(';')" style="font-size:11px;padding:0px 6px" title="Semikolon (;)">;</button>
         <button class="b" onclick="gregAddDiv(':')" style="font-size:11px;padding:0px 6px" title="Kolon (:)">:</button>
         <button class="b" onclick="gregAddDiv('::')" style="font-size:11px;padding:0px 6px" title="Doppelstrich (::)">::</button>
+        <select onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche wie im Bearbeiten-Modus: ;1–;6 (Divisio minor an bestimmter Höhe, z.B. dominikanische Bücher)" style="font-size:10px;font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
         <button class="b" onclick="gregAddSpecial('*')" style="font-size:11px;padding:0px 6px" title="Asterisk (Chorwiederholung)">&#x2217;</button>
         <button class="b" onclick="gregInsertVers()" style="font-size:11px;padding:0px 6px" title="Vers">℣</button>
         <span style="color:#3a4a30;margin:0 4px;align-self:stretch;border-left:1px solid #3a4a30"></span>
@@ -1826,7 +1829,7 @@ function gregUpdateEpisemaUI() {
   const epPos = document.getElementById('greg-episema-pos');
   if (!epCb || !epPos) return;
   const multiNoteNeumes = ['torculus','porrectus','scandicus','climacus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
-  const neuSel = document.getElementById('greg-neume-type');
+  const neuSel = document.getElementById('greg-neume-sel');
   const curNeume = neuSel ? neuSel.value : '';
   epPos.style.display = (epCb.checked && multiNoteNeumes.includes(curNeume)) ? 'inline-block' : 'none';
 }
@@ -1983,19 +1986,24 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const quilisma = !!(document.getElementById('greg-quilisma')||{}).checked;
   const quilismaPos = parseInt((document.getElementById('greg-quilisma-pos')||{value:'1'}).value) || 1;
   const accidental = _gregAccidental || null;
+  const wordEnd = !!(document.getElementById('greg-wordend')||{}).checked;
+  const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;
 
   const isDescending = ['clivis','porrectus','climacus','puncta_inclinata','porrectus_flexus'].includes(neume);
 
   if (!_gregPending) {
     gregPush();
     if (nPitch === 1) {
-      const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;
-      gregEntries.push({type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, accidental});
+      const ne = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, accidental};
+      if (wordEnd) ne.wordEnd = true;
+      gregEntries.push(ne);
       if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
       _gregAccidental = null; // consume accidental
+      gregInputConsumed();
       gregRefreshList();
     } else {
-      _gregPending = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, _need:nPitch};
+      _gregPending = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, _need:nPitch};
+      if (wordEnd) _gregPending.wordEnd = true;
       if (isDescending && nPitch > 1) gregGst(neume + ': höchste Note gewählt (' + gabcLetter + ') — jetzt tiefere Note(n) klicken');
       else gregUpdateStatus();
       gregRender();
@@ -2031,7 +2039,14 @@ function gregFinishPendingNeume() {
   if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
   _gregAccidental = null;
   _gregPending = null;
+  gregInputConsumed();
   gregRefreshList();
+}
+// Nach dem Setzen einer Neume: einmalige Angaben zurücksetzen (Wortende,
+// Vorzeichen-Knöpfe nicht mehr hervorgehoben).
+function gregInputConsumed() {
+  const we = document.getElementById('greg-wordend'); if (we) we.checked = false;
+  ['x','#','y'].forEach(a => { const btn = document.querySelector(`button[onclick="gregSetAccidental('${a}')"]`); if (btn) btn.style.background = ''; });
 }
 
 // Cancels a neume currently being built via multiple staff clicks, discarding
@@ -2539,7 +2554,7 @@ function gregEditEntryInner(i) {
     save.textContent='✓'; save.style.cssText='font-size:9px;padding:0 4px;background:#1e4a1e;color:#6bc06b;border:1px solid #3a6a3a;cursor:pointer;border-radius:2px';
     save.onclick=()=>{gregPush();e.div=sel.value;gregCloseEditForm();gregRefreshList();};
     [document.createTextNode('Divisio: '),sel,save].forEach(n=>row.appendChild(n));
-  } else if (e.type === 'textonly' || e.type === 'special') {
+  } else if (e.type === 'textonly' || e.type === 'special' || e.type === 'directive') {
     const ti = document.createElement('input');
     ti.value = e.text||'';
     ti.style.cssText='width:60px;font-size:9px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:1px 3px;outline:none';
@@ -2993,6 +3008,7 @@ function gregBuildNeumeGrid() {
       const hint = document.getElementById('greg-neume-hint');
       if (hint) hint.textContent = '→ '+gregToneHintText(nd);
       gregUpdateQuilismaUI();
+      gregUpdateEpisemaUI();
       gregUpdateMoraUI();
       gregBuildNeumeGrid();
     };
@@ -7322,7 +7338,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '312';
+const NOTATOR_BUILD_ID = '313';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
