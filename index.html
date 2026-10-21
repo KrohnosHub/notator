@@ -355,7 +355,8 @@ input[type=file]{display:none}
         <button class="b" onclick="gregAddDiv('::')" style="font-size:11px;padding:0px 6px" title="Doppelstrich (::)">::</button>
         <select onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche wie im Bearbeiten-Modus: ;1–;6 (Divisio minor an bestimmter Höhe, z.B. dominikanische Bücher)" style="font-size:10px;font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
         <button class="b" onclick="gregAddSpecial('*')" style="font-size:11px;padding:0px 6px" title="Asterisk (Chorwiederholung)">&#x2217;</button>
-        <button class="b" onclick="gregInsertVers()" style="font-size:11px;padding:0px 6px" title="Vers">℣</button>
+        <button class="b" onclick="gregInsertVers()" style="font-size:11px;padding:0px 6px" title="Vers (Vorsänger)">℣</button>
+        <button class="b" onclick="gregInsertResp()" style="font-size:11px;padding:0px 6px" title="Responsorium (Antwort aller)">℟</button>
         <span style="color:#3a4a30;margin:0 4px;align-self:stretch;border-left:1px solid #3a4a30"></span>
         <span style="font-size:9px;color:#6b8a60;min-width:45px">Sonder</span>
         <button class="b" onclick="gregSetAccidental('x')" style="font-size:10px;padding:0px 5px" title="b molle (Halbton tiefer) — gilt für nächste Note">b&#x266D;</button>
@@ -366,6 +367,7 @@ input[type=file]{display:none}
         <button class="b" onclick="gregAddDirective('Ps.')" style="font-size:10px;padding:0px 5px" title="Ps. (Psalm-Rubrik, kursiv, eigene Silbe ohne Note)"><i>Ps.</i></button>
         <button class="b" onclick="gregAddDirective('ij.')" style="font-size:10px;padding:0px 5px" title="ij. (Doppel-Antiphon, kursiv)"><i>ij.</i></button>
         <button class="b" onclick="gregAddDirective('iij.')" style="font-size:10px;padding:0px 5px" title="iij. (Dreifach-Antiphon, kursiv)"><i>iij.</i></button>
+        <button class="b" onclick="gregInsertTextOnly()" style="font-size:10px;padding:0px 5px" title="Text ohne Noten in der Textzeile (z.B. «℟. Roráte.» als Wiederholungsangabe) – nimmt den Text aus dem Feld «Silbe», sonst Eingabefenster">Abc ohne Note</button>
         <button class="b" onclick="gregAddLinebreak()" style="font-size:10px;padding:0px 5px" title="Neue leere Notenlinie einfügen">&#9135; Linie</button>
         <button class="b" onclick="gregAddComment()" style="font-size:10px;padding:0px 5px" title="Freitextfeld platzieren">&#128172; Text</button>
       </div>
@@ -3657,6 +3659,27 @@ function gregInsertVers() {
   _gregPending = null;
   gregRefreshList();
   gregGst('℣. als eigenständiges Element eingefügt');
+}
+
+function gregInsertResp() {
+  gregPush();
+  gregEntries.push({type:'textonly', text:'℟.'});
+  _gregPending = null;
+  gregRefreshList();
+  gregGst('℟. als eigenständiges Element eingefügt');
+}
+// Text ohne Noten auf der Textzeile (GABC «Text()»), z.B. «Roráte.» nach ℟.
+function gregInsertTextOnly() {
+  const sy = document.getElementById('greg-syllable');
+  let t = sy && sy.value.trim() ? sy.value.trim() : (window.prompt('Text ohne Noten (erscheint in der Textzeile):', '') || '').trim();
+  if (!t) return;
+  t = t.replace(/[()]/g, '');
+  gregPush();
+  gregEntries.push({type:'textonly', text: t});
+  if (sy) sy.value = '';
+  _gregPending = null;
+  gregRefreshList();
+  gregGst('Text ohne Noten eingefügt: «' + t + '»');
 }
 
 function gregSetClef(v, silent) {
@@ -7380,7 +7403,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '314';
+const NOTATOR_BUILD_ID = '315';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -14848,6 +14871,7 @@ function clCleanText(t) {
 // events: {k:'note', D, alt, dur, ten, liq, quil, sylStart, text, wordEnd, hyphen}
 //         {k:'bar', t:'minima'|'minor'|'maior'|'finalis'}
 //         {k:'text', text}   (Silbe ohne Noten, z.B. "iij.", "Ant.", "*")
+const CL_MARK_ONLY_RE = /^\s*(?:(?:[VR]\s*\/|[℣℟])\.?|i{1,3}j\.|Ps\.|Ant\.|\*)\s*$/;
 const CL_VR_RE = /^\s*(?:[VR]\s*\/|[℣℟])/;
 function clParseGabc(gabc, popts) {
   const flatToBar = !!(popts && popts.flatToBar); // ♭ gilt bis zum nächsten Trennstrich statt bis Wortende
@@ -14941,7 +14965,8 @@ function clParseGabc(gabc, popts) {
       const dm = rest.match(/^(::|:|;|,|`)(\??'?[0-9]*)/);
       if (dm) {
         const t = dm[1] === '::' ? 'finalis' : dm[1] === ':' ? 'maior' : dm[1] === ';' ? 'minor' : 'minima';
-        if (textHere && !hadNote && sylNotesStart) { out.events.push({ k: 'text', text: pendingText ? pendingText + ' ' + textHere : textHere }); pendingText = ''; sylNotesStart = false; }
+        if (textHere && !hadNote && sylNotesStart) { out.events.push({ k: 'text', bar: true, text: pendingText ? pendingText + ' ' + textHere : textHere }); pendingText = ''; sylNotesStart = false; }
+        else if (pendingText) { out.events.push({ k: 'text', text: pendingText }); pendingText = ''; } // notenloser Text vor dem Strich (z.B. "Ende()" oder "te.()") nicht verlieren
         out.events.push({ k: 'bar', t });
         accReset();
         sepSinceLast = true; prevInGroup = null;
@@ -15025,6 +15050,7 @@ function clParseGabc(gabc, popts) {
     }
     if (!s.wordContinues && hadNote && !flatToBar) accReset();
   });
+  if (pendingText) out.events.push({ k: 'text', text: pendingText }); // notenloser Text ganz am Schluss
   return out;
 }
 
@@ -15469,7 +15495,7 @@ function clGabcToAbc(gabcList, opts) {
     // Silben-Einheiten bilden
     const units = []; // {music:'', lyrics:[], isBreakOk, width}
     let cur = null;
-    let pendingAnn = [];
+    let pendingAnn = [], pendingFree = [];
     let pendingBrk = false;
     let ni = 0;
     const flush = () => { if (cur) { units.push(cur); cur = null; } };
@@ -15479,8 +15505,8 @@ function clGabcToAbc(gabcList, opts) {
         const pitch = { D: tp.D + shift, alt: tp.alt };
         if (e.sylStart || !cur || cur.kind !== 'syl') {
           flush();
-          cur = { kind: 'syl', notes: [], text: e.sylStart ? e.text : null, hyphen: !!e.hyphen, ann: pendingAnn, chBrk: pendingBrk };
-          pendingAnn = []; pendingBrk = false;
+          cur = { kind: 'syl', notes: [], text: e.sylStart ? e.text : null, hyphen: !!e.hyphen, ann: pendingAnn.concat(pendingFree), chBrk: pendingBrk };
+          pendingAnn = []; pendingFree = []; pendingBrk = false;
         }
         // Wiedergabe (opts.playRests): Episem und Note vor Quilisma gedehnt
         // (mindestens 2 Achtel); das Notenbild zeigt dafür das Tenuto-Zeichen.
@@ -15493,6 +15519,14 @@ function clGabcToAbc(gabcList, opts) {
         cur.notes.push({ pitch, oD: e.D, dur: lng ? 2 : e.dur, ten: e.ten, liq: e.liq, pq: !!e.preQuil, lng });
       } else if (e.k === 'bar') {
         flush();
+        // Notenloser Text vor dem Strich (z.B. «℟. Roráte.»): bleibt an seiner
+        // Stelle in der Textzeile vor dem Strich. Nur kurze Zeichen (V/., ℟.,
+        // iij., Ps., Ant., *) wandern wie Strich-Beschriftungen hinter den Strich.
+        { const free = pendingFree.filter(t => !CL_MARK_ONLY_RE.test(t)), marks = pendingFree.filter(t => CL_MARK_ONLY_RE.test(t));
+          // Beschriftungen eines früheren Strichs ohne Silbe dazwischen (_bar gesetzt) vs. die dieses Strichs
+          const prevAnn = pendingAnn._bar ? pendingAnn : [], curAnn = pendingAnn._bar ? [] : pendingAnn;
+          if (prevAnn.length || free.length) units.push({ kind: 'ann', free: true, ann: prevAnn.concat(free) });
+          pendingAnn = curAnn.concat(marks); pendingFree = []; }
         // Beschriftungen unter einem Trennstrich (V/., R/., iij., ij., *, Ps.,
         // Ant. …) stehen in der Orgelfassung hinter dem Strich, direkt vor der
         // ersten Silbe des folgenden Abschnitts und wandern bei einem
@@ -15502,15 +15536,15 @@ function clGabcToAbc(gabcList, opts) {
         units.push(bu);
         if (pendingAnn.length) { pendingAnn._bar = bu; }
       } else if (e.k === 'text') {
-        pendingAnn.push(e.text);
+        if (e.bar) pendingAnn.push(e.text); else pendingFree.push(e.text);
       } else if (e.k === 'brk') {
         flush(); // nächste Silbe beginnt eine neue Zeile
         pendingBrk = true;
       }
     });
     flush();
-    if (pendingAnn.length && pendingAnn._bar && units.indexOf(pendingAnn._bar) === units.length - 1) pendingAnn._bar.ann = pendingAnn; // Schluss: unter dem letzten Strich
-    else if (pendingAnn.length) units.push({ kind: 'ann', ann: pendingAnn });
+    if (pendingAnn.length && !pendingFree.length && pendingAnn._bar && units.indexOf(pendingAnn._bar) === units.length - 1) pendingAnn._bar.ann = pendingAnn; // Schluss: unter dem letzten Strich
+    else if (pendingAnn.length || pendingFree.length) units.push({ kind: 'ann', free: true, ann: pendingAnn.concat(pendingFree) });
     // V/. am Ende einer Silbe (z.B. "ia. V/." vor dem Doppelstrich) ebenfalls
     // abtrennen und vor die erste Silbe des nächsten Abschnitts setzen.
     units.forEach((u, k) => {
@@ -15548,6 +15582,7 @@ function clGabcToAbc(gabcList, opts) {
     units.forEach((u, k) => {
       let uw = 0;
       if (u.kind === 'syl') uw = Math.max(u.notes.reduce((a, n) => a + (n.dur >= 2 ? 2.2 : 1.8), 0), (u.text || '').length * 0.9) + 1;
+      else if (u.kind === 'ann') uw = (u.ann || []).join(' ').length * 0.9 + 1;
       else uw = u.t === 'minima' ? 1 : 2;
       if (u.kind === 'syl' && line.some(x => x.kind === 'syl') && (u.lbWant || w + uw > cap)) {
         line._w = w; line._forced = !!u.lbWant && w + uw <= cap; // fester Umbruch vor vollem Zeilenende
@@ -15742,6 +15777,9 @@ function clGabcToAbc(gabcList, opts) {
           const tw = annJoined.length * 7.5;
           if (u.kind === 'syl') {
             annTxt = '"@0,0' + CL_MARK_SYL + annJoined + '"y' + Math.max(1, Math.round((tw + 12) / 8));
+          } else if (u.kind === 'ann' && u.free) {
+            // freier Text in der Textzeile: steht an seiner eigenen Stelle
+            annTxt = '"@0,0' + annJoined + '"y' + Math.max(1, Math.round((tw + 14) / 8));
           } else {
             const px = tw / 2 + lastLyricLen * 4 + 6;
             annTxt = '"@0,0' + CL_MARK_BAR + annJoined + '"y' + Math.max(1, Math.round(px / 8));
