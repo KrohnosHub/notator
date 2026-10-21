@@ -199,6 +199,7 @@ input[type=file]{display:none}
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
+    <button class="b nt-o-file" onclick="ntNewPiece()" style="font-size:11px;padding:3px 8px" title="Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)">&#10010;<span class="nt-lbl"> Neu</span></button>
     <button class="b nt-o-file" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
     <button class="b nt-o-file" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925;<span class="nt-lbl"> Song importieren</span></button>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
@@ -437,6 +438,7 @@ input[type=file]{display:none}
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
+    <button class="b nt-o-file" onclick="ntNewPiece()" style="font-size:11px;padding:3px 8px" title="Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)">&#10010;<span class="nt-lbl"> Neu</span></button>
     <button class="b nt-o-file" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
     <button class="b nt-o-file" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925;<span class="nt-lbl"> Song importieren</span></button>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
@@ -4881,12 +4883,15 @@ function gregNoMatchModal(query, wasLoose, errMsg) {
 // für beide Wege gilt.
 async function gregImportSongFromGregoBase(preset) {
   // preset (String): Titel direkt suchen, ohne Eingabefenster (z. B. aus der NOH-Bibliothek via #song=…)
-  const incipit = (typeof preset === 'string' && preset.trim()) ? preset.trim() : (window.prompt('Titel / Textanfang (Incipit) des Stücks, wird in GregoBase gesucht:', '') || '').trim();
+  const incipit = (typeof preset === 'string' && preset.trim()) ? preset.trim() : (window.prompt('Titel / Textanfang (Incipit) oder GregoBase-ID (z.B. 1143 oder #1143 oder GregoBase-Link):', '') || '').trim();
   if (!incipit) return;
+  // GregoBase-ID direkt: «1143», «#1143», «ID 1143» oder Link …chant.php?id=1143
+  const idM = /^(?:#|id\s*:?\s*)?(\d{1,6})$/i.exec(incipit) || /gregobase[^\s]*[?&]id=(\d+)/i.exec(incipit);
   try {
-    gregGst('Suche "' + incipit + '" in GregoBase…');
     let query = incipit, loose = false, picked = null;
-    for (let guard = 0; guard < 8; guard++) {
+    if (idM) picked = { id: idM[1], title: '#' + idM[1], source: 'GregoBase' };
+    else gregGst('Suche "' + incipit + '" in GregoBase…');
+    for (let guard = 0; guard < 8 && !picked; guard++) {
       let matches = [], err = '';
       try { matches = await gregSearchGregoBase(query, { loose }); } catch (e) { err = e.message || String(e); }
       if (matches.length) {
@@ -4905,7 +4910,8 @@ async function gregImportSongFromGregoBase(preset) {
     const dlResp = await fetch(gbProxyBase + '/_gregobase_download?id=' + picked.id + '&format=gabc&elem=1');
     if (!dlResp.ok) throw new Error('Download HTTP ' + dlResp.status);
     let gbGabc = (await dlResp.text()).trim();
-    if (!gbGabc) { gregGst('GregoBase-Download war leer.'); return; }
+    if (!gbGabc || (idM && !/\(/.test(gbGabc))) { gregGst(idM ? 'GregoBase-ID #' + picked.id + ' nicht gefunden.' : 'GregoBase-Download war leer.'); return; }
+    if (idM) { const nm = /^\s*name\s*:\s*(.*?);?\s*$/mi.exec(gbGabc); if (nm && nm[1]) picked.title = nm[1]; }
     gbGabc = gregTagGregoBase(gregMapGregoBaseHeaderFields(gbGabc), picked);
     const target = await gregImportTargetChoice();
     if (!target) { gregGst('Abgebrochen.'); return; }
@@ -7316,7 +7322,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '310';
+const NOTATOR_BUILD_ID = '311';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7445,6 +7451,9 @@ function gregScheduleAutosave() {
 // (gregClear) naturally overwrites the autosave on the next
 // gregScheduleAutosave() call, so it never traps the user on old content.
 function gregTryRestoreAutosave() {
+  // Nur beim Neuladen / Zurück im selben Tab: ein neu geöffneter (oder vom
+  // Browser kopierter) Tab startet leer (Nutzerwunsch 2026-10-21).
+  try { const nav = performance.getEntriesByType('navigation')[0]; if (nav && nav.type !== 'reload' && nav.type !== 'back_forward') return false; } catch (e) {}
   let raw;
   try { raw = sessionStorage.getItem(NOTATOR_AUTOSAVE_KEY); } catch (err) { return false; }
   if (!raw) return false;
@@ -7955,7 +7964,10 @@ function gregLibPushToDrive(rec, interactive) {
 // Google Drive. Wurde es schon aus der Bibliothek geladen bzw. dorthin
 // gespeichert (gregLibCurrentId), wird derselbe Eintrag/dieselbe Datei
 // aktualisiert.
+// Gibt ein Promise zurück: true, sobald lokal in der Bibliothek gespeichert
+// (Drive-Upload läuft im Hintergrund weiter), false bei Abbruch/Fehler.
 function gregLibSaveCurrent() {
+  let _done; const done = new Promise(r => { _done = r; });
   const state = gregBuildStateObject();
   const now = Date.now();
   const finish = function(base) {
@@ -7965,6 +7977,7 @@ function gregLibSaveCurrent() {
       record.id = newId;
       gregLibCurrentId = newId;
       ntMarkClean(state);
+      _done(true);
       if (!gdConfigured()) {
         gregGst('In Bibliothek gespeichert (nur lokal – Google Drive noch nicht eingerichtet): "' + record.title + '"');
         if (document.getElementById('modal-bg').classList.contains('open')) gregLibShowModal();
@@ -7978,20 +7991,42 @@ function gregLibSaveCurrent() {
         gregGst('Lokal gespeichert, Drive-Upload fehlgeschlagen (' + err.message + ') – wird beim nächsten Öffnen der Bibliothek nachgeholt.');
         if (document.getElementById('modal-bg').classList.contains('open')) gregLibShowModal();
       });
-    }).catch(function(err) { gregGst('Bibliothek-Speicherfehler: ' + err.message); });
+    }).catch(function(err) { gregGst('Bibliothek-Speicherfehler: ' + err.message); _done(false); });
   };
   if (gregLibCurrentId != null) {
     gregLibGet(gregLibCurrentId).then(function(existing) {
       if (existing) { finish(existing); return; }
       const t = prompt('Titel für die Bibliothek:', state.title || 'Unbenanntes Stück');
-      if (t === null) return;
+      if (t === null) { _done(false); return; }
       finish({ title: t.trim() || 'Unbenanntes Stück' });
-    });
+    }).catch(function() { _done(false); });
   } else {
     const title = prompt('Titel für die Bibliothek:', state.title || 'Unbenanntes Stück');
-    if (title === null) return; // abgebrochen
+    if (title === null) { _done(false); return done; } // abgebrochen
     finish({ title: title.trim() || 'Unbenanntes Stück' });
   }
+  return done;
+}
+
+// «Neu»: leeres Stück (alle Abschnitte, Orgel-Standard). Ungespeicherte
+// Änderungen: Rückfrage, auf Wunsch zuerst in die Bibliothek sichern.
+function ntNewPiece() {
+  const go = () => {
+    if (window._ntTab !== 'greg') switchTab('greg');
+    gregCollapseSections(); gregClear();
+    if (typeof gregMeta !== 'undefined') gregMeta = {};
+    if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); clUndoReset(); }
+    gregLibCurrentId = null;
+    try { if (location.hash) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    ntMarkClean();
+    gregGst('Neues, leeres Stück');
+  };
+  if (window._ntMappeBusy || !ntIsDirty()) { go(); return; }
+  showModal('⚠️ Ungespeicherte Änderungen', 'Das offene Stück hat Änderungen, die noch nicht gespeichert sind. Vor dem neuen Stück in der Bibliothek sichern?', [
+    { label: '💾 Speichern und neu', fn: () => { closeModal(); gregLibSaveCurrent().then(ok => { if (ok) go(); else gregGst('Nicht gespeichert – neues Stück abgebrochen.'); }); } },
+    { label: 'Ohne Speichern neu', fn: () => { closeModal(); go(); } },
+    { label: 'Abbrechen', fn: () => closeModal() }
+  ]);
 }
 
 function gregLibApplyRecord(rec, sourceLabel) {
@@ -8297,7 +8332,7 @@ function gregLibShowModal() {
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
   const openRow = document.createElement('div');
   openRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
-  openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); ntConfirmDiscard().then(ok => { if (!ok) return; if (window._ntTab !== 'greg') switchTab('greg'); gregCollapseSections(); gregClear(); if (typeof gregMeta !== 'undefined') gregMeta = {}; gregLibCurrentId = null; ntMarkClean(); }); }, '', 'Neues, leeres Stück beginnen (das offene Stück wird verworfen – vorher speichern)'));
+  openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); ntNewPiece(); }, '', 'Neues, leeres Stück beginnen (bei ungespeicherten Änderungen wird nachgefragt)'));
   openRow.appendChild(mkBtn('💻 Vom Gerät öffnen …', function() { ntOpenLocalFile(); }, 'background:#3d6b35;color:#fff;border-color:#3d6b35', '.notator-Datei aus einem lokalen Ordner öffnen'));
   if (driveOn) openRow.appendChild(mkBtn('☁ Anderer Drive-Ordner …', function() {
     gdGetToken(true).then(function() { ntDriveOpenBrowser(); }).catch(function(err) { gregGst(err.message); });
