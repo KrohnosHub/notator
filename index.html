@@ -7403,7 +7403,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '315';
+const NOTATOR_BUILD_ID = '316';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -7421,15 +7421,36 @@ function ntCheckForUpdate() {
     bar.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:3000;background:#2a4a6a;color:#fff;padding:8px 12px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.4);font:13px system-ui,sans-serif;display:flex;gap:10px;align-items:center';
     bar.innerHTML = '<span>Neue Notator-Version verfügbar (Build ' + newId + ')</span>';
     const go = document.createElement('button'); go.className = 'b'; go.textContent = '↻ Neu laden'; go.style.cssText = 'font-size:12px;padding:3px 10px';
-    go.onclick = () => {
-      try { sessionStorage.setItem('notatorGregAutosave_v1_' + newId, JSON.stringify({ savedAt: Date.now(), state: gregBuildStateObject() })); } catch (e) {}
-      location.reload();
-    };
+    go.onclick = () => ntUpdateReload(newId);
     const later = document.createElement('button'); later.className = 'b'; later.textContent = 'Später'; later.style.cssText = 'font-size:12px;padding:3px 8px';
     later.onclick = () => bar.remove();
     bar.appendChild(go); bar.appendChild(later);
     document.body.appendChild(bar);
   }).catch(() => {});
+}
+// Neu laden für die neue Version – nie mit Datenverlust (Nutzerbericht 2026-10-21):
+// ungespeicherte Änderungen -> Rückfrage (zuerst in die Bibliothek speichern);
+// in jedem Fall wird der aktuelle Stand vorher für die Wiederherstellung
+// gesichert (unabhängig von der Build-Nummer, siehe gregTryRestoreAutosave).
+function ntUpdateReload(newId) {
+  const doReload = () => {
+    try {
+      const st = gregBuildStateObject();
+      const rec = JSON.stringify({ savedAt: Date.now(), state: st });
+      sessionStorage.setItem('notatorGregAutosave_v1_' + newId, rec);
+      sessionStorage.setItem(NOTATOR_AUTOSAVE_KEY, rec);
+      sessionStorage.setItem('notatorForceRestore', '1');
+      if (!window._ntMappeBusy) ntRecoveryWrite(st);
+    } catch (e) {}
+    window._ntReloadOk = true; // keine zusätzliche Browser-Warnung beim Verlassen
+    location.reload();
+  };
+  if (window._ntMappeBusy || !ntIsDirty()) { doReload(); return; }
+  showModal('⚠️ Ungespeicherte Änderungen', 'Das offene Stück hat Änderungen, die noch nicht gespeichert sind. Vor dem Neuladen in der Bibliothek speichern?\n\n(Der aktuelle Stand wird in jedem Fall für die Wiederherstellung nach dem Neuladen gesichert.)', [
+    { label: '💾 Speichern und neu laden', fn: () => { closeModal(); gregLibSaveCurrent().then(ok => { if (ok) setTimeout(doReload, 300); else gregGst('Nicht gespeichert – Neuladen abgebrochen.'); }); } },
+    { label: 'Ohne Speichern neu laden', fn: () => { closeModal(); doReload(); } },
+    { label: 'Abbrechen', fn: () => closeModal() }
+  ]);
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') ntCheckForUpdate(); });
 setInterval(ntCheckForUpdate, 15 * 60 * 1000);
@@ -7490,7 +7511,7 @@ function ntRecoveryWrite(st) {
 }
 window.addEventListener('beforeunload', e => {
   try { gregAutosaveNow(); } catch (err) {}
-  if (ntIsDirty()) { e.preventDefault(); e.returnValue = ''; }
+  if (ntIsDirty() && !window._ntReloadOk) { e.preventDefault(); e.returnValue = ''; }
 });
 // Start: Prüfwert aus dieser Sitzung übernehmen (Neuladen) oder leeres Blatt
 // als «gespeichert» werten; ggf. Wiederherstellung nach dem Schliessen anbieten.
@@ -7534,9 +7555,22 @@ function gregScheduleAutosave() {
 function gregTryRestoreAutosave() {
   // Nur beim Neuladen / Zurück im selben Tab: ein neu geöffneter (oder vom
   // Browser kopierter) Tab startet leer (Nutzerwunsch 2026-10-21).
-  try { const nav = performance.getEntriesByType('navigation')[0]; if (nav && nav.type !== 'reload' && nav.type !== 'back_forward') return false; } catch (e) {}
+  let force = false; try { force = sessionStorage.getItem('notatorForceRestore') === '1'; sessionStorage.removeItem('notatorForceRestore'); } catch (e) {}
+  try { const nav = performance.getEntriesByType('navigation')[0]; if (!force && nav && nav.type !== 'reload' && nav.type !== 'back_forward') return false; } catch (e) {}
   let raw;
-  try { raw = sessionStorage.getItem(NOTATOR_AUTOSAVE_KEY); } catch (err) { return false; }
+  try {
+    // Neuester Zwischenstand dieses Tabs – auch aus einer anderen Build-Nummer
+    // (nach «Neue Version» oder wenn der Browser noch die alte Version liefert)
+    let best = null;
+    for (let k = 0; k < sessionStorage.length; k++) {
+      const key = sessionStorage.key(k);
+      if (!/^notatorGregAutosave_v1_/.test(key)) continue;
+      const v = sessionStorage.getItem(key); let t = 0;
+      try { t = (JSON.parse(v) || {}).savedAt || 0; } catch (e) {}
+      if (!best || t > best.t) best = { t, v };
+    }
+    raw = best ? best.v : null;
+  } catch (err) { return false; }
   if (!raw) return false;
   try {
     const saved = JSON.parse(raw);
