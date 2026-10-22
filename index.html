@@ -451,7 +451,9 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <select id="greg-qb-more" onchange="if(this.value){gregSelectNeume(this.value);}" title="Weitere Neumen"></select>
         <span class="qb-sep"></span>
         <span>Silbe</span><input id="greg-qb-syl" type="text" placeholder="z.B. Ky-" title="Silbe für die nächste gesetzte Neume (gleich wie das Feld «Silbe» links)">
-        <label title="Wortende: nach dieser Silbe beginnt ein neues Wort (gilt für die nächste Neume) – Taste Leertaste"><input type="checkbox" id="greg-qb-we"> Wortende</label>
+        <label title="Wortende: nach dieser Silbe beginnt ein neues Wort (gilt für die nächste Neume) – Leerzeichen am Ende der Silbe oder Leertaste"><input type="checkbox" id="greg-qb-we"> Wortende</label>
+        <span class="qb-sep"></span>
+        <span id="greg-qb-mora" title="Mora (.) auf Note 1–4 der nächsten Neume – wird nach dem Setzen automatisch zurückgesetzt (Taste M = Mora auf der letzten Note)">Mora (.): <label><input type="checkbox" data-p="1">N1</label><label><input type="checkbox" data-p="2">N2</label><label><input type="checkbox" data-p="3">N3</label><label><input type="checkbox" data-p="4">N4</label></span>
         <span class="qb-sep"></span>
         <button class="b qb-acc" data-acc="x" onclick="gregSetAccidental('x')" title="b molle für die nächste Note (Taste B)">&#x266D;</button><button class="b qb-acc" data-acc="#" onclick="gregSetAccidental('#')" title="Kreuz für die nächste Note (Taste #)">&#x266F;</button><button class="b qb-acc" data-acc="y" onclick="gregSetAccidental('y')" title="Auflösungszeichen für die nächste Note (Taste N)">&#x266E;</button>
         <span class="qb-sep"></span>
@@ -1924,6 +1926,7 @@ function gregUpdateQuilismaUI() {
 // a mora onto a nonexistent note. Called on neume-selection change (see
 // gregBuildNeumeGrid) AND once on initial page load.
 function gregUpdateMoraUI() {
+  setTimeout(() => { if (typeof gregQuickbarSync === 'function') gregQuickbarSync(); }, 0);
   const curNeume = (document.getElementById('greg-neume-sel')||{value:'punctum'}).value;
   const nPitch = NEUME_PITCHES[curNeume] || 1;
   [1,2,3,4].forEach(p => {
@@ -2035,7 +2038,8 @@ function gregHandleClick(svgEl, clientX, clientY) {
 
   const neume = (document.getElementById('greg-neume-sel')||{value:'punctum'}).value;
   const nPitch = NEUME_PITCHES[neume] || 1;
-  const syllable = (document.getElementById('greg-syllable')||{value:''}).value;
+  const _sylRaw = (document.getElementById('greg-syllable')||{value:''}).value;
+  const syllable = _sylRaw.trim(); // Leerzeichen am Ende = Wortende (Nutzerwunsch 2026-10-22)
   // Unified Mora-Checkboxen (N1..N4, kein separater ".mora"-Hacken mehr,
   // 2026-08-10 Runde 2 -- Nutzerwunsch): welche Note die "letzte" ist,
   // hängt vom Neumentyp ab (nPitch) -- wie bei Quilisma/Episema oben
@@ -2056,7 +2060,7 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const quilisma = !!(document.getElementById('greg-quilisma')||{}).checked;
   const quilismaPos = parseInt((document.getElementById('greg-quilisma-pos')||{value:'1'}).value) || 1;
   const accidental = _gregAccidental || null;
-  const wordEnd = !!(document.getElementById('greg-wordend')||{}).checked;
+  const wordEnd = !!(document.getElementById('greg-wordend')||{}).checked || (/\s$/.test(_sylRaw) && !!syllable);
   const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;
 
   const isDescending = ['clivis','porrectus','climacus','puncta_inclinata','porrectus_flexus'].includes(neume);
@@ -2119,7 +2123,9 @@ function gregFinishPendingNeume() {
 // Nach dem Setzen einer Neume: einmalige Angaben zurücksetzen (Wortende,
 // Vorzeichen-Knöpfe nicht mehr hervorgehoben).
 function gregInputConsumed() {
-  const we = document.getElementById('greg-wordend'); if (we) we.checked = false;
+  const we = document.getElementById('greg-wordend'); if (we) { we.checked = false; we._auto = false; }
+  // Mora gilt nur für die eben gesetzte Neume (Nutzerwunsch 2026-10-22)
+  [1,2,3,4].forEach(p => { const m = document.getElementById('greg-mora-n' + p); if (m) m.checked = false; });
   const ap = document.getElementById('greg-acc-pos'); if (ap) { ap.value = ''; ap.style.display = 'none'; }
   ['x','#','y'].forEach(a => { document.querySelectorAll(`button[onclick="gregSetAccidental('${a}')"]`).forEach(btn => { btn.style.background = ''; btn.style.color = ''; }); });
   gregQuickbarSync();
@@ -2654,11 +2660,13 @@ function gregEditEntryInner(i) {
     grp('Modifier', [liqW, orisW, strW, presW, quilW, quilPosW]);
     // Nur Silbe/Wortende geändert -> nur diese übernehmen (genaue Notendaten
     // aus dem Import bleiben erhalten); ohne Änderung nur schliessen.
+    sylI.addEventListener('input', () => { if (/\S\s$/.test(sylI.value) && !weI.checked) { weI.checked = true; weI._auto = true; } else if (!/\s$/.test(sylI.value) && weI._auto) { weI.checked = false; weI._auto = false; } });
     const fullSave = save.onclick;
     let musicDirty = false, textDirty = false;
     host.addEventListener('input', ev => { if (ev.target === sylI || ev.target === weI) textDirty = true; else musicDirty = true; });
     host.addEventListener('change', ev => { if (ev.target === sylI || ev.target === weI) textDirty = true; else musicDirty = true; });
     save.onclick = () => {
+      if (/\s$/.test(sylI.value)) { if (sylI.value.trim()) weI.checked = true; sylI.value = sylI.value.trim(); }
       if (musicDirty) { fullSave(); return true; }
       if (textDirty) { gregPush(); e.syllable = sylI.value; e.wordEnd = weI.checked; gregCloseEditForm(); gregRefreshList(); return true; }
       gregCloseEditForm(); gregRefreshListNoRender(); return false;
@@ -3236,6 +3244,15 @@ function gregSelectNeume(val) {
   gregBuildNeumeGrid();
   gregGst('Neume: ' + nd.label + ' – ' + gregToneHintText(nd));
 }
+// Silbe mit Leerzeichen am Ende -> Wortende anhaken (und wieder weg, wenn
+// das Leerzeichen gelöscht wird und das Häkchen nur deshalb gesetzt war)
+function gregSylSpaceWordEnd(v) {
+  const lw = document.getElementById('greg-wordend'); if (!lw) return;
+  const sp = /\S\s$/.test(v || '');
+  if (sp && !lw.checked) { lw.checked = true; lw._auto = true; }
+  else if (!sp && lw.checked && lw._auto) { lw.checked = false; lw._auto = false; }
+  const qw = document.getElementById('greg-qb-we'); if (qw) qw.checked = lw.checked;
+}
 // Werkzeugleiste über dem Notenblatt (PC/Tablet)
 const GREG_QB_NEUMES = ['punctum','virga','podatus','clivis','torculus','porrectus','scandicus','climacus','quilisma','puncta_inclinata'];
 const GREG_KEY_NEUMES = { '1':'punctum', '2':'virga', '3':'quilisma', 'p':'podatus', 'c':'clivis', 't':'torculus', 'r':'porrectus', 's':'scandicus', 'k':'climacus', 'l':'salicus', 'i':'puncta_inclinata' };
@@ -3260,7 +3277,18 @@ function gregQuickbarSync() {
     const qw = document.getElementById('greg-qb-we'), lw = document.getElementById('greg-wordend');
     if (qw && lw) { qw.addEventListener('change', () => { lw.checked = qw.checked; }); lw.addEventListener('change', () => { qw.checked = lw.checked; }); }
     const qa = document.getElementById('greg-qb-ask'); if (qa) qa.checked = gregAskSylOn();
+    document.querySelectorAll('#greg-qb-mora input').forEach(cb => {
+      const lm = document.getElementById('greg-mora-n' + cb.dataset.p);
+      cb.addEventListener('change', () => { if (lm) lm.checked = cb.checked; });
+      if (lm) lm.addEventListener('change', () => gregQuickbarSync());
+    });
+    // Leerzeichen am Ende der Silbe = Wortende (Häkchen wird sichtbar gesetzt)
+    [qs, ls].forEach(f => f && f.addEventListener('input', () => gregSylSpaceWordEnd(f.value)));
   }
+  document.querySelectorAll('#greg-qb-mora input').forEach(cb => {
+    const lm = document.getElementById('greg-mora-n' + cb.dataset.p);
+    if (lm) { cb.checked = lm.checked; cb.disabled = lm.disabled; cb.parentElement.style.opacity = lm.disabled ? '0.35' : '1'; }
+  });
   box.querySelectorAll('.qb-neu').forEach(b => b.classList.toggle('on', b.dataset.val === cur));
   const more = document.getElementById('greg-qb-more'); if (more) more.value = GREG_QB_NEUMES.indexOf(cur) < 0 ? cur : '';
   const qs = document.getElementById('greg-qb-syl'), ls = document.getElementById('greg-syllable'); if (qs && ls && document.activeElement !== qs) qs.value = ls.value;
@@ -3900,11 +3928,15 @@ function gregSylInlineOpen(i) {
   const inp = document.createElement('input');
   inp.id = 'greg-syl-inline'; inp.className = 'greg-syl-inline'; inp.type = 'text';
   inp.value = e.syllable || ''; inp.placeholder = 'Silbe';
-  inp.title = 'Silbe für diese Note – Enter: übernehmen · Tab: weiter zur nächsten Note · Shift+Tab: zurück · Esc: überspringen';
+  inp.title = 'Silbe für diese Note – Leerzeichen am Ende = Wortende · Enter: übernehmen · Tab: weiter zur nächsten Note · Shift+Tab: zurück · Esc: überspringen';
   inp.style.left = Math.max(4, Math.min(r.left - 12, window.innerWidth - 140)) + 'px';
   inp.style.top = Math.max(4, Math.min(r.bottom + 6, window.innerHeight - 44)) + 'px';
   let changed = false;
-  const commit = () => { const v = inp.value.trim(); if (v !== (e.syllable || '')) { gregPush(); e.syllable = v; changed = true; gregRefreshList(); } };
+  const commit = () => {
+    const raw = inp.value, v = raw.trim();
+    const we = /\s$/.test(raw) && !!v; // Leerzeichen am Ende = Wortende
+    if (v !== (e.syllable || '') || (we && !e.wordEnd)) { gregPush(); e.syllable = v; if (we) e.wordEnd = true; changed = true; gregRefreshList(); }
+  };
   inp._commit = commit;
   inp.addEventListener('keydown', ev => {
     if (ev.key === 'Enter') { ev.preventDefault(); gregSylInlineClose(true); }
@@ -3941,7 +3973,8 @@ function gregShortcutHelp() {
     'Neume wählen:  1 Punctum · 2 Virga · 3 Quilisma · P Podatus · C Clivis · T Torculus · R Porrectus · S Scandicus · K Climacus · L Salicus · I Puncta inclinata\n' +
     'Trennstriche:  ,  minima · ;  minor · :  maior · :: (zweimal :) Doppelstrich\n' +
     'Vorzeichen für die nächste Note:  B  b · #  Kreuz · N  Auflösung\n' +
-    'Leertaste:  Wortende für die nächste Neume\n\n' +
+    'Leertaste:  Wortende für die nächste Neume (oder Leerzeichen am Ende der Silbe tippen)\n' +
+    'M:  Mora auf der letzten Note der nächsten Neume (wird nach dem Setzen zurückgesetzt)\n\n' +
     '← / →  vorige / nächste Note bearbeiten\n' +
     'Shift + ↑ / ↓  gewählte Note einen Ton höher / tiefer\n' +
     'Entf  gewählten Eintrag löschen · Enter  Silbe der gewählten Note bearbeiten · Esc  schliessen\n' +
@@ -3983,6 +4016,7 @@ document.addEventListener('keydown', ev => {
   if (k === 'Enter' && sel != null && pop._focus) { done(); pop._focus.focus(); if (pop._focus.select) pop._focus.select(); return; }
   if (ev.altKey) return;
   if (GREG_KEY_NEUMES[lk] && !ev.shiftKey) { done(); gregSelectNeume(GREG_KEY_NEUMES[lk]); return; }
+  if (lk === 'm') { done(); const n = (NEUME_PITCHES[(document.getElementById('greg-neume-sel')||{}).value] || 1); const m = document.getElementById('greg-mora-n' + Math.min(4, n)); if (m && !m.disabled) { m.checked = !m.checked; gregQuickbarSync(); gregGst('Mora auf der letzten Note der nächsten Neume: ' + (m.checked ? 'an' : 'aus')); } return; }
   if (lk === 'b') { done(); gregSetAccidental('x'); return; }
   if (lk === 'n') { done(); gregSetAccidental('y'); return; }
   if (k === '#') { done(); gregSetAccidental('#'); return; }
@@ -7723,7 +7757,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '317';
+const NOTATOR_BUILD_ID = '318';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
