@@ -183,6 +183,44 @@ input[type=file]{display:none}
   #greg-panel.greg-mobile-edit #greg-entry-list input[type=checkbox]{width:18px !important;height:18px !important}
 }
 </style>
+<style>
+/* ── Bearbeiten an der Note / Werkzeugleiste / Komfort (Build 317) ── */
+#greg-quickbar{position:sticky;top:-20px;margin:-20px -20px 12px;z-index:20;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:6px 10px;background:#1a2414;border-bottom:1px solid #3a4a30;font:12px system-ui,sans-serif;color:#a8d878}
+#greg-panel.greg-view #greg-quickbar{display:none}
+@media (max-width:700px){#greg-quickbar{display:none !important}}
+#greg-quickbar .qb-neu{width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border:1px solid #6b8a60;border-radius:3px;cursor:pointer}
+#greg-quickbar .qb-neu svg{width:40px;height:auto}
+#greg-quickbar .qb-neu.on{outline:3px solid #d0a040;outline-offset:-1px}
+#greg-quickbar .qb-sep{width:1px;align-self:stretch;background:#3a4a30;margin:0 2px}
+#greg-quickbar input[type=text]{font-size:16px;width:150px;padding:3px 6px;background:#0a1406;color:#e0e8c0;border:1px solid #4a6a30;border-radius:3px;outline:none}
+#greg-quickbar select{font-size:12px;padding:3px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30}
+#greg-quickbar .b{font-size:13px;padding:3px 8px;min-width:26px}
+#greg-quickbar label{display:inline-flex;align-items:center;gap:3px;cursor:pointer;font-size:12px}
+#greg-quickbar input[type=checkbox]{width:15px;height:15px}
+.greg-pop{position:fixed;z-index:1500;background:#1a2414;border:1px solid #6bc06b;border-radius:6px;box-shadow:0 6px 22px rgba(0,0,0,.55);padding:8px 10px;display:flex;flex-direction:column;gap:7px;max-width:min(640px,96vw);color:#a8d878;font:13px system-ui,sans-serif}
+.greg-pop .greg-pop-row{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.greg-pop .greg-pop-lbl{min-width:80px;color:#8aa070;font-size:12px !important}
+.greg-pop input[type=text],.greg-pop input:not([type]),.greg-pop select{font-size:14px !important;padding:3px 6px !important;border-radius:3px}
+.greg-pop label,.greg-pop span{font-size:13px !important;gap:3px !important}
+.greg-pop input[type=checkbox]{width:16px;height:16px;margin:0}
+.greg-pop input.greg-pop-syl{font-size:18px !important;width:210px !important;color:#f0f4d8 !important}
+.greg-pop-hd{font-size:11px;color:#8aa070;border-bottom:1px solid #2a3820;padding-bottom:4px}
+.greg-pop .b{font-size:13px;padding:4px 10px}
+.greg-pop .greg-pop-btns{border-top:1px solid #2a3820;padding-top:6px}
+.greg-pop .greg-pop-ok{background:#1e4a1e;color:#d8f0c0;border-color:#3a6a3a}
+.greg-syl-inline{position:fixed;z-index:1500;font:18px "Palatino Linotype",Palatino,serif;width:120px;padding:3px 6px;border:2px solid #d21f1f;border-radius:4px;background:#fff;color:#000;box-shadow:0 3px 12px rgba(0,0,0,.35);outline:none}
+body.nt-comfort #greg-input-panel label,body.nt-comfort #greg-input-panel span{font-size:12px !important}
+body.nt-comfort #greg-input-panel input[type=text],body.nt-comfort #greg-input-panel input:not([type]),body.nt-comfort #greg-input-panel textarea,body.nt-comfort #greg-input-panel select{font-size:13px !important;padding:3px 6px !important}
+body.nt-comfort #greg-input-panel input[type=checkbox]{width:15px;height:15px}
+body.nt-comfort #greg-input-panel button.b{font-size:12px !important;padding:2px 8px !important}
+body.nt-comfort #greg-input-panel #greg-syllable{font-size:16px !important}
+body.nt-comfort #greg-neume-grid span{font-size:8px !important}
+body.nt-comfort #greg-neume-grid button.b{padding:1px 0 !important}
+body.nt-comfort #greg-input-panel div[style*="font-size:9px"]{font-size:12px !important}
+body.nt-comfort #greg-entry-list [data-idx]{font-size:13px !important;padding:3px 5px !important}
+body.nt-comfort #greg-entry-list [data-idx] button{font-size:12px !important;padding:1px 6px !important}
+body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;height:15px}
+</style>
 </head>
 <body>
 <div id="shell">
@@ -408,6 +446,20 @@ input[type=file]{display:none}
     </div>
     <div id="greg-drag-handle" style="width:5px;flex-shrink:0;background:#2a3820;cursor:col-resize;position:relative;z-index:10;transition:background .15s" onmouseenter="this.style.background='#4a7a40'" onmouseleave="this.style.background='#2a3820'"></div>
     <div id="greg-canvas-wrap" style="flex:1;overflow:auto;background:#ffffff;padding:20px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start">
+      <div id="greg-quickbar">
+        <span id="greg-qb-neumes" style="display:inline-flex;gap:3px;flex-wrap:wrap"></span>
+        <select id="greg-qb-more" onchange="if(this.value){gregSelectNeume(this.value);}" title="Weitere Neumen"></select>
+        <span class="qb-sep"></span>
+        <span>Silbe</span><input id="greg-qb-syl" type="text" placeholder="z.B. Ky-" title="Silbe für die nächste gesetzte Neume (gleich wie das Feld «Silbe» links)">
+        <label title="Wortende: nach dieser Silbe beginnt ein neues Wort (gilt für die nächste Neume) – Taste Leertaste"><input type="checkbox" id="greg-qb-we"> Wortende</label>
+        <span class="qb-sep"></span>
+        <button class="b qb-acc" data-acc="x" onclick="gregSetAccidental('x')" title="b molle für die nächste Note (Taste B)">&#x266D;</button><button class="b qb-acc" data-acc="#" onclick="gregSetAccidental('#')" title="Kreuz für die nächste Note (Taste #)">&#x266F;</button><button class="b qb-acc" data-acc="y" onclick="gregSetAccidental('y')" title="Auflösungszeichen für die nächste Note (Taste N)">&#x266E;</button>
+        <span class="qb-sep"></span>
+        <button class="b" onclick="gregAddDiv(',')" title="Divisio minima (Taste ,)">,</button><button class="b" onclick="gregAddDiv(';')" title="Divisio minor (Taste ;)">;</button><button class="b" onclick="gregAddDiv(':')" title="Divisio maior (Taste :)">:</button><button class="b" onclick="gregAddDiv('::')" title="Doppelstrich (Taste : zweimal)">::</button><button class="b" onclick="gregAddSpecial('*')" title="Asterisk">&#x2217;</button><button class="b" onclick="gregInsertVers()" title="Vers (Vorsänger)">℣</button><button class="b" onclick="gregInsertResp()" title="Responsorium">℟</button>
+        <span class="qb-sep"></span>
+        <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach Setzen</label>
+        <button class="b" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
+      </div>
       <div id="greg-mobile-scale-outer">
         <div id="greg-mobile-scale-wrap">
           <div id="greg-svg-original-slot" style="position:relative;width:100%">
@@ -1724,6 +1776,8 @@ function gregRenderActiveOnly() {
       // an open edit form's highlight would silently vanish the next time
       // ANYTHING triggers a re-render (e.g. editing a different entry).
       gregHighlightEditingEntry(_gregEditingEntryIdx);
+      gregEditPopPlace();
+      gregRunAfterRender();
     }
     gregUpdateStatus();
   });
@@ -2017,6 +2071,7 @@ function gregHandleClick(svgEl, clientX, clientY) {
       if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
       _gregAccidental = null; // consume accidental
       gregInputConsumed();
+      if (!syllable) gregSylAsk(gregEntries.length - 1);
       gregRefreshList();
     } else {
       _gregPending = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, _need:nPitch};
@@ -2054,6 +2109,7 @@ function gregFinishPendingNeume() {
   e.accidental = _gregAccidental || null;
   { const ap = parseInt((document.getElementById('greg-acc-pos')||{}).value); if (e.accidental && ap) e.accidentalPos = ap; }
   gregEntries.push(e);
+  if (!e.syllable) gregSylAsk(gregEntries.length - 1);
   if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
   _gregAccidental = null;
   _gregPending = null;
@@ -2065,7 +2121,8 @@ function gregFinishPendingNeume() {
 function gregInputConsumed() {
   const we = document.getElementById('greg-wordend'); if (we) we.checked = false;
   const ap = document.getElementById('greg-acc-pos'); if (ap) { ap.value = ''; ap.style.display = 'none'; }
-  ['x','#','y'].forEach(a => { const btn = document.querySelector(`button[onclick="gregSetAccidental('${a}')"]`); if (btn) btn.style.background = ''; });
+  ['x','#','y'].forEach(a => { document.querySelectorAll(`button[onclick="gregSetAccidental('${a}')"]`).forEach(btn => { btn.style.background = ''; btn.style.color = ''; }); });
+  gregQuickbarSync();
 }
 
 // Cancels a neume currently being built via multiple staff clicks, discarding
@@ -2282,6 +2339,7 @@ function gregHighlightEditingEntry(entryIdx) {
 // waiting for the next debounced re-render).
 function gregCloseEditForm() {
   _gregEditingEntryIdx = null;
+  gregEditPopRemove();
   gregClearEditHighlight();
 }
 
@@ -2321,10 +2379,11 @@ function gregEditEntryInner(i) {
   const rows = el.querySelectorAll('[data-idx]');
   const row = rows[i];
   if (!row) return;
-  row.innerHTML = '';
-  row.style.background = '#1a2e10';
-  row.scrollIntoView({block: 'nearest'});
-  row.style.flexWrap = 'wrap';
+  // Bearbeitungsfenster schwebt direkt an der Note (Nutzerwunsch 2026-10-22);
+  // die Zeile in der Liste wird nur markiert.
+  row.style.background = '#2a4a1a';
+  row.style.borderColor = '#6bc06b';
+  const host = gregEditPopCreate(i);
 
   if (e.type === 'note') {
     const inp = (tag,w,val,ph,tt) => {
@@ -2349,8 +2408,9 @@ function gregEditEntryInner(i) {
       const o=document.createElement('option'); o.value=v; o.textContent=v;
       if(v===e.neume) o.selected=true; neuSel.appendChild(o);
     });
-    const sylI = inp('input',44, e.syllable,'Silbe');
-    const pitI = inp('input',36,(e.pitches||[]).join(''),'Töne','GABC a-m; Grossbuchstabe = Punctum inclinatum (Raute), z.B. efED');
+    const sylI = inp('input',170, e.syllable,'Silbe');
+    sylI.className = 'greg-pop-syl';
+    const pitI = inp('input',80,(e.pitches||[]).join(''),'Töne','GABC a-m; Grossbuchstabe = Punctum inclinatum (Raute), z.B. efED');
     // Accidental
     const accSel = document.createElement('select');
     accSel.id = 'greg-edit-acc';
@@ -2411,7 +2471,7 @@ function gregEditEntryInner(i) {
     const moraW = document.createElement('span');
     moraW.style.cssText = 'font-size:9px;color:#a8d878;display:inline-flex;align-items:center;gap:2px';
     moraW.title = 'Mora (.) auf einer oder mehreren Noten dieses Neumes -- pro Note einzeln wählbar (z.B. beide Noten eines Podatus/einer Clivis)';
-    moraW.appendChild(document.createTextNode('Mora(.):'));
+    moraW.appendChild(document.createTextNode('Mora (.):'));
     const moraCbs = [1,2,3,4].map(p => {
       const lbl = document.createElement('label');
       lbl.style.cssText = 'display:inline-flex;align-items:center;gap:1px';
@@ -2435,7 +2495,7 @@ function gregEditEntryInner(i) {
     neuSel.addEventListener('change', updateMoraVis);
     pitI.addEventListener('input', updateMoraVis);
     updateMoraVis();
-    const {wrap:iktW,cb:iktI}=chk("'iktus",e.iktus,"Iktus (')");
+    const {wrap:iktW,cb:iktI}=chk("Iktus (')",e.iktus,"Iktus (')");
     // Iktus position selector -- pre-filled from e.iktusPos if already
     // set, else from e.notes[0].ictusPos (precise import data). Without
     // this, opening+saving an imported entry with an explicit gabc "'1"/
@@ -2454,10 +2514,10 @@ function gregEditEntryInner(i) {
       if(initIktusPos===v) o.selected=true;
       iktPosSel.appendChild(o);
     });
-    const {wrap:liqW,cb:liqI}=chk('liq',e.liquescent,'Liqueszenz');
-    const {wrap:orisW,cb:orisI}=chk('orisc',e.oriscus,'Oriscus');
-    const {wrap:strW,cb:strI}=chk('strph',e.strophicus,'Strophicus');
-    const {wrap:presW,cb:presI}=chk('pres',e.pressus,'Pressus');
+    const {wrap:liqW,cb:liqI}=chk('Liq.',e.liquescent,'Liqueszenz');
+    const {wrap:orisW,cb:orisI}=chk('Orisc.',e.oriscus,'Oriscus');
+    const {wrap:strW,cb:strI}=chk('Stroph.',e.strophicus,'Strophicus');
+    const {wrap:presW,cb:presI}=chk('Pres.',e.pressus,'Pressus');
     // Quilisma checkbox + position selector -- pre-filled from
     // e.quilisma/e.quilismaPos if already set (previously edited), else
     // derived from e.notes (precise import data), so simply opening and
@@ -2472,7 +2532,7 @@ function gregEditEntryInner(i) {
       const qIdx = e.notes.findIndex(n => n.shape === 3); // 3 = NoteShape.Quilisma
       if (qIdx >= 0) { initQuilisma = true; initQuilismaPos = qIdx + 1; }
     }
-    const {wrap:quilW,cb:quilI}=chk('quilisma',initQuilisma,'Quilisma: gezackte Verzierungsnote (steht in echten Neumen meist auf einer Note VOR einem Aufstieg)');
+    const {wrap:quilW,cb:quilI}=chk('Quilisma',initQuilisma,'Quilisma: gezackte Verzierungsnote (steht in echten Neumen meist auf einer Note VOR einem Aufstieg)');
     const quilPosW = document.createElement('span');
     quilPosW.style.cssText = 'font-size:9px;color:#6b8a60;display:inline-flex;align-items:center;gap:2px';
     const quilPosSel = document.createElement('select');
@@ -2498,7 +2558,7 @@ function gregEditEntryInner(i) {
     weW.title = 'Wortende: nach dieser Silbe folgt ein neues Wort (nur in "Keine Bindest." Modus relevant)';
     const weI = document.createElement('input'); weI.type='checkbox'; weI.checked=!!e.wordEnd;
     weW.appendChild(weI); weW.appendChild(document.createTextNode('Wortende'));
-    const {wrap:epW,cb:epI}=chk('ep_',e.episema,'Episema');
+    const {wrap:epW,cb:epI}=chk('Episema (_)',e.episema,'Episema');
     // Episema position selector for multi-note neumes
     const epPosW = document.createElement('span');
     epPosW.style.cssText = 'font-size:9px;color:#6b8a60;display:inline-flex;align-items:center;gap:2px';
@@ -2516,7 +2576,7 @@ function gregEditEntryInner(i) {
       epPosW.style.display=isMulti?'inline-flex':'none';
     }
     neuSel.addEventListener('change',updateEpPosVis);
-    epPosW.appendChild(document.createTextNode('ep@'));
+    epPosW.appendChild(document.createTextNode('auf'));
     epPosW.appendChild(epPosSel);
     updateEpPosVis();
     const save=document.createElement('button');
@@ -2585,8 +2645,27 @@ function gregEditEntryInner(i) {
       gregRefreshList();
     };
     const lbl = n => { const s=document.createElement('span'); s.textContent=n; s.style.cssText='font-size:9px;color:#6b8a60'; return s; };
-    [lbl('Neume:'),neuSel,lbl(' Silbe:'),sylI,lbl(' Töne:'),pitI,lbl(' Vorz:'),accSel,accPosSel,
-     moraW,iktW,iktPosSel,epW,epPosW,liqW,orisW,strW,presW,quilW,quilPosW,weW,save].forEach(n=>row.appendChild(n));
+    // Gleicher Aufbau und gleiche Bezeichnungen wie die Eingabe links
+    const grp = (title, nodes) => { const d = document.createElement('div'); d.className = 'greg-pop-row'; if (title) { const t = document.createElement('span'); t.className = 'greg-pop-lbl'; t.textContent = title; d.appendChild(t); } nodes.forEach(n => d.appendChild(n)); host.appendChild(d); };
+    grp('Silbe', [sylI, weW]);
+    grp('Neume', [neuSel, lbl(' Töne:'), pitI]);
+    grp('', [moraW, iktW, iktPosSel, epW, epPosW]);
+    grp('Vorzeichen', [accSel, accPosSel]);
+    grp('Modifier', [liqW, orisW, strW, presW, quilW, quilPosW]);
+    // Nur Silbe/Wortende geändert -> nur diese übernehmen (genaue Notendaten
+    // aus dem Import bleiben erhalten); ohne Änderung nur schliessen.
+    const fullSave = save.onclick;
+    let musicDirty = false, textDirty = false;
+    host.addEventListener('input', ev => { if (ev.target === sylI || ev.target === weI) textDirty = true; else musicDirty = true; });
+    host.addEventListener('change', ev => { if (ev.target === sylI || ev.target === weI) textDirty = true; else musicDirty = true; });
+    save.onclick = () => {
+      if (musicDirty) { fullSave(); return true; }
+      if (textDirty) { gregPush(); e.syllable = sylI.value; e.wordEnd = weI.checked; gregCloseEditForm(); gregRefreshList(); return true; }
+      gregCloseEditForm(); gregRefreshListNoRender(); return false;
+    };
+    host._save = save.onclick;
+    host._focus = sylI;
+    gregEditPopButtons(host, i, save);
   } else if (e.type === 'divisio') {
     const sel = document.createElement('select');
     sel.style.cssText = 'font-size:9px;background:#0a1406;color:#c8a060;border:1px solid #3a4a30;outline:none;padding:1px';
@@ -2596,28 +2675,117 @@ function gregEditEntryInner(i) {
     const save = document.createElement('button');
     save.textContent='✓'; save.style.cssText='font-size:9px;padding:0 4px;background:#1e4a1e;color:#6bc06b;border:1px solid #3a6a3a;cursor:pointer;border-radius:2px';
     save.onclick=()=>{gregPush();e.div=sel.value;gregCloseEditForm();gregRefreshList();};
-    [document.createTextNode('Divisio: '),sel,save].forEach(n=>row.appendChild(n));
+    host._save = save.onclick; host._focus = sel;
+    [document.createTextNode('Divisio: '),sel].forEach(n=>host.appendChild(n));
+    gregEditPopButtons(host, i, save);
   } else if (e.type === 'textonly' || e.type === 'special' || e.type === 'directive') {
     const ti = document.createElement('input');
     ti.value = e.text||'';
     ti.style.cssText='width:60px;font-size:9px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:1px 3px;outline:none';
     const save=document.createElement('button');
     save.textContent='✓'; save.style.cssText='font-size:9px;padding:0 4px;background:#1e4a1e;color:#6bc06b;border:1px solid #3a6a3a;cursor:pointer;border-radius:2px';
+    ti.style.width = '200px';
     save.onclick=()=>{gregPush();e.text=ti.value;gregCloseEditForm();gregRefreshList();};
-    [document.createTextNode('Text: '),ti,save].forEach(n=>row.appendChild(n));
+    host._save = save.onclick; host._focus = ti;
+    [document.createTextNode('Text: '),ti].forEach(n=>host.appendChild(n));
+    gregEditPopButtons(host, i, save);
   }
 
-  // Cancel button
-  const cancel=document.createElement('button');
-  cancel.textContent='✕'; cancel.style.cssText='font-size:9px;padding:0 3px;background:#3a1010;color:#c05050;border:1px solid #6a2020;cursor:pointer;border-radius:2px;margin-left:2px';
-  cancel.onclick=()=>{gregCloseEditForm();gregRefreshList();};
-  row.appendChild(cancel);
+  if (!host._btns) gregEditPopButtons(host, i, null); // übrige Eintragsarten: nur Navigation/Abbrechen
 
   // Immediately highlight this entry's note(s) red on the score (don't wait
   // for the next debounced re-render — the SVG is already showing, so the
   // visual feedback should be instant when the edit form opens).
   gregHighlightEditingEntry(i);
+  gregEditPopPlace();
 }
+
+// ── Schwebendes Bearbeitungsfenster an der Note ──────────────────────
+function gregEditPopRemove() { const p = document.getElementById('greg-edit-pop'); if (p) p.remove(); }
+function gregEditPopCreate(i) {
+  gregEditPopRemove(); gregSylInlineClose(false);
+  const pop = document.createElement('div');
+  pop.id = 'greg-edit-pop'; pop.className = 'greg-pop'; pop._idx = i;
+  const e = gregEntries[i] || {};
+  const hd = document.createElement('div'); hd.className = 'greg-pop-hd';
+  const nNotes = gregEntries.slice(0, i + 1).filter(x => x.type === 'note').length;
+  hd.textContent = e.type === 'note' ? 'Eintrag ' + (i + 1) + ' · Note ' + nNotes + (e.syllable ? ' · «' + e.syllable + '»' : '') : 'Eintrag ' + (i + 1);
+  pop.appendChild(hd);
+  // Tasten im Fenster: Enter = übernehmen, Esc = abbrechen, Alt+←/→ = vorige/nächste Note
+  pop.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' && !ev.shiftKey && ev.target.tagName !== 'TEXTAREA') { ev.preventDefault(); if (pop._save) pop._save(); }
+    else if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); gregCloseEditForm(); gregRefreshListNoRender(); }
+    else if (ev.altKey && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) { ev.preventDefault(); gregEditStep(i, ev.key === 'ArrowRight' ? 1 : -1); }
+  });
+  document.body.appendChild(pop);
+  return pop;
+}
+function gregEditPopButtons(host, i, save) {
+  host._btns = true;
+  const bar = document.createElement('div'); bar.className = 'greg-pop-row greg-pop-btns';
+  const mk = (txt, title, fn, cls) => { const b = document.createElement('button'); b.className = 'b' + (cls ? ' ' + cls : ''); b.textContent = txt; b.title = title; b.onclick = fn; bar.appendChild(b); return b; };
+  mk('◀', 'Vorige Note (Alt+←) – Änderungen werden übernommen', () => gregEditStep(i, -1));
+  mk('▶', 'Nächste Note (Alt+→) – Änderungen werden übernommen', () => gregEditStep(i, 1));
+  mk('🗑 Löschen', 'Eintrag löschen (Entf)', () => { gregCloseEditForm(); gregPush(); gregEntries.splice(i, 1); gregRefreshList(); });
+  const sp = document.createElement('span'); sp.style.flex = '1'; bar.appendChild(sp);
+  mk('✕ Abbrechen', 'Schliessen ohne Übernehmen (Esc)', () => { gregCloseEditForm(); gregRefreshListNoRender(); });
+  if (save) { save.textContent = '✓ Übernehmen'; save.title = 'Übernehmen (Enter)'; save.className = 'b greg-pop-ok'; save.style.cssText = ''; bar.appendChild(save); }
+  host.appendChild(bar);
+}
+// Vorige/nächste Note: offene Änderungen übernehmen, dann dort öffnen
+function gregEditStep(i, dir) {
+  let j = i + dir;
+  while (j >= 0 && j < gregEntries.length && gregEntries[j].type !== 'note') j += dir;
+  if (j < 0 || j >= gregEntries.length) { gregGst(dir > 0 ? 'Keine weitere Note' : 'Keine vorige Note'); return; }
+  const pop = document.getElementById('greg-edit-pop');
+  const changed = pop && pop._save ? pop._save() : false;
+  if (changed === false) gregEditEntry(j); // nichts geändert -> kein Neuzeichnen nötig
+  else gregAfterRenderOnce(() => gregEditEntry(j));
+}
+// Notationselemente (SVG) eines Eintrags im aktuellen Notenbild
+function gregEntryNotationEls(entryIdx) {
+  if (entryIdx == null || !_gregScore || !_gregScore.notations) return [];
+  const e = gregEntries[entryIdx];
+  if (!e || e.type !== 'note' || !e.pitches || !e.pitches.length) return [];
+  const wrap = document.getElementById('greg-svg-wrap');
+  const svgEl = wrap ? wrap.querySelector('svg') : null;
+  const ctxt = _gregCtxtRef;
+  if (!svgEl || !ctxt) return [];
+  const ordinalStart = gregCountNoteBearingNotations(gregEntriesToBody(gregEntries.slice(0, entryIdx), gregClefVal), ctxt);
+  const ordinalEnd = gregCountNoteBearingNotations(gregEntriesToBody(gregEntries.slice(0, entryIdx + 1), gregClefVal), ctxt);
+  if (ordinalStart == null || ordinalEnd == null || ordinalEnd <= ordinalStart) return [];
+  const els = Array.from(svgEl.querySelectorAll('.ChantNotationElement')).filter(el => !/Clef|Custos/.test(el.getAttribute('class') || ''));
+  const out = []; let ordinal = 0;
+  for (let k = 0; k < _gregScore.notations.length; k++) {
+    const nt = _gregScore.notations[k];
+    if (!(nt.notes && nt.notes.length)) continue;
+    if (ordinal >= ordinalStart && ordinal < ordinalEnd && els[k]) out.push(els[k]);
+    ordinal++;
+  }
+  return out;
+}
+function gregEntryClientRect(i) {
+  const els = gregEntryNotationEls(i);
+  let r = null;
+  els.forEach(el => { el.querySelectorAll('*').forEach(n => { const tg = (n.tagName || '').toLowerCase(); if (tg === 'text' || tg === 'tspan') return; const b = n.getBoundingClientRect(); if (!b.width && !b.height) return; r = r ? { left: Math.min(r.left, b.left), top: Math.min(r.top, b.top), right: Math.max(r.right, b.right), bottom: Math.max(r.bottom, b.bottom) } : { left: b.left, top: b.top, right: b.right, bottom: b.bottom }; }); });
+  return r;
+}
+function gregEditPopPlace() {
+  const pop = document.getElementById('greg-edit-pop');
+  if (!pop) return;
+  const i = pop._idx;
+  let r = gregEntryClientRect(i);
+  if (!r) { const row = document.querySelectorAll('#greg-entry-list [data-idx]')[i]; if (row) { const b = row.getBoundingClientRect(); r = { left: b.right + 8, top: b.top, right: b.right + 8, bottom: b.top }; } }
+  const vw = window.innerWidth, vh = window.innerHeight, pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let x = r ? r.left - 20 : (vw - pw) / 2, y = r ? r.bottom + 34 : 80; // unter der Note, unterhalb der Textzeile
+  if (r && y + ph > vh - 8) y = Math.max(8, r.top - ph - 10);              // kein Platz unten -> über der Note
+  x = Math.max(8, Math.min(x, vw - pw - 8)); y = Math.max(8, Math.min(y, vh - ph - 8));
+  pop.style.left = Math.round(x) + 'px'; pop.style.top = Math.round(y) + 'px';
+}
+// Einmalig nach dem nächsten fertigen Neuzeichnen ausführen
+function gregAfterRenderOnce(fn) { (window._gregAfterRender = window._gregAfterRender || []).push(fn); clearTimeout(window._gregARTimer); window._gregARTimer = setTimeout(gregRunAfterRender, 1500); }
+function gregRunAfterRender() { clearTimeout(window._gregARTimer); const q = window._gregAfterRender || []; window._gregAfterRender = []; q.forEach(f => { try { f(); } catch (e) { console.error(e); } }); }
+
 
 function gregRefreshListNoRender() {
   const el = document.getElementById('greg-entry-list');
@@ -3044,17 +3212,7 @@ function gregBuildNeumeGrid() {
     lbl.style.cssText = 'font-size:7px;color:'+(isOn?'#e0d4b0':'#6b8a60')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:45px;max-width:45px;display:block;line-height:1.1;flex-shrink:0;text-align:center';
     btn.appendChild(iconDiv);
     btn.appendChild(lbl);
-    btn.onclick = function() {
-      const sel = document.getElementById('greg-neume-sel');
-      if (sel) sel.value = nd.val;
-      _gregPending = null;
-      const hint = document.getElementById('greg-neume-hint');
-      if (hint) hint.textContent = '→ '+gregToneHintText(nd);
-      gregUpdateQuilismaUI();
-      gregUpdateEpisemaUI();
-      gregUpdateMoraUI();
-      gregBuildNeumeGrid();
-    };
+    btn.onclick = function() { gregSelectNeume(nd.val); };
     grid.appendChild(btn);
   });
   const hint = document.getElementById('greg-neume-hint');
@@ -3062,6 +3220,51 @@ function gregBuildNeumeGrid() {
   const descNeumes = ['clivis','porrectus','climacus','puncta_inclinata','porrectus_flexus'];
   const orderHint = descNeumes.includes(curVal) ? ' (höchste Note zuerst!)' : '';
   if (hint) hint.textContent = '→ '+gregToneHintText(nd)+orderHint;
+  gregQuickbarSync();
+}
+// Neume wählen (Raster links, Werkzeugleiste, Tastenkürzel)
+function gregSelectNeume(val) {
+  const nd = NEUME_DEFS.find(n => n.val === val); if (!nd) return;
+  const sel = document.getElementById('greg-neume-sel');
+  if (sel) sel.value = val;
+  _gregPending = null;
+  const hint = document.getElementById('greg-neume-hint');
+  if (hint) hint.textContent = '→ '+gregToneHintText(nd);
+  gregUpdateQuilismaUI();
+  gregUpdateEpisemaUI();
+  gregUpdateMoraUI();
+  gregBuildNeumeGrid();
+  gregGst('Neume: ' + nd.label + ' – ' + gregToneHintText(nd));
+}
+// Werkzeugleiste über dem Notenblatt (PC/Tablet)
+const GREG_QB_NEUMES = ['punctum','virga','podatus','clivis','torculus','porrectus','scandicus','climacus','quilisma','puncta_inclinata'];
+const GREG_KEY_NEUMES = { '1':'punctum', '2':'virga', '3':'quilisma', 'p':'podatus', 'c':'clivis', 't':'torculus', 'r':'porrectus', 's':'scandicus', 'k':'climacus', 'l':'salicus', 'i':'puncta_inclinata' };
+function gregQuickbarSync() {
+  const box = document.getElementById('greg-qb-neumes'); if (!box) return;
+  const cur = (document.getElementById('greg-neume-sel') || {value:'punctum'}).value;
+  if (!box._built) {
+    box._built = true;
+    const keyOf = v => Object.keys(GREG_KEY_NEUMES).find(k => GREG_KEY_NEUMES[k] === v);
+    GREG_QB_NEUMES.forEach(v => {
+      const nd = NEUME_DEFS.find(n => n.val === v); if (!nd) return;
+      const b = document.createElement('button'); b.className = 'qb-neu'; b.dataset.val = v;
+      b.title = nd.label + (keyOf(v) ? ' (Taste ' + keyOf(v).toUpperCase() + ')' : '');
+      const ic = NEUME_SVG_ICONS[v]; b.innerHTML = ic ? gregNamespaceSvgIds(ic, 'qbicon-' + v) : nd.label.slice(0, 3);
+      b.onclick = () => gregSelectNeume(v);
+      box.appendChild(b);
+    });
+    const more = document.getElementById('greg-qb-more');
+    if (more) more.innerHTML = '<option value="">mehr …</option>' + NEUME_DEFS.filter(n => GREG_QB_NEUMES.indexOf(n.val) < 0).map(n => '<option value="' + n.val + '">' + n.label + '</option>').join('');
+    const qs = document.getElementById('greg-qb-syl'), ls = document.getElementById('greg-syllable');
+    if (qs && ls) { qs.addEventListener('input', () => { ls.value = qs.value; }); ls.addEventListener('input', () => { qs.value = ls.value; }); }
+    const qw = document.getElementById('greg-qb-we'), lw = document.getElementById('greg-wordend');
+    if (qw && lw) { qw.addEventListener('change', () => { lw.checked = qw.checked; }); lw.addEventListener('change', () => { qw.checked = lw.checked; }); }
+    const qa = document.getElementById('greg-qb-ask'); if (qa) qa.checked = gregAskSylOn();
+  }
+  box.querySelectorAll('.qb-neu').forEach(b => b.classList.toggle('on', b.dataset.val === cur));
+  const more = document.getElementById('greg-qb-more'); if (more) more.value = GREG_QB_NEUMES.indexOf(cur) < 0 ? cur : '';
+  const qs = document.getElementById('greg-qb-syl'), ls = document.getElementById('greg-syllable'); if (qs && ls && document.activeElement !== qs) qs.value = ls.value;
+  const qw = document.getElementById('greg-qb-we'), lw = document.getElementById('greg-wordend'); if (qw && lw) qw.checked = lw.checked;
 }
 
 // Shared "N Klicks auf Notenlinie" hint text, aware of NEUME_OPEN_ENDED
@@ -3095,8 +3298,7 @@ function gregSetAccidental(acc) {
   // GABC native: 'x'=flat(b♭), '#'=sharp(♯), 'y'=natural(♮)
   const labels = {'x':'b\u266D','#':'\u266F','y':'\u266E'};
   ['x','#','y'].forEach(a => {
-    const btn = document.querySelector(`button[onclick="gregSetAccidental('${a}')"]`);
-    if (btn) btn.style.background = (_gregAccidental===a) ? '#5a3a20' : '';
+    document.querySelectorAll(`button[onclick="gregSetAccidental('${a}')"]`).forEach(btn => { btn.style.background = (_gregAccidental===a) ? '#5a3a20' : ''; btn.style.color = (_gregAccidental===a) ? '#fff' : ''; });
   });
   gregGst(_gregAccidental ? 'Vorzeichen ' + labels[_gregAccidental] + ' — gilt für nächste Note' : 'Vorzeichen entfernt');
 }
@@ -3681,6 +3883,124 @@ function gregInsertTextOnly() {
   gregRefreshList();
   gregGst('Text ohne Noten eingefügt: «' + t + '»');
 }
+
+// ── Silbe direkt unter der gesetzten Note eingeben ──
+function gregAskSylOn() { try { return localStorage.getItem('notatorAskSyl') !== '0'; } catch (e) { return true; } }
+function gregAskSylSet(on) { try { localStorage.setItem('notatorAskSyl', on ? '1' : '0'); } catch (e) {} const q = document.getElementById('greg-qb-ask'); if (q) q.checked = !!on; }
+function gregSylAsk(i) { if (gregAskSylOn()) gregAfterRenderOnce(() => gregSylInlineOpen(i)); }
+function gregSylInlineClose(commit) {
+  const inp = document.getElementById('greg-syl-inline'); if (!inp) return;
+  const f = inp._commit; inp._commit = null; inp.remove();
+  if (commit && f) f();
+}
+function gregSylInlineOpen(i) {
+  gregSylInlineClose(true);
+  const e = gregEntries[i]; if (!e || e.type !== 'note') return;
+  const r = gregEntryClientRect(i); if (!r) return;
+  const inp = document.createElement('input');
+  inp.id = 'greg-syl-inline'; inp.className = 'greg-syl-inline'; inp.type = 'text';
+  inp.value = e.syllable || ''; inp.placeholder = 'Silbe';
+  inp.title = 'Silbe für diese Note – Enter: übernehmen · Tab: weiter zur nächsten Note · Shift+Tab: zurück · Esc: überspringen';
+  inp.style.left = Math.max(4, Math.min(r.left - 12, window.innerWidth - 140)) + 'px';
+  inp.style.top = Math.max(4, Math.min(r.bottom + 6, window.innerHeight - 44)) + 'px';
+  let changed = false;
+  const commit = () => { const v = inp.value.trim(); if (v !== (e.syllable || '')) { gregPush(); e.syllable = v; changed = true; gregRefreshList(); } };
+  inp._commit = commit;
+  inp.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') { ev.preventDefault(); gregSylInlineClose(true); }
+    else if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); gregSylInlineClose(false); }
+    else if (ev.key === 'Tab') {
+      ev.preventDefault();
+      const dir = ev.shiftKey ? -1 : 1;
+      let j = i + dir; while (j >= 0 && j < gregEntries.length && gregEntries[j].type !== 'note') j += dir;
+      gregSylInlineClose(true);
+      if (j >= 0 && j < gregEntries.length) { if (changed) gregAfterRenderOnce(() => gregSylInlineOpen(j)); else gregSylInlineOpen(j); }
+    }
+  });
+  inp.addEventListener('blur', () => setTimeout(() => { if (document.getElementById('greg-syl-inline') === inp && document.activeElement !== inp) gregSylInlineClose(true); }, 150));
+  document.body.appendChild(inp);
+  inp.focus(); inp.select();
+}
+
+// ── Tastenkürzel (PC/Tablet) ──
+function gregShiftEntryPitch(i, d) {
+  const e = gregEntries[i]; if (!e || e.type !== 'note') return false;
+  const sh = ch => { if (!ch) return ch; const lo = String(ch).toLowerCase(); const c = lo.charCodeAt(0) + d; if (c < 97 || c > 109) return null; const n = String.fromCharCode(c); return ch === lo ? n : n.toUpperCase(); };
+  const all = [].concat(e.pitches || [], e.rawPitches || [], (e.notes || []).map(n => n.pitch), e.accidentalPitch ? [e.accidentalPitch] : []);
+  if (all.some(p => sh(p) === null)) { gregGst('Tonhöhe ausserhalb des Notensystems'); return false; }
+  gregPush();
+  if (e.pitches) e.pitches = e.pitches.map(sh);
+  if (e.rawPitches) e.rawPitches = e.rawPitches.map(sh);
+  (e.notes || []).forEach(n => { const keep = n.gabcSuf !== undefined && n.gabcSig === gregRawNoteSig(n); n.pitch = sh(n.pitch); if (keep) n.gabcSig = gregRawNoteSig(n); });
+  if (e.accidentalPitch) e.accidentalPitch = sh(e.accidentalPitch);
+  gregRefreshList();
+  return true;
+}
+function gregShortcutHelp() {
+  showModal('⌨ Tastenkürzel (Choral)',
+    'Neume wählen:  1 Punctum · 2 Virga · 3 Quilisma · P Podatus · C Clivis · T Torculus · R Porrectus · S Scandicus · K Climacus · L Salicus · I Puncta inclinata\n' +
+    'Trennstriche:  ,  minima · ;  minor · :  maior · :: (zweimal :) Doppelstrich\n' +
+    'Vorzeichen für die nächste Note:  B  b · #  Kreuz · N  Auflösung\n' +
+    'Leertaste:  Wortende für die nächste Neume\n\n' +
+    '← / →  vorige / nächste Note bearbeiten\n' +
+    'Shift + ↑ / ↓  gewählte Note einen Ton höher / tiefer\n' +
+    'Entf  gewählten Eintrag löschen · Enter  Silbe der gewählten Note bearbeiten · Esc  schliessen\n' +
+    'Strg+Z / Strg+Y  rückgängig / wiederholen · Strg+S  speichern\n\n' +
+    'Im Bearbeitungsfenster: Enter übernehmen · Esc abbrechen · Alt+← / Alt+→ vorige / nächste Note\n' +
+    'Im Silbenfeld unter der Note: Enter übernehmen · Tab nächste Note · Shift+Tab vorige · Esc überspringen\n\n' +
+    '(Nur am PC/Tablet, nicht während der Eingabe in ein Textfeld.)',
+    [{ label: 'OK', fn: () => closeModal() }]);
+}
+document.addEventListener('keydown', ev => {
+  if (ev.ctrlKey || ev.metaKey || (ev.altKey && !/^Arrow/.test(ev.key))) return;
+  const panel = document.getElementById('greg-panel');
+  if (!panel || panel.style.display === 'none' || panel.classList.contains('greg-view')) return;
+  if (gregIsMobileViewport()) return;
+  const t = ev.target, tag = t && t.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+  const mb = document.getElementById('modal-bg'); if (mb && mb.classList.contains('open')) return;
+  const pop = document.getElementById('greg-edit-pop');
+  const sel = pop ? pop._idx : null;
+  const k = ev.key;
+  const lk = (k || '').toLowerCase();
+  const done = () => { ev.preventDefault(); ev.stopPropagation(); };
+  if (k === '?') { done(); gregShortcutHelp(); return; }
+  if (k === 'Escape' && pop) { done(); gregCloseEditForm(); gregRefreshListNoRender(); return; }
+  if (k === 'ArrowLeft' || k === 'ArrowRight') {
+    const dir = k === 'ArrowRight' ? 1 : -1;
+    done();
+    if (sel != null) { gregEditStep(sel, dir); return; }
+    const idxs = gregEntries.map((e, n) => e.type === 'note' ? n : -1).filter(n => n >= 0);
+    if (idxs.length) gregEditEntry(dir > 0 ? idxs[0] : idxs[idxs.length - 1]);
+    return;
+  }
+  if ((k === 'ArrowUp' || k === 'ArrowDown') && ev.shiftKey && sel != null) {
+    done();
+    if (gregShiftEntryPitch(sel, k === 'ArrowUp' ? 1 : -1)) { gregCloseEditForm(); gregAfterRenderOnce(() => gregEditEntry(sel)); }
+    return;
+  }
+  if ((k === 'Delete' || k === 'Backspace') && sel != null) { done(); gregCloseEditForm(); gregPush(); gregEntries.splice(sel, 1); gregRefreshList(); gregGst('Eintrag gelöscht (Strg+Z = rückgängig)'); return; }
+  if (k === 'Enter' && sel != null && pop._focus) { done(); pop._focus.focus(); if (pop._focus.select) pop._focus.select(); return; }
+  if (ev.altKey) return;
+  if (GREG_KEY_NEUMES[lk] && !ev.shiftKey) { done(); gregSelectNeume(GREG_KEY_NEUMES[lk]); return; }
+  if (lk === 'b') { done(); gregSetAccidental('x'); return; }
+  if (lk === 'n') { done(); gregSetAccidental('y'); return; }
+  if (k === '#') { done(); gregSetAccidental('#'); return; }
+  if (k === ' ') { done(); const w = document.getElementById('greg-wordend'); if (w) { w.checked = !w.checked; gregQuickbarSync(); gregGst('Wortende für die nächste Neume: ' + (w.checked ? 'an' : 'aus')); } return; }
+  if (k === ',' || k === ';') { done(); gregAddDiv(k); return; }
+  if (k === ':') {
+    done();
+    const last = gregEntries[gregEntries.length - 1];
+    if (last && last.type === 'divisio' && last.div === ':' && Date.now() - (window._gregColonAt || 0) < 900) { gregPush(); last.div = '::'; gregRefreshList(); window._gregColonAt = 0; }
+    else { gregAddDiv(':'); window._gregColonAt = Date.now(); }
+    return;
+  }
+}, true);
+
+// Komfort: grössere Bedienelemente (Standard am PC/Tablet)
+function gregComfortOn() { let v = null; try { v = localStorage.getItem('notatorComfort'); } catch (e) {} return v === null ? !gregIsMobileViewport() : v === '1'; }
+function gregComfortApply() { document.body.classList.toggle('nt-comfort', gregComfortOn()); }
+function gregComfortToggle() { try { localStorage.setItem('notatorComfort', gregComfortOn() ? '0' : '1'); } catch (e) {} gregComfortApply(); gregGst('Grosse Bedienelemente: ' + (gregComfortOn() ? 'an' : 'aus')); }
 
 function gregSetClef(v, silent) {
   gregClefVal = GREG_CLEF_MAP[v] || (/^[cf]b?[1-4]$/.test(v || '') ? v : 'c3');
@@ -7403,7 +7723,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '316';
+const NOTATOR_BUILD_ID = '317';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8917,8 +9237,12 @@ setTimeout(function(){
   document.getElementById('greg-dropcap-letter')?.addEventListener('keydown',e=>{if(e.key==='Enter')gregInsertDropCapLetter();});
   document.getElementById('greg-dropcap')?.addEventListener('change',gregRender);
   // Neume grid (visual picker)
+  gregComfortApply();
   gregBuildNeumeGrid();
   gregUpdateMoraUI();
+  // Bearbeitungsfenster folgt der Note beim Scrollen
+  document.getElementById('greg-canvas-wrap')?.addEventListener('scroll', () => { gregEditPopPlace(); gregSylInlineClose(true); }, { passive: true });
+  window.addEventListener('resize', () => gregEditPopPlace());
   const _restored = gregTryRestoreAutosave(); // before the initial render, so it renders the restored content (if any)
   try { ntInitDirtyTracking(_restored); } catch (e) { console.warn(e); }
   setTimeout(gregRender,200);
@@ -18157,6 +18481,9 @@ function ntMoreMenu(btn) {
   const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:12px;padding:5px 8px';
     b.onclick = () => { d.remove(); fn(); }; d.appendChild(b); };
   item('↻ Nach neuer Version suchen', 'Prüft, ob eine neuere Notator-Version online ist', () => ntCheckForUpdateManual());
+  item((gregComfortOn() ? '☑' : '☐') + ' Grosse Bedienelemente (Komfort)', 'Grössere Schrift, Felder und Kästchen im Choral-Editor', () => gregComfortToggle());
+  item((gregAskSylOn() ? '☑' : '☐') + ' Silbe nach dem Setzen abfragen', 'Nach dem Setzen einer Neume ohne Silbe erscheint unter der Note ein Silbenfeld', () => { gregAskSylSet(!gregAskSylOn()); gregGst('Silbe nach dem Setzen abfragen: ' + (gregAskSylOn() ? 'an' : 'aus')); });
+  item('⌨ Tastenkürzel', 'Übersicht der Tastenkürzel im Choral-Editor (PC/Tablet)', () => gregShortcutHelp());
   item('🧪 Selbsttest', 'Regressionstests (GABC-Import/-Export, Orgelfassung) – das offene Stück bleibt unverändert', () => { if (window._ntTab !== 'greg' && typeof switchTab === 'function') switchTab('greg'); gregSelfTest(); });
   document.body.appendChild(d);
   const close = e => { if (!d.contains(e.target) && e.target !== btn) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
