@@ -273,6 +273,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" onclick="gregAddSection()" style="font-size:10px;padding:2px 6px;background:#1a3a5a;color:#a0c0e0;border-color:#2a5a8a" title="Neuen Abschnitt hinzufügen">+ Abschnitt</button>
         <button class="b" onclick="ntPsalmToneShow()" style="font-size:10px;padding:2px 6px" title="Psalmton-Assistent: Text eingeben, Psalmton wählen – Notator setzt die Noten">&#9835; Psalmton …</button>
+        <button class="b" onclick="gregTextFirstShow()" style="font-size:10px;padding:2px 6px" title="Text zuerst eingeben, Silben werden getrennt – danach bekommt jede gesetzte Neume automatisch die nächste Silbe">&#128221; Text zuerst …</button>
       </div>
       <div style="padding:4px 8px;background:#151e10;border-bottom:1px solid #2a3820">
         <div style="font-size:9px;color:#6b8a60;margin-bottom:3px;font-variant:small-caps;cursor:pointer" onclick="gregToggleKopf()" id="greg-kopf-hdr">&#9998; Kopf-Bereich ▾</div>
@@ -374,6 +375,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button id="greg-finish-open-neume" class="b" onclick="gregFinishPendingNeume()" style="display:none;font-size:9px;padding:1px 6px;margin-bottom:2px" title="Neume mit den bisher gesetzten Noten abschliessen (oder Enter-Taste)">✓ Fertig (Enter)</button>
         <div style="display:flex;gap:4px;align-items:center">
           <span style="font-size:9px;color:#6b8a60;min-width:55px">Silbe</span>
+          <span class="greg-tq" style="display:none;gap:4px;align-items:center;flex-wrap:wrap;font-size:11px"></span>
           <input id="greg-syllable" type="text" placeholder="z.B. Ky-" style="flex:0 0 6em;width:6em;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -460,7 +462,9 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b" onclick="gregAddDiv(',')" title="Divisio minima (Taste ,)">,</button><button class="b" onclick="gregAddDiv(';')" title="Divisio minor (Taste ;)">;</button><button class="b" onclick="gregAddDiv(':')" title="Divisio maior (Taste :)">:</button><button class="b" onclick="gregAddDiv('::')" title="Doppelstrich (Taste : zweimal)">::</button><button class="b" onclick="gregAddSpecial('*')" title="Asterisk">&#x2217;</button><button class="b" onclick="gregInsertVers()" title="Vers (Vorsänger)">℣</button><button class="b" onclick="gregInsertResp()" title="Responsorium">℟</button>
         <span class="qb-sep"></span>
         <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach Setzen</label>
+        <button class="b" onclick="gregTextFirstShow()" title="Text zuerst eingeben – jede gesetzte Neume bekommt die nächste Silbe">📝 Text zuerst</button>
         <button class="b" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
+        <span class="greg-tq" style="display:none;gap:4px;align-items:center;flex-basis:100%"></span>
       </div>
       <div id="greg-mobile-scale-outer">
         <div id="greg-mobile-scale-wrap">
@@ -1763,16 +1767,20 @@ function gregRenderActiveOnly() {
       // accuracy (both for placing new notes and for click-to-edit) at any
       // Staff Size other than the 20pt/zoom=1 default.
       svgEl.onclick = function(ev) {
-        gregHandleClick(svgEl, ev.clientX, ev.clientY);
+        window._gregShiftClick = !!ev.shiftKey; // Shift+Klick: Neume ohne Silbe (Melisma)
+        gregGhostRemove(svgEl);
+        try { gregHandleClick(svgEl, ev.clientX, ev.clientY); } finally { window._gregShiftClick = false; }
       };
       svgEl.onmousemove = function(ev) {
-        if (_gregPending) { svgEl.style.cursor = 'crosshair'; return; }
         const pt = svgEl.createSVGPoint();
         pt.x = ev.clientX; pt.y = ev.clientY;
         const svgP = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+        if (_gregPending) { svgEl.style.cursor = 'crosshair'; gregGhostShow(svgEl, svgP); return; }
         const hit = gregFindEntryAtNativePoint(_gregScore, gregEntries, svgP.x, svgP.y, _gregCtxtRef);
         svgEl.style.cursor = (hit != null) ? 'pointer' : 'crosshair';
+        if (hit != null) gregGhostRemove(svgEl); else gregGhostShow(svgEl, svgP);
       };
+      svgEl.onmouseleave = function() { gregGhostRemove(svgEl); };
       // Re-apply (or clear) the red edit-highlight on the freshly rendered
       // SVG, since a full re-render replaces all elements — without this,
       // an open edit form's highlight would silently vanish the next time
@@ -2038,7 +2046,9 @@ function gregHandleClick(svgEl, clientX, clientY) {
 
   const neume = (document.getElementById('greg-neume-sel')||{value:'punctum'}).value;
   const nPitch = NEUME_PITCHES[neume] || 1;
-  const _sylRaw = (document.getElementById('greg-syllable')||{value:''}).value;
+  const _noSyl = !!(window._gregShiftClick || window._gregNoSylOnce) && !!gregTextQueue();
+  if (_noSyl && !_gregPending) window._gregNoSylOnce = false;
+  const _sylRaw = _noSyl ? '' : (document.getElementById('greg-syllable')||{value:''}).value;
   const syllable = _sylRaw.trim(); // Leerzeichen am Ende = Wortende (Nutzerwunsch 2026-10-22)
   // Unified Mora-Checkboxen (N1..N4, kein separater ".mora"-Hacken mehr,
   // 2026-08-10 Runde 2 -- Nutzerwunsch): welche Note die "letzte" ist,
@@ -2060,7 +2070,7 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const quilisma = !!(document.getElementById('greg-quilisma')||{}).checked;
   const quilismaPos = parseInt((document.getElementById('greg-quilisma-pos')||{value:'1'}).value) || 1;
   const accidental = _gregAccidental || null;
-  const wordEnd = !!(document.getElementById('greg-wordend')||{}).checked || (/\s$/.test(_sylRaw) && !!syllable);
+  const wordEnd = !_noSyl && (!!(document.getElementById('greg-wordend')||{}).checked || (/\s$/.test(_sylRaw) && !!syllable));
   const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;
 
   const isDescending = ['clivis','porrectus','climacus','puncta_inclinata','porrectus_flexus'].includes(neume);
@@ -2124,6 +2134,7 @@ function gregFinishPendingNeume() {
 // Vorzeichen-Knöpfe nicht mehr hervorgehoben).
 function gregInputConsumed() {
   const we = document.getElementById('greg-wordend'); if (we) { we.checked = false; we._auto = false; }
+  if (gregTextQueue()) setTimeout(() => gregTextQueueAfterPlace(gregEntries[gregEntries.length - 1]), 0);
   // Mora gilt nur für die eben gesetzte Neume (Nutzerwunsch 2026-10-22)
   [1,2,3,4].forEach(p => { const m = document.getElementById('greg-mora-n' + p); if (m) m.checked = false; });
   const ap = document.getElementById('greg-acc-pos'); if (ap) { ap.value = ''; ap.style.display = 'none'; }
@@ -3912,10 +3923,136 @@ function gregInsertTextOnly() {
   gregGst('Text ohne Noten eingefügt: «' + t + '»');
 }
 
+// ── Vorschau beim Platzieren (Schatten der Note + Tonbuchstabe) ──
+function gregGhostRemove(svgEl) { const g = (svgEl || document).querySelector('#greg-ghost'); if (g) g.remove(); }
+function gregGhostShow(svgEl, svgP) {
+  if (gregIsMobileViewport() || !_gregScore || !_gregCtxtRef) return;
+  const panel = document.getElementById('greg-panel'); if (panel && panel.classList.contains('greg-view')) { gregGhostRemove(svgEl); return; }
+  const lines = _gregScore.lines; if (!lines || !lines.length) return;
+  let best = lines[0], bd = Infinity;
+  for (const ln of lines) { const d = Math.abs(svgP.y - ln.bounds.y); if (d < bd) { bd = d; best = ln; } }
+  const si = _gregCtxtRef.staffInterval;
+  const sp = Math.round(-(svgP.y - best.bounds.y) / si);
+  const letter = staffPosToGabc(sp);
+  if (sp + 6 < 0 || sp + 6 > 12) { gregGhostRemove(svgEl); return; }
+  const y = best.bounds.y - sp * si;
+  const NS = 'http://www.w3.org/2000/svg';
+  let g = svgEl.querySelector('#greg-ghost');
+  if (!g) {
+    g = document.createElementNS(NS, 'g'); g.id = 'greg-ghost'; g.setAttribute('pointer-events', 'none');
+    const r = document.createElementNS(NS, 'rect'); r.setAttribute('fill', '#2a6ac0'); r.setAttribute('fill-opacity', '0.45'); r.setAttribute('rx', si * 0.15);
+    const t = document.createElementNS(NS, 'text'); t.setAttribute('fill', '#2a6ac0'); t.setAttribute('font-family', 'system-ui,sans-serif'); t.setAttribute('font-weight', 'bold');
+    const l = document.createElementNS(NS, 'line'); l.setAttribute('stroke', '#2a6ac0'); l.setAttribute('stroke-opacity', '0.5'); l.setAttribute('stroke-dasharray', '3 3');
+    g.appendChild(l); g.appendChild(r); g.appendChild(t); svgEl.appendChild(g);
+  }
+  const [l, r, t] = g.childNodes;
+  const w = si * 1.9, h = si * 1.7;
+  r.setAttribute('x', svgP.x - w / 2); r.setAttribute('y', y - h / 2); r.setAttribute('width', w); r.setAttribute('height', h);
+  l.setAttribute('x1', svgP.x - w * 1.6); l.setAttribute('x2', svgP.x + w * 1.6); l.setAttribute('y1', y); l.setAttribute('y2', y);
+  l.style.display = (sp % 2 === 0) ? 'none' : ''; // Zwischenraum: Hilfsstrich zeigt die Höhe
+  const nd = NEUME_DEFS.find(n => n.val === (document.getElementById('greg-neume-sel') || {}).value) || NEUME_DEFS[0];
+  const step = _gregPending ? ' · Ton ' + (_gregPending.pitches.length + 1) + '/' + (_gregPending._need || '') : '';
+  t.textContent = letter + '  ' + nd.label + step;
+  t.setAttribute('x', svgP.x + w * 0.9); t.setAttribute('y', y - h * 0.7); t.setAttribute('font-size', si * 1.7);
+}
+
+// ── Text zuerst, Noten danach ──
+// Text eingeben -> Silben trennen (bearbeitbar) -> jede gesetzte Neume
+// bekommt automatisch die nächste Silbe (Wortende inklusive). Shift+Klick
+// oder «ohne Silbe» setzt eine Neume ohne Silbe (Melisma).
+function gregTextQueue() { return window._gregTextQ || null; }
+function gregTextFirstShow() {
+  showModal('📝 Text zuerst, Noten danach', '', []);
+  const body = document.getElementById('modal-body');
+  body.innerHTML =
+    '<div style="font-size:12px;color:var(--ink2);line-height:1.45;margin-bottom:6px">1. Text eingeben oder einfügen · 2. «Silben trennen» · 3. Trennung prüfen und bei Bedarf korrigieren (Bindestriche) · 4. «Los» – danach bekommt jede Neume, die du setzt, automatisch die nächste Silbe.</div>' +
+    '<textarea id="tf-text" rows="4" style="width:100%;box-sizing:border-box;font-size:15px;font-family:inherit" placeholder="z.B. Kýrie eléison. * Christe eléison."></textarea>' +
+    '<div style="display:flex;gap:6px;align-items:center;margin:6px 0"><button class="b" id="tf-split">✂ Silben trennen</button><span style="font-size:11px;color:var(--ink2)">Akzente (Kýrie) helfen nicht bei der Trennung, werden aber übernommen.</span></div>' +
+    '<textarea id="tf-syl" rows="4" style="width:100%;box-sizing:border-box;font-size:15px;font-family:inherit" placeholder="Ký-ri-e e-lé-i-son. * Chri-ste e-lé-i-son."></textarea>' +
+    '<div style="font-size:11px;color:var(--ink2);margin-top:4px;line-height:1.4">Bindestrich = Silbengrenze, Leerzeichen = Wortende. Einzelne Zeichen wie <b>*</b>, <b>℣.</b>, <b>℟.</b> werden an ihrer Stelle automatisch eingefügt. Melismen: Neume mit <b>Shift+Klick</b> (oder Knopf «ohne Silbe») setzen – sie bekommt keine Silbe.</div>' +
+    '<div id="tf-msg" style="font-size:11px;color:#a03020;min-height:14px"></div>';
+  const tx = document.getElementById('tf-text'), sy = document.getElementById('tf-syl');
+  const split = () => { sy.value = tx.value.split(/\n/).map(line => line.trim().split(/\s+/).filter(w => w).map(w => /[A-Za-zÀ-ÿǽǼæœÆŒ]/.test(w) ? ntPtSyllabify(w).join('-') : w).join(' ')).join('\n'); };
+  document.getElementById('tf-split').onclick = split;
+  const btns = document.getElementById('modal-btns');
+  const mk = (l, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = l; b.onclick = fn; btns.appendChild(b); };
+  mk('▶ Los', () => {
+    if (!sy.value.trim() && tx.value.trim()) split();
+    const q = gregTextParse(sy.value);
+    if (!q.length) { document.getElementById('tf-msg').textContent = 'Kein Text.'; return; }
+    closeModal();
+    window._gregTextQ = { syls: q, pos: 0 };
+    if (window._ntTab && window._ntTab !== 'greg') switchTab('greg');
+    gregTextQueueFill();
+  });
+  mk('Abbrechen', () => closeModal());
+  setTimeout(() => tx.focus(), 50);
+}
+function gregTextParse(txt) {
+  const out = [];
+  String(txt || '').split(/\s+/).filter(w => w).forEach(w => {
+    if (/^(\*|†|\+)$/.test(w)) { out.push({ special: 'special', t: w === '+' ? '†' : w }); return; }
+    if (/^(℣|℟|[VR]\/)\.?$/.test(w)) { out.push({ special: 'textonly', t: w.replace(/^V\//, '℣').replace(/^R\//, '℟') }); return; }
+    const parts = w.split('-').filter(x => x);
+    parts.forEach((t, i) => out.push({ t, we: i === parts.length - 1 }));
+  });
+  return out;
+}
+// Nächste Silbe ins Silbenfeld (Sonderzeichen unterwegs direkt einfügen)
+function gregTextQueueFill() {
+  const q = gregTextQueue(); if (!q) { gregTextQueueUi(); return; }
+  let added = false;
+  while (q.pos < q.syls.length && q.syls[q.pos].special) {
+    const sp = q.syls[q.pos++]; gregPush();
+    gregEntries.push(sp.special === 'special' ? { type: 'special', text: sp.t } : { type: 'textonly', text: sp.t });
+    added = true;
+  }
+  if (added) gregRefreshList();
+  const ls = document.getElementById('greg-syllable'), lw = document.getElementById('greg-wordend');
+  if (q.pos >= q.syls.length) {
+    window._gregTextQ = null;
+    if (ls) ls.value = ''; if (lw) { lw.checked = false; lw._auto = false; }
+    gregQuickbarSync(); gregTextQueueUi();
+    gregGst('Text vollständig gesetzt ✓');
+    return;
+  }
+  const c = q.syls[q.pos];
+  if (ls) ls.value = c.t + (c.we ? ' ' : '');
+  if (lw) { lw.checked = !!c.we; lw._auto = !!c.we; }
+  gregQuickbarSync(); gregTextQueueUi();
+}
+function gregTextQueueStep(d) {
+  const q = gregTextQueue(); if (!q) return;
+  q.pos = Math.max(0, Math.min(q.syls.length, q.pos + d));
+  if (d < 0) while (q.pos > 0 && q.syls[q.pos].special) q.pos--;
+  gregTextQueueFill();
+}
+function gregTextQueueEnd() { window._gregTextQ = null; const ls = document.getElementById('greg-syllable'); if (ls) ls.value = ''; const lw = document.getElementById('greg-wordend'); if (lw) { lw.checked = false; lw._auto = false; } gregQuickbarSync(); gregTextQueueUi(); gregGst('Text-Modus beendet'); }
+function gregTextNoSyl() { window._gregNoSylOnce = !window._gregNoSylOnce; gregTextQueueUi(); }
+function gregTextQueueUi() {
+  const q = gregTextQueue();
+  document.querySelectorAll('.greg-tq').forEach(box => {
+    if (!q) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.style.display = 'inline-flex';
+    const c = q.syls[q.pos] || {}, nx = q.syls.slice(q.pos + 1, q.pos + 4).map(x => x.t + (x.we ? ' ' : '-')).join('');
+    box.innerHTML = '<span title="Nächste Silbe aus dem Text">📝 <b style="font-size:15px;color:#f0e0a0">' + ntEscAttr(c.t || '') + (c.we ? '' : '-') + '</b> <span style="opacity:.6">' + ntEscAttr(nx) + '</span> (' + (q.pos + 1) + '/' + q.syls.length + ')</span>' +
+      '<button class="b" onclick="gregTextQueueStep(-1)" title="Eine Silbe zurück">◀</button><button class="b" onclick="gregTextQueueStep(1)" title="Silbe überspringen">▶</button>' +
+      '<button class="b" onclick="gregTextNoSyl()" title="Nächste Neume ohne Silbe setzen (Melisma) – auch mit Shift+Klick"' + (window._gregNoSylOnce ? ' style="background:#5a3a20;color:#fff"' : '') + '>ohne Silbe</button>' +
+      '<button class="b" onclick="gregTextQueueEnd()" title="Text-Modus beenden">✕</button>';
+  });
+}
+// Nach dem Setzen: war es die erwartete Silbe -> weiter zur nächsten
+function gregTextQueueAfterPlace(e) {
+  const q = gregTextQueue(); if (!q) return;
+  const c = q.syls[q.pos];
+  if (c && e && e.syllable === c.t) q.pos++;
+  gregTextQueueFill();
+}
+
 // ── Silbe direkt unter der gesetzten Note eingeben ──
 function gregAskSylOn() { try { return localStorage.getItem('notatorAskSyl') !== '0'; } catch (e) { return true; } }
 function gregAskSylSet(on) { try { localStorage.setItem('notatorAskSyl', on ? '1' : '0'); } catch (e) {} const q = document.getElementById('greg-qb-ask'); if (q) q.checked = !!on; }
-function gregSylAsk(i) { if (gregAskSylOn()) gregAfterRenderOnce(() => gregSylInlineOpen(i)); }
+function gregSylAsk(i) { if (gregAskSylOn() && !gregTextQueue()) gregAfterRenderOnce(() => gregSylInlineOpen(i)); }
 function gregSylInlineClose(commit) {
   const inp = document.getElementById('greg-syl-inline'); if (!inp) return;
   const f = inp._commit; inp._commit = null; inp.remove();
@@ -3974,7 +4111,8 @@ function gregShortcutHelp() {
     'Trennstriche:  ,  minima · ;  minor · :  maior · :: (zweimal :) Doppelstrich\n' +
     'Vorzeichen für die nächste Note:  B  b · #  Kreuz · N  Auflösung\n' +
     'Leertaste:  Wortende für die nächste Neume (oder Leerzeichen am Ende der Silbe tippen)\n' +
-    'M:  Mora auf der letzten Note der nächsten Neume (wird nach dem Setzen zurückgesetzt)\n\n' +
+    'M:  Mora auf der letzten Note der nächsten Neume (wird nach dem Setzen zurückgesetzt)\n' +
+    'Text zuerst: Shift+Klick setzt eine Neume ohne Silbe (Melisma)\n\n' +
     '← / →  vorige / nächste Note bearbeiten\n' +
     'Shift + ↑ / ↓  gewählte Note einen Ton höher / tiefer\n' +
     'Entf  gewählten Eintrag löschen · Enter  Silbe der gewählten Note bearbeiten · Esc  schliessen\n' +
@@ -7757,7 +7895,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '319';
+const NOTATOR_BUILD_ID = '320';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15984,6 +16122,16 @@ function clGabcToAbc(gabcList, opts) {
     });
     if (line.length) { line._w = w; lines.push(line); }
     lines.forEach(ln => { const f = ln.find(x => x.kind === 'syl'); if (f) f.lbStart = true; });
+    // iij./ij. gehören zur vorigen Anrufung: beginnt die neue Zeile direkt nach
+    // dem Strich, bleiben sie am Ende der vorigen Zeile vor dem Strich (Nutzerwunsch 2026-10-23)
+    for (let li = 1; li < lines.length; li++) {
+      const first = lines[li][0], prevLn = lines[li - 1], lastU = prevLn[prevLn.length - 1];
+      if (!first || first.kind !== 'syl' || !first.ann || !first.ann.length || !lastU || lastU.kind !== 'bar') continue;
+      const keep = first.ann.filter(t => /^\s*i{1,3}j\.\s*$/.test(t));
+      if (!keep.length) continue;
+      first.ann = first.ann.filter(t => keep.indexOf(t) < 0);
+      lastU.ann = (lastU.ann || []).concat(keep);
+    }
 
     // Begleitsatz: Abschnitte (Akkordwechsel an Schwerpunkten) bilden + harmonisieren
     const segs = [];
@@ -18086,7 +18234,7 @@ function ntPtSyllabify(word) {
     if (b - a <= 1) cut = b - a === 0 ? b : a;
     else {
       const last2 = lw.slice(b - 2, b);
-      cut = (/^[bcdfgpt][lr]$/.test(last2) || /^(ch|ph|th|gn|qu|gu)$/.test(last2)) ? b - 2 : b - 1; // kirchenlateinisch: a-gnus, ex-quí-ro
+      cut = (/^[bcdfgpt][lr]$/.test(last2) || /^(ch|ph|th|gn|qu|gu)$/.test(last2) || (b - a === 2 && /^s[tpc]$/.test(last2))) ? b - 2 : b - 1; // kirchenlateinisch: a-gnus, ex-quí-ro, Chri-ste, ré-spi-ce
       if (cl === 'x') cut = a;
     }
     cuts.push(cut);
