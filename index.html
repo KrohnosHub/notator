@@ -407,7 +407,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b" onclick="gregAddDirective('Ps.')" style="font-size:10px;padding:0px 5px" title="Ps. (Psalm-Rubrik, kursiv, eigene Silbe ohne Note)"><i>Ps.</i></button>
         <button class="b" onclick="gregAddDirective('ij.')" style="font-size:10px;padding:0px 5px" title="ij. (Doppel-Antiphon, kursiv)"><i>ij.</i></button>
         <button class="b" onclick="gregAddDirective('iij.')" style="font-size:10px;padding:0px 5px" title="iij. (Dreifach-Antiphon, kursiv)"><i>iij.</i></button>
-        <button class="b" onclick="gregInsertTextOnly()" style="font-size:10px;padding:0px 5px" title="Text ohne Noten in der Textzeile (z.B. «℟. Roráte.» als Wiederholungsangabe) – nimmt den Text aus dem Feld «Silbe», sonst Eingabefenster">Abc ohne Note</button>
+        <button class="b" onclick="gregInsertTextOnly()" style="font-size:10px;padding:0px 5px" title="Text ohne Noten in der Textzeile (z.B. «℟. Roráte.» als Wiederholungsangabe) – nimmt den Text aus dem Feld «Silbe», sonst Eingabefenster">Text ohne Noten</button>
         <button class="b" onclick="gregAddLinebreak()" style="font-size:10px;padding:0px 5px" title="Neue leere Notenlinie einfügen">&#9135; Linie</button>
         <button class="b" onclick="gregAddComment()" style="font-size:10px;padding:0px 5px" title="Freitextfeld platzieren">&#128172; Text</button>
       </div>
@@ -458,12 +458,30 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <span id="greg-qb-mora" title="Mora (.) auf Note 1–4 der nächsten Neume – wird nach dem Setzen automatisch zurückgesetzt (Taste M = Mora auf der letzten Note)">Mora (.): <label><input type="checkbox" data-p="1">N1</label><label><input type="checkbox" data-p="2">N2</label><label><input type="checkbox" data-p="3">N3</label><label><input type="checkbox" data-p="4">N4</label></span>
         <span class="qb-sep"></span>
         <button class="b qb-acc" data-acc="x" onclick="gregSetAccidental('x')" title="b molle für die nächste Note (Taste B)">&#x266D;</button><button class="b qb-acc" data-acc="#" onclick="gregSetAccidental('#')" title="Kreuz für die nächste Note (Taste #)">&#x266F;</button><button class="b qb-acc" data-acc="y" onclick="gregSetAccidental('y')" title="Auflösungszeichen für die nächste Note (Taste N)">&#x266E;</button>
+        <span data-mshow="greg-acc-pos" style="display:none"><select data-m="greg-acc-pos" title="Vorzeichen vor welcher Note der nächsten Neume"><option value="">auto</option><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option><option value="4">auf N4</option></select></span>
         <span class="qb-sep"></span>
         <button class="b" onclick="gregAddDiv(',')" title="Divisio minima (Taste ,)">,</button><button class="b" onclick="gregAddDiv(';')" title="Divisio minor (Taste ;)">;</button><button class="b" onclick="gregAddDiv(':')" title="Divisio maior (Taste :)">:</button><button class="b" onclick="gregAddDiv('::')" title="Doppelstrich (Taste : zweimal)">::</button><button class="b" onclick="gregAddSpecial('*')" title="Asterisk">&#x2217;</button><button class="b" onclick="gregInsertVers()" title="Vers (Vorsänger)">℣</button><button class="b" onclick="gregInsertResp()" title="Responsorium">℟</button>
         <span class="qb-sep"></span>
+        <button class="b" onclick="gregAddDirective('Ant.')" title="Ant. (Antiphon-Rubrik)"><i>Ant.</i></button><button class="b" onclick="gregAddDirective('Ps.')" title="Ps. (Psalm-Rubrik)"><i>Ps.</i></button><button class="b" onclick="gregAddDirective('ij.')" title="ij. (zweimal)"><i>ij.</i></button><button class="b" onclick="gregAddDirective('iij.')" title="iij. (dreimal)"><i>iij.</i></button>
+        <button class="b" onclick="gregInsertTextOnly()" title="Text ohne Noten in der Textzeile (z.B. «℟. Roráte.») – nimmt den Text aus dem Silbenfeld, sonst Eingabefenster">Text ohne Noten</button>
+        <button class="b" id="greg-qb-finish" data-mshow="greg-finish-open-neume" onclick="gregFinishPendingNeume()" style="display:none;background:#1e4a1e;color:#d8f0c0" title="Offene Neume (z.B. Climacus) mit den bisher gesetzten Noten abschliessen (Enter)">✓ Fertig</button>
+        <span class="qb-sep"></span>
+        <button class="b" onclick="gregUndo()" title="Rückgängig (Strg+Z)">↩</button><button class="b" onclick="gregRedo()" title="Wiederholen (Strg+Y)">↪</button>
         <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach Setzen</label>
         <button class="b" onclick="gregTextFirstShow()" title="Text zuerst eingeben – jede gesetzte Neume bekommt die nächste Silbe">📝 Text zuerst</button>
         <button class="b" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
+        <button class="b" id="greg-qb-more-btn" onclick="gregQbExtraToggle()" title="Weitere, seltener gebrauchte Angaben: Iktus, Episema, Modifier, Trennstriche ;1–;6, Linie, Freitext">mehr ▾</button>
+        <span id="greg-qb-extra" style="display:none;flex-basis:100%;gap:4px 10px;flex-wrap:wrap;align-items:center;padding-top:3px;border-top:1px solid #2a3820">
+          <label><input type="checkbox" data-m="greg-iktus"> Iktus (')</label><span data-mshow="greg-iktus-pos-w" style="display:none"><select data-m="greg-iktus-pos"><option value="">Standard</option><option value="above">oben</option><option value="below">unten</option></select></span>
+          <label><input type="checkbox" data-m="greg-episema"> Episema (_)</label><span data-mshow="greg-episema-pos" style="display:none"><select data-m="greg-episema-pos"><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option></select></span>
+          <span class="qb-sep"></span>
+          <span style="opacity:.8">Modifier</span>
+          <label title="Liqueszenz"><input type="checkbox" data-m="greg-liquescent"> Liq.</label><label title="Oriscus"><input type="checkbox" data-m="greg-oriscus"> Orisc.</label><label title="Strophicus"><input type="checkbox" data-m="greg-strophicus"> Stroph.</label><label title="Pressus"><input type="checkbox" data-m="greg-pressus"> Pres.</label><label title="Quilisma"><input type="checkbox" data-m="greg-quilisma"> Quilisma</label><span data-mshow="greg-quilisma-pos-w" style="display:none">auf <select data-m="greg-quilisma-pos"><option value="1">Note 1</option><option value="2">Note 2</option><option value="3">Note 3</option><option value="4">Note 4</option></select></span>
+          <span class="qb-sep"></span>
+          <select onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche ;1–;6"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
+          <button class="b" onclick="gregAddLinebreak()" title="Neue Notenlinie (Zeilenumbruch) einfügen">⏎ Linie</button>
+          <button class="b" onclick="gregAddComment()" title="Freitextfeld platzieren (Notiz, standardmässig nicht im PDF)">💬 Freitext</button>
+        </span>
         <span class="greg-tq" style="display:none;gap:4px;align-items:center;flex-basis:100%"></span>
       </div>
       <div id="greg-mobile-scale-outer">
@@ -3264,6 +3282,46 @@ function gregSylSpaceWordEnd(v) {
   else if (!sp && lw.checked && lw._auto) { lw.checked = false; lw._auto = false; }
   const qw = document.getElementById('greg-qb-we'); if (qw) qw.checked = lw.checked;
 }
+// Spiegel der Seitenleiste in der Werkzeugleiste: data-m = Feld links (Wert/Haken),
+// data-mshow = Element links, dessen Sichtbarkeit übernommen wird
+function gregQbMirror() {
+  const qb = document.getElementById('greg-quickbar'); if (!qb) return;
+  if (!qb._mirrorInit) {
+    qb._mirrorInit = true;
+    qb.querySelectorAll('[data-m]').forEach(el => el.addEventListener('change', () => {
+      const src = document.getElementById(el.dataset.m); if (!src) return;
+      if (el.type === 'checkbox') src.checked = el.checked; else src.value = el.value;
+      src.dispatchEvent(new Event('change', { bubbles: true }));
+      gregQuickbarSync();
+    }));
+    // Änderungen links (Haken, Sichtbarkeit, Fertig-Knopf) sofort oben nachführen
+    const panel = document.getElementById('greg-input-panel');
+    if (panel && window.MutationObserver) {
+      let t = 0; const later = () => { if (!t) t = requestAnimationFrame(() => { t = 0; gregQbMirror(); }); };
+      new MutationObserver(later).observe(panel, { attributes: true, subtree: true, attributeFilter: ['style', 'disabled'] });
+      panel.addEventListener('change', later);
+    }
+    try { if (localStorage.getItem('notatorQbExtra') === '1') document.getElementById('greg-qb-extra').style.display = 'flex'; } catch (e) {}
+  }
+  qb.querySelectorAll('[data-m]').forEach(el => {
+    const src = document.getElementById(el.dataset.m); if (!src || document.activeElement === el) return;
+    if (el.type === 'checkbox') { el.checked = src.checked; el.disabled = src.disabled; }
+    else el.value = src.value;
+  });
+  qb.querySelectorAll('[data-mshow]').forEach(el => {
+    const src = document.getElementById(el.dataset.mshow); if (!src) return;
+    el.style.display = (src.style.display === 'none' || getComputedStyle(src).display === 'none') ? 'none' : '';
+  });
+  const mb = document.getElementById('greg-qb-more-btn'), ex = document.getElementById('greg-qb-extra');
+  if (mb && ex) mb.textContent = ex.style.display === 'none' ? 'mehr ▾' : 'weniger ▴';
+}
+function gregQbExtraToggle() {
+  const ex = document.getElementById('greg-qb-extra'); if (!ex) return;
+  const on = ex.style.display === 'none';
+  ex.style.display = on ? 'flex' : 'none';
+  try { localStorage.setItem('notatorQbExtra', on ? '1' : '0'); } catch (e) {}
+  gregQbMirror();
+}
 // Werkzeugleiste über dem Notenblatt (PC/Tablet)
 const GREG_QB_NEUMES = ['punctum','virga','podatus','clivis','torculus','porrectus','scandicus','climacus','quilisma','puncta_inclinata'];
 const GREG_KEY_NEUMES = { '1':'punctum', '2':'virga', '3':'quilisma', 'p':'podatus', 'c':'clivis', 't':'torculus', 'r':'porrectus', 's':'scandicus', 'k':'climacus', 'l':'salicus', 'i':'puncta_inclinata' };
@@ -3282,7 +3340,7 @@ function gregQuickbarSync() {
       box.appendChild(b);
     });
     const more = document.getElementById('greg-qb-more');
-    if (more) more.innerHTML = '<option value="">mehr …</option>' + NEUME_DEFS.filter(n => GREG_QB_NEUMES.indexOf(n.val) < 0).map(n => '<option value="' + n.val + '">' + n.label + '</option>').join('');
+    if (more) more.innerHTML = '<option value="">weitere Neumen …</option>' + NEUME_DEFS.filter(n => GREG_QB_NEUMES.indexOf(n.val) < 0).map(n => '<option value="' + n.val + '">' + n.label + '</option>').join('');
     const qs = document.getElementById('greg-qb-syl'), ls = document.getElementById('greg-syllable');
     if (qs && ls) { qs.addEventListener('input', () => { ls.value = qs.value; }); ls.addEventListener('input', () => { qs.value = ls.value; }); }
     const qw = document.getElementById('greg-qb-we'), lw = document.getElementById('greg-wordend');
@@ -3300,6 +3358,7 @@ function gregQuickbarSync() {
     const lm = document.getElementById('greg-mora-n' + cb.dataset.p);
     if (lm) { cb.checked = lm.checked; cb.disabled = lm.disabled; cb.parentElement.style.opacity = lm.disabled ? '0.35' : '1'; }
   });
+  gregQbMirror();
   box.querySelectorAll('.qb-neu').forEach(b => b.classList.toggle('on', b.dataset.val === cur));
   const more = document.getElementById('greg-qb-more'); if (more) more.value = GREG_QB_NEUMES.indexOf(cur) < 0 ? cur : '';
   const qs = document.getElementById('greg-qb-syl'), ls = document.getElementById('greg-syllable'); if (qs && ls && document.activeElement !== qs) qs.value = ls.value;
@@ -7895,7 +7954,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '320';
+const NOTATOR_BUILD_ID = '321';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
