@@ -75,7 +75,7 @@ input[type=file]{display:none}
 .pi{font-size:11px;padding:2px 6px;cursor:pointer;border-radius:3px;margin-bottom:2px;color:var(--ink2)}
 .pi:hover{background:var(--parch2)}
 .pi.cur{background:var(--acc1);color:#fff}
-#modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+#modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2500;align-items:center;justify-content:center}
 #modal-bg.open{display:flex}
 #modal{background:var(--parch);border-radius:6px;padding:20px;max-width:480px;width:90%;max-height:92vh;overflow-y:auto;box-sizing:border-box;box-shadow:0 8px 40px rgba(0,0,0,.5)}
 #modal h2{font-family:var(--fh);font-size:15px;margin-bottom:8px;padding-right:30px}
@@ -654,6 +654,8 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
 // (Der frühere Klick-Noten-Editor wurde in Build 230 entfernt; die
 // klassische Fassung entsteht jetzt im Tab "Orgel (klassisch)".)
 function showModal(title,body,btns){
+  // Dialoge haben Vorrang: offenes Bearbeitungsfenster/Silbenfeld schliessen
+  try { if (document.getElementById('greg-edit-pop')) { gregCloseEditForm(); gregRefreshListNoRender(); } gregSylInlineClose(true); } catch (e) {}
   document.getElementById('modal-title').textContent=title;
   document.getElementById('modal-body').innerHTML='<p style="font-size:12px;color:var(--ink2);white-space:pre-line">'+body+'</p>';
   const bEl=document.getElementById('modal-btns');bEl.innerHTML='';
@@ -8073,7 +8075,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '331';
+const NOTATOR_BUILD_ID = '332';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8103,6 +8105,7 @@ function ntCheckForUpdate() {
 // in jedem Fall wird der aktuelle Stand vorher für die Wiederherstellung
 // gesichert (unabhängig von der Build-Nummer, siehe gregTryRestoreAutosave).
 function ntUpdateReload(newId) {
+  { const ub = document.getElementById('nt-update-bar'); if (ub) ub.remove(); }
   const doReload = () => {
     try {
       const st = gregBuildStateObject();
@@ -9646,7 +9649,7 @@ function gregSideToggle(force) { const on = force !== undefined ? !!force : (win
 function ntFileMenu(btn) {
   const old = document.getElementById('nt-file-pop'); if (old) { old.remove(); return; }
   const d = document.createElement('div'); d.id = 'nt-file-pop';
-  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:4px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:13px system-ui,sans-serif;display:flex;flex-direction:column;gap:3px;min-width:230px';
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:4px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:13px system-ui,sans-serif;display:flex;flex-direction:column;gap:3px;min-width:230px';
   const r = btn.getBoundingClientRect();
   d.style.top = (r.bottom + 4) + 'px'; d.style.left = Math.max(6, Math.min(r.left, window.innerWidth - 250)) + 'px';
   const toGreg = () => { if (window._ntTab && window._ntTab !== 'greg') switchTab('greg'); };
@@ -19087,7 +19090,7 @@ function ntMoreMenu(btn) {
   if (old) { old.remove(); return; }
   const d = document.createElement('div');
   d.id = 'nt-more-pop';
-  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:4px;min-width:230px';
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:4px;min-width:230px';
   const r = btn.getBoundingClientRect();
   d.style.top = (r.bottom + 4) + 'px';
   d.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
@@ -19120,7 +19123,7 @@ function ntSaveMenu(btn) {
   if (old) { const same = old._btn === btn; old.remove(); if (same) return; }
   const d = document.createElement('div');
   d.id = 'nt-save-pop'; d._btn = btn;
-  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:4px;min-width:220px';
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:4px;min-width:220px';
   const r = btn.getBoundingClientRect();
   d.style.top = Math.min(r.bottom + 4, window.innerHeight - 130) + 'px';
   d.style.left = Math.max(8, Math.min(r.right - 230, window.innerWidth - 238)) + 'px';
@@ -19221,7 +19224,7 @@ function ntViewScalePop(btn) {
   const src = btn.getAttribute('data-src');
   const d = document.createElement('div');
   d.id = 'nt-vs-pop'; d._btn = btn;
-  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;display:flex;align-items:center;gap:8px;width:min(300px,calc(100vw - 16px));box-sizing:border-box';
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;display:flex;align-items:center;gap:8px;width:min(300px,calc(100vw - 16px));box-sizing:border-box';
   const r = btn.getBoundingClientRect();
   d.style.top = Math.min(r.bottom + 4, window.innerHeight - 60) + 'px';
   d.style.left = Math.max(8, Math.min(r.left - 120, window.innerWidth - 308)) + 'px';
@@ -19253,7 +19256,7 @@ function ntPlayMore(btn) {
   if (old) { old.remove(); return; }
   const src = btn.getAttribute('data-src');
   const d = document.createElement('div'); d.id = 'nt-pm-pop';
-  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:13px system-ui,sans-serif;color:#c0d890;display:flex;flex-direction:column;gap:5px;min-width:220px';
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:13px system-ui,sans-serif;color:#c0d890;display:flex;flex-direction:column;gap:5px;min-width:220px';
   const rc = btn.getBoundingClientRect();
   d.style.top = (rc.bottom + 4) + 'px'; d.style.right = Math.max(8, window.innerWidth - rc.right) + 'px';
   const item = (label, fn) => { const b = document.createElement('button'); b.className = 'b'; b.innerHTML = label; b.style.cssText = 'text-align:left;font-size:13px;padding:7px 10px'; b.onclick = () => { d.remove(); setTimeout(() => fn(), 0); }; d.appendChild(b); };
@@ -19283,7 +19286,7 @@ function ntPlaySettings(btn) {
   const p = ntPlayPrefs();
   const d = document.createElement('div');
   d.id = 'nt-play-pop';
-  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;display:flex;flex-direction:column;gap:6px;min-width:200px';
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;display:flex;flex-direction:column;gap:6px;min-width:200px';
   const r = btn.getBoundingClientRect();
   d.style.top = Math.min(r.bottom + 4, window.innerHeight - 120) + 'px';
   d.style.left = Math.max(4, Math.min(r.left - 120, window.innerWidth - 220)) + 'px';
@@ -19474,7 +19477,7 @@ function clExportMenu(btn) {
   const old = document.getElementById('cl-export-pop');
   if (old) { old.remove(); return; }
   const d = document.createElement('div'); d.id = 'cl-export-pop';
-  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:4px;min-width:230px';
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:4px;min-width:230px';
   const rc = btn.getBoundingClientRect();
   d.style.top = (rc.bottom + 4) + 'px'; d.style.left = Math.max(8, Math.min(rc.left, window.innerWidth - 246)) + 'px';
   const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:12px;padding:5px 8px'; b.onclick = () => { d.remove(); fn(); }; d.appendChild(b); };
@@ -19514,7 +19517,7 @@ function clChordClick(absChar, ev, absEnd) {
   const m = document.createElement('div');
   m.id = 'cl-chord-menu';
   m._t0 = Date.now();
-  m.style.cssText = 'position:fixed;z-index:1000;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;min-width:170px';
+  m.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;min-width:170px';
   const x = (ev && ev.clientX) || 100, y = (ev && ev.clientY) || 100;
   m.style.left = Math.min(x + 6, window.innerWidth - 200) + 'px';
   m.style.top = Math.min(y + 6, window.innerHeight - 260) + 'px';
@@ -19609,7 +19612,7 @@ function clLineBreakMenu(lr, ev) {
   const m = document.createElement('div');
   m.id = 'cl-chord-menu';
   m._t0 = Date.now();
-  m.style.cssText = 'position:fixed;z-index:1000;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;min-width:170px';
+  m.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;min-width:170px';
   const x = (ev && ev.clientX) || 100, y = (ev && ev.clientY) || 100;
   m.style.left = Math.min(x + 6, window.innerWidth - 220) + 'px';
   m.style.top = Math.min(y + 6, window.innerHeight - 120) + 'px';
