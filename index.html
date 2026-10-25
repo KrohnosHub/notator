@@ -7973,7 +7973,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '324';
+const NOTATOR_BUILD_ID = '325';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9088,7 +9088,17 @@ function gregLibShowModal() {
     if (rebuildFilters) { filterWrap.innerHTML = ''; ntLibFilterBar(filterWrap, data, render); }
     listEl.innerHTML = '';
     const shown = data.items.filter(it => ntLibMatches(it, _libFilter));
-    status.textContent = statusBase + (shown.length !== data.items.length ? ' · ' + shown.length + ' angezeigt' : '');
+    status.textContent = statusBase;
+    const fAct = [_libFilter.q && ('«' + _libFilter.q + '»'), _libFilter.season, _libFilter.genre, _libFilter.tag && ('Tag ' + _libFilter.tag)].filter(Boolean);
+    if (fAct.length || shown.length !== data.items.length) {
+      // Filter aktiv: deutlich anzeigen, mit einem Klick wieder alle Stücke
+      const fb = document.createElement('div');
+      fb.style.cssText = 'display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;padding:4px 6px;background:#f3e2b8;border:1px solid #d0a040;border-radius:4px;color:#5a3a10;font-size:12px';
+      fb.innerHTML = '<span>Filter: <b>' + ntEscAttr(fAct.join(' · ') || '–') + '</b> – ' + shown.length + ' von ' + data.items.length + ' angezeigt</span>';
+      const all = document.createElement('button'); all.className = 'b'; all.textContent = '✕ Alle ' + data.items.length + ' anzeigen';
+      all.onclick = () => { _libFilter = { q: '', season: '', genre: '', tag: '' }; render(true); };
+      fb.appendChild(all); status.appendChild(fb);
+    }
     if (!data.items.length) { listEl.innerHTML = '<p style="font-size:11px;color:var(--ink2)">' + (data.mode === 'drive' ? 'Der Drive-Ordner ist noch leer.' : 'Noch keine Stücke gespeichert.') + '</p>'; return; }
     if (!shown.length) { listEl.innerHTML = '<p style="font-size:11px;color:var(--ink2)">Keine Treffer für diesen Filter.</p>'; return; }
     shown.forEach(function(it) {
