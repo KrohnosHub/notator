@@ -391,7 +391,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <div style="display:flex;gap:4px;align-items:center">
           <span style="font-size:9px;color:#6b8a60;min-width:55px">Silbe</span>
           <span class="greg-tq" style="display:none;gap:4px;align-items:center;flex-wrap:wrap;font-size:11px"></span>
-          <input id="greg-syllable" type="text" placeholder="z.B. Ky-" style="flex:0 0 6em;width:6em;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+          <input id="greg-syllable" type="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="z.B. Ky-" style="flex:0 0 6em;width:6em;font-size:10px;padding:1px 4px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <span style="font-size:9px;color:#a8d878;display:flex;align-items:center;gap:2px" title="Mora (.) auf einer oder mehreren Noten dieses Neumes — pro Note einzeln wählbar, z.B. beide Noten eines Podatus/einer Clivis">Mora (.): <label style="display:flex;align-items:center"><input type="checkbox" id="greg-mora-n1">N1</label><label style="display:flex;align-items:center"><input type="checkbox" id="greg-mora-n2">N2</label><label style="display:flex;align-items:center"><input type="checkbox" id="greg-mora-n3">N3</label><label style="display:flex;align-items:center"><input type="checkbox" id="greg-mora-n4">N4</label></span>
@@ -467,7 +467,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <span id="greg-qb-neumes" style="display:inline-flex;gap:3px;flex-wrap:wrap"></span>
         <select id="greg-qb-more" onchange="if(this.value){gregSelectNeume(this.value);}" title="Weitere Neumen"></select>
         <span class="qb-sep"></span>
-        <span>Silbe</span><input id="greg-qb-syl" type="text" placeholder="Ky-" title="Silbe für die nächste gesetzte Neume (gleich wie das Feld «Silbe» links)">
+        <span>Silbe</span><input id="greg-qb-syl" type="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Ky-" title="Silbe für die nächste gesetzte Neume (gleich wie das Feld «Silbe» links)">
         <label title="Wortende: nach dieser Silbe beginnt ein neues Wort (gilt für die nächste Neume) – Leerzeichen am Ende der Silbe oder Leertaste"><input type="checkbox" id="greg-qb-we"> Wortende</label>
         <span class="qb-sep"></span>
         <span id="greg-qb-mora" title="Mora (.) auf Note 1–4 der nächsten Neume – wird nach dem Setzen automatisch zurückgesetzt (Taste M = Mora auf der letzten Note)">Mora (.): <label><input type="checkbox" data-p="1">N1</label><label><input type="checkbox" data-p="2">N2</label><label><input type="checkbox" data-p="3">N3</label><label><input type="checkbox" data-p="4">N4</label></span>
@@ -2460,7 +2460,7 @@ function gregEditEntryInner(i) {
       if(v===e.neume) o.selected=true; neuSel.appendChild(o);
     });
     const sylI = inp('input',170, e.syllable,'Silbe');
-    sylI.className = 'greg-pop-syl';
+    sylI.className = 'greg-pop-syl'; gregNoAutoCaps(sylI);
     const pitI = inp('input',80,(e.pitches||[]).join(''),'Töne','GABC a-m; Grossbuchstabe = Punctum inclinatum (Raute), z.B. efED');
     // Accidental
     const accSel = document.createElement('select');
@@ -4124,6 +4124,8 @@ function gregTextQueueAfterPlace(e) {
   gregTextQueueFill();
 }
 
+// Silbenfelder: keine automatische Grossschreibung/Autokorrektur der Handy-Tastatur
+function gregNoAutoCaps(el) { ['autocapitalize', 'autocorrect', 'autocomplete'].forEach(a => el.setAttribute(a, 'off')); el.spellcheck = false; }
 // ── Silbe direkt unter der gesetzten Note eingeben ──
 function gregAskSylOn() { try { return localStorage.getItem('notatorAskSyl') !== '0'; } catch (e) { return true; } }
 function gregAskSylSet(on) { try { localStorage.setItem('notatorAskSyl', on ? '1' : '0'); } catch (e) {} const q = document.getElementById('greg-qb-ask'); if (q) q.checked = !!on; }
@@ -4139,6 +4141,7 @@ function gregSylInlineOpen(i) {
   const r = gregEntryClientRect(i); if (!r) return;
   const inp = document.createElement('input');
   inp.id = 'greg-syl-inline'; inp.className = 'greg-syl-inline'; inp.type = 'text';
+  gregNoAutoCaps(inp); inp.setAttribute('enterkeyhint', 'done');
   inp.value = e.syllable || ''; inp.placeholder = 'Silbe';
   inp.title = 'Silbe für diese Note – Leerzeichen am Ende = Wortende · Enter: übernehmen · Tab: weiter zur nächsten Note · Shift+Tab: zurück · Esc: überspringen';
   inp.style.left = Math.max(4, Math.min(r.left - 12, window.innerWidth - 140)) + 'px';
@@ -7970,7 +7973,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '322';
+const NOTATOR_BUILD_ID = '323';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
