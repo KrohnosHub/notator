@@ -78,7 +78,22 @@ input[type=file]{display:none}
 #modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
 #modal-bg.open{display:flex}
 #modal{background:var(--parch);border-radius:6px;padding:20px;max-width:480px;width:90%;max-height:92vh;overflow-y:auto;box-sizing:border-box;box-shadow:0 8px 40px rgba(0,0,0,.5)}
-#modal h2{font-family:var(--fh);font-size:15px;margin-bottom:8px}
+#modal h2{font-family:var(--fh);font-size:15px;margin-bottom:8px;padding-right:30px}
+#modal-x{position:sticky;top:-8px;float:right;z-index:2;margin:-10px -8px 0 6px;width:30px;height:30px;border:1px solid var(--parch3);border-radius:50%;background:var(--parch);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+#modal-x:hover{background:var(--parch2);color:#a03020}
+.mbtns[style*="flex-direction: column"]{flex-wrap:nowrap}
+@media (max-width:700px){
+  #modal{width:94vw;max-width:94vw;max-height:86vh;padding:14px 12px;overflow-x:hidden}
+  #modal h2{font-size:17px}
+  #modal-body p{font-size:13px !important}
+  #modal .b{white-space:normal}
+  .nt-lib-row{display:grid !important;grid-template-columns:1fr 1fr;gap:6px !important}
+  .nt-lib-row .b{font-size:13px !important;padding:7px 6px !important;min-height:38px;text-align:left;line-height:1.25}
+  .nt-lib-row a{grid-column:span 2}
+  .nt-lib-row3{grid-template-columns:1fr 1fr 1fr}
+  .nt-lib-row3 .b{font-size:12px !important;padding:6px 4px !important;min-height:34px;text-align:center}
+  .nt-lib-row3 a{grid-column:1 / -1;font-size:12px !important}
+}
 .mbtns{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:12px}
 .mi{font-size:11px;color:var(--ink2);line-height:1.7}
 .pf{margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--parch3)}
@@ -598,6 +613,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
 
 <div id="modal-bg">
   <div id="modal">
+    <button id="modal-x" type="button" onclick="closeModal()" title="Schliessen" aria-label="Schliessen">✕</button>
     <h2 id="modal-title"></h2>
     <div id="modal-body"></div>
     <div class="mbtns" id="modal-btns"></div>
@@ -7954,7 +7970,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '321';
+const NOTATOR_BUILD_ID = '322';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8995,8 +9011,10 @@ function gregLibShowModal() {
     b.onclick = onClick; return b;
   };
   const topRow = document.createElement('div');
+  topRow.className = 'nt-lib-row';
   topRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px';
   const openRow = document.createElement('div');
+  openRow.className = 'nt-lib-row';
   openRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
   openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); ntNewPiece(); }, '', 'Neues, leeres Stück beginnen (bei ungespeicherten Änderungen wird nachgefragt)'));
   openRow.appendChild(mkBtn('💻 Vom Gerät öffnen …', function() { ntOpenLocalFile(); }, 'background:#3d6b35;color:#fff;border-color:#3d6b35', '.notator-Datei aus einem lokalen Ordner öffnen'));
@@ -9022,6 +9040,15 @@ function gregLibShowModal() {
     topRow.appendChild(a);
   }
   bEl.appendChild(topRow);
+  // Handy: kurze Beschriftungen, 3 Spalten -> alles ohne Scrollen sichtbar
+  if (gregIsMobileViewport()) {
+    const SHORT = [[/^✚ Neues/, '✚ Neu'], [/^💻 Vom Gerät/, '💻 Vom Gerät'], [/^☁ Anderer Drive/, '☁ Drive-Ordner'], [/^💾 Aktuelles/, '💾 Speichern'], [/^📑 Mappe/, '📑 Mappe'], [/^📅 Vorschläge/, '📅 Kirchenjahr'], [/^🔎 In NOH/, '🔎 NOH-Suche'], [/^🔑 Mit Google/, '🔑 Drive verbinden']];
+    [openRow, topRow].forEach(row => row.querySelectorAll('button').forEach(btn => { const m = SHORT.find(x => x[0].test(btn.textContent)); if (m) { if (!btn.title) btn.title = btn.textContent; btn.textContent = m[1]; } }));
+    const merged = document.createElement('div'); merged.className = 'nt-lib-row nt-lib-row3';
+    [openRow, topRow].forEach(row => { while (row.firstChild) merged.appendChild(row.firstChild); row.remove(); });
+    merged.style.cssText = 'margin-bottom:8px';
+    bEl.insertBefore(merged, bEl.firstChild);
+  }
 
   const filterWrap = document.createElement('div');
   bEl.appendChild(filterWrap);
