@@ -7973,7 +7973,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '325';
+const NOTATOR_BUILD_ID = '326';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8654,6 +8654,15 @@ function gregLibPushToDrive(rec, interactive) {
 function gregLibSaveCurrent() {
   let _done; const done = new Promise(r => { _done = r; });
   const state = gregBuildStateObject();
+  // Neue Stücke gleich einordnen (nur leere Felder)
+  try {
+    const c = ntAutoClassify(state.title || '', ntCurrentIncipit(), (typeof gregHdrExtra !== 'undefined' ? gregHdrExtra : '') + '\n' + ((state.sections || []).map(x => x.hdrExtra || '').join('\n')));
+    const m = ntMetaNorm(state.meta);
+    if (!m.season && c.season) m.season = c.season;
+    if (!m.genre && c.genre) m.genre = c.genre;
+    if (m.season === c.season) c.tags.forEach(t => { if (m.tags.indexOf(t) < 0) m.tags.push(t); });
+    state.meta = m; gregMeta = Object.assign({}, m);
+  } catch (e) {}
   const now = Date.now();
   const finish = function(base) {
     const record = Object.assign({}, base || {}, { updatedAt: now, state: state, pending: true });
@@ -8998,6 +9007,115 @@ function ntLibFilterBar(container, data, onChange) {
   return q;
 }
 
+// Einordnung (Kirchenjahr/Gattung/Tags) eines Bibliothekseintrags speichern
+function ntLibSaveMeta(it, m, interactive) {
+  let p;
+  if (it.kind === 'drive') {
+    p = gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(it.file.id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appProperties: ntMetaToAppProps(m) }) }, !!interactive).then(() => {
+      if (it.local) return gregLibGet(it.local.id).then(rec => { if (rec && rec.state) { rec.state.meta = m; rec.meta = m; return gregLibPut(rec); } });
+    });
+  } else {
+    p = gregLibGet(it.id).then(rec => { if (!rec) return; rec.state = rec.state || {}; rec.state.meta = m; rec.meta = m; rec.pending = true; return gregLibPut(rec); });
+  }
+  const curId = it.local ? it.local.id : it.id;
+  if (gregLibCurrentId != null && gregLibCurrentId === curId) gregMeta = m;
+  it.meta = m;
+  return p;
+}
+
+// ── Automatische Einordnung (Kirchenjahr + Gattung) ──────────────────
+// Aus Titel, Liedtext-Anfang und GABC-Kopf (office-part) – füllt nur leere
+// Felder, eigene Einordnungen bleiben unangetastet (Nutzerwunsch 2026-10-25).
+const NT_KYRIALE = { 1: 'Osterzeit', 2: 'Herrenfeste', 3: 'Herrenfeste', 4: 'Heiligenfeste', 5: 'Ganzes Jahr / Sonstiges', 6: 'Ganzes Jahr / Sonstiges', 7: 'Ganzes Jahr / Sonstiges', 8: 'Ganzes Jahr / Sonstiges', 9: 'Marienfeste', 10: 'Marienfeste', 11: 'Zeit im Jahreskreis', 12: 'Ganzes Jahr / Sonstiges', 13: 'Ganzes Jahr / Sonstiges', 14: 'Ganzes Jahr / Sonstiges', 15: 'Zeit im Jahreskreis', 16: 'Zeit im Jahreskreis', 17: 'Fastenzeit', 18: 'Fastenzeit' };
+const NT_KYRIALE_NAMES = [[/lux et origo/, 1], [/fons bonitatis/, 2], [/deus sempiterne/, 3], [/cunctipotens/, 4], [/magnae deus/, 5], [/rex genitor/, 6], [/rex splendens/, 7], [/de angelis/, 8], [/cum [ij]ubilo/, 9], [/alme pater/, 10], [/orbis factor/, 11], [/pater cuncta/, 12], [/stelliferi/, 13], [/dominator deus/, 15], [/deus genitor alme/, 18]];
+// [Muster, Kirchenjahr, Gattung (optional)] – erster Treffer gilt
+const NT_AUTO_RULES = [
+  [/requiem|dies irae|libera me|lux aeterna|in paradisum|domine [ij]esu christe|absolve|subvenite|pro defunctis|totenmesse/, 'Totenliturgie'],
+  [/alma redemptoris/, 'Advent', 'Marianische Antiphon'],
+  [/ave regina caelorum|ave regina coelorum/, 'Fastenzeit', 'Marianische Antiphon'],
+  [/regina caeli|regina coeli/, 'Osterzeit', 'Marianische Antiphon'],
+  [/salve regina/, 'Zeit im Jahreskreis', 'Marianische Antiphon'],
+  [/ad te levavi/, 'Advent', 'Introitus'], [/ecce virgo concipiet/, 'Advent', 'Communio'], [/vox clara/, 'Advent', 'Hymnus'], [/conditor alme|creator alme siderum/, 'Advent', 'Hymnus'],
+  [/ostende nobis/, 'Advent', 'Alleluia'], [/rorate.*\(sr/, 'Advent', 'Antiphon'], [/mittit ad virginem/, 'Advent', 'Sequenz'], [/rorate|veni,? veni,? emmanuel|veni emmanuel|populus sion|gaudete|prope est dominus|missus est gabriel|veni domine/, 'Advent'],
+  [/puer natus est nobis|dominus dixit ad me/, 'Weihnachtszeit', 'Introitus'], [/in splendoribus/, 'Weihnachtszeit', 'Communio'], [/hodie christus natus/, 'Weihnachtszeit', 'Antiphon'],
+  [/verbum caro/, 'Weihnachtszeit', 'Responsorium'], [/[ij]esu redemptor omnium|christe redemptor omnium|a solis ortus|puer natus in bethlehem|resonet in laudibus|adeste fideles/, 'Weihnachtszeit', 'Hymnus'],
+  [/puer natus|viderunt omnes|lux fulgebit|dies sanctificatus|ecce advenit|reges tharsis|vidimus stellam|omnes de saba|weihnacht|epiphan/, 'Weihnachtszeit'],
+  [/christus factus est/, 'Karwoche / Triduum', 'Graduale'], [/vexilla regis|crux fidelis|pange lingua gloriosi (?!corporis)|lauream certaminis/, 'Karwoche / Triduum', 'Hymnus'],
+  [/ubi caritas|popule meus|ecce lignum|hosanna filio|gloria,? laus|pueri hebraeorum|nos autem gloriari|mandatum novum|karwoche|karfreitag|palm/, 'Karwoche / Triduum'],
+  [/media vita/, 'Fastenzeit', 'Responsorium'], [/parce domine|attende domine/, 'Fastenzeit', 'Antiphon'], [/audi benigne|ex more docti/, 'Fastenzeit', 'Hymnus'],
+  [/invocabit|reminiscere|oculi mei|laetare [ij]erusalem|iudica me|misereris omnium|cor contritum|emendemus|fastenzeit/, 'Fastenzeit'],
+  [/surrexit dominus vere/, 'Osterzeit', 'Responsorium'], [/vidi aquam/, 'Osterzeit', 'Antiphon'], [/victimae paschali/, 'Osterzeit', 'Sequenz'], [/ad cenam agni|ad coenam agni|aurora lucis|o filii et filiae/, 'Osterzeit', 'Hymnus'],
+  [/surrexit|haec dies|resurrexi|pascha nostrum|terra tremuit|christus resurgens|ostern|paschal/, 'Osterzeit'],
+  [/veni creator/, 'Pfingsten', 'Hymnus'], [/veni sancte spiritus/, 'Pfingsten', 'Sequenz'], [/spiritus domini|factus est repente|emitte spiritum|confirma hoc|pfingst|pentecost/, 'Pfingsten'],
+  [/lauda sion/, 'Herrenfeste', 'Sequenz'], [/[ij]esu dulcis memoria|sacris solemniis|pange lingua gloriosi corporis/, 'Herrenfeste', 'Hymnus'], [/cibavit eos|dignus est agnus|christus vincit|in nomine [ij]esu/, 'Herrenfeste'],
+  [/signum magnum/, 'Marienfeste', 'Introitus'], [/gaudeamus.*mariae/, 'Marienfeste', 'Introitus'], [/ave maris stella|salve mater|inviolata|ave maria stella/, 'Marienfeste', 'Hymnus'],
+  [/sub tuum|beata viscera|assumpta est|salve sancta parens|ave maria|maria|marien/, 'Marienfeste'],
+  [/gaudeamus.*sanctorum|sanctorum omnium/, 'Heiligenfeste', 'Introitus'], [/beati mundo corde/, 'Heiligenfeste', 'Communio'], [/timete dominum/, 'Heiligenfeste', 'Alleluia'],
+  [/^gaudeamus\b/, 'Heiligenfeste', 'Introitus'], [/tu es petrus|iustus ut palma|[ij]ustus ut palma|os [ij]usti|iste confessor|ecce sacerdos|sacerdos et pontifex|gaudeamus/, 'Heiligenfeste'],
+  [/tantum ergo|o salutaris|adoro te/, 'Ganzes Jahr / Sonstiges', 'Hymnus', 'Eucharistie'], [/adoremus in aeternum/, 'Ganzes Jahr / Sonstiges', 'Antiphon', 'Eucharistie'],
+  [/adorate deum/, 'Zeit im Jahreskreis', 'Introitus'], [/da pacem|laetetur cor|omnes gentes/, 'Zeit im Jahreskreis'],
+  [/asperges/, 'Ganzes Jahr / Sonstiges', 'Antiphon'], [/te deum/, 'Ganzes Jahr / Sonstiges', 'Hymnus'], [/credo/, 'Ganzes Jahr / Sonstiges', 'Credo'], [/magnificat|benedictus dominus deus/, 'Ganzes Jahr / Sonstiges', 'Psalm / Canticum']
+];
+const NT_OFFICE_PART = { 'in': 'Introitus', 'introitus': 'Introitus', 'gr': 'Graduale', 'graduale': 'Graduale', 'al': 'Alleluia', 'alleluia': 'Alleluia', 'tr': 'Tractus', 'tractus': 'Tractus', 'se': 'Sequenz', 'sequentia': 'Sequenz', 'of': 'Offertorium', 'offertorium': 'Offertorium', 'co': 'Communio', 'communio': 'Communio', 'an': 'Antiphon', 'antiphona': 'Antiphon', 'hy': 'Hymnus', 'hymnus': 'Hymnus', 're': 'Responsorium', 'rb': 'Responsorium', 'responsorium': 'Responsorium', 'responsorium breve': 'Responsorium', 'ps': 'Psalm / Canticum', 'psalmus': 'Psalm / Canticum', 'canticum': 'Psalm / Canticum' };
+function ntRoman(r) { const v = { i: 1, v: 5, x: 10, l: 50 }; let n = 0; r = r.toLowerCase(); for (let k = 0; k < r.length; k++) { const a = v[r[k]], b = v[r[k + 1]] || 0; n += a < b ? -a : a; } return n; }
+function ntAutoClassify(title, txt, hdr) {
+  const norm = x => String(x || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/æ/g, 'ae').replace(/œ/g, 'oe').replace(/\s+/g, ' ');
+  const t = norm(title), all = norm(title + ' ' + (txt || ''));
+  const out = { season: '', genre: '', tags: [] };
+  // Gattung: Teile des Ordinariums aus dem Titel, sonst office-part, sonst Titelwörter
+  const ord = [[/\bkyrie\b/, 'Kyrie'], [/\bgloria\b(?! ?(laus|patri))/, 'Gloria'], [/\bsanctus\b/, 'Sanctus'], [/\bagnus\b/, 'Agnus Dei'], [/ite,? missa|benedicamus/, 'Ite missa est'], [/\bcredo\b/, 'Credo']];
+  const om = ord.find(x => x[0].test(t));
+  if (om) out.genre = om[1];
+  const op = /office-part\s*:\s*([^;\n]+)/i.exec(hdr || '');
+  if (!out.genre && op) out.genre = NT_OFFICE_PART[norm(op[1]).trim()] || '';
+  if (!out.genre) {
+    const gw = [[/introitus/, 'Introitus'], [/graduale/, 'Graduale'], [/tractus/, 'Tractus'], [/sequenz|sequentia|dies irae/, 'Sequenz'], [/offertorium/, 'Offertorium'], [/communio/, 'Communio'], [/hymnus/, 'Hymnus'], [/responsorium/, 'Responsorium'], [/\bantiphon/, 'Antiphon'], [/^allelu[ij]a|allelu[ij]a$/, 'Alleluia'], [/libera me/, 'Responsorium'], [/absolve/, 'Tractus'], [/lux aeterna/, 'Communio'], [/domine [ij]esu christe/, 'Offertorium']].find(x => x[0].test(t));
+    if (gw) out.genre = gw[1];
+  }
+  // Kirchenjahr: Messordinarium nach Kyriale-Nummer/-Name
+  let mass = 0;
+  const mm = /\b(?:messe|missa|mass)\s+([ivxl]+)\b/.exec(t); if (mm) mass = ntRoman(mm[1]);
+  if (!mass) { const nm = NT_KYRIALE_NAMES.find(x => x[0].test(t)); if (nm && (om || /messe|missa|mass/.test(t))) mass = nm[1]; }
+  if (/requiem|pro defunctis/.test(t)) mass = 0;
+  if (mass && NT_KYRIALE[mass]) { out.season = NT_KYRIALE[mass]; if (mass === 17 || mass === 18) out.tags.push('Advent'); }
+  for (const r of NT_AUTO_RULES) {
+    if (!r[0].test(all)) continue;
+    if (!out.season) out.season = r[1];
+    if (!out.genre && r[2]) out.genre = r[2];
+    if (r[3] && out.tags.indexOf(r[3]) < 0) out.tags.push(r[3]);
+    if (out.season && out.genre) break;
+  }
+  return out;
+}
+// Leere Felder automatisch füllen (gibt die geänderten Einträge zurück)
+function ntLibAutoProposals(items) {
+  const res = [];
+  items.forEach(it => {
+    const st = it.local && it.local.state;
+    const hdr = st ? (st.hdrExtra || '') + '\n' + ((st.sections || []).map(x => x.hdrExtra || '').join('\n')) : '';
+    const c = ntAutoClassify(it.title, it.meta.txt, hdr);
+    const m = ntMetaNorm(Object.assign({}, it.meta));
+    let ch = false;
+    if (!m.season && c.season) { m.season = c.season; ch = true; }
+    if (!m.genre && c.genre) { m.genre = c.genre; ch = true; }
+    c.tags.forEach(tg => { if (m.tags.indexOf(tg) < 0 && ch) m.tags.push(tg); });
+    if (ch) res.push({ it, m });
+  });
+  return res;
+}
+function ntLibAutoApply(props, onDone) {
+  let ok = 0, fail = 0, k = 0;
+  const step = () => {
+    if (k >= props.length) { onDone(ok, fail); return; }
+    const p = props[k++];
+    gregGst('Einordnen ' + k + '/' + props.length + ': ' + p.it.title);
+    ntLibSaveMeta(p.it, p.m, false).then(() => { ok++; step(); }).catch(() => { fail++; step(); });
+  };
+  step();
+}
+
+function ntLibAutoRun(manual) { if (window._ntLibAutoRun) window._ntLibAutoRun(manual); }
 function gregLibShowModal() {
   const driveOn = gdConfigured();
   const signed = driveOn && gdHasToken();
@@ -9029,6 +9147,7 @@ function gregLibShowModal() {
   bEl.appendChild(openRow);
   topRow.appendChild(mkBtn('💾 Aktuelles Stück speichern', function() { gregLibSaveCurrent(); }));
   topRow.appendChild(mkBtn('📑 Mappe', function() { ntMappeShow(); }, '', 'Gottesdienst-Mappe: mehrere Stücke zu einem PDF'));
+  topRow.appendChild(mkBtn('🪄 Automatisch einordnen', function() { ntLibAutoRun(true); }, '', 'Kirchenjahr und Gattung für alle Stücke ohne Einordnung automatisch setzen (aus Titel, Text und GregoBase-Angaben) – eigene Einordnungen bleiben unverändert'));
   topRow.appendChild(mkBtn('📅 Vorschläge nach Kirchenjahr', function() { ntSuggestShow(); }, '', 'Für einen Sonntag oder ein Fest passende Stücke aus deiner Bibliothek und der Notenbibliothek'));
   topRow.appendChild(mkBtn('🔎 In NOH-Notenbibliothek suchen', function() {
     // Suchbegriff: Titel des offenen Stücks (NOH wertet #q=… aus); leer = Startseite
@@ -9047,7 +9166,7 @@ function gregLibShowModal() {
   bEl.appendChild(topRow);
   // Handy: kurze Beschriftungen, 3 Spalten -> alles ohne Scrollen sichtbar
   if (gregIsMobileViewport()) {
-    const SHORT = [[/^✚ Neues/, '✚ Neu'], [/^💻 Vom Gerät/, '💻 Vom Gerät'], [/^☁ Anderer Drive/, '☁ Drive-Ordner'], [/^💾 Aktuelles/, '💾 Speichern'], [/^📑 Mappe/, '📑 Mappe'], [/^📅 Vorschläge/, '📅 Kirchenjahr'], [/^🔎 In NOH/, '🔎 NOH-Suche'], [/^🔑 Mit Google/, '🔑 Drive verbinden']];
+    const SHORT = [[/^✚ Neues/, '✚ Neu'], [/^💻 Vom Gerät/, '💻 Vom Gerät'], [/^☁ Anderer Drive/, '☁ Drive-Ordner'], [/^💾 Aktuelles/, '💾 Speichern'], [/^📑 Mappe/, '📑 Mappe'], [/^📅 Vorschläge/, '📅 Kirchenjahr'], [/^🪄 Automatisch/, '🪄 Einordnen'], [/^🔎 In NOH/, '🔎 NOH-Suche'], [/^🔑 Mit Google/, '🔑 Drive verbinden']];
     [openRow, topRow].forEach(row => row.querySelectorAll('button').forEach(btn => { const m = SHORT.find(x => x[0].test(btn.textContent)); if (m) { if (!btn.title) btn.title = btn.textContent; btn.textContent = m[1]; } }));
     const merged = document.createElement('div'); merged.className = 'nt-lib-row nt-lib-row3';
     [openRow, topRow].forEach(row => { while (row.firstChild) merged.appendChild(row.firstChild); row.remove(); });
@@ -9069,17 +9188,7 @@ function gregLibShowModal() {
   const editMeta = it => {
     ntMetaDialog(it.title, it.meta, data.allTags, m => {
       m.txt = it.meta.txt;
-      let p;
-      if (it.kind === 'drive') {
-        p = gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(it.file.id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ appProperties: ntMetaToAppProps(m) }) }, true).then(() => {
-          if (it.local) return gregLibGet(it.local.id).then(rec => { if (rec && rec.state) { rec.state.meta = m; return gregLibPut(rec); } });
-        });
-      } else {
-        p = gregLibGet(it.id).then(rec => { if (!rec) return; rec.state = rec.state || {}; rec.state.meta = m; rec.pending = true; return gregLibPut(rec); });
-      }
-      const curId = it.local ? it.local.id : it.id;
-      if (gregLibCurrentId != null && gregLibCurrentId === curId) gregMeta = m;
+      const p = ntLibSaveMeta(it, m, true);
       p.then(() => { gregGst('Einordnung gespeichert: ' + it.title); gregLibShowModal(); })
         .catch(err => { gregGst('Fehler: ' + err.message); gregLibShowModal(); });
     }, () => gregLibShowModal());
@@ -9124,12 +9233,29 @@ function gregLibShowModal() {
     });
   };
 
+  // Automatische Einordnung: leere Felder (Kirchenjahr/Gattung) füllen
+  const autoRun = function(manual) {
+    if (!data) { gregGst('Bibliothek wird noch geladen …'); return; }
+    if (driveOn && !signed && manual) { gregGst('Zuerst mit Google Drive verbinden.'); return; }
+    const props = ntLibAutoProposals(data.items);
+    window._ntAutoClassDone = true;
+    if (!props.length) { if (manual) gregGst('Alle Stücke sind bereits eingeordnet (oder nicht erkennbar).'); return; }
+    statusBase += ' · ordne ' + props.length + ' Stück(e) ein …'; render(false);
+    ntLibAutoApply(props, (ok, fail) => {
+      const open = document.getElementById('modal-bg').classList.contains('open') && document.getElementById('modal-title').textContent.indexOf('Bibliothek') >= 0;
+      gregGst(ok + ' Stück(e) automatisch eingeordnet' + (fail ? ', ' + fail + ' fehlgeschlagen' : '') + ' – bei Bedarf mit 🏷 korrigieren');
+      if (open) { statusBase = statusBase.replace(/ · ordne .*$/, '') + ' · ' + ok + ' automatisch eingeordnet'; render(true); }
+    });
+  };
+  window._ntLibAutoRun = autoRun;
   status.textContent = signed ? 'Lade Liste aus Google Drive …' : '';
   gregLibCollect(true).then(function(d) {
     data = d;
     if (d.mode === 'drive') statusBase = d.driveCount + ' Gesang/Gesänge in Google Drive' + (d.sync && d.sync.total ? ' · ' + d.sync.ok + ' von ' + d.sync.total + ' lokalen Änderung(en) hochgeladen' : '');
     else statusBase = driveOn ? 'Nicht mit Google Drive verbunden – angezeigt werden die lokalen Kopien.' : '';
     render(true);
+    // einmal pro Sitzung von selbst (nur leere Felder; nicht ohne Drive-Anmeldung)
+    if (!window._ntAutoClassDone && (d.mode === 'drive' || !driveOn)) autoRun(false);
   }).catch(function(err) {
     gregLibCollect(false).then(function(d) {
       data = d; statusBase = 'Google Drive nicht erreichbar (' + err.message + ') – angezeigt werden die lokalen Kopien.'; render(true);
