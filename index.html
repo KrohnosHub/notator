@@ -7973,7 +7973,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '323';
+const NOTATOR_BUILD_ID = '324';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8972,10 +8972,10 @@ function ntLibMatches(it, f) {
 function ntLibFilterBar(container, data, onChange) {
   const bar = document.createElement('div');
   bar.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
-  const sel = (key, label, list) => {
+  const sel = (key, label, list, counts) => {
     const s = document.createElement('select');
     s.className = 'b'; s.style.cssText = 'font-size:11px;max-width:150px;flex:1 1 100px';
-    s.innerHTML = '<option value="">' + label + '</option>' + list.map(x => '<option' + (x === _libFilter[key] ? ' selected' : '') + '>' + ntEscAttr(x) + '</option>').join('');
+    s.innerHTML = '<option value="">' + label + '</option>' + list.map(x => '<option value="' + ntEscAttr(x) + '"' + (x === _libFilter[key] ? ' selected' : '') + '>' + ntEscAttr(x) + (counts ? ' (' + (counts[x] || 0) + ')' : '') + '</option>').join('');
     s.onchange = () => { _libFilter[key] = s.value; onChange(); };
     return s;
   };
@@ -8985,8 +8985,10 @@ function ntLibFilterBar(container, data, onChange) {
   q.oninput = () => { _libFilter.q = q.value; onChange(); };
   bar.appendChild(q);
   const used = k => Array.from(new Set(data.items.map(it => it.meta[k]).filter(Boolean)));
-  const us = NT_SEASONS.filter(x => used('season').includes(x)), ug = NT_GENRES.filter(x => used('genre').includes(x));
-  if (us.length) bar.appendChild(sel('season', 'Kirchenjahr: alle', us));
+  const ug = NT_GENRES.filter(x => used('genre').includes(x));
+  // Kirchenjahr: immer alle Zeiten anbieten (mit Anzahl der zugeordneten Stücke)
+  const sc = {}; data.items.forEach(it => { if (it.meta.season) sc[it.meta.season] = (sc[it.meta.season] || 0) + 1; });
+  bar.appendChild(sel('season', 'Kirchenjahr: alle', NT_SEASONS, sc));
   if (ug.length) bar.appendChild(sel('genre', 'Gattung: alle', ug));
   if (data.allTags.length) bar.appendChild(sel('tag', 'Tag: alle', data.allTags));
   const r = document.createElement('button'); r.className = 'b'; r.textContent = '✕ Filter'; r.style.cssText = 'font-size:11px'; r.title = 'Suche und Filter zurücksetzen';
