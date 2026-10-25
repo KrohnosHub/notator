@@ -161,6 +161,7 @@ input[type=file]{display:none}
   /* Bearbeiten: Eingabespalte auf volle Breite, Notation aus. !important
      nötig — beide Elemente tragen inline display:flex/border-right. */
   #greg-panel.greg-mobile-edit #greg-canvas-wrap{display:none !important}
+  #greg-panel.greg-mobile-edit .greg-details-back{display:block !important}
   #greg-panel.greg-mobile-edit #greg-input-panel{display:flex !important;width:100% !important;min-width:0 !important;border-right:none !important}
 
   /* Grössere Tastflächen in der Eingabespalte auf dem Handy. !important
@@ -202,7 +203,24 @@ input[type=file]{display:none}
 /* ── Bearbeiten an der Note / Werkzeugleiste / Komfort (Build 317) ── */
 #greg-quickbar{position:sticky;top:-20px;margin:-20px -20px 12px;z-index:20;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:6px 10px;background:#1a2414;border-bottom:1px solid #3a4a30;font:12px system-ui,sans-serif;color:#a8d878}
 #greg-panel.greg-view #greg-quickbar{display:none}
-@media (max-width:700px){#greg-quickbar{display:none !important}}
+#greg-quickbar .qb-mob{display:none}
+#greg-panel.greg-noside #greg-input-panel,#greg-panel.greg-noside #greg-drag-handle{display:none !important}
+@media (max-width:700px){
+  #greg-quickbar{display:none !important}
+  #greg-panel.greg-mobile-qb:not(.greg-view):not(.greg-mobile-edit) #greg-quickbar{display:flex !important;top:-8px;margin:-8px -8px 8px;padding:5px 6px;gap:4px 5px}
+  #greg-quickbar .qb-mob{display:inline-flex}
+  #greg-quickbar .qb-desk,#greg-quickbar .qb-sep{display:none !important}
+  #greg-qb-neumes{flex-wrap:nowrap !important;overflow-x:auto;max-width:100%;flex:1 1 100%;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+  #greg-quickbar .qb-neu{width:38px;height:38px;flex-shrink:0}
+  #greg-quickbar .b{font-size:14px;min-height:32px;padding:3px 9px}
+  #greg-quickbar input[type=text]{font-size:16px;width:4.6em}
+  #greg-quickbar input[type=checkbox]{width:18px;height:18px}
+  #greg-quickbar label{font-size:13px}
+  #greg-qb-mora{font-size:13px}
+  #greg-qb-signs{display:none;flex-basis:100%;flex-wrap:wrap;gap:4px}
+  #greg-quickbar.signs-open #greg-qb-signs{display:flex}
+  #greg-qb-extra{font-size:13px}
+}
 #greg-quickbar .qb-neu{width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border:1px solid #6b8a60;border-radius:3px;cursor:pointer}
 #greg-quickbar .qb-neu svg{width:40px;height:auto}
 #greg-quickbar .qb-neu.on{outline:3px solid #d0a040;outline-offset:-1px}
@@ -269,6 +287,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
     <div id="greg-input-panel" style="width:540px;min-width:200px;flex-shrink:0;background:#1a2414;border-right:1px solid #3a4a30;display:flex;flex-direction:column;overflow:hidden">
+      <div class="greg-details-back" style="display:none;padding:6px 8px;border-bottom:1px solid #3a4a30"><button class="b" onclick="gregMobileDetails(false)" style="font-size:14px;padding:6px 12px">← Zurück zu den Noten</button></div>
       <div style="padding:5px 8px 2px;background:#121c0e;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" onclick="gregUndo()" style="font-size:10px;padding:2px 6px" title="Letzte Aktion rückgängig machen (Strg+Z)">&#8617; Undo</button>
         <button class="b" onclick="gregRedo()" style="font-size:10px;padding:2px 6px" title="Rückgängig gemachte Aktion wiederherstellen (Strg+Y)">&#8618; Redo</button>
@@ -475,16 +494,19 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b qb-acc" data-acc="x" onclick="gregSetAccidental('x')" title="b molle für die nächste Note (Taste B)">&#x266D;</button><button class="b qb-acc" data-acc="#" onclick="gregSetAccidental('#')" title="Kreuz für die nächste Note (Taste #)">&#x266F;</button><button class="b qb-acc" data-acc="y" onclick="gregSetAccidental('y')" title="Auflösungszeichen für die nächste Note (Taste N)">&#x266E;</button>
         <span data-mshow="greg-acc-pos" style="display:none"><select data-m="greg-acc-pos" title="Vorzeichen vor welcher Note der nächsten Neume"><option value="">auto</option><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option><option value="4">auf N4</option></select></span>
         <span class="qb-sep"></span>
-        <button class="b" onclick="gregAddDiv(',')" title="Divisio minima (Taste ,)">,</button><button class="b" onclick="gregAddDiv(';')" title="Divisio minor (Taste ;)">;</button><button class="b" onclick="gregAddDiv(':')" title="Divisio maior (Taste :)">:</button><button class="b" onclick="gregAddDiv('::')" title="Doppelstrich (Taste : zweimal)">::</button><button class="b" onclick="gregAddSpecial('*')" title="Asterisk">&#x2217;</button><button class="b" onclick="gregInsertVers()" title="Vers (Vorsänger)">℣</button><button class="b" onclick="gregInsertResp()" title="Responsorium">℟</button>
+        <span id="greg-qb-signs"><button class="b" onclick="gregAddDiv(',')" title="Divisio minima (Taste ,)">,</button><button class="b" onclick="gregAddDiv(';')" title="Divisio minor (Taste ;)">;</button><button class="b" onclick="gregAddDiv(':')" title="Divisio maior (Taste :)">:</button><button class="b" onclick="gregAddDiv('::')" title="Doppelstrich (Taste : zweimal)">::</button><button class="b" onclick="gregAddSpecial('*')" title="Asterisk">&#x2217;</button><button class="b" onclick="gregInsertVers()" title="Vers (Vorsänger)">℣</button><button class="b" onclick="gregInsertResp()" title="Responsorium">℟</button>
         <span class="qb-sep"></span>
         <button class="b" onclick="gregAddDirective('Ant.')" title="Ant. (Antiphon-Rubrik)"><i>Ant.</i></button><button class="b" onclick="gregAddDirective('Ps.')" title="Ps. (Psalm-Rubrik)"><i>Ps.</i></button><button class="b" onclick="gregAddDirective('ij.')" title="ij. (zweimal)"><i>ij.</i></button><button class="b" onclick="gregAddDirective('iij.')" title="iij. (dreimal)"><i>iij.</i></button>
-        <button class="b" onclick="gregInsertTextOnly()" title="Text ohne Noten in der Textzeile (z.B. «℟. Roráte.») – nimmt den Text aus dem Silbenfeld, sonst Eingabefenster">Text ohne Noten</button>
+        <button class="b" onclick="gregInsertTextOnly()" title="Text ohne Noten in der Textzeile (z.B. «℟. Roráte.») – nimmt den Text aus dem Silbenfeld, sonst Eingabefenster">Text ohne Noten</button></span>
         <button class="b" id="greg-qb-finish" data-mshow="greg-finish-open-neume" onclick="gregFinishPendingNeume()" style="display:none;background:#1e4a1e;color:#d8f0c0" title="Offene Neume (z.B. Climacus) mit den bisher gesetzten Noten abschliessen (Enter)">✓ Fertig</button>
         <span class="qb-sep"></span>
         <button class="b" onclick="gregUndo()" title="Rückgängig (Strg+Z)">↩</button><button class="b" onclick="gregRedo()" title="Wiederholen (Strg+Y)">↪</button>
-        <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach Setzen</label>
+        <label class="qb-desk" title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach Setzen</label>
         <button class="b" onclick="gregTextFirstShow()" title="Text zuerst eingeben – jede gesetzte Neume bekommt die nächste Silbe">📝 Text zuerst</button>
-        <button class="b" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
+        <button class="b qb-desk" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
+        <button class="b qb-desk" id="greg-qb-side-btn" onclick="gregSideToggle()" title="Seitenleiste (Kopfdaten, Eintragsliste, GABC) ein-/ausblenden – die Werkzeugleiste bleibt">◧ Seitenleiste</button>
+        <button class="b qb-mob" id="greg-qb-signs-btn" onclick="gregQbSignsToggle()" title="Trennstriche, ℣ ℟, Ant./Ps./ij./iij., Text ohne Noten">Zeichen ▾</button>
+        <button class="b qb-mob" onclick="gregMobileDetails(true)" title="Kopfdaten, Eintragsliste, Abschnitte, GABC">☰ Details</button>
         <button class="b" id="greg-qb-more-btn" onclick="gregQbExtraToggle()" title="Weitere, seltener gebrauchte Angaben: Iktus, Episema, Modifier, Trennstriche ;1–;6, Linie, Freitext">mehr ▾</button>
         <span id="greg-qb-extra" style="display:none;flex-basis:100%;gap:4px 10px;flex-wrap:wrap;align-items:center;padding-top:3px;border-top:1px solid #2a3820">
           <label><input type="checkbox" data-m="greg-iktus"> Iktus (')</label><span data-mshow="greg-iktus-pos-w" style="display:none"><select data-m="greg-iktus-pos"><option value="">Standard</option><option value="above">oben</option><option value="below">unten</option></select></span>
@@ -2056,6 +2078,8 @@ function gregHandleClick(svgEl, clientX, clientY) {
   // already did that) but the red score highlight was left orphaned,
   // pointing at an entry that's no longer being edited.
   if (_gregEditingEntryIdx != null) gregCloseEditForm();
+  // In der Anzeige keine neuen Noten setzen (versehentliches Tippen beim Spielen)
+  { const pnl = document.getElementById('greg-panel'); if (pnl && pnl.classList.contains('greg-view')) return; }
 
   // Find closest line — compare to the staff ORIGIN (bounds.y), not the bbox
   // midpoint. The 4 staff lines always sit at fixed offsets (±si, ±3si) from
@@ -7973,7 +7997,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '327';
+const NOTATOR_BUILD_ID = '328';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9521,7 +9545,10 @@ function gregMobileSetEditMode(on) {
   const btn = document.getElementById('greg-mobile-edit-toggle');
   if (!panel) return;
   const wasView = panel.classList.contains('greg-view');
-  panel.classList.toggle('greg-mobile-edit', !!on); // Handy: Eingabespalte statt Notation
+  // Handy: Bearbeiten = Noten + Werkzeugleiste darüber; die volle Eingabespalte
+  // (Kopfdaten, Liste …) gibt es über «☰ Details» (Nutzerwunsch 2026-10-25)
+  panel.classList.toggle('greg-mobile-qb', !!on);
+  panel.classList.toggle('greg-mobile-edit', false);
   panel.classList.toggle('greg-view', !on);         // PC: Eingabespalte aus-/einblenden
   if (btn) btn.innerHTML = on ? '&#128065;<span class="nt-lbl"> Anzeige</span>' : '&#9998;<span class="nt-lbl"> Bearbeiten</span>';
   if (!on) gregScheduleMobileScale(); // Notation war während des Bearbeitens display:none, Grösse neu messen
@@ -9531,7 +9558,27 @@ function gregMobileSetEditMode(on) {
 }
 function gregMobileToggleEditMode() {
   const panel = document.getElementById('greg-panel');
-  gregMobileSetEditMode(panel && !panel.classList.contains('greg-mobile-edit'));
+  gregMobileSetEditMode(panel && panel.classList.contains('greg-view'));
+}
+// Handy: volle Eingabespalte (Details) statt Noten ein-/ausblenden
+function gregMobileDetails(on) {
+  const panel = document.getElementById('greg-panel'); if (!panel) return;
+  panel.classList.toggle('greg-mobile-edit', !!on);
+  if (!on) gregScheduleMobileScale();
+}
+function gregQbSignsToggle() {
+  const qb = document.getElementById('greg-quickbar'); if (!qb) return;
+  const on = !qb.classList.contains('signs-open'); qb.classList.toggle('signs-open', on);
+  const b = document.getElementById('greg-qb-signs-btn'); if (b) b.textContent = on ? 'Zeichen ▴' : 'Zeichen ▾';
+}
+// PC/Tablet: Seitenleiste ausblenden, Werkzeugleiste bleibt
+function gregSideToggle(force) {
+  const panel = document.getElementById('greg-panel'); if (!panel) return;
+  const on = force !== undefined ? !!force : !panel.classList.contains('greg-noside');
+  panel.classList.toggle('greg-noside', on);
+  const b = document.getElementById('greg-qb-side-btn'); if (b) b.textContent = on ? '◧ Seitenleiste zeigen' : '◧ Seitenleiste';
+  try { localStorage.setItem('notatorNoSide', on ? '1' : '0'); } catch (e) {}
+  if (force === undefined) setTimeout(gregRender, 60);
 }
 
 function gregMobileInit() {
@@ -9550,6 +9597,7 @@ function gregMobileInit() {
   // Ansicht/Bearbeiten: Handy startet in der Anzeige, PC im zuletzt gewählten Modus (Standard: Bearbeiten)
   let gv = null; try { gv = localStorage.getItem('notatorGregView'); } catch (e) {}
   gregMobileSetEditMode(gregIsMobileViewport() ? false : gv !== 'view');
+  try { if (!gregIsMobileViewport() && localStorage.getItem('notatorNoSide') === '1') gregSideToggle(true); } catch (e) {}
   gregScheduleMobileScale();
   // Landet man auf dem Handy auf einer leeren Seite (kein Autosave aus
   // einer vorherigen Sitzung), gleich die Bibliotheksliste zeigen statt
