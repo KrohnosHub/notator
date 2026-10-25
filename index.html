@@ -222,8 +222,9 @@ input[type=file]{display:none}
   #greg-panel.greg-mobile-qb:not(.greg-view):not(.greg-mobile-edit) #greg-quickbar{display:flex !important;top:-8px;margin:-8px -8px 8px;padding:5px 6px;gap:4px 5px}
   #greg-quickbar .qb-mob{display:inline-flex}
   #greg-quickbar .qb-desk,#greg-quickbar .qb-sep{display:none !important}
-  #greg-qb-neumes{flex-wrap:nowrap !important;overflow-x:auto;max-width:100%;flex:1 1 100%;padding-bottom:2px;-webkit-overflow-scrolling:touch}
-  #greg-quickbar .qb-neu{width:38px;height:38px;flex-shrink:0}
+  #greg-qb-neumes{flex-wrap:nowrap !important;overflow:hidden;max-width:100%;flex:1 1 100%;gap:2px !important}
+  #greg-quickbar .qb-neu{flex:1 1 0;width:auto;min-width:0;height:auto;aspect-ratio:1/1;max-height:44px}
+  #greg-quickbar .qb-neu svg{width:100%}
   #greg-quickbar .b{font-size:14px;min-height:32px;padding:3px 9px}
   #greg-quickbar input[type=text]{font-size:16px;width:4.6em}
   #greg-quickbar input[type=checkbox]{width:18px;height:18px}
@@ -234,6 +235,7 @@ input[type=file]{display:none}
 }
 #greg-quickbar .qb-neu{width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border:1px solid #6b8a60;border-radius:3px;cursor:pointer}
 #greg-quickbar .qb-neu svg{width:40px;height:auto}
+#greg-quickbar #greg-qb-more.on{outline:3px solid #d0a040;outline-offset:-1px}
 #greg-quickbar .qb-neu.on{outline:3px solid #d0a040;outline-offset:-1px}
 #greg-quickbar .qb-sep{width:1px;align-self:stretch;background:#3a4a30;margin:0 2px}
 #greg-quickbar input[type=text]{font-size:16px;width:5.5em;padding:3px 6px;background:#0a1406;color:#e0e8c0;border:1px solid #4a6a30;border-radius:3px;outline:none}
@@ -493,7 +495,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
     <div id="greg-canvas-wrap" style="flex:1;overflow:auto;background:#ffffff;padding:20px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start">
       <div id="greg-quickbar">
         <span id="greg-qb-neumes" style="display:inline-flex;gap:3px;flex-wrap:wrap"></span>
-        <select id="greg-qb-more" onchange="if(this.value){gregSelectNeume(this.value);}" title="Weitere Neumen"></select>
+        <button class="b" id="greg-qb-more" onclick="gregQbMoreNeumes(this)" title="Weitere Neumen (mit Bild)">weitere Neumen ▾</button>
         <span class="qb-sep"></span>
         <span>Silbe</span><input id="greg-qb-syl" type="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Ky-" title="Silbe für die nächste gesetzte Neume (gleich wie das Feld «Silbe» links)">
         <label title="Wortende: nach dieser Silbe beginnt ein neues Wort (gilt für die nächste Neume) – Leerzeichen am Ende der Silbe oder Leertaste"><input type="checkbox" id="greg-qb-we"> Wortende</label>
@@ -3369,8 +3371,30 @@ function gregQbExtraToggle() {
   try { localStorage.setItem('notatorQbExtra', on ? '1' : '0'); } catch (e) {}
   gregQbMirror();
 }
+// «weitere Neumen»: Auswahl mit Bild statt einfacher Liste
+function gregQbMoreNeumes(btn) {
+  const old = document.getElementById('greg-qb-more-pop'); if (old) { old.remove(); return; }
+  const cur = (document.getElementById('greg-neume-sel') || {}).value;
+  const d = document.createElement('div'); d.id = 'greg-qb-more-pop';
+  d.style.cssText = 'position:fixed;z-index:1600;background:#1a2414;border:1px solid #5a8a40;border-radius:5px;padding:6px;box-shadow:0 4px 16px rgba(0,0,0,.5);display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:4px;width:min(440px,calc(100vw - 16px));box-sizing:border-box;max-height:70vh;overflow-y:auto';
+  NEUME_DEFS.filter(n => GREG_QB_NEUMES.indexOf(n.val) < 0).forEach(nd => {
+    const b = document.createElement('button'); b.className = 'b';
+    b.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 2px;height:auto;white-space:normal;font-size:11px;line-height:1.1' + (nd.val === cur ? ';outline:3px solid #d0a040' : '');
+    const ic = NEUME_SVG_ICONS[nd.val];
+    b.innerHTML = '<span style="width:52px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border-radius:3px">' + (ic ? gregNamespaceSvgIds(ic, 'qbm-' + nd.val) : '') + '</span><span>' + nd.label + '</span>';
+    const sv = b.querySelector('svg'); if (sv) { sv.style.width = '52px'; sv.style.height = 'auto'; }
+    b.onclick = () => { d.remove(); gregSelectNeume(nd.val); };
+    d.appendChild(b);
+  });
+  document.body.appendChild(d);
+  const r = btn.getBoundingClientRect();
+  d.style.top = Math.min(r.bottom + 4, window.innerHeight - d.offsetHeight - 8) + 'px';
+  d.style.left = Math.max(8, Math.min(r.left, window.innerWidth - d.offsetWidth - 8)) + 'px';
+  const close = e => { if (!d.contains(e.target) && e.target !== btn) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
+  setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+}
 // Werkzeugleiste über dem Notenblatt (PC/Tablet)
-const GREG_QB_NEUMES = ['punctum','virga','podatus','clivis','torculus','porrectus','scandicus','climacus','quilisma','puncta_inclinata'];
+const GREG_QB_NEUMES = ['punctum','virga','podatus','clivis','torculus','porrectus','scandicus','climacus','quilisma'];
 const GREG_KEY_NEUMES = { '1':'punctum', '2':'virga', '3':'quilisma', 'p':'podatus', 'c':'clivis', 't':'torculus', 'r':'porrectus', 's':'scandicus', 'k':'climacus', 'l':'salicus', 'i':'puncta_inclinata' };
 function gregQuickbarSync() {
   const box = document.getElementById('greg-qb-neumes'); if (!box) return;
@@ -3386,8 +3410,7 @@ function gregQuickbarSync() {
       b.onclick = () => gregSelectNeume(v);
       box.appendChild(b);
     });
-    const more = document.getElementById('greg-qb-more');
-    if (more) more.innerHTML = '<option value="">weitere Neumen …</option>' + NEUME_DEFS.filter(n => GREG_QB_NEUMES.indexOf(n.val) < 0).map(n => '<option value="' + n.val + '">' + n.label + '</option>').join('');
+
     const qs = document.getElementById('greg-qb-syl'), ls = document.getElementById('greg-syllable');
     if (qs && ls) { qs.addEventListener('input', () => { ls.value = qs.value; }); ls.addEventListener('input', () => { qs.value = ls.value; }); }
     const qw = document.getElementById('greg-qb-we'), lw = document.getElementById('greg-wordend');
@@ -3407,7 +3430,8 @@ function gregQuickbarSync() {
   });
   gregQbMirror();
   box.querySelectorAll('.qb-neu').forEach(b => b.classList.toggle('on', b.dataset.val === cur));
-  const more = document.getElementById('greg-qb-more'); if (more) more.value = GREG_QB_NEUMES.indexOf(cur) < 0 ? cur : '';
+  const more = document.getElementById('greg-qb-more');
+  if (more) { const nd = GREG_QB_NEUMES.indexOf(cur) < 0 ? NEUME_DEFS.find(n => n.val === cur) : null; more.textContent = nd ? nd.label + ' ▾' : 'weitere Neumen ▾'; more.classList.toggle('on', !!nd); }
   const qs = document.getElementById('greg-qb-syl'), ls = document.getElementById('greg-syllable'); if (qs && ls && document.activeElement !== qs) qs.value = ls.value;
   const qw = document.getElementById('greg-qb-we'), lw = document.getElementById('greg-wordend'); if (qw && lw) qw.checked = lw.checked;
 }
@@ -4035,27 +4059,29 @@ function gregGhostRemove(svgEl) { const g = (svgEl || document).querySelector('#
 // Hilfslinie über die ganze Zeile und Tonbuchstaben oberhalb des Fingers;
 // Loslassen setzt die Neume genau dort. Ausserhalb der Notenlinien scrollt
 // der Finger wie gewohnt.
+const GREG_AIM_DX = 56; // px: Schatten erscheint links neben dem Finger, dort wird gesetzt
 function gregTouchAim(svgEl) {
   let aim = null;
-  const pt = t => { const p = svgEl.createSVGPoint(); p.x = t.clientX; p.y = t.clientY; return p.matrixTransform(svgEl.getScreenCTM().inverse()); };
+  const pt = t => { const p = svgEl.createSVGPoint(); p.x = t.clientX - GREG_AIM_DX; p.y = t.clientY; return p.matrixTransform(svgEl.getScreenCTM().inverse()); };
   svgEl.addEventListener('touchstart', ev => {
     aim = null;
     if (ev.touches.length !== 1 || !_gregScore || !_gregCtxtRef) return;
     const panel = document.getElementById('greg-panel'); if (!panel || panel.classList.contains('greg-view')) return;
     if (typeof ntPlay !== 'undefined' && ntPlay.pick === 'greg') return;
     const t = ev.touches[0], P = pt(t);
-    if (!_gregPending && gregFindEntryAtNativePoint(_gregScore, gregEntries, P.x, P.y, _gregCtxtRef) != null) return; // bestehende Note: Tippen öffnet sie
+    { const p0 = svgEl.createSVGPoint(); p0.x = t.clientX; p0.y = t.clientY; const Q = p0.matrixTransform(svgEl.getScreenCTM().inverse());
+      if (!_gregPending && gregFindEntryAtNativePoint(_gregScore, gregEntries, Q.x, Q.y, _gregCtxtRef) != null) return; } // bestehende Note: Tippen öffnet sie
     const si = _gregCtxtRef.staffInterval, lines = _gregScore.lines || [];
     if (!lines.some(ln => Math.abs(P.y - ln.bounds.y) < si * 4.5)) return; // nicht auf einer Notenlinie -> scrollen
     ev.preventDefault();
-    aim = { x: t.clientX, y: t.clientY };
+    aim = { x: t.clientX - GREG_AIM_DX, y: t.clientY };
     gregGhostShow(svgEl, P, true);
   }, { passive: false });
   svgEl.addEventListener('touchmove', ev => {
     if (!aim) return;
     if (ev.touches.length !== 1) { aim = null; gregGhostRemove(svgEl); return; } // zweiter Finger: Zoomen
     ev.preventDefault();
-    const t = ev.touches[0]; aim = { x: t.clientX, y: t.clientY };
+    const t = ev.touches[0]; aim = { x: t.clientX - GREG_AIM_DX, y: t.clientY };
     gregGhostShow(svgEl, pt(t), true);
   }, { passive: false });
   svgEl.addEventListener('touchend', ev => {
@@ -4101,8 +4127,8 @@ function gregGhostShow(svgEl, svgP, touch) {
   const nd = NEUME_DEFS.find(n => n.val === (document.getElementById('greg-neume-sel') || {}).value) || NEUME_DEFS[0];
   const step = _gregPending ? ' · Ton ' + (_gregPending.pitches.length + 1) + '/' + (_gregPending._need || '') : '';
   t.textContent = letter + '  ' + nd.label + step;
-  if (touch) { t.setAttribute('x', svgP.x - w * 2); t.setAttribute('y', y - si * 5); t.setAttribute('font-size', si * 2.6); } // oberhalb des Fingers
-  else { t.setAttribute('x', svgP.x + w * 0.9); t.setAttribute('y', y - h * 0.7); t.setAttribute('font-size', si * 1.7); }
+  if (touch) { t.setAttribute('text-anchor', 'end'); t.setAttribute('x', svgP.x + w * 0.6); t.setAttribute('y', y - si * 3.2); t.setAttribute('font-size', si * 2.4); } // links über dem Schatten, nicht unter dem Finger
+  else { t.setAttribute('text-anchor', 'start'); t.setAttribute('x', svgP.x + w * 0.9); t.setAttribute('y', y - h * 0.7); t.setAttribute('font-size', si * 1.7); }
 }
 
 // ── Text zuerst, Noten danach ──
@@ -8047,7 +8073,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '330';
+const NOTATOR_BUILD_ID = '331';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
