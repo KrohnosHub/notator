@@ -7973,7 +7973,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '326';
+const NOTATOR_BUILD_ID = '327';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9027,7 +9027,8 @@ function ntLibSaveMeta(it, m, interactive) {
 // ── Automatische Einordnung (Kirchenjahr + Gattung) ──────────────────
 // Aus Titel, Liedtext-Anfang und GABC-Kopf (office-part) – füllt nur leere
 // Felder, eigene Einordnungen bleiben unangetastet (Nutzerwunsch 2026-10-25).
-const NT_KYRIALE = { 1: 'Osterzeit', 2: 'Herrenfeste', 3: 'Herrenfeste', 4: 'Heiligenfeste', 5: 'Ganzes Jahr / Sonstiges', 6: 'Ganzes Jahr / Sonstiges', 7: 'Ganzes Jahr / Sonstiges', 8: 'Ganzes Jahr / Sonstiges', 9: 'Marienfeste', 10: 'Marienfeste', 11: 'Zeit im Jahreskreis', 12: 'Ganzes Jahr / Sonstiges', 13: 'Ganzes Jahr / Sonstiges', 14: 'Ganzes Jahr / Sonstiges', 15: 'Zeit im Jahreskreis', 16: 'Zeit im Jahreskreis', 17: 'Fastenzeit', 18: 'Fastenzeit' };
+// Kyriale (Graduale Romanum): nur Messen mit eindeutiger Zeit/Festart einer Zeit zuordnen, sonst «Ganzes Jahr»
+const NT_KYRIALE = { 1: 'Osterzeit', 2: 'Ganzes Jahr / Sonstiges', 3: 'Ganzes Jahr / Sonstiges', 4: 'Ganzes Jahr / Sonstiges', 5: 'Ganzes Jahr / Sonstiges', 6: 'Ganzes Jahr / Sonstiges', 7: 'Ganzes Jahr / Sonstiges', 8: 'Ganzes Jahr / Sonstiges', 9: 'Marienfeste', 10: 'Marienfeste', 11: 'Zeit im Jahreskreis', 12: 'Ganzes Jahr / Sonstiges', 13: 'Ganzes Jahr / Sonstiges', 14: 'Ganzes Jahr / Sonstiges', 15: 'Ganzes Jahr / Sonstiges', 16: 'Zeit im Jahreskreis', 17: 'Fastenzeit', 18: 'Fastenzeit' };
 const NT_KYRIALE_NAMES = [[/lux et origo/, 1], [/fons bonitatis/, 2], [/deus sempiterne/, 3], [/cunctipotens/, 4], [/magnae deus/, 5], [/rex genitor/, 6], [/rex splendens/, 7], [/de angelis/, 8], [/cum [ij]ubilo/, 9], [/alme pater/, 10], [/orbis factor/, 11], [/pater cuncta/, 12], [/stelliferi/, 13], [/dominator deus/, 15], [/deus genitor alme/, 18]];
 // [Muster, Kirchenjahr, Gattung (optional)] – erster Treffer gilt
 const NT_AUTO_RULES = [
@@ -9078,6 +9079,7 @@ function ntAutoClassify(title, txt, hdr) {
   const mm = /\b(?:messe|missa|mass)\s+([ivxl]+)\b/.exec(t); if (mm) mass = ntRoman(mm[1]);
   if (!mass) { const nm = NT_KYRIALE_NAMES.find(x => x[0].test(t)); if (nm && (om || /messe|missa|mass/.test(t))) mass = nm[1]; }
   if (/requiem|pro defunctis/.test(t)) mass = 0;
+  out.mass = mass;
   if (mass && NT_KYRIALE[mass]) { out.season = NT_KYRIALE[mass]; if (mass === 17 || mass === 18) out.tags.push('Advent'); }
   for (const r of NT_AUTO_RULES) {
     if (!r[0].test(all)) continue;
@@ -9097,6 +9099,9 @@ function ntLibAutoProposals(items) {
     const c = ntAutoClassify(it.title, it.meta.txt, hdr);
     const m = ntMetaNorm(Object.assign({}, it.meta));
     let ch = false;
+    // Korrektur der ersten automatischen Zuordnung (Build 326): Messen II/III waren «Herrenfeste», IV «Heiligenfeste»
+    const OLD = { 2: 'Herrenfeste', 3: 'Herrenfeste', 4: 'Heiligenfeste' };
+    if (c.mass && OLD[c.mass] && m.season === OLD[c.mass] && c.season !== m.season) { m.season = c.season; ch = true; }
     if (!m.season && c.season) { m.season = c.season; ch = true; }
     if (!m.genre && c.genre) { m.genre = c.genre; ch = true; }
     c.tags.forEach(tg => { if (m.tags.indexOf(tg) < 0 && ch) m.tags.push(tg); });
