@@ -204,6 +204,18 @@ input[type=file]{display:none}
 #greg-quickbar{position:sticky;top:-20px;margin:-20px -20px 12px;z-index:20;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:6px 10px;background:#1a2414;border-bottom:1px solid #3a4a30;font:12px system-ui,sans-serif;color:#a8d878}
 #greg-panel.greg-view #greg-quickbar{display:none}
 #greg-quickbar .qb-mob{display:none}
+#greg-qb-signs{display:none;gap:3px;align-items:center;flex-wrap:wrap}
+#greg-quickbar.signs-open #greg-qb-signs{display:inline-flex}
+.nt-mode{display:inline-flex;gap:0}
+.nt-mode .b{border-radius:0;margin:0}
+.nt-mode .b:first-child{border-radius:3px 0 0 3px}.nt-mode .b:last-child{border-radius:0 3px 3px 0}
+.nt-mode .b.on{background:#3d6b35;color:#fff;border-color:#3d6b35}
+#greg-side-hidden{display:none !important}
+.greg-side-tabs{display:flex;gap:2px;padding:6px 8px 0;background:#121c0e;border-bottom:1px solid #3a4a30;flex-shrink:0}
+.greg-side-tabs .b{border-radius:4px 4px 0 0;border-bottom:none;font-size:12px;padding:4px 12px}
+.greg-side-tabs .b.on{background:#1a2414;color:#e0e8c0;border-color:#3a4a30}
+.greg-side-tab{display:none;flex-direction:column;flex:1;min-height:0;overflow-y:auto}
+.greg-side-tab.on{display:flex}
 #greg-panel.greg-noside #greg-input-panel,#greg-panel.greg-noside #greg-drag-handle{display:none !important}
 @media (max-width:700px){
   #greg-quickbar{display:none !important}
@@ -217,8 +229,7 @@ input[type=file]{display:none}
   #greg-quickbar input[type=checkbox]{width:18px;height:18px}
   #greg-quickbar label{font-size:13px}
   #greg-qb-mora{font-size:13px}
-  #greg-qb-signs{display:none;flex-basis:100%;flex-wrap:wrap;gap:4px}
-  #greg-quickbar.signs-open #greg-qb-signs{display:flex}
+  #greg-quickbar.signs-open #greg-qb-signs{display:flex;flex-basis:100%;gap:4px}
   #greg-qb-extra{font-size:13px}
 }
 #greg-quickbar .qb-neu{width:40px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border:1px solid #6b8a60;border-radius:3px;cursor:pointer}
@@ -270,15 +281,13 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
-    <button class="b nt-o-file" onclick="ntNewPiece()" style="font-size:11px;padding:3px 8px" title="Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)">&#10010;<span class="nt-lbl"> Neu</span></button>
-    <button class="b nt-o-file" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
-    <button class="b nt-o-file" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in der öffentlichen GregoBase-Chorendatenbank suchen — ohne PDF">&#127925;<span class="nt-lbl"> Song importieren</span></button>
+    <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Song importieren, PDF lesen, Psalmton, Text zuerst, Mappe, GABC einfügen">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
+    <span class="nt-o-title" id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
+    <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label></span>
     <button class="b nt-o-file" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
-    <span class="nt-o-title" id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
-    <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
-    <button id="greg-mobile-edit-toggle" class="b nt-o-view" onclick="gregMobileToggleEditMode()" style="font-size:11px;padding:3px 8px" title="Zwischen Ansicht und Bearbeiten wechseln">&#9998; Bearbeiten</button>
+    <span class="nt-o-view nt-mode" id="greg-mode"><button class="b" data-mode="view" onclick="gregSetMode('view')" title="Ansehen: nur Noten (zum Singen/Spielen)">&#128065;<span class="nt-lbl"> Ansehen</span></button><button class="b" data-mode="edit" onclick="gregSetMode('edit')" title="Bearbeiten: Noten mit Werkzeugleiste">&#9998;<span class="nt-lbl"> Bearbeiten</span></button><button class="b" data-mode="details" onclick="gregSetMode('details')" title="Details: Stück (Titel, Schlüssel …), Abschnitte &amp; Einträge, GABC">&#9776;<span class="nt-lbl"> Details</span></button></span>
 <select class="nt-play-sec nt-pm nt-o-play" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn nt-pm nt-o-play" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
@@ -494,6 +503,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b qb-acc" data-acc="x" onclick="gregSetAccidental('x')" title="b molle für die nächste Note (Taste B)">&#x266D;</button><button class="b qb-acc" data-acc="#" onclick="gregSetAccidental('#')" title="Kreuz für die nächste Note (Taste #)">&#x266F;</button><button class="b qb-acc" data-acc="y" onclick="gregSetAccidental('y')" title="Auflösungszeichen für die nächste Note (Taste N)">&#x266E;</button>
         <span data-mshow="greg-acc-pos" style="display:none"><select data-m="greg-acc-pos" title="Vorzeichen vor welcher Note der nächsten Neume"><option value="">auto</option><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option><option value="4">auf N4</option></select></span>
         <span class="qb-sep"></span>
+        <button class="b" id="greg-qb-signs-btn" onclick="gregQbSignsToggle()" title="Trennstriche, ℣ ℟, Ant./Ps./ij./iij., Text ohne Noten (Tasten , ; : am PC)">Zeichen ▾</button>
         <span id="greg-qb-signs"><button class="b" onclick="gregAddDiv(',')" title="Divisio minima (Taste ,)">,</button><button class="b" onclick="gregAddDiv(';')" title="Divisio minor (Taste ;)">;</button><button class="b" onclick="gregAddDiv(':')" title="Divisio maior (Taste :)">:</button><button class="b" onclick="gregAddDiv('::')" title="Doppelstrich (Taste : zweimal)">::</button><button class="b" onclick="gregAddSpecial('*')" title="Asterisk">&#x2217;</button><button class="b" onclick="gregInsertVers()" title="Vers (Vorsänger)">℣</button><button class="b" onclick="gregInsertResp()" title="Responsorium">℟</button>
         <span class="qb-sep"></span>
         <button class="b" onclick="gregAddDirective('Ant.')" title="Ant. (Antiphon-Rubrik)"><i>Ant.</i></button><button class="b" onclick="gregAddDirective('Ps.')" title="Ps. (Psalm-Rubrik)"><i>Ps.</i></button><button class="b" onclick="gregAddDirective('ij.')" title="ij. (zweimal)"><i>ij.</i></button><button class="b" onclick="gregAddDirective('iij.')" title="iij. (dreimal)"><i>iij.</i></button>
@@ -501,12 +511,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b" id="greg-qb-finish" data-mshow="greg-finish-open-neume" onclick="gregFinishPendingNeume()" style="display:none;background:#1e4a1e;color:#d8f0c0" title="Offene Neume (z.B. Climacus) mit den bisher gesetzten Noten abschliessen (Enter)">✓ Fertig</button>
         <span class="qb-sep"></span>
         <button class="b" onclick="gregUndo()" title="Rückgängig (Strg+Z)">↩</button><button class="b" onclick="gregRedo()" title="Wiederholen (Strg+Y)">↪</button>
-        <label class="qb-desk" title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach Setzen</label>
-        <button class="b" onclick="gregTextFirstShow()" title="Text zuerst eingeben – jede gesetzte Neume bekommt die nächste Silbe">📝 Text zuerst</button>
         <button class="b qb-desk" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
-        <button class="b qb-desk" id="greg-qb-side-btn" onclick="gregSideToggle()" title="Seitenleiste (Kopfdaten, Eintragsliste, GABC) ein-/ausblenden – die Werkzeugleiste bleibt">◧ Seitenleiste</button>
-        <button class="b qb-mob" id="greg-qb-signs-btn" onclick="gregQbSignsToggle()" title="Trennstriche, ℣ ℟, Ant./Ps./ij./iij., Text ohne Noten">Zeichen ▾</button>
-        <button class="b qb-mob" onclick="gregMobileDetails(true)" title="Kopfdaten, Eintragsliste, Abschnitte, GABC">☰ Details</button>
         <button class="b" id="greg-qb-more-btn" onclick="gregQbExtraToggle()" title="Weitere, seltener gebrauchte Angaben: Iktus, Episema, Modifier, Trennstriche ;1–;6, Linie, Freitext">mehr ▾</button>
         <span id="greg-qb-extra" style="display:none;flex-basis:100%;gap:4px 10px;flex-wrap:wrap;align-items:center;padding-top:3px;border-top:1px solid #2a3820">
           <label><input type="checkbox" data-m="greg-iktus"> Iktus (')</label><span data-mshow="greg-iktus-pos-w" style="display:none"><select data-m="greg-iktus-pos"><option value="">Standard</option><option value="above">oben</option><option value="below">unten</option></select></span>
@@ -518,6 +523,8 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
           <select onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche ;1–;6"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
           <button class="b" onclick="gregAddLinebreak()" title="Neue Notenlinie (Zeilenumbruch) einfügen">⏎ Linie</button>
           <button class="b" onclick="gregAddComment()" title="Freitextfeld platzieren (Notiz, standardmässig nicht im PDF)">💬 Freitext</button>
+          <span class="qb-sep"></span>
+          <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach dem Setzen abfragen</label>
         </span>
         <span class="greg-tq" style="display:none;gap:4px;align-items:center;flex-basis:100%"></span>
       </div>
@@ -551,15 +558,13 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
       </div>
     </div>
   </div>
-  <div id="greg-status" style="font-size:10px;color:#8b9a70;padding:3px 10px;background:#121c0e;border-top:1px solid #3a4a30">Bereit — Neume wählen, Silbe eingeben, dann auf Notenlinie klicken</div>
+  <div id="greg-statusbar" style="display:flex;align-items:center;gap:10px;background:#121c0e;border-top:1px solid #3a4a30"><div id="greg-status" style="flex:1;min-width:0;font-size:10px;color:#8b9a70;padding:3px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Bereit — Neume wählen, Silbe eingeben, dann auf Notenlinie klicken</div><div id="greg-status-right" style="flex-shrink:0;font-size:10px;color:#8b9a70;padding:3px 10px;white-space:nowrap"></div></div>
 </div>
 
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
-    <button class="b nt-o-file" onclick="ntNewPiece()" style="font-size:11px;padding:3px 8px" title="Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)">&#10010;<span class="nt-lbl"> Neu</span></button>
-    <button class="b nt-o-file" onclick="gregLibShowModal()" style="font-size:11px;padding:3px 8px" title="Stück öffnen: Bibliothek (Google Drive), beliebiger Drive-Ordner oder Datei auf diesem Gerät">&#128194;<span class="nt-lbl"> Öffnen</span></button>
-    <button class="b nt-o-file" onclick="gregImportSongFromGregoBase()" style="font-size:11px;padding:3px 8px" title="Titel eingeben und direkt in GregoBase suchen">&#127925;<span class="nt-lbl"> Song importieren</span></button>
+    <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Song importieren, PDF lesen, Psalmton, Text zuerst, Mappe, GABC einfügen">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label></span>
     <button class="b nt-o-file" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
@@ -2290,6 +2295,7 @@ function gregPdfReadRow(open) {
   if (!row) return;
   const isOpen = row.style.display !== 'none';
   const want = open === undefined ? !isOpen : !!open;
+  if (want && typeof gregSetMode === 'function' && window._gregMode !== 'details') gregSetMode('details');
   row.style.display = want ? 'flex' : 'none';
   if (want) { const k = document.getElementById('greg-api-key'); if (k && !k.value) setTimeout(() => k.focus(), 30); }
 }
@@ -7997,7 +8003,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '328';
+const NOTATOR_BUILD_ID = '329';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9540,35 +9546,111 @@ function ntUpdateGbLinks() {
 // voller Breite (Bearbeiten: Neumen-Grid, Eintragsliste, GABC-Import,
 // GregoBase, PDF-Lesen — dieselben Bedienelemente wie am PC, nur ohne
 // Nebeneinander-Layout, das auf dem Handy keinen Platz hat).
-function gregMobileSetEditMode(on) {
-  const panel = document.getElementById('greg-panel');
-  const btn = document.getElementById('greg-mobile-edit-toggle');
-  if (!panel) return;
-  const wasView = panel.classList.contains('greg-view');
-  // Handy: Bearbeiten = Noten + Werkzeugleiste darüber; die volle Eingabespalte
-  // (Kopfdaten, Liste …) gibt es über «☰ Details» (Nutzerwunsch 2026-10-25)
-  panel.classList.toggle('greg-mobile-qb', !!on);
-  panel.classList.toggle('greg-mobile-edit', false);
-  panel.classList.toggle('greg-view', !on);         // PC: Eingabespalte aus-/einblenden
-  if (btn) btn.innerHTML = on ? '&#128065;<span class="nt-lbl"> Anzeige</span>' : '&#9998;<span class="nt-lbl"> Bearbeiten</span>';
-  if (!on) gregScheduleMobileScale(); // Notation war während des Bearbeitens display:none, Grösse neu messen
-  // Am PC ändert sich die Notenbreite -> neu setzen
-  if (!gregIsMobileViewport() && wasView !== !on && typeof gregRender === 'function') setTimeout(gregRender, 60);
-  try { localStorage.setItem('notatorGregView', on ? 'edit' : 'view'); } catch (e) {}
-}
-function gregMobileToggleEditMode() {
-  const panel = document.getElementById('greg-panel');
-  gregMobileSetEditMode(panel && panel.classList.contains('greg-view'));
-}
-// Handy: volle Eingabespalte (Details) statt Noten ein-/ausblenden
-function gregMobileDetails(on) {
+// Modus: «view» (nur Noten) · «edit» (Noten + Werkzeugleiste) · «details»
+// (zusätzlich Seitenleiste mit Stück/Einträge/GABC; Handy: statt der Noten)
+function gregSetMode(mode) {
   const panel = document.getElementById('greg-panel'); if (!panel) return;
-  panel.classList.toggle('greg-mobile-edit', !!on);
-  if (!on) gregScheduleMobileScale();
+  const mob = gregIsMobileViewport();
+  const wasView = panel.classList.contains('greg-view'), wasSide = !panel.classList.contains('greg-noside');
+  panel.classList.toggle('greg-view', mode === 'view');
+  panel.classList.toggle('greg-mobile-qb', mode !== 'view');
+  panel.classList.toggle('greg-mobile-edit', mob && mode === 'details');
+  panel.classList.toggle('greg-noside', !mob && mode === 'edit');
+  document.querySelectorAll('#greg-mode .b').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  window._gregMode = mode;
+  if (mode === 'view' || (mob && mode === 'edit')) gregScheduleMobileScale();
+  const sideNow = !panel.classList.contains('greg-noside') && mode !== 'view';
+  if (!mob && (wasView !== (mode === 'view') || wasSide !== sideNow) && typeof gregRender === 'function') setTimeout(gregRender, 60);
+  if (!mob) { try { localStorage.setItem('notatorGregMode', mode); localStorage.setItem('notatorGregView', mode === 'view' ? 'view' : 'edit'); } catch (e) {} }
+  if (mode === 'view') { gregCloseEditForm && gregCloseEditForm(); }
 }
-function gregQbSignsToggle() {
+function gregMobileSetEditMode(on) {
+  if (!on) { gregSetMode('view'); return; }
+  let m = 'edit'; if (!gregIsMobileViewport()) { try { m = localStorage.getItem('notatorGregMode') || 'details'; } catch (e) {} if (m === 'view') m = 'details'; }
+  gregSetMode(m);
+}
+function gregMobileToggleEditMode() { gregSetMode((window._gregMode || 'view') === 'view' ? 'edit' : 'view'); }
+function gregMobileDetails(on) { gregSetMode(on ? 'details' : 'edit'); }
+function gregSideToggle(force) { const on = force !== undefined ? !!force : (window._gregMode !== 'edit'); gregSetMode(on ? 'edit' : 'details'); }
+// Datei-Menü (Kopfleiste Choral und Orgel)
+function ntFileMenu(btn) {
+  const old = document.getElementById('nt-file-pop'); if (old) { old.remove(); return; }
+  const d = document.createElement('div'); d.id = 'nt-file-pop';
+  d.style.cssText = 'position:fixed;z-index:1001;background:#1a2414;border:1px solid #5a8a40;border-radius:4px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:13px system-ui,sans-serif;display:flex;flex-direction:column;gap:3px;min-width:230px';
+  const r = btn.getBoundingClientRect();
+  d.style.top = (r.bottom + 4) + 'px'; d.style.left = Math.max(6, Math.min(r.left, window.innerWidth - 250)) + 'px';
+  const toGreg = () => { if (window._ntTab && window._ntTab !== 'greg') switchTab('greg'); };
+  const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:13px;padding:6px 10px'; b.onclick = () => { d.remove(); fn(); }; d.appendChild(b); };
+  const sep = () => { const h = document.createElement('div'); h.style.cssText = 'border-top:1px solid #3a4a30;margin:2px 0'; d.appendChild(h); };
+  item('✚ Neues Stück', 'Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)', () => ntNewPiece());
+  item('📂 Öffnen · Bibliothek …', 'Stück aus der Bibliothek, einem Drive-Ordner oder vom Gerät öffnen', () => gregLibShowModal());
+  item('🎵 Song importieren (GregoBase) …', 'Nach Titel oder GregoBase-ID suchen und importieren', () => gregImportSongFromGregoBase());
+  sep();
+  item('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadRow(true); });
+  item('📥 GABC einfügen …', 'GABC-Quelltext einfügen und importieren', () => { toGreg(); gregSetMode('details'); gregSideTab('gabc'); const pnl = document.getElementById('greg-gabc-import-panel'); if (pnl && pnl.style.display === 'none') gregToggleGABCImport(); });
+  item('♫ Psalmton-Assistent …', 'Psalmverse auf einen Psalmton setzen', () => { toGreg(); ntPsalmToneShow(); });
+  item('📝 Text zuerst, Noten danach …', 'Text eingeben – jede gesetzte Neume bekommt die nächste Silbe', () => { toGreg(); gregTextFirstShow(); });
+  sep();
+  item('📑 Mappe …', 'Gottesdienst-Mappe: mehrere Stücke zu einem PDF', () => ntMappeShow());
+  document.body.appendChild(d);
+  const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
+  setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+}
+// Seitenleiste: Reiter «Stück» · «Einträge» · «GABC»; Eingabefelder für das
+// Notensetzen liegen nur noch in der Werkzeugleiste (versteckt hier als Zustand)
+function gregSideRestructure() {
+  const P = document.getElementById('greg-input-panel'); if (!P || P._restructured) return;
+  P._restructured = true;
+  const kids = Array.from(P.children);
+  const by = fn => kids.find(fn);
+  const back = by(e => e.classList.contains('greg-details-back'));
+  const undoRow = by(e => e.querySelector && e.querySelector('#greg-pdf-read-btn'));
+  const pdfRow = document.getElementById('greg-pdf-read-row');
+  const secRow = by(e => e.querySelector && e.querySelector('button[onclick="gregAddSection()"]'));
+  const kopf = document.getElementById('greg-kopf-hdr').parentElement;
+  const sizing = document.getElementById('greg-sizing-panel').parentElement;
+  const neu = document.getElementById('greg-neume-sel').closest('#greg-input-panel > div');
+  const divRow = by(e => e.querySelector && e.querySelector('button[onclick="gregAddDiv(\',\')"]'));
+  const modRow = by(e => e.querySelector && e.querySelector('#greg-liquescent'));
+  const entries = document.getElementById('greg-entries-wrap');
+  const gabcOut = document.getElementById('greg-gabc-out').parentElement;
+  const gabcImp = document.getElementById('greg-gabc-import-panel');
+  const hidden = document.createElement('div'); hidden.id = 'greg-side-hidden';
+  [undoRow, neu, divRow, modRow].forEach(e => e && hidden.appendChild(e));
+  const tabs = document.createElement('div'); tabs.className = 'greg-side-tabs';
+  const mkTab = (key, label) => { const b = document.createElement('button'); b.className = 'b'; b.dataset.tab = key; b.textContent = label; b.onclick = () => gregSideTab(key); tabs.appendChild(b); const c = document.createElement('div'); c.className = 'greg-side-tab'; c.dataset.tab = key; return c; };
+  const tSt = mkTab('piece', 'Stück'), tEn = mkTab('entries', 'Abschnitte & Einträge'), tGa = mkTab('gabc', 'GABC');
+  // «Original» (PDF-Vorlage) bleibt im Reiter Stück erreichbar
+  const orig = document.getElementById('greg-pdf-panel-toggle'); if (orig) { const w = document.createElement('div'); w.style.cssText = 'padding:4px 8px'; w.appendChild(orig); tSt.appendChild(w); }
+  [kopf, sizing].forEach(e => e && tSt.appendChild(e));
+  if (secRow) { secRow.querySelectorAll('button').forEach(b => { if (!/gregAddSection/.test(b.getAttribute('onclick') || '')) b.remove(); }); tEn.appendChild(secRow); }
+  tEn.appendChild(entries); entries.style.flex = '1';
+  [gabcOut, gabcImp].forEach(e => e && tGa.appendChild(e));
+  const gta = document.getElementById('greg-gabc-out'); if (gta) gta.style.height = '50vh';
+  P.innerHTML = '';
+  [back, pdfRow, tabs, tSt, tEn, tGa, hidden].forEach(e => e && P.appendChild(e));
+  if (!P.style.width || P.style.width === '540px') P.style.width = '360px';
+  let t = 'entries'; try { t = localStorage.getItem('notatorSideTab') || 'entries'; } catch (e) {}
+  gregSideTab(t);
+}
+function gregSideTab(key) {
+  document.querySelectorAll('.greg-side-tabs .b').forEach(b => b.classList.toggle('on', b.dataset.tab === key));
+  document.querySelectorAll('.greg-side-tab').forEach(c => c.classList.toggle('on', c.dataset.tab === key));
+  try { localStorage.setItem('notatorSideTab', key); } catch (e) {}
+}
+// Statuszeile rechts: Einträge · gespeichert/ungespeichert · Drive
+function gregStatusRight() {
+  const el = document.getElementById('greg-status-right'); if (!el) return;
+  let n = 0; try { n = (window._gregMultiSection && typeof gregSections !== 'undefined' && gregSections.length > 1) ? gregSections.reduce((a, sec, i) => a + ((i === gregActiveIdx ? gregEntries : sec.entries) || []).length, 0) : gregEntries.length; } catch (e) { n = gregEntries.length; }
+  let dirty = false; try { dirty = ntIsDirty(); } catch (e) {}
+  let drive = ''; try { drive = gdConfigured() ? (gdHasToken() ? ' · ☁ Drive' : ' · ☁ nicht verbunden') : ''; } catch (e) {}
+  el.innerHTML = n + ' Einträge · ' + (dirty ? '<span style="color:#e0b060">● ungespeichert</span>' : '<span style="color:#8bc070">✓ gespeichert</span>') + drive;
+}
+setInterval(gregStatusRight, 1500);
+function gregQbSignsToggle(force) {
   const qb = document.getElementById('greg-quickbar'); if (!qb) return;
-  const on = !qb.classList.contains('signs-open'); qb.classList.toggle('signs-open', on);
+  const on = force !== undefined ? !!force : !qb.classList.contains('signs-open'); qb.classList.toggle('signs-open', on);
+  try { localStorage.setItem('notatorQbSigns', on ? '1' : '0'); } catch (e) {}
   const b = document.getElementById('greg-qb-signs-btn'); if (b) b.textContent = on ? 'Zeichen ▴' : 'Zeichen ▾';
 }
 // PC/Tablet: Seitenleiste ausblenden, Werkzeugleiste bleibt
@@ -9596,8 +9678,10 @@ function gregMobileInit() {
   gregMobileSyncTitle();
   // Ansicht/Bearbeiten: Handy startet in der Anzeige, PC im zuletzt gewählten Modus (Standard: Bearbeiten)
   let gv = null; try { gv = localStorage.getItem('notatorGregView'); } catch (e) {}
-  gregMobileSetEditMode(gregIsMobileViewport() ? false : gv !== 'view');
-  try { if (!gregIsMobileViewport() && localStorage.getItem('notatorNoSide') === '1') gregSideToggle(true); } catch (e) {}
+  gregSideRestructure();
+  if (gregIsMobileViewport()) gregSetMode('view');
+  else { let m = null; try { m = localStorage.getItem('notatorGregMode'); } catch (e) {} gregSetMode(m || (gv === 'view' ? 'view' : 'details')); }
+  try { if (localStorage.getItem('notatorQbSigns') === '1') gregQbSignsToggle(true); } catch (e) {}
   gregScheduleMobileScale();
   // Landet man auf dem Handy auf einer leeren Seite (kein Autosave aus
   // einer vorherigen Sitzung), gleich die Bibliotheksliste zeigen statt
