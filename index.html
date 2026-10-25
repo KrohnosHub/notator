@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
      Internet, Chrome "Auto-Dark") die Seite selbständig um: Noten erscheinen
@@ -1711,8 +1711,8 @@ function gregRenderSectionPreview(sec, container) {
     const zoom = (sz.zoom || 1) * gregVS(); // inkl. Anzeige-Skalierung (nur Bildschirm)
     const width = window._gregForcedCanvasWidth
       ? Math.max(window._gregForcedCanvasWidth - 20, 400)
-      : Math.max(container.clientWidth - 20, 400);
-    const layoutWidth = Math.max(width / zoom, 300);
+      : Math.max(container.clientWidth - 20, gregIsMobileViewport() ? 200 : 400);
+    const layoutWidth = Math.max(width / zoom, gregIsMobileViewport() ? 140 : 300);
     // Capture sec's own title/subtitle as local consts — immune to later UI changes
     const secTitle = sec.title || '';
     const secSubtitle = sec.subtitle || '';
@@ -1842,6 +1842,7 @@ function gregRenderActiveOnly() {
         if (hit != null) gregGhostRemove(svgEl); else gregGhostShow(svgEl, svgP);
       };
       svgEl.onmouseleave = function() { gregGhostRemove(svgEl); };
+      gregTouchAim(svgEl);
       // Re-apply (or clear) the red edit-highlight on the freshly rendered
       // SVG, since a full re-render replaces all elements — without this,
       // an open edit form's highlight would silently vanish the next time
@@ -1927,7 +1928,7 @@ function gregRenderGABCInto(gabc, wrap, cb) {
             : secContent ? Math.max((secContent.clientWidth - 20) / zoom, 300)
                           : Math.max(canvasW ? (canvasW - 80) / zoom : 700, 400);
     } else {
-      width = Math.max(canvasW ? (canvasW - 80) / zoom : 700, 400);
+      width = Math.max(canvasW ? (canvasW - 80) / zoom : 700, gregIsMobileViewport() ? 140 : 400);
     }
     score.performLayoutAsync(ctxt, function() {
       score.layoutChantLines(ctxt, width, function() {
@@ -2071,7 +2072,7 @@ function gregHandleClick(svgEl, clientX, clientY) {
   // point, since a single-point/threshold check missed clicks on multi-note
   // neumes (Torculus, Podatus, etc.) whenever the click landed away from
   // the neume's anchor corner but still visibly on the glyph.
-  if (!_gregPending) {
+  if (!_gregPending && !window._gregForcePlace) {
     const entryIdx = gregFindEntryAtNativePoint(_gregScore, gregEntries, svgP.x, svgP.y, ctxt);
     if (entryIdx != null) { gregEditEntry(entryIdx); return; }
   }
@@ -4030,8 +4031,45 @@ function gregInsertTextOnly() {
 
 // ── Vorschau beim Platzieren (Schatten der Note + Tonbuchstabe) ──
 function gregGhostRemove(svgEl) { const g = (svgEl || document).querySelector('#greg-ghost'); if (g) g.remove(); }
-function gregGhostShow(svgEl, svgP) {
-  if (gregIsMobileViewport() || !_gregScore || !_gregCtxtRef) return;
+// Touch (Handy/Tablet): Finger auf der Notenlinie zeigt den Schatten samt
+// Hilfslinie über die ganze Zeile und Tonbuchstaben oberhalb des Fingers;
+// Loslassen setzt die Neume genau dort. Ausserhalb der Notenlinien scrollt
+// der Finger wie gewohnt.
+function gregTouchAim(svgEl) {
+  let aim = null;
+  const pt = t => { const p = svgEl.createSVGPoint(); p.x = t.clientX; p.y = t.clientY; return p.matrixTransform(svgEl.getScreenCTM().inverse()); };
+  svgEl.addEventListener('touchstart', ev => {
+    aim = null;
+    if (ev.touches.length !== 1 || !_gregScore || !_gregCtxtRef) return;
+    const panel = document.getElementById('greg-panel'); if (!panel || panel.classList.contains('greg-view')) return;
+    if (typeof ntPlay !== 'undefined' && ntPlay.pick === 'greg') return;
+    const t = ev.touches[0], P = pt(t);
+    if (!_gregPending && gregFindEntryAtNativePoint(_gregScore, gregEntries, P.x, P.y, _gregCtxtRef) != null) return; // bestehende Note: Tippen öffnet sie
+    const si = _gregCtxtRef.staffInterval, lines = _gregScore.lines || [];
+    if (!lines.some(ln => Math.abs(P.y - ln.bounds.y) < si * 4.5)) return; // nicht auf einer Notenlinie -> scrollen
+    ev.preventDefault();
+    aim = { x: t.clientX, y: t.clientY };
+    gregGhostShow(svgEl, P, true);
+  }, { passive: false });
+  svgEl.addEventListener('touchmove', ev => {
+    if (!aim) return;
+    if (ev.touches.length !== 1) { aim = null; gregGhostRemove(svgEl); return; } // zweiter Finger: Zoomen
+    ev.preventDefault();
+    const t = ev.touches[0]; aim = { x: t.clientX, y: t.clientY };
+    gregGhostShow(svgEl, pt(t), true);
+  }, { passive: false });
+  svgEl.addEventListener('touchend', ev => {
+    if (!aim) return;
+    ev.preventDefault();
+    const a = aim; aim = null;
+    gregGhostRemove(svgEl);
+    window._gregForcePlace = true; // gezielt gesetzt: auch über einer bestehenden Note eine neue setzen
+    try { gregHandleClick(svgEl, a.x, a.y); } finally { window._gregForcePlace = false; }
+  }, { passive: false });
+  svgEl.addEventListener('touchcancel', () => { aim = null; gregGhostRemove(svgEl); });
+}
+function gregGhostShow(svgEl, svgP, touch) {
+  if ((gregIsMobileViewport() && !touch) || !_gregScore || !_gregCtxtRef) return;
   const panel = document.getElementById('greg-panel'); if (panel && panel.classList.contains('greg-view')) { gregGhostRemove(svgEl); return; }
   const lines = _gregScore.lines; if (!lines || !lines.length) return;
   let best = lines[0], bd = Infinity;
@@ -4055,10 +4093,16 @@ function gregGhostShow(svgEl, svgP) {
   r.setAttribute('x', svgP.x - w / 2); r.setAttribute('y', y - h / 2); r.setAttribute('width', w); r.setAttribute('height', h);
   l.setAttribute('x1', svgP.x - w * 1.6); l.setAttribute('x2', svgP.x + w * 1.6); l.setAttribute('y1', y); l.setAttribute('y2', y);
   l.style.display = (sp % 2 === 0) ? 'none' : ''; // Zwischenraum: Hilfsstrich zeigt die Höhe
+  if (touch) { // Finger verdeckt die Stelle: Hilfslinie über die ganze Zeile
+    const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+    l.setAttribute('x1', vb ? vb.x : 0); l.setAttribute('x2', vb ? vb.x + vb.width : svgP.x + 400);
+    l.style.display = ''; l.setAttribute('stroke-width', si * 0.25);
+  } else l.setAttribute('stroke-width', 1);
   const nd = NEUME_DEFS.find(n => n.val === (document.getElementById('greg-neume-sel') || {}).value) || NEUME_DEFS[0];
   const step = _gregPending ? ' · Ton ' + (_gregPending.pitches.length + 1) + '/' + (_gregPending._need || '') : '';
   t.textContent = letter + '  ' + nd.label + step;
-  t.setAttribute('x', svgP.x + w * 0.9); t.setAttribute('y', y - h * 0.7); t.setAttribute('font-size', si * 1.7);
+  if (touch) { t.setAttribute('x', svgP.x - w * 2); t.setAttribute('y', y - si * 5); t.setAttribute('font-size', si * 2.6); } // oberhalb des Fingers
+  else { t.setAttribute('x', svgP.x + w * 0.9); t.setAttribute('y', y - h * 0.7); t.setAttribute('font-size', si * 1.7); }
 }
 
 // ── Text zuerst, Noten danach ──
@@ -8003,7 +8047,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '329';
+const NOTATOR_BUILD_ID = '330';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9776,6 +9820,8 @@ setTimeout(function(){
   gregComfortApply();
   gregBuildNeumeGrid();
   gregUpdateMoraUI();
+  ntPinchZoom('greg-canvas-wrap', 'greg-mobile-scale-outer', 'greg');
+  ntPinchZoom('cl-score-wrap', 'cl-score', 'cl');
   // Bearbeitungsfenster folgt der Note beim Scrollen
   document.getElementById('greg-canvas-wrap')?.addEventListener('scroll', () => { gregEditPopPlace(); gregSylInlineClose(true); }, { passive: true });
   window.addEventListener('resize', () => gregEditPopPlace());
@@ -19077,8 +19123,11 @@ function ntViewScale(src) {
   if (ntViewScale._override) return 1;
   let o = null; try { o = JSON.parse(localStorage.getItem('notatorViewScale') || 'null'); } catch (e) {}
   const v = o && o[src];
-  return (typeof v === 'number' && v >= 0.3 && v <= 2) ? v : 1;
+  if (typeof v === 'number' && v >= 0.3 && v <= 3) return v;
+  // Handy: Choral standardmässig grösser (Neumen lassen sich so besser setzen)
+  return (src === 'greg' && typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) ? NT_MOBILE_GREG_SCALE : 1;
 }
+const NT_MOBILE_GREG_SCALE = 1.7;
 // Orgel: «An Seitenbreite anpassen» – ein gespeicherter, breiterer Zeilenumbruch
 // (clState.width) wird am Bildschirm ignoriert, sobald er nicht auf die Seite
 // passt (kein Seitwärts-Scrollen). Standard: ein auf dem Handy, sonst aus.
@@ -19104,6 +19153,39 @@ function ntSetViewScale(src, v) {
   clearTimeout(_ntVsTimer);
   _ntVsTimer = setTimeout(() => { if (src === 'greg') gregRender(); else clRender(); }, 180);
 }
+// Zwei-Finger-Zoom nur im Notenbereich (die Seite selbst zoomt nicht mehr,
+// Menüs bleiben gleich gross): Vorschau per CSS, danach neu setzen
+function ntPinchZoom(areaId, previewId, src) {
+  const area = document.getElementById(areaId); if (!area || area._pinch) return;
+  area._pinch = true;
+  let st = null;
+  const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  area.addEventListener('touchstart', ev => {
+    if (ev.touches.length !== 2) return;
+    const pv = document.getElementById(previewId); if (!pv) return;
+    const r = pv.getBoundingClientRect();
+    const cx = (ev.touches[0].clientX + ev.touches[1].clientX) / 2 - r.left, cy = (ev.touches[0].clientY + ev.touches[1].clientY) / 2 - r.top;
+    st = { d0: dist(ev.touches), s0: ntViewScale(src), f: 1, pv };
+    pv.style.transformOrigin = cx + 'px ' + cy + 'px';
+    ev.preventDefault();
+  }, { passive: false });
+  area.addEventListener('touchmove', ev => {
+    if (!st || ev.touches.length !== 2) return;
+    ev.preventDefault();
+    const lim = v => Math.max(0.4, Math.min(3, v));
+    st.f = lim(st.s0 * dist(ev.touches) / st.d0) / st.s0;
+    st.pv.style.transform = 'scale(' + st.f + ')';
+  }, { passive: false });
+  const end = () => {
+    if (!st) return;
+    const s1 = Math.round(st.s0 * st.f * 20) / 20, pv = st.pv; st = null;
+    if (Math.abs(s1 - ntViewScale(src)) < 0.04) { pv.style.transform = ''; return; }
+    ntSetViewScale(src, s1);
+    setTimeout(() => { pv.style.transform = ''; }, 450); // nach dem Neusetzen
+  };
+  area.addEventListener('touchend', ev => { if (ev.touches.length < 2) end(); });
+  area.addEventListener('touchcancel', end);
+}
 function ntViewScaleUpdateButtons() {
   document.querySelectorAll('.nt-zoom-btn').forEach(b => { b.innerHTML = '&#128269; ' + Math.round(ntViewScale(b.getAttribute('data-src')) * 100) + '%'; });
 }
@@ -19118,7 +19200,7 @@ function ntViewScalePop(btn) {
   d.style.top = Math.min(r.bottom + 4, window.innerHeight - 60) + 'px';
   d.style.left = Math.max(8, Math.min(r.left - 120, window.innerWidth - 308)) + 'px';
   const cur = Math.round(ntViewScale(src) * 100);
-  d.innerHTML = '<span>Grösse</span><input type="range" min="40" max="160" step="5" value="' + cur + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
+  d.innerHTML = '<span>Grösse</span><input type="range" min="40" max="' + (gregIsMobileViewport() ? 300 : 160) + '" step="5" value="' + cur + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
     '<span class="v" style="min-width:36px;text-align:right">' + cur + '%</span><button class="b" style="font-size:11px;padding:3px 6px" title="Zurück auf 100 %">100%</button>';
   if (src === 'cl') {
     const fl = document.createElement('label');
