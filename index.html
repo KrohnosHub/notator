@@ -8096,7 +8096,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '342';
+const NOTATOR_BUILD_ID = '343';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -13073,7 +13073,9 @@ var exsurge = (() => {
         if (curr.isClef)
           ctxt2.activeClef = curr;
         if (curr.constructor === ChantLineBreak && width > 0) {
-          this.justify = curr.justify;
+          // Notator: Zeile vor einem festen Zeilenumbruch nie auf ganze Breite ziehen
+          // (auch bei «z» aus importiertem GABC) – normale Abstände, Rest der Linie bleibt leer
+          this.justify = false;
           break;
         }
       }
