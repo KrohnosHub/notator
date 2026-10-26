@@ -46,6 +46,9 @@ html,body{height:100%;overflow:hidden}
 /* Menü «kompakt»: nur Rückgängig, Grundton/Oktave, Begleitsatz, Breite */
 #classic-panel.cl-menu-compact #cl-toolbar > :not(.cl-ess), #classic-panel.cl-menu-compact #cl-headrow, #classic-panel.cl-menu-compact #cl-info{display:none !important}
 #classic-panel.cl-view text.cl-text{pointer-events:none}
+#cl-toolbar .cl-grp{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;min-width:0;max-width:100%}
+#cl-toolbar .cl-grp-w{flex:1 1 280px;max-width:420px}
+@media (max-width:700px){#cl-toolbar > span[style^="color:#3a4a30"]{display:none}}
 .nt-playing, .nt-playing path, .nt-playing text{fill:#c0392b !important;stroke:#c0392b}
 body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
 #shell{display:flex;flex-direction:column;height:100vh}
@@ -581,19 +584,19 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
     <span class="nt-o-break"></span>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-    <button class="b cl-ess" onclick="clUndo()" style="font-size:11px;padding:3px 8px" title="Orgel: letzte Änderung rückgängig (Strg+Z)">&#8617;</button>
-    <button class="b cl-ess" onclick="clRedo()" style="font-size:11px;padding:3px 8px" title="Orgel: wiederholen (Strg+Y)">&#8618;</button>
+<span class="cl-ess cl-grp"><button class="b" onclick="clUndo()" style="font-size:11px;padding:3px 8px" title="Orgel: letzte Änderung rückgängig (Strg+Z)">&#8617;</button>
+    <button class="b" onclick="clRedo()" style="font-size:11px;padding:3px 8px" title="Orgel: wiederholen (Strg+Y)">&#8618;</button></span>
     <button class="b" onclick="clRegenerate()" style="font-size:11px;padding:3px 8px" title="Klassische Fassung neu aus dem aktuellen Choral erzeugen">&#8635; Aus Choral übernehmen</button>
     <span style="color:#3a4a30">|</span>
     <label class="cl-ess" id="cl-sec-wrap" style="font-size:11px;color:#e0c070;display:none;align-items:center;gap:4px" title="Grundton, Oktave, Titel, Untertitel und Kopfzeile gelten für den hier gewählten Abschnitt">Einstellungen für
       <select id="cl-sec-sel" onchange="clSelectSection(this.value)" style="font-size:11px;background:#0a1406;color:#e0c070;border:1px solid #6a5a30;padding:2px"></select></label>
-    <label class="cl-ess" style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Grundton
-      <select id="cl-target" onchange="clSetTarget(this.value)" style="font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:2px"></select></label>
-    <button class="b cl-ess" id="cl-target-all" onclick="clTargetToAll()" style="font-size:10px;padding:2px 6px;display:none" title="Diesen Grundton für alle Abschnitte übernehmen (danach je Abschnitt weiter einzeln änderbar)">&#8594; alle Abschnitte</button>
-    <span class="cl-ess" style="font-size:11px;color:#a8d878">Oktave</span>
-    <button class="b cl-ess" onclick="clSetOctave(-1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave tiefer">&minus;</button>
-    <span class="cl-ess" id="cl-oct" style="font-size:11px;color:#c0d890;min-width:18px;text-align:center">0</span>
-    <button class="b cl-ess" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button>
+<span class="cl-ess cl-grp"><label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px;min-width:0">Grundton
+      <select id="cl-target" onchange="clSetTarget(this.value)" style="font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:2px;min-width:0;max-width:62vw"></select></label>
+    <button class="b" id="cl-target-all" onclick="clTargetToAll()" style="font-size:10px;padding:2px 6px;display:none" title="Diesen Grundton für alle Abschnitte übernehmen (danach je Abschnitt weiter einzeln änderbar)">&#8594; alle Abschnitte</button></span>
+    <span class="cl-ess cl-grp"><span style="font-size:11px;color:#a8d878">Oktave</span>
+    <button class="b" onclick="clSetOctave(-1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave tiefer">&minus;</button>
+    <span id="cl-oct" style="font-size:11px;color:#c0d890;min-width:18px;text-align:center">0</span>
+    <button class="b" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button></span>
     <span style="color:#3a4a30">|</span>
     <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
     <button class="b cl-ess" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button>
@@ -602,12 +605,12 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
     <button class="b" onclick="clResetChords()" style="font-size:11px;padding:3px 8px" title="Von Hand gewählte Akkorde zurücksetzen">&#8634; Akkorde</button>
     <button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Freitext einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Text</button>
     <span style="color:#3a4a30">|</span>
-    <label class="cl-ess" style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)">Breite
-      <input type="range" id="cl-width" min="160" max="1600" step="10" oninput="clSetWidth(this.value)" style="width:110px;accent-color:#5a8a40"></label>
-    <button class="b cl-ess" onclick="clWidthStep(-20)" style="font-size:11px;padding:2px 7px" title="Breite verkleinern (weniger Noten pro Zeile)">&minus;</button>
-    <button class="b cl-ess" onclick="clWidthStep(20)" style="font-size:11px;padding:2px 7px" title="Breite vergrössern (mehr Noten pro Zeile)">+</button>
-    <span class="cl-ess" id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:70px"></span>
-    <button class="b cl-ess" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button>
+<span class="cl-ess cl-grp cl-grp-w" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)"><span style="font-size:11px;color:#a8d878">Breite</span>
+    <button class="b" onclick="clWidthStep(-20)" style="font-size:11px;padding:2px 7px" title="Breite verkleinern (weniger Noten pro Zeile)">&minus;</button>
+    <input type="range" id="cl-width" min="160" max="1600" step="10" oninput="clSetWidth(this.value)" style="flex:1 1 110px;min-width:50px;max-width:200px;accent-color:#5a8a40">
+    <button class="b" onclick="clWidthStep(20)" style="font-size:11px;padding:2px 7px" title="Breite vergrössern (mehr Noten pro Zeile)">+</button>
+    <span id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:44px;text-align:center"></span>
+    <button class="b" id="cl-width-auto" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button></span>
     <span style="color:#3a4a30">|</span>
     <button class="b" onclick="clExportMenu(this)" style="font-size:11px;padding:3px 8px" title="Für andere Notenprogramme exportieren (ABC, MusicXML)">&#8595; Exportieren &#9662;</button>
     <span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
@@ -8096,7 +8099,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '343';
+const NOTATOR_BUILD_ID = '344';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -17299,7 +17302,9 @@ function clSyncControls() {
   const w = clScoreWidth();
   if (wr) wr.max = gregIsMobileViewport() ? 1000 : 1600; // Handy: feinere Regelung
   if (wr && document.activeElement !== wr) wr.value = w;
-  if (wv) wv.textContent = clState.width ? w + ' px' : 'Auto (' + w + ' px)';
+  if (wv) wv.textContent = w + ' px';
+  const wa = document.getElementById('cl-width-auto');
+  if (wa) { const au = !clState.width; wa.style.background = au ? '#3d6b35' : ''; wa.style.color = au ? '#fff' : ''; wa.title = au ? 'Breite passt sich automatisch ans Fenster an' : 'Breite wieder automatisch ans Fenster anpassen'; }
   const h = clEffectiveHead(clSel);
   const ti = document.getElementById('cl-title'), su = document.getElementById('cl-subtitle');
   if (ti && document.activeElement !== ti) ti.value = h.title || '';
