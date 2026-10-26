@@ -7619,7 +7619,11 @@ function gregExportPDF() {
   const sz = gregGetSizing();
   const zoom = sz.zoom || 1;
   const canvasW = gregEffectiveCanvasWidth();
-  const fallbackLayoutW = Math.max(canvasW ? (canvasW - 80) / zoom : 700, 400);
+  // Bildschirm-Ansicht skaliert zusätzlich mit dem Ansichts-Zoom (🔍, gregVS):
+  // Zeilenbreite = Canvas / (zoom × Ansichts-Zoom). Ohne diesen Faktor wurde das PDF
+  // breiter/enger umbrochen als am Bildschirm (andere Zeilenumbrüche + Notengrösse).
+  const viewZoom = zoom * (typeof gregVS === 'function' ? gregVS() : 1);
+  const fallbackLayoutW = Math.max(canvasW ? (canvasW - 80) / viewZoom : 700, (typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) ? 140 : 400);
   // Per-section width lookup — matches gregRenderGABCInto/gregRenderSectionPreview's
   // own formula (section box content width - 20, same as what's ACTUALLY
   // visible on screen for that box) instead of one shared width for every
@@ -7628,10 +7632,10 @@ function gregExportPDF() {
   // on screen, so the PDF matches a re-opened document's layout too.
   function layoutWidthForSection(sec) {
     if (!sec) return fallbackLayoutW;
-    if (window._gregForcedCanvasWidth) return Math.max((canvasW - 20) / zoom, 300);
+    if (window._gregForcedCanvasWidth) return Math.max((canvasW - 20) / viewZoom, 300);
     const secBox = document.getElementById('greg-secbox-' + sec.id);
     const secContent = secBox ? secBox.querySelector('.greg-sec-content') : null;
-    return secContent ? Math.max((secContent.clientWidth - 20) / zoom, 300) : fallbackLayoutW;
+    return secContent ? Math.max((secContent.clientWidth - 20) / viewZoom, 300) : fallbackLayoutW;
   }
 
   // Build list of {gabc, section-state} to render for PDF
@@ -8094,7 +8098,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '337';
+const NOTATOR_BUILD_ID = '338';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
