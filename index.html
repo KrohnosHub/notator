@@ -3643,7 +3643,7 @@ function gregCalcTitlePad(svgW, overrideTitle, overrideSubtitle, overrideComm, e
 
   let totalH = 2 + (extraTop || 0); // top margin inside padding (+ Zusatzabstand Folgeabschnitt)
   if (comm) totalH += subFs * 1.3; // Kommentarzeile rechts über dem System
-  if (title) totalH += fs * 1.1;
+  if (title) totalH += fs * 1.1 * gregWordWrap(title, fs + "px 'Crimson Text', Palatino, serif", textW - 30).length;
 
   if (bodyText.trim()) {
     const subGap = 6;
@@ -3693,20 +3693,23 @@ function gregRenderTitle(svgEl, overrideTitle, overrideSubtitle, overrideComm) {
   const g = document.createElementNS(ns, 'g');
   g.setAttribute('class', 'greg-title-overlay');
 
-  if (title) {
+  // Langer Titel: automatisch auf mehrere Zeilen umbrechen (statt rechts abzuschneiden)
+  const titleLines = title ? gregWordWrap(title, fs + "px 'Crimson Text', Palatino, serif", textW) : [];
+  titleLines.forEach(function(tl, ti) {
     const txt = document.createElementNS(ns, 'text');
     txt.setAttribute('x', String(titleX));
-    txt.setAttribute('y', String(titleY));
+    txt.setAttribute('y', String(titleY + ti * fs * 1.1));
     txt.setAttribute('text-anchor', 'start');
     txt.setAttribute('font-family', "'Crimson Text', Palatino, serif");
     txt.setAttribute('font-size', String(fs));
     txt.setAttribute('fill', '#1a1a0a');
-    txt.textContent = title;
+    txt.textContent = tl;
     g.appendChild(txt);
-  }
+  });
+  const titleExtraH = Math.max(0, titleLines.length - 1) * fs * 1.1;
 
   if (bodyText.trim()) {
-    let curY = (title ? titleY + fs * 0.15 + subGap : vy + 2) + subFs;
+    let curY = (title ? titleY + titleExtraH + fs * 0.15 + subGap : vy + 2) + subFs;
     const rawLines = bodyText.split('\n');
     rawLines.forEach(function(rl) {
       const wlines = gregWordWrap(rl || '', fontStr, textW);
@@ -8091,7 +8094,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '336';
+const NOTATOR_BUILD_ID = '337';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
