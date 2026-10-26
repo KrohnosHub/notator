@@ -8075,7 +8075,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '332';
+const NOTATOR_BUILD_ID = '333';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9409,14 +9409,17 @@ function gregMobileApplyScale() {
     sizer.style.height = '';
     return;
   }
-  wrap.style.transform = 'none'; // vor dem Messen zurücksetzen
+  // transform ändert die Layoutgrösse nicht -> ohne Zurücksetzen messen; Stile
+  // nur bei Änderung schreiben (sonst löst der MutationObserver endlos neu aus –
+  // Dauerlast auf dem Handy, Absturzgefahr; Nutzerbericht 2026-10-26)
   const naturalWidth = wrap.scrollWidth;
   const naturalHeight = wrap.scrollHeight;
   const available = outer.clientWidth;
   if (!naturalWidth || !available) return;
   const scale = Math.min(1, available / naturalWidth);
-  wrap.style.transform = 'scale(' + scale + ')';
-  sizer.style.height = Math.ceil(naturalHeight * scale) + 'px';
+  const tf = 'scale(' + (Math.round(scale * 1000) / 1000) + ')', hh = Math.ceil(naturalHeight * scale) + 'px';
+  if (wrap.style.transform !== tf) wrap.style.transform = tf;
+  if (sizer.style.height !== hh) sizer.style.height = hh;
 }
 
 // Spiegelt den Titel in die Mobile-Leiste (dort ist #greg-input-panel mit
@@ -9739,7 +9742,11 @@ function gregSideToggle(force) {
 function gregMobileInit() {
   const canvasWrap = document.getElementById('greg-canvas-wrap');
   if (canvasWrap && window.MutationObserver) {
-    new MutationObserver(function() {
+    new MutationObserver(function(recs) {
+      // eigene Grössenanpassung, Schatten, Werkzeugleiste: kein Neuberechnen nötig
+      const sizer = document.getElementById('greg-mobile-scale-outer'), wrp = document.getElementById('greg-mobile-scale-wrap'), qb = document.getElementById('greg-quickbar');
+      const relevant = recs.some(r => !(r.target === sizer || r.target === wrp || (qb && qb.contains(r.target)) || (r.target.closest && r.target.closest('#greg-ghost')) || (r.type === 'childList' && [...r.addedNodes, ...r.removedNodes].every(n => n.id === 'greg-ghost'))));
+      if (!relevant) return;
       gregScheduleMobileScale();
       gregMobileSyncTitle();
     }).observe(canvasWrap, { childList: true, subtree: true, attributes: true });
