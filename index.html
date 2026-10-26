@@ -3516,21 +3516,19 @@ function gregRenderExtraAnnotations(svgEl, extraLines) {
   // Find the annotation text element - it has class starting with "annotation"
   // In exsurge SVG, it's a <text> element directly or inside a transformed <g>
   const exAnnEl = svgEl.querySelector('text[class^="annotation"], text[class*=" annotation"]');
+  let annAnchor = 'start';
   if (exAnnEl) {
-    // Get position accounting for any parent transforms
-    // Use getBoundingClientRect relative to SVG for pixel position, 
-    // then convert to SVG user units via SVG viewport
-    const svgRect = svgEl.getBoundingClientRect();
-    const elRect  = exAnnEl.getBoundingClientRect();
-    if (svgRect.width > 0) {
-      const vb = svgEl.getAttribute('viewBox');
-      const [vx2, vy2, vw2] = vb ? vb.split(/[\s,]+/).map(Number) : [0,0,700];
-      const scaleX = vw2 / svgRect.width;
-      annX   = (elRect.left - svgRect.left) * scaleX + vx2;
-      annTopY = (elRect.top  - svgRect.top)  * scaleX + vy2;
-    } else {
-      annX   = parseFloat(exAnnEl.getAttribute('x') || 0);
-      annTopY = parseFloat(exAnnEl.getAttribute('y') || 0);
+    // Position aus den SVG-Attributen (+ translate der Eltern) – funktioniert
+    // auch, wenn die Notenansicht gerade ausgeblendet ist (z. B. Handy-Details),
+    // wo getBoundingClientRect nur Nullen liefert.
+    annX = parseFloat(exAnnEl.getAttribute('x') || 0);
+    annTopY = parseFloat(exAnnEl.getAttribute('y') || 0);
+    annAnchor = exAnnEl.getAttribute('text-anchor') || 'start';
+    if ((exAnnEl.getAttribute('dominant-baseline') || '') !== 'hanging') annTopY -= annFs * 0.8;
+    for (let n = exAnnEl.parentNode; n && n !== svgEl && n.getAttribute; n = n.parentNode) {
+      const tr = n.getAttribute('transform') || '';
+      const m = /translate\(\s*([-\d.e]+)[\s,]*([-\d.e]+)?/.exec(tr);
+      if (m) { annX += parseFloat(m[1]) || 0; annTopY += parseFloat(m[2]) || 0; }
     }
   } else {
     // Fallback from viewBox
@@ -3545,7 +3543,7 @@ function gregRenderExtraAnnotations(svgEl, extraLines) {
   g.setAttribute('class', 'greg-extra-ann');
 
   // lineH: use annFs * 1.15 (tight, font-size-proportional, not 1.4×)
-  const tightLineH = annFs * 1.0; // tight: one font-size gap between annotation lines
+  const tightLineH = annFs * 1.15; // tight: one font-size gap between annotation lines
   extraLines.forEach(function(line, i) {
     // Place just above exsurge annotation, tight spacing
     const topY = annTopY - (extraLines.length - i) * tightLineH;
@@ -3553,7 +3551,7 @@ function gregRenderExtraAnnotations(svgEl, extraLines) {
     txt.setAttribute('x', String(annX));
     txt.setAttribute('y', String(topY));
     txt.setAttribute('dominant-baseline', 'hanging');
-    txt.setAttribute('text-anchor', 'start');
+    txt.setAttribute('text-anchor', annAnchor);
     txt.setAttribute('font-family', ctxt ? ctxt.annotationTextFont : 'serif');
     txt.setAttribute('font-size', String(annFs));
     txt.setAttribute('fill', '#1a1a0a');
@@ -8098,7 +8096,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '341';
+const NOTATOR_BUILD_ID = '342';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
