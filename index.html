@@ -8098,7 +8098,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '339';
+const NOTATOR_BUILD_ID = '340';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8381,6 +8381,7 @@ function gregFixDoubleAsterisk(entries) {
 
 function gregApplyLoadedState(state) {
   gregCloseEditForm();
+  window._ntTrashedOpen = false;
   if (state) {
     gregFixDoubleAsterisk(state.entries);
     (state.sections || []).forEach(sec => gregFixDoubleAsterisk(sec && sec.entries));
@@ -8689,8 +8690,9 @@ function gdDownload(id, interactive) {
 }
 
 // Legt an (id leer) oder überschreibt (id gesetzt); liefert die Datei-ID.
-function gdUpload(name, stateObj, id, interactive) {
+function gdUpload(name, stateObj, id, interactive, untrash) {
   const meta = id ? { name } : { name, parents: [NOTATOR_GDRIVE_FOLDER_ID], mimeType: 'application/json' };
+  if (id && untrash) meta.trashed = false; // explizites Speichern eines gelöschten Stücks holt es aus dem Papierkorb
   if (stateObj && stateObj.meta && typeof ntMetaToAppProps === 'function') meta.appProperties = ntMetaToAppProps(stateObj.meta);
   const boundary = 'notator' + Date.now();
   const body = '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(meta) +
@@ -8704,6 +8706,39 @@ function gdRename(id, name, interactive) {
   return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) }, interactive);
 }
 // "Löschen" = in den Drive-Papierkorb (dort 30 Tage wiederherstellbar)
+function gdUntrash(id, interactive) {
+  return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trashed: false }) }, interactive);
+}
+// Status einer Drive-Datei: 'ok' | 'trashed' | 'gone' (gelöscht/kein Zugriff) | 'unknown'
+function gdFileStatus(id) {
+  return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id) + '?fields=id,trashed', {}, false)
+    .then(r => r.json()).then(j => j && j.trashed ? 'trashed' : 'ok')
+    .catch(err => /\b(404|403)\b/.test(err.message || '') ? 'gone' : 'unknown');
+}
+// Markierung «gelöscht» für das gerade offene Stück (Titel rot + 🗑)
+function ntTrashMarkTitles() {
+  const on = !!window._ntTrashedOpen;
+  ['greg-mobile-title', 'cl-vb-title'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    const base = el.textContent.replace(/^🗑 (gelöscht · )?/, '');
+    el.textContent = on ? '🗑 gelöscht · ' + base : base;
+    el.style.color = on ? '#ff6b6b' : '#c0d890';
+    el.style.fontWeight = on ? '600' : '';
+    el.title = on ? 'Dieses Stück liegt im Google-Drive-Papierkorb. Speichern holt es zurück.' : '';
+  });
+  const t = document.getElementById('greg-title');
+  if (t) { t.style.color = on ? '#c0392b' : ''; t.title = on ? 'Stück liegt im Drive-Papierkorb' : ''; }
+}
+function ntSetTrashedOpen(on) { window._ntTrashedOpen = !!on; ntTrashMarkTitles(); }
+function ntTrashedWarn(file, rec) {
+  showModal('🗑 Gelöschtes Stück', '«' + gdTitleFromName(file.name || '') + '» liegt im Google-Drive-Papierkorb (gelöscht). Der Link ist vermutlich veraltet. Du siehst die gelöschte Fassung – sie erscheint nicht in der Bibliothek.', [
+    { label: '↺ Wiederherstellen (aus Papierkorb holen)', fn: () => { closeModal(); gdUntrash(file.id, true).then(() => {
+        ntSetTrashedOpen(false); if (rec) { rec.driveGone = false; gregLibPut(rec).catch(() => {}); }
+        gregGst('Wiederhergestellt – das Stück ist wieder in der Bibliothek.'); }).catch(err => gregGst('Wiederherstellen fehlgeschlagen: ' + err.message)); } },
+    { label: '📂 Bibliothek öffnen', fn: () => { closeModal(); gregLibShowModal(); } },
+    { label: 'Trotzdem ansehen', fn: closeModal }
+  ]);
+}
 function gdTrash(id, interactive) {
   return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trashed: true }) }, interactive);
 }
@@ -8740,7 +8775,7 @@ function gregLibAll() {
 
 function gregLibList() {
   return gregLibAll().then(function(all) {
-    const out = all.map(function(v) { return { id: v.id, title: v.title, savedAt: v.savedAt, updatedAt: v.updatedAt, driveId: v.driveId || null, pending: !!v.pending, meta: (v.state && v.state.meta) || null }; });
+    const out = all.map(function(v) { return { id: v.id, title: v.title, savedAt: v.savedAt, updatedAt: v.updatedAt, driveId: v.driveId || null, pending: !!v.pending, driveGone: !!v.driveGone, meta: (v.state && v.state.meta) || null }; });
     out.sort(function(a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
     return out;
   });
@@ -8754,7 +8789,8 @@ function gregLibFindByDriveId(driveId) {
 // markiert ihn als synchron. interactive: darf das Anmeldefenster öffnen.
 function gregLibPushToDrive(rec, interactive) {
   const doUpload = function(targetId) {
-    return gdUpload(gdFileName(rec.title), rec.state, targetId, interactive).then(function(newId) {
+    return gdUpload(gdFileName(rec.title), rec.state, targetId, interactive, !!rec._untrash).then(function(newId) {
+      if (rec._untrash) { delete rec._untrash; rec.driveGone = false; if (gregLibCurrentId === rec.id) ntSetTrashedOpen(false); }
       rec.driveId = newId; rec.pending = false;
       return gregLibPut(rec).then(function() { return rec; });
     });
@@ -8792,6 +8828,7 @@ function gregLibSaveCurrent() {
   const now = Date.now();
   const finish = function(base) {
     const record = Object.assign({}, base || {}, { updatedAt: now, state: state, pending: true });
+    if (window._ntTrashedOpen && record.driveId) record._untrash = true;
     if (!record.savedAt) record.savedAt = now;
     gregLibPut(record).then(function(newId) {
       record.id = newId;
@@ -8836,7 +8873,7 @@ function ntNewPiece() {
     gregCollapseSections(); gregClear();
     if (typeof gregMeta !== 'undefined') gregMeta = {};
     if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); clUndoReset(); }
-    gregLibCurrentId = null;
+    gregLibCurrentId = null; ntSetTrashedOpen(false);
     try { if (location.hash) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
     ntMarkClean();
     gregGst('Neues, leeres Stück');
@@ -8849,14 +8886,16 @@ function ntNewPiece() {
   ]);
 }
 
-function gregLibApplyRecord(rec, sourceLabel) {
+function gregLibApplyRecord(rec, sourceLabel, trashed) {
   gregPush(); // Undo zurück zum vorherigen Stand erlauben
   gregApplyLoadedState(rec.state);
+  window._ntTrashedOpen = !!(trashed || rec.driveGone);
   gregLibCurrentId = rec.id;
   gregRefreshList();
   closeModal();
   if (typeof gregMobileSetEditMode === 'function' && gregIsMobileViewport()) gregMobileSetEditMode(false); // Handy: frisch geladenes Stück erst in der Ansicht zeigen
   gregGst('Geladen (' + sourceLabel + '): "' + rec.title + '"');
+  ntTrashMarkTitles();
   ntMarkClean();
   gregScheduleAutosave();
 }
@@ -8874,16 +8913,17 @@ function gregLibLoadEntry(id, _ok) {
 function gregLibLoadDrive(file, onFail, _ok) {
   if (!_ok && ntIsDirty()) { return ntConfirmDiscard().then(ok => { if (ok) return gregLibLoadDrive(file, onFail, true); }); }
   gregGst('Lade "' + file.name + '" aus Google Drive …');
-  return Promise.all([gdDownload(file.id, true), gregLibFindByDriveId(file.id)]).then(function(res) {
-    const state = res[0], local = res[1];
+  return Promise.all([gdDownload(file.id, true), gregLibFindByDriveId(file.id), gdFileStatus(file.id)]).then(function(res) {
+    const state = res[0], local = res[1], trashed = res[2] === 'trashed';
     if (!state || !state.entries && !state.sections) throw new Error('keine gültige Notator-Datei');
     if (local && local.pending && !confirm('Die lokale Kopie von "' + local.title + '" enthält Änderungen, die noch nicht in Drive sind.\nOK = Drive-Version laden (lokale Änderungen verwerfen), Abbrechen = lokale Version laden.')) {
       gregLibApplyRecord(local, 'lokale Kopie'); return;
     }
     if (file.appProperties) state.meta = Object.assign(ntMetaFromAppProps(file.appProperties), { txt: (state.meta && state.meta.txt) || file.appProperties.txt || '' });
-    const rec = Object.assign({}, local || {}, { title: gdTitleFromName(file.name), state: state, driveId: file.id, pending: false, updatedAt: Date.parse(file.modifiedTime) || Date.now() });
+    const rec = Object.assign({}, local || {}, { title: gdTitleFromName(file.name), state: state, driveId: file.id, pending: false, updatedAt: Date.parse(file.modifiedTime) || Date.now(), driveGone: trashed });
     if (!rec.savedAt) rec.savedAt = rec.updatedAt;
-    return gregLibPut(rec).then(function(id) { rec.id = id; gregLibApplyRecord(rec, 'Google Drive'); });
+    return gregLibPut(rec).then(function(id) { rec.id = id; gregLibApplyRecord(rec, trashed ? 'Google Drive – Papierkorb' : 'Google Drive', trashed);
+      if (trashed) ntTrashedWarn(file, rec); });
   }).catch(function(err) { gregGst('Drive-Ladefehler: ' + err.message); if (onFail) onFail(err); });
 }
 
@@ -9075,7 +9115,7 @@ function gregLibCollect(withDrive) {
     return Object.assign({ items, allTags: Object.keys(tags).sort((a, b) => a.localeCompare(b, 'de')) }, extra || {});
   };
   if (!withDrive || !signed) {
-    return gregLibList().then(locals => finish(locals.map(fromLocal), { mode: 'local', driveOn, signed }));
+    return gregLibList().then(locals => finish(locals.filter(l => !l.driveGone).map(fromLocal), { mode: 'local', driveOn, signed }));
   }
   return gregLibSyncPending(false).then(sync => Promise.all([gdList(false), gregLibList()]).then(res => {
     const files = res[0], locals = res[1];
@@ -9085,7 +9125,10 @@ function gregLibCollect(withDrive) {
         meta: f.appProperties ? ntMetaFromAppProps(f.appProperties) : ntMetaNorm(loc && loc.meta), local: loc || null,
         badge: loc && loc.pending ? '⏫ lokale Änderung' : '' };
     });
-    locals.filter(l => l.pending || !l.driveId).filter(l => !files.some(f => f.id === l.driveId)).forEach(l => items.push(fromLocal(l)));
+    // Lokale Kopien, deren Drive-Datei gelöscht (Papierkorb) oder weg ist: ausblenden und merken
+    locals.forEach(l => { if (!l.driveId) return; const gone = !files.some(f => f.id === l.driveId);
+      if (!!l.driveGone !== gone) gregLibGet(l.id).then(r => { if (r) { r.driveGone = gone; return gregLibPut(r); } }).catch(() => {}); l.driveGone = gone; });
+    locals.filter(l => !l.driveId).forEach(l => items.push(fromLocal(l)));
     return finish(items, { mode: 'drive', driveOn, signed, sync, driveCount: files.length });
   }));
 }
@@ -9451,6 +9494,7 @@ function gregMobileSyncTitle() {
   const el = document.getElementById('greg-mobile-title');
   const src = document.getElementById('greg-title');
   if (el) el.textContent = (src && src.value) ? src.value : 'Unbenanntes Stück';
+  ntTrashMarkTitles();
   ntUpdateGbLinks();
 }
 
@@ -17389,6 +17433,7 @@ function clApplyUi() {
   }
   const t = document.getElementById('cl-vb-title');
   if (t) { const h = clEffectiveHead(); t.textContent = h.title || 'Unbenanntes Stück'; }
+  ntTrashMarkTitles();
   ntUpdateGbLinks();
 }
 function clToggleView() { const u = clUi(); u.view = !u.view; if (!u.view) u.menu = true; clSaveUi(u); clApplyUi(); clRender(); }
