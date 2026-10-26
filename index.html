@@ -8098,7 +8098,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '338';
+const NOTATOR_BUILD_ID = '339';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19803,12 +19803,17 @@ function clExportPDF() {
   // PDF die Bildschirmbreite übernehmen (riesige Noten, viele Seiten).
   // Dann für den Export einmalig in Standard-Druckbreite neu setzen.
   // Ebenso bei verkleinerter/vergrösserter Anzeige: PDF immer in Originalgrösse.
-  // Handy-Standardbreite (950, nur Anzeige): PDF weiterhin in Standard-Druckbreite 740.
+  // Handy-Standardbreite (950): PDF in derselben Breite wie am Bildschirm (Nutzerwunsch 2026-10-26).
   const mobDef = clMobileDefaultW();
   // Ebenso, wenn «An Seitenbreite anpassen» die gespeicherte Breite am Bildschirm übersteuert.
   if (!clExportPDF._printPass && (mobDef || ntViewScale('cl') !== 1 || (!clState.width && clScoreWidth() < 700) || (clState.width && clScoreWidth() !== clState.width))) {
     const oldW = clState.width;
-    if (!clState.width && (mobDef || clScoreWidth() < 700)) clState.width = 740;
+    // PDF-Breite = die am Bildschirm tatsächlich verwendete Zeilenbreite (gleiche Zeilenumbrüche
+    // und Notengrösse wie in Notator); nur bei automatischer, sehr schmaler Breite Standard 740.
+    const shownW = clScoreWidth();
+    if (mobDef) clState.width = mobDef;
+    else if (clState.width && shownW !== clState.width) clState.width = Math.round(shownW);
+    else if (!clState.width && shownW < 700) clState.width = 740;
     clExportPDF._printPass = true; ntViewScale._override = true;
     clRender();
     try { clExportPDF(); } finally { clExportPDF._printPass = false; ntViewScale._override = false; clState.width = oldW; setTimeout(clRender, 50); }
