@@ -607,7 +607,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
     <span style="color:#3a4a30">|</span>
 <span class="cl-ess cl-grp cl-grp-w" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)"><span style="font-size:11px;color:#a8d878">Breite</span>
     <button class="b" onclick="clWidthStep(-20)" style="font-size:11px;padding:2px 7px" title="Breite verkleinern (weniger Noten pro Zeile)">&minus;</button>
-    <input type="range" id="cl-width" min="160" max="1600" step="10" oninput="clSetWidth(this.value)" style="flex:1 1 110px;min-width:50px;max-width:200px;accent-color:#5a8a40">
+    <input type="range" id="cl-width" min="500" max="1300" step="10" oninput="clSetWidth(this.value)" style="flex:1 1 110px;min-width:50px;max-width:200px;accent-color:#5a8a40">
     <button class="b" onclick="clWidthStep(20)" style="font-size:11px;padding:2px 7px" title="Breite vergrössern (mehr Noten pro Zeile)">+</button>
     <span id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:44px;text-align:center"></span>
     <button class="b" id="cl-width-auto" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button></span>
@@ -8099,7 +8099,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '344';
+const NOTATOR_BUILD_ID = '345';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -17300,7 +17300,6 @@ function clSyncControls() {
   const wr = document.getElementById('cl-width');
   const wv = document.getElementById('cl-width-val');
   const w = clScoreWidth();
-  if (wr) wr.max = gregIsMobileViewport() ? 1000 : 1600; // Handy: feinere Regelung
   if (wr && document.activeElement !== wr) wr.value = w;
   if (wv) wv.textContent = w + ' px';
   const wa = document.getElementById('cl-width-auto');
@@ -19482,7 +19481,7 @@ function clSetOctave(delta) {
 let _clWidthTimer = null;
 function clSetWidth(v) {
   window._clWidthTouched = true; // Nutzer stellt die Breite bewusst ein -> nicht durch «Anpassen» übersteuern
-  clState.width = Math.max(160, Math.min(2000, parseInt(v, 10) || 740));
+  clState.width = Math.max(500, Math.min(1300, parseInt(v, 10) || 740)); // Regler 500–1300 px
   clSyncControls();
   clearTimeout(_clWidthTimer);
   _clWidthTimer = setTimeout(clRender, 120);
