@@ -1280,7 +1280,31 @@ function gregBuildGABC() {
   return header ? header + '%%\n' + body : body;
 }
 
-function gregGst(t) { const e=document.getElementById('greg-status'); if(e) e.textContent=t; const c=document.getElementById('cl-status'); if(c) c.textContent=t; }
+function gregGst(t) { const e=document.getElementById('greg-status'); if(e) e.textContent=t; const c=document.getElementById('cl-status'); if(c) c.textContent=t; try { ntStatusToast(t); } catch (x) {} }
+// Build 346: Speichern/Exportieren immer sichtbar quittieren (Meldung ganz unten, Fehler bleiben stehen bis Tippen)
+let _ntToastEl = null, _ntToastTimer = null;
+function ntToast(msg, kind) {
+  if (!_ntToastEl) {
+    _ntToastEl = document.createElement('div'); _ntToastEl.id = 'nt-toast';
+    _ntToastEl.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:100000;padding:10px 14px calc(10px + env(safe-area-inset-bottom));font:13px/1.35 system-ui,sans-serif;color:#fff;text-align:center;cursor:pointer;display:none;box-shadow:0 -2px 8px rgba(0,0,0,.35)';
+    _ntToastEl.onclick = () => { _ntToastEl.style.display = 'none'; };
+    document.body.appendChild(_ntToastEl);
+  }
+  const err = kind === 'err';
+  _ntToastEl.style.background = err ? '#a8322d' : '#3d6b35';
+  _ntToastEl.textContent = (err ? '✕ ' : '✓ ') + msg + (err ? '  (Tippen zum Schliessen)' : '');
+  _ntToastEl.style.display = 'block';
+  clearTimeout(_ntToastTimer);
+  if (!err) _ntToastTimer = setTimeout(() => { _ntToastEl.style.display = 'none'; }, 7000);
+}
+function ntStatusToast(t) {
+  t = String(t || '');
+  if (/Fehler|fehlgeschlagen|abgelaufen|nicht erreichbar|nicht möglich|keine Noten/i.test(t)) ntToast(t, 'err');
+  else if (/gespeichert|exportiert|hochgeladen/i.test(t)) ntToast(t, 'ok');
+}
+// Unerwartete Fehler während der PDF-Erzeugung nicht verschlucken
+window.addEventListener('error', ev => { if (window._ntPdfBusy) { window._ntPdfBusy = 0; ntToast('PDF-Fehler: ' + (ev.message || 'unbekannt') + ' – es wurde nichts gespeichert.', 'err'); } });
+window.addEventListener('unhandledrejection', ev => { if (window._ntPdfBusy) { window._ntPdfBusy = 0; ntToast('PDF-Fehler: ' + ((ev.reason && ev.reason.message) || ev.reason || 'unbekannt') + ' – es wurde nichts gespeichert.', 'err'); } });
 
 // ══════════════════════════════════════════════════════════════
 // ── MULTI-SECTION SYSTEM ─────────────────────────────────────
@@ -8099,7 +8123,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '345';
+const NOTATOR_BUILD_ID = '346';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -18142,8 +18166,12 @@ function ntPdfDialog(ctx) {
 
 function ntPdfRun(kind, deliver) {
   if (kind === 'notator') { const st = gregBuildStateObject(); ntMarkClean(st); deliver(new Blob([JSON.stringify(st, null, 2)], { type: 'application/json' })); return; }
-  window._ntPdfDeliver = deliver;
-  if (kind === 'cl') clExportPDF(); else if (kind === 'mappe') ntMappeBuild(); else gregExportPDF();
+  const t0 = Date.now(); window._ntPdfBusy = t0;
+  window._ntPdfDeliver = blob => { window._ntPdfBusy = 0; return deliver(blob); };
+  // Läuft die Erzeugung ohne Ergebnis ins Leere, nicht stumm bleiben
+  setTimeout(() => { if (window._ntPdfBusy === t0) { window._ntPdfBusy = 0; ntToast('PDF-Erzeugung hat kein Ergebnis geliefert – es wurde nichts gespeichert. Bitte nochmals versuchen.', 'err'); } }, 90000);
+  try { if (kind === 'cl') clExportPDF(); else if (kind === 'mappe') ntMappeBuild(); else gregExportPDF(); }
+  catch (e) { window._ntPdfBusy = 0; ntToast('PDF-Fehler: ' + e.message + ' – es wurde nichts gespeichert.', 'err'); }
 }
 
 // ── Drive: PDF-Ordner und Upload ──
@@ -18214,10 +18242,19 @@ function ntPdfToDrive(blob, name, ctx) {
         if (confirm('In diesem Drive-Ordner gibt es bereits "' + name + '". Überschreiben?\n(Abbrechen = als neue Datei mit Datum speichern)')) existing = same.id;
         else finalName = name.replace(/\.(pdf|notator)$/i, '') + ' (' + new Date().toLocaleString('de-CH').replace(/[\\/:*?"<>|]+/g, '-') + ')' + (K.n ? '.notator' : '.pdf');
       }
-      return gdUploadBlob(finalName, blob, mime, folderId, existing, appProps);
+      return gdUploadBlob(finalName, blob, mime, folderId, existing, appProps).then(f => {
+        // Nachprüfen: Datei wirklich im Zielordner, nicht im Papierkorb, Grösse stimmt
+        if (!f || !f.id) throw new Error('Drive hat keine Datei-ID geliefert');
+        return gdFetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(f.id) + '?fields=id,name,size,trashed,parents', {}, false).then(r => r.json()).then(m => {
+          if (m.trashed) throw new Error('Datei liegt im Papierkorb');
+          if (m.parents && m.parents.length && m.parents.indexOf(folderId) < 0) throw new Error('Datei liegt in einem anderen Ordner');
+          if (m.size != null && Number(m.size) !== blob.size) throw new Error('Grösse in Drive (' + m.size + ' B) weicht ab (' + blob.size + ' B)');
+          f.size = blob.size; return f;
+        });
+      });
     });
   }).then(f => {
-    gregGst((K.n ? 'In Google Drive gespeichert: ' : 'PDF in Google Drive gespeichert: ') + f.name + ' (' + ntDrivePathText(ntPdfPrefs()[K.folder], K.n).replace(' (Standard)', '') + ')'
+    gregGst((K.n ? 'In Google Drive gespeichert und geprüft: ' : 'PDF in Google Drive gespeichert und geprüft: ') + f.name + ' (' + Math.round(f.size / 1024) + ' KB, ' + ntDrivePathText(ntPdfPrefs()[K.folder], K.n).replace(' (Standard)', '') + ')'
       + (ctx && ctx._folderFallback ? ' – Hinweis: «' + ctx._folderFallback + '» existiert nicht mehr, darum im Standardordner gespeichert.' : ''));
   }).catch(err => gregGst('Drive-Upload fehlgeschlagen: ' + err.message));
 }
