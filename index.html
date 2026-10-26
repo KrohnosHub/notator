@@ -8091,7 +8091,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '335';
+const NOTATOR_BUILD_ID = '336';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -11991,6 +11991,8 @@ var exsurge = (() => {
       var match = null;
       while (match = markupRegex.exec(text)) {
         var markupSymbol = match[0];
+        // Notator: alleinstehendes «*» (Asterisk, Leerzeichen danach) ist Text, kein Fett-Markup
+        if (markupSymbol === "*") { var _nx = text.charAt(match.index + 1), _pv = match.index ? text.charAt(match.index - 1) : " "; if ((_nx === "" || /\s/.test(_nx)) && /\s/.test(_pv)) continue; }
         if (markupSymbol === "A/." || markupSymbol === "R/." || markupSymbol === "V/." || markupSymbol === "a/." || markupSymbol === "r/." || markupSymbol === "v/.") {
           closeSpan(text[match.index] + ".", "font-family:'Exsurge Characters';fill:#f00;");
         } else if (markupStack.length === 0) {
