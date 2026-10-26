@@ -8075,7 +8075,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '333';
+const NOTATOR_BUILD_ID = '334';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -13642,6 +13642,14 @@ var exsurge = (() => {
         var line = new ChantLine(this);
         line._lineIdx = this.lines.length;
         line.buildFromChantNotationIndex(ctxt2, currIndex, width);
+        // Notator: passt nicht einmal eine Notationsgruppe in die Zeile (sehr
+        // schmale Ansicht, z.B. Handy mit starkem Zoom), käme die Schleife nie
+        // voran (Endlosschleife -> Tab-Absturz). Dann Zeile verbreitern.
+        for (var _w = width * 1.5; !line.numNotationsOnLine && _w < width * 40; _w *= 1.5) {
+          line = new ChantLine(this); line._lineIdx = this.lines.length;
+          line.buildFromChantNotationIndex(ctxt2, currIndex, _w);
+        }
+        if (!line.numNotationsOnLine) break;
         currIndex = line.notationsStartIndex + line.numNotationsOnLine;
         line.performLayout(ctxt2);
         this.lines.push(line);
