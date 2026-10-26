@@ -4063,30 +4063,46 @@ function gregGhostRemove(svgEl) { const g = (svgEl || document).querySelector('#
 // der Finger wie gewohnt.
 const GREG_AIM_DX = 56; // px: Schatten erscheint links neben dem Finger, dort wird gesetzt
 function gregTouchAim(svgEl) {
-  let aim = null;
-  const pt = t => { const p = svgEl.createSVGPoint(); p.x = t.clientX - GREG_AIM_DX; p.y = t.clientY; return p.matrixTransform(svgEl.getScreenCTM().inverse()); };
+  // Kurz tippen = Neume an der Fingerstelle setzen (wie Mausklick);
+  // wischen = scrollen; gedrückt halten (ca. 0,3 s) = Zielen mit Schatten
+  // links neben dem Finger, Loslassen setzt dort (Nutzerwunsch 2026-10-26).
+  let aim = null, hold = null;
+  const pt = (x, y) => { const p = svgEl.createSVGPoint(); p.x = x; p.y = y; return p.matrixTransform(svgEl.getScreenCTM().inverse()); };
+  const cancelHold = () => { if (hold) { clearTimeout(hold.timer); hold = null; } };
+  svgEl.style.webkitTouchCallout = 'none'; svgEl.style.userSelect = 'none'; svgEl.style.webkitUserSelect = 'none';
+  svgEl.addEventListener('contextmenu', ev => { if (aim || hold) ev.preventDefault(); });
   svgEl.addEventListener('touchstart', ev => {
-    aim = null;
+    aim = null; cancelHold();
     if (ev.touches.length !== 1 || !_gregScore || !_gregCtxtRef) return;
     const panel = document.getElementById('greg-panel'); if (!panel || panel.classList.contains('greg-view')) return;
     if (typeof ntPlay !== 'undefined' && ntPlay.pick === 'greg') return;
-    const t = ev.touches[0], P = pt(t);
-    { const p0 = svgEl.createSVGPoint(); p0.x = t.clientX; p0.y = t.clientY; const Q = p0.matrixTransform(svgEl.getScreenCTM().inverse());
-      if (!_gregPending && gregFindEntryAtNativePoint(_gregScore, gregEntries, Q.x, Q.y, _gregCtxtRef) != null) return; } // bestehende Note: Tippen öffnet sie
+    const t = ev.touches[0], Q = pt(t.clientX, t.clientY);
+    if (!_gregPending && gregFindEntryAtNativePoint(_gregScore, gregEntries, Q.x, Q.y, _gregCtxtRef) != null) return; // bestehende Note: Tippen öffnet sie
     const si = _gregCtxtRef.staffInterval, lines = _gregScore.lines || [];
-    if (!lines.some(ln => Math.abs(P.y - ln.bounds.y) < si * 4.5)) return; // nicht auf einer Notenlinie -> scrollen
-    ev.preventDefault();
-    aim = { x: t.clientX - GREG_AIM_DX, y: t.clientY };
-    gregGhostShow(svgEl, P, true);
-  }, { passive: false });
+    if (!lines.some(ln => Math.abs(Q.y - ln.bounds.y) < si * 4.5)) return;
+    hold = { x0: t.clientX, y0: t.clientY, x: t.clientX, y: t.clientY };
+    hold.timer = setTimeout(() => {
+      if (!hold) return;
+      aim = { x: hold.x - GREG_AIM_DX, y: hold.y }; hold = null;
+      gregGhostShow(svgEl, pt(aim.x, aim.y), true);
+      try { navigator.vibrate && navigator.vibrate(15); } catch (e) {}
+    }, 300);
+  }, { passive: true });
   svgEl.addEventListener('touchmove', ev => {
+    if (hold) {
+      const t = ev.touches[0];
+      if (ev.touches.length !== 1 || Math.hypot(t.clientX - hold.x0, t.clientY - hold.y0) > 8) cancelHold(); // wischen -> scrollen
+      else { hold.x = t.clientX; hold.y = t.clientY; }
+      return;
+    }
     if (!aim) return;
-    if (ev.touches.length !== 1) { aim = null; gregGhostRemove(svgEl); return; } // zweiter Finger: Zoomen
+    if (ev.touches.length !== 1) { aim = null; gregGhostRemove(svgEl); return; }
     ev.preventDefault();
     const t = ev.touches[0]; aim = { x: t.clientX - GREG_AIM_DX, y: t.clientY };
-    gregGhostShow(svgEl, pt(t), true);
+    gregGhostShow(svgEl, pt(aim.x, aim.y), true);
   }, { passive: false });
   svgEl.addEventListener('touchend', ev => {
+    cancelHold(); // kurzer Tipp: normaler Klick setzt an der Fingerstelle
     if (!aim) return;
     ev.preventDefault();
     const a = aim; aim = null;
@@ -4094,7 +4110,7 @@ function gregTouchAim(svgEl) {
     window._gregForcePlace = true; // gezielt gesetzt: auch über einer bestehenden Note eine neue setzen
     try { gregHandleClick(svgEl, a.x, a.y); } finally { window._gregForcePlace = false; }
   }, { passive: false });
-  svgEl.addEventListener('touchcancel', () => { aim = null; gregGhostRemove(svgEl); });
+  svgEl.addEventListener('touchcancel', () => { cancelHold(); aim = null; gregGhostRemove(svgEl); });
 }
 function gregGhostShow(svgEl, svgP, touch) {
   if ((gregIsMobileViewport() && !touch) || !_gregScore || !_gregCtxtRef) return;
@@ -8075,7 +8091,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '334';
+const NOTATOR_BUILD_ID = '335';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19171,7 +19187,7 @@ function ntViewScale(src) {
   // Handy: Choral standardmässig grösser (Neumen lassen sich so besser setzen)
   return (src === 'greg' && typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) ? NT_MOBILE_GREG_SCALE : 1;
 }
-const NT_MOBILE_GREG_SCALE = 1.7;
+const NT_MOBILE_GREG_SCALE = 1.0;
 // Orgel: «An Seitenbreite anpassen» – ein gespeicherter, breiterer Zeilenumbruch
 // (clState.width) wird am Bildschirm ignoriert, sobald er nicht auf die Seite
 // passt (kein Seitwärts-Scrollen). Standard: ein auf dem Handy, sonst aus.
