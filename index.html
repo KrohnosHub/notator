@@ -8303,7 +8303,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '352';
+const NOTATOR_BUILD_ID = '353';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9069,6 +9069,31 @@ function gregLibSaveCurrent() {
     finish({ title: title.trim() || 'Unbenanntes Stück' });
   }
   return done;
+}
+
+// «Speichern unter»: als NEUER Bibliothekseintrag / neue Drive-Datei; das Original bleibt
+// unverändert. Danach arbeitet man in der neuen Datei weiter.
+function gregLibSaveAs() {
+  const cur = gregLibCurrentId;
+  const p = cur != null ? gregLibGet(cur).catch(() => null) : Promise.resolve(null);
+  return p.then(rec => {
+    const base = (rec && rec.title) || ((document.getElementById('greg-title') || {}).value || '').trim() || 'Unbenanntes Stück';
+    const t = prompt('Speichern unter – neuer Name:', base + ' (Kopie)');
+    if (t === null || !t.trim()) return false;
+    const name = t.trim();
+    if (rec && name.toLowerCase() === String(rec.title || '').toLowerCase()) { gregGst('Gleicher Name wie das Original – dafür «Speichern» verwenden.'); return false; }
+    const origPrompt = window.prompt;
+    window.prompt = () => name; // gregLibSaveCurrent fragt bei neuem Eintrag nach dem Titel
+    gregLibCurrentId = null;
+    let res;
+    try { res = gregLibSaveCurrent(); } finally { window.prompt = origPrompt; }
+    return Promise.resolve(res).then(ok => {
+      if (!ok) { gregLibCurrentId = cur; return false; }
+      if (typeof ntSetTrashedOpen === 'function') ntSetTrashedOpen(false);
+      gregGst('Gespeichert unter «' + name + '» – du arbeitest jetzt in dieser Datei; das Original ist unverändert.');
+      return true;
+    });
+  });
 }
 
 // «Neu»: leeres Stück (alle Abschnitte, Orgel-Standard). Ungespeicherte
@@ -9934,6 +9959,7 @@ function ntFileMenu(btn) {
   const sep = () => { const h = document.createElement('div'); h.style.cssText = 'border-top:1px solid #3a4a30;margin:2px 0'; d.appendChild(h); };
   item('✚ Neues Stück', 'Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)', () => ntNewPiece());
   item('📂 Öffnen · Bibliothek …', 'Stück aus der Bibliothek, einem Drive-Ordner oder vom Gerät öffnen', () => gregLibShowModal());
+  item('💾 Speichern unter …', 'Als neues Stück mit eigenem Namen in der Bibliothek speichern (das Original bleibt unverändert)', () => gregLibSaveAs());
   item('🎵 Song importieren (GregoBase) …', 'Nach Titel oder GregoBase-ID suchen und importieren', () => gregImportSongFromGregoBase());
   sep();
   item('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadRow(true); });
