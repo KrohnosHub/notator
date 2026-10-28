@@ -1051,7 +1051,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
     let sylText = '';
     if (!runEmittedSyllable) {
       sylText = runItalic ? '_' + runSyllable + '_' : runSyllable;
-      if (verseN && runSyllable) for (let k = 0; k < verseN; k++) sylText += '|' + gregVerseEsc(runVerses && runVerses[k]);
+      if (verseN && runSyllable && Array.isArray(runVerses)) for (let k = 0; k < verseN; k++) sylText += '|' + gregVerseEsc(runVerses && runVerses[k]);
       runEmittedSyllable = true;
     }
 
@@ -8303,7 +8303,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '349';
+const NOTATOR_BUILD_ID = '350';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19252,7 +19252,7 @@ function gregVerseTplInfo(t) {
 const gregVsStripNum = s => String(s || '').replace(NT_VS_NUM, '');
 function gregVerseOwnTexts(entries) {
   const by = {};
-  (entries || []).forEach(e => { if (e && e.vsCopy) (by[e.vsCopy] = by[e.vsCopy] || []).push(e); });
+  (entries || []).forEach(e => { if (e && e.vsCopy && !e.vsTail) (by[e.vsCopy] = by[e.vsCopy] || []).push(e); });
   return Object.keys(by).map(Number).sort((a, b) => a - b).map(n => gregSylsToText(gregVerseSlots(by[n]).map((e, i) => ({ t: (i === 0 ? gregVsStripNum(e.syllable) : String(e.syllable || '')).replace(/-$/, ''), cont: e.wordEnd === false || (e.wordEnd === undefined && !!e.hyphen) }))));
 }
 // Kopien der Vorlage-Strophe direkt nach der Vorlage einfügen (Vorlage = e.vsTpl)
@@ -19260,7 +19260,19 @@ function gregVerseOwnApply(drafts, numKind) {
   let a = -1, b = -1; gregEntries.forEach((e, i) => { if (e.vsTpl) { if (a < 0) a = i; b = i; } });
   if (a < 0) { a = 0; b = gregEntries.length - 1; }
   const base = gregEntries.slice(a, b + 1);
-  let at = b + 1;
+  // Kehrvers-Hinweis direkt nach der Vorlage (z.B. «℟. Roráte.»): kommt nach jeder Strophe wieder
+  const RESP = /^\s*(℟|R\/\.?|<sp>R\/<\/sp>)/;
+  let tail = [], tEnd = b;
+  {
+    const f = gregEntries[b + 1];
+    const txt = f ? (f.type === 'note' ? f.syllable : f.text) : '';
+    if (f && !f.vsCopy && RESP.test(txt || '')) {
+      let j = b + 1;
+      while (j < gregEntries.length && !gregEntries[j].vsCopy) { tEnd = j; if (gregEntries[j].type === 'divisio' && gregEntries[j].div === '::') break; j++; }
+      tail = gregEntries.slice(b + 1, tEnd + 1);
+    }
+  }
+  let at = tEnd + 1;
   drafts.forEach((d, k) => {
     const n = k + 2, parsed = gregVerseParse(d);
     const off = gregEntries.reduce((m, e) => Math.max(m, typeof e.mappingIdx === 'number' ? e.mappingIdx : -1), -1) + 1;
@@ -19279,6 +19291,10 @@ function gregVerseOwnApply(drafts, numKind) {
     if (prev && prev.type !== 'linebreak') ins.push({ type: 'linebreak', vsCopy: n });
     if (!numKind) ins.push({ type: 'directive', text: n + '.', vsCopy: n });
     ins.push(...copy);
+    if (tail.length) {
+      const off2 = off + 100000;
+      tail.filter(e => e.type !== 'comment').forEach(e => { const c = JSON.parse(JSON.stringify(e)); if (typeof c.mappingIdx === 'number') c.mappingIdx += off2; delete c.verses; delete c.vsTpl; c.vsCopy = n; c.vsTail = true; ins.push(c); });
+    }
     gregEntries.splice(at, 0, ...ins);
     at += ins.length;
   });
@@ -19322,7 +19338,7 @@ function gregVersesShow() {
   const intro = () => {
     document.getElementById('vs-intro').innerHTML = mode === 'stack'
       ? 'Weitere Strophen stehen als Textzeilen unter den Noten der Vorlage. Ganzen Text der Strophe eingeben – Notator verteilt die Silben auf die <b>' + slots.length + ' Noten mit Silbe</b>' + (ti.numKind ? ' (Strophennummer wird ergänzt)' : '') + '.'
-      : 'Jede Strophe bekommt eine eigene Kopie der Vorlage-Melodie, direkt nach der Vorlage (neue Zeile, mit Strophennummer). Der Text wird auf die <b>' + slots.length + ' Noten mit Silbe</b> verteilt; die Noten lassen sich danach einzeln anpassen.';
+      : 'Jede Strophe bekommt eine eigene Kopie der Vorlage-Melodie (neue Zeile, mit Strophennummer) nach der Vorlage – folgt auf die Vorlage ein Kehrvers-Hinweis (℟. …), wird er nach jeder Strophe wiederholt. Der Text wird auf die <b>' + slots.length + ' Noten mit Silbe</b> verteilt; die Noten lassen sich danach einzeln anpassen.';
   };
   document.querySelectorAll('input[name="vs-mode"]').forEach(r => r.onchange = () => { mode = r.value; intro(); });
   intro();
