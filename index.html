@@ -2018,7 +2018,8 @@ function gregPageMarksRedraw() {
     if (it.pb && y > 0.5) forced.push(y);
     let brk = it.brk || []; if (!it.abs) { try { brk = gregBreakLinesFor(it.entries, it.clef, it.clefRaw, it.score, it.ctxt); } catch (e) {} }
     brk.forEach(li => { if (li === 0) { if (y > 0.5) forced.push(y); } else if (lines[li]) forced.push(y + lines[li].top); });
-    lines.forEach(z => zones.push({ top: y + z.top, bottom: y + z.bottom }));
+    { let mt = Infinity; lines.forEach(z => { if (z.top < mt) mt = z.top; });
+      lines.forEach(z => zones.push({ top: y + (z.top === mt ? Math.min(0, z.top) : z.top), bottom: y + z.bottom })); }
     y += it.h;
   });
   const totalH = y, breaks = [];
@@ -8339,8 +8340,11 @@ function gregAssemblePdf(pairList, filename) {
         s.y0 = y;
         if (s.pageBreakBefore && y > 0.5) forcedBreaks.push(y);
         (s.breakLines || []).slice().sort((a, b) => a - b).forEach(li => { const lb = s.lineBoxes[li]; if (lb) forcedBreaks.push(y + lb.top * s.scale); });
+        // Titel/Kopf gehört zur ersten Zeile: der Bereich oberhalb davon darf kein Umbruchpunkt sein
+        // (sonst bleibt der Titel allein am Seitenende und die Noten beginnen auf der nächsten Seite)
+        let minTop = Infinity; s.lineBoxes.forEach(lb => { if (lb.top < minTop) minTop = lb.top; });
         for (const lb of s.lineBoxes) {
-          forbiddenZones.push({ top: y + lb.top * s.scale, bottom: y + lb.bottom * s.scale });
+          forbiddenZones.push({ top: y + (lb.top === minTop ? Math.min(0, lb.top) : lb.top) * s.scale, bottom: y + lb.bottom * s.scale });
         }
         y += s.h;
       }
@@ -8482,7 +8486,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '360';
+const NOTATOR_BUILD_ID = '361';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
