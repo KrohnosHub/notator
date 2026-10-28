@@ -3240,7 +3240,7 @@ function gregBlockNoteClick(idx) {
     if (window._gregBlockRange === 1) { gregSelectedIndices.clear(); gregSelectedIndices.add(idx); window._gregSelAnchor = idx; window._gregBlockRange = 2; }
     else {
       gregBlockSetRange(window._gregSelAnchor, idx); window._gregBlockRange = 0;
-      if (window._gregVsPick) { window._gregVsPick = false; setTimeout(gregVersesShow, 60); }
+      if (window._gregVsPick || window._gregVsPickK != null) { window._gregVsPick = false; setTimeout(gregVersesShow, 60); }
     }
     gregUpdateBulkToolbar(); gregBlockSync(); gregRefreshListNoRender();
     return true;
@@ -3295,9 +3295,9 @@ function gregBlockSync() {
   bar.appendChild(lab);
   const mk = (t, fn, extra) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = t; b.style.cssText = 'font-size:12px;padding:3px 8px' + (extra || ''); b.onclick = ev => { ev.stopPropagation(); fn(); }; bar.appendChild(b); return b; };
   if (window._gregBlockRange) {
-    const what = window._gregVsPick ? 'der Vorlage-Strophe' : 'des Bereichs';
+    const what = window._gregVsPick ? 'der Vorlage-Strophe' : window._gregVsPickK != null ? 'von Strophe ' + (window._gregVsPickK + 2) : 'des Bereichs';
     lab.textContent = window._gregBlockRange === 1 ? '▭ Erste Note ' + what + ' antippen' : '▭ Letzte Note ' + what + ' antippen';
-    mk('Abbrechen', () => { window._gregBlockRange = 0; const vs = window._gregVsPick; window._gregVsPick = false; gregBlockSync(); if (vs) gregVersesShow(); });
+    mk('Abbrechen', () => { window._gregBlockRange = 0; const vs = window._gregVsPick || window._gregVsPickK != null; window._gregVsPick = false; if (vs) { gregSelectedIndices.clear(); } gregBlockSync(); if (vs) { const k = window._gregVsPickK; window._gregVsPickK = null; gregVersesShow(); } });
   } else if (window._gregBlockPick) {
     lab.textContent = '⇅ ' + n + ' Einträge: Note antippen, nach der der Block stehen soll';
     mk('an den Anfang', () => gregBlockMoveTo(0));
@@ -3327,7 +3327,7 @@ function gregBlockHighlight() {
 document.addEventListener('keydown', ev => {
   if (ev.key !== 'Escape' || window._ntTab !== 'greg') return;
   if (document.getElementById('modal-bg') && document.getElementById('modal-bg').classList.contains('open')) return;
-  if (window._gregBlockPick || window._gregBlockRange) { window._gregBlockPick = false; window._gregBlockRange = 0; window._gregVsPick = false; gregBlockSync(); }
+  if (window._gregBlockPick || window._gregBlockRange) { window._gregBlockPick = false; window._gregBlockRange = 0; window._gregVsPick = false; window._gregVsPickK = null; window._gregVsState = null; gregBlockSync(); }
   else if (gregSelectedIndices.size) gregBlockCancel();
 });
 
@@ -8303,7 +8303,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '353';
+const NOTATOR_BUILD_ID = '354';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19239,7 +19239,7 @@ function gregSylsToText(syls) {
     const v = String(s.t || '').trim();
     if (!v) { if (cur) { words.push(cur); cur = null; } words.push(['~']); return; }
     if (!cur) cur = [];
-    cur.push(v.replace(/\s+/g, '_'));
+    cur.push(v.replace(/\s+(?=\S*[A-Za-zÀ-ÿǽæœ])/g, '_'));
     if (!s.cont) { words.push(cur); cur = null; }
   });
   if (cur) words.push(cur);
@@ -19267,6 +19267,12 @@ function gregVerseTemplate() {
     const isNum = (e.type === 'note' && NT_VS_NUM.test(e.syllable || '') && /^\s*1\./.test(e.syllable)) || ((e.type === 'directive' || e.type === 'special' || e.type === 'textonly') && /^\s*1\.?\s*$/.test(e.text || ''));
     if (isNum) return { a: i, b: endFrom(i), src: 'erkannt am «1.»' };
   }
+  // keine «1.», aber eine «2.»: Vorlage = alles bis zum Doppelstrich davor
+  const m2 = gregVerseMarkerIdx(2, 0);
+  if (m2 > 0) {
+    let b = m2 - 1; while (b > 0 && all[b].type === 'linebreak') b--;
+    return { a: 0, b, src: 'erkannt vor «2.»' };
+  }
   return { a: 0, b: lastNon(), src: 'ganzes Stück' };
 }
 function gregVerseTplInfo(t) {
@@ -19277,6 +19283,40 @@ function gregVerseTplInfo(t) {
   return { ents, numKind };
 }
 const gregVsStripNum = s => String(s || '').replace(NT_VS_NUM, '');
+// Index des Strophenbeginns «n.» (Silbe «n. Text» oder eigenes Zeichen «n.») ab Index from
+function gregVerseMarkerIdx(n, from) {
+  const re = new RegExp('^\\s*' + n + '\\.');
+  for (let i = from || 0; i < gregEntries.length; i++) {
+    const e = gregEntries[i]; if (e.vsCopy) continue;
+    if (e.type === 'note' && re.test(e.syllable || '')) return i;
+    if ((e.type === 'directive' || e.type === 'special' || e.type === 'textonly') && new RegExp('^\\s*' + n + '\\.?\\s*$').test(e.text || '')) return i;
+  }
+  return -1;
+}
+// Von Hand angelegte Strophen («2. …», «3. …») nach der Vorlage finden: [{k, a, b}]
+function gregVerseManualFind(tplEnd) {
+  const out = []; let from = tplEnd + 1;
+  for (let n = 2; n < 40; n++) {
+    let a = gregVerseMarkerIdx(n, from); if (a < 0) break;
+    if (a > 0 && gregEntries[a - 1].type === 'linebreak') a--;
+    let b = a; while (b < gregEntries.length - 1 && !(gregEntries[b].type === 'divisio' && gregEntries[b].div === '::')) b++;
+    out.push({ k: n - 2, a, b }); from = b + 1;
+  }
+  return out;
+}
+function gregVerseRangeText(a, b) {
+  const sl = gregVerseSlots(gregEntries.slice(a, b + 1));
+  return gregSylsToText(sl.map((e, i) => ({ t: (i === 0 ? gregVsStripNum(e.syllable) : String(e.syllable || '')).replace(/-$/, ''), cont: e.wordEnd === false || (e.wordEnd === undefined && !!e.hyphen) })));
+}
+// Strophe k aus vorhandenen Noten übernehmen: Bereich im Notenbild wählen
+function gregVerseStrophePick(k) {
+  if (window._gregVsSave) window._gregVsSave();
+  closeModal();
+  if (_gregEditingEntryIdx != null) gregCloseEditForm();
+  gregSelectedIndices.clear();
+  window._gregVsPickK = k; window._gregBlockPick = false; window._gregBlockRange = 1;
+  gregUpdateBulkToolbar(); gregBlockSync(); gregRefreshListNoRender();
+}
 function gregVerseOwnTexts(entries) {
   const by = {};
   (entries || []).forEach(e => { if (e && e.vsCopy && !e.vsTail) (by[e.vsCopy] = by[e.vsCopy] || []).push(e); });
@@ -19327,6 +19367,7 @@ function gregVerseOwnApply(drafts, numKind) {
   });
 }
 function gregVerseTplPick() {
+  if (window._gregVsSave) window._gregVsSave();
   closeModal();
   if (_gregEditingEntryIdx != null) gregCloseEditForm();
   gregSelectedIndices.clear();
@@ -19335,15 +19376,35 @@ function gregVerseTplPick() {
 }
 function gregVersesShow() {
   if (window._ntTab !== 'greg') switchTab('greg');
-  const tpl = gregVerseTemplate();
+  // Zustand nach einer Auswahl im Notenbild (Vorlage bzw. Strophe aus Noten) wiederherstellen
+  const st = window._gregVsState || null; window._gregVsState = null;
+  const pickK = window._gregVsPickK; window._gregVsPickK = null;
+  let pickRange = null;
+  if (pickK != null) { const ids = gregBlockIdx(); if (ids.length) pickRange = [ids[0], ids[ids.length - 1]]; gregSelectedIndices.clear(); gregBlockSync(); }
+  const tpl = st && st.tpl && pickK != null ? st.tpl : gregVerseTemplate();
   const ti = gregVerseTplInfo(tpl);
   const slots = gregVerseSlots(ti.ents);
   if (!slots.length) { gregGst('Zuerst die Melodie mit dem Text der 1. Strophe erfassen.'); return; }
   const own0 = gregEntries.some(e => e.vsCopy);
   let mode = own0 ? 'own' : 'stack';
-  const drafts = own0 ? gregVerseOwnTexts(gregEntries) : [];
-  if (!own0) { const n0 = gregVerseCount(ti.ents); for (let k = 0; k < n0; k++) drafts.push(gregVsStripNum(gregVerseText(ti.ents, k))); }
+  let drafts = own0 ? gregVerseOwnTexts(gregEntries) : [];
+  let manual = {}; // k -> [a, b]: Strophe k steht schon als eigene Noten im Stück
+  if (!own0) {
+    const n0 = gregVerseCount(ti.ents); for (let k = 0; k < n0; k++) drafts.push(gregVsStripNum(gregVerseText(ti.ents, k)));
+    if (!n0) {
+      const mf = gregVerseManualFind(tpl.b);
+      if (mf.length) { mode = 'own'; drafts = mf.map(m => gregVerseRangeText(m.a, m.b)); mf.forEach(m => { manual[m.k] = [m.a, m.b]; }); }
+    }
+  }
+  if (st) { drafts = st.drafts; mode = st.mode; manual = st.manual || {}; }
+  if (pickK != null && pickRange) {
+    while (drafts.length <= pickK) drafts.push('');
+    drafts[pickK] = gregVerseRangeText(pickRange[0], pickRange[1]);
+    manual[pickK] = pickRange;
+  }
+  if (!ti.numKind && Object.keys(manual).some(k => gregVerseSlots(gregEntries.slice(manual[k][0], manual[k][1] + 1)).some((e, i) => i === 0 && NT_VS_NUM.test(e.syllable)))) ti.numKind = 'syl';
   if (!drafts.length) drafts.push('');
+  window._gregVsSave = () => { window._gregVsState = { drafts: drafts.slice(), mode, manual, tpl }; };
   const multi = window._gregMultiSection && gregSections.length > 1;
   showModal('📜 Strophen' + (multi ? ' – Abschnitt ' + (gregActiveIdx + 1) : ''), '', []);
   const body = document.getElementById('modal-body');
@@ -19374,12 +19435,19 @@ function gregVersesShow() {
   const draw = () => {
     list.innerHTML = drafts.map((d, k) =>
       '<div style="border:1px solid #c8bfa0;border-radius:4px;padding:6px;margin-bottom:8px">' +
-      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><b style="font-size:13px">Strophe ' + (k + 2) + '</b><span class="vs-stat" data-k="' + k + '" style="font-size:11px;flex:1"></span>' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap"><b style="font-size:13px">Strophe ' + (k + 2) + '</b><span class="vs-stat" data-k="' + k + '" style="font-size:11px;flex:1"></span>' +
+      '<button class="b vs-pick" data-k="' + k + '" style="font-size:11px;padding:1px 6px" title="Diese Strophe steht schon mit eigenen Noten im Stück: erste und letzte Note antippen – der Text wird übernommen, die Noten werden bei der Umwandlung ersetzt">▭ aus Noten …</button>' +
       '<button class="b vs-del" data-k="' + k + '" style="font-size:11px;padding:1px 6px" title="Strophe entfernen">🗑</button></div>' +
+      (manual[k] ? '<div style="font-size:11px;color:#2a5a8a;margin-bottom:3px">aus vorhandenen Noten (Einträge ' + (manual[k][0] + 1) + '–' + (manual[k][1] + 1) + ') – diese werden beim Übernehmen ersetzt</div>' : '') +
       '<textarea class="vs-txt" data-k="' + k + '" rows="3" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;box-sizing:border-box;font-size:14px;font-family:inherit" placeholder="Ganzer Text der Strophe ' + (k + 2) + '">' + esc(d) + '</textarea>' +
       '<div class="vs-prev" data-k="' + k + '" style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;max-height:150px;overflow:auto"></div></div>').join('');
     list.querySelectorAll('.vs-txt').forEach(t => { t.oninput = () => { drafts[+t.dataset.k] = t.value; prev(+t.dataset.k); }; prev(+t.dataset.k); });
-    list.querySelectorAll('.vs-del').forEach(b => b.onclick = () => { drafts.splice(+b.dataset.k, 1); draw(); });
+    list.querySelectorAll('.vs-del').forEach(b => b.onclick = () => {
+      const k = +b.dataset.k; drafts.splice(k, 1);
+      const m2 = {}; Object.keys(manual).forEach(x => { x = +x; if (x < k) m2[x] = manual[x]; else if (x > k) m2[x - 1] = manual[x]; }); manual = m2;
+      draw();
+    });
+    list.querySelectorAll('.vs-pick').forEach(b => b.onclick = () => gregVerseStrophePick(+b.dataset.k));
   };
   const prev = k => {
     const p = gregVerseParse(drafts[k]);
@@ -19403,9 +19471,19 @@ function gregVersesShow() {
   draw();
   const bEl = document.getElementById('modal-btns');
   const mk = (label, fn, css) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; if (css) b.style.cssText = css; b.onclick = fn; bEl.appendChild(b); };
-  mk('Abbrechen', () => closeModal());
+  mk('Abbrechen', () => { window._gregVsState = null; closeModal(); });
   mk('✓ Übernehmen', () => {
-    if (own0 && gregVerseCopiesEdited() && !confirm('Die Noten der Strophen 2+ wurden von Hand geändert. Die Strophen-Kopien werden neu erzeugt (bzw. entfernt) – diese Änderungen gehen verloren. Fortfahren?')) return;
+    // von Hand angelegte Strophen (aus Noten) werden zu Strophen-Kopien und dann ersetzt
+    const tplSet0 = new Set(ti.ents);
+    const marks = [];
+    Object.keys(manual).forEach(k => { const [a, b] = manual[k]; for (let i = a; i <= b && i < gregEntries.length; i++) if (!tplSet0.has(gregEntries[i])) marks.push([gregEntries[i], +k + 2]); });
+    const hadVs = new Map(); marks.forEach(([e, n]) => { hadVs.set(e, e.vsCopy); e.vsCopy = n; });
+    gregEntries.forEach(e => { if (tplSet0.has(e)) e.vsTpl = true; });
+    if ((own0 || marks.length) && gregVerseCopiesEdited() && !confirm('Die Noten der Strophen 2+ weichen von der Vorlage ab (von Hand geändert). Sie werden ' + (mode === 'own' ? 'durch Kopien der Vorlage ersetzt' : 'entfernt (Text kommt unter die Vorlage)') + ' – diese Abweichungen gehen verloren. Fortfahren?')) {
+      hadVs.forEach((v, e) => { if (v) e.vsCopy = v; else delete e.vsCopy; });
+      return;
+    }
+    window._gregVsState = null;
     const keep = drafts.map(d => d.trim()).filter(Boolean);
     gregVersesApplyAll(mode, keep, ti);
     closeModal();
