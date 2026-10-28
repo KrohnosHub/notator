@@ -291,7 +291,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
     <span class="nt-o-title" id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
     <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
-    <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label></span>
+    <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label><button class="b nt-pgprev-btn" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt im Notenbild, wo das PDF eine neue Seite beginnt (Umbrüche setzen: Abschnitts-Kopf «Neue Seite» bzw. Note öffnen › «Seitenumbruch davor»)">&#9636; Seiten</button></span>
     <button class="b nt-o-file" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
     <span class="nt-o-view nt-mode" id="greg-mode"><button class="b" data-mode="view" onclick="gregSetMode('view')" title="Ansehen: nur Noten (zum Singen/Spielen)">&#128065;<span class="nt-lbl"> Ansehen</span></button><button class="b" data-mode="edit" onclick="gregSetMode('edit')" title="Bearbeiten: Noten mit Werkzeugleiste">&#9998;<span class="nt-lbl"> Bearbeiten</span></button><button class="b" data-mode="details" onclick="gregSetMode('details')" title="Details: Stück (Titel, Schlüssel …), Abschnitte &amp; Einträge, GABC">&#9776;<span class="nt-lbl"> Details</span></button></span>
 <select class="nt-play-sec nt-pm nt-o-play" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
@@ -1604,7 +1604,19 @@ function gregRenderAllSections() {
         const curIdx = gregSections.findIndex(s2 => s2.id === sec.id);
         gregCloseSection(curIdx);
       };
+      const pbBtn = document.createElement('span');
+      pbBtn.className = 'greg-sec-pb';
+      pbBtn.style.cssText = 'cursor:pointer;padding:0 6px;margin-left:auto;margin-right:8px;border:1px solid #c0b898;border-radius:3px;font-size:10px';
+      pbBtn.onclick = function(e) {
+        e.stopPropagation();
+        const curIdx = gregSections.findIndex(s2 => s2.id === sec.id);
+        const sc = gregSections[curIdx]; if (!sc) return;
+        gregPush(); sc.pb = !sc.pb;
+        gregRenderAllSections();
+        gregGst(sc.pb ? 'Abschnitt ' + (curIdx + 1) + ' beginnt auf einer neuen Seite.' : 'Seitenumbruch vor Abschnitt ' + (curIdx + 1) + ' entfernt.');
+      };
       handle.appendChild(label);
+      handle.appendChild(pbBtn);
       handle.appendChild(closeBtn);
       handle.addEventListener('mousedown', function(e) {
         if (e.target === closeBtn) return;
@@ -1628,6 +1640,13 @@ function gregRenderAllSections() {
     const curIdx = gregSections.findIndex(s2 => s2.id === sec.id);
     box.style.borderColor = (curIdx === gregActiveIdx) ? '#4fa832' : 'transparent';
     box.querySelector('.greg-sec-handle span').textContent = '↕ Abschnitt ' + (curIdx + 1);
+    { const pbB = box.querySelector('.greg-sec-pb');
+      if (pbB) {
+        pbB.style.display = curIdx === 0 ? 'none' : '';
+        pbB.textContent = sec.pb ? '⤓ Neue Seite ✓' : '⤓ Neue Seite';
+        pbB.style.background = sec.pb ? '#c8e0b8' : 'transparent';
+        pbB.title = 'Seitenumbruch vor diesem Abschnitt (PDF beginnt hier eine neue Seite)';
+      } }
 
     const content = box.querySelector('.greg-sec-content');
 
@@ -1765,6 +1784,7 @@ function gregRenderSectionPreview(sec, container) {
     score.performLayoutAsync(ctxt, function() {
       score.layoutChantLines(ctxt, layoutWidth, function() {
         if (container._renderToken !== renderToken) return; // a newer render superseded this one
+        container._pbScore = score; container._pbCtxt = ctxt;
         const svg = score.createSvg(ctxt);
         container.innerHTML = svg;
         const svgEl = container.querySelector('svg');
@@ -1915,6 +1935,120 @@ function gregRenderActiveOnly() {
 function gregLayoutWidth(boxW, totalZoom) {
   return Math.max((boxW - 20) / totalZoom, (typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) ? 140 : 300);
 }
+
+// ── Seitenumbrüche: sec.pb = Abschnitt beginnt auf neuer Seite; entry.pb = neue Seite vor der Zeile, in der diese Note steht ──
+function gregNoteLineIndex(score, ordinal) {
+  if (!score || !score.notations || !score.lines || ordinal == null) return null;
+  let n = 0;
+  for (let i = 0; i < score.notations.length; i++) {
+    const nt = score.notations[i];
+    if (!(nt.notes && nt.notes.length)) continue;
+    if (n === ordinal) {
+      for (let li = 0; li < score.lines.length; li++) { const l = score.lines[li]; if (i >= l.notationsStartIndex && i < l.notationsStartIndex + l.numNotationsOnLine) return li; }
+      return null;
+    }
+    n++;
+  }
+  return null;
+}
+// Zeilenindizes (im Layout von `score`), vor denen ein manueller Umbruch gesetzt ist
+function gregBreakLinesFor(entries, clefGabc, clefRaw, score, ctxt) {
+  const out = [];
+  (entries || []).forEach((e, i) => {
+    if (!e || e.type !== 'note' || !e.pb || !e.pitches || !e.pitches.length) return;
+    const ord = gregCountNoteBearingNotations(gregEntriesToBody(entries.slice(0, i), clefGabc, clefRaw || ''), ctxt);
+    const li = ord == null ? null : gregNoteLineIndex(score, ord);
+    if (li != null && out.indexOf(li) < 0) out.push(li);
+  });
+  return out.sort((a, b) => a - b);
+}
+function gregPagePreviewOn() { try { return localStorage.getItem('ntPagePrev') === '1'; } catch (e) { return false; } }
+function gregPagePreviewToggle() {
+  const on = !gregPagePreviewOn();
+  try { localStorage.setItem('ntPagePrev', on ? '1' : '0'); } catch (e) {}
+  gregPageMarksUi();
+  gregPageMarksRedraw();
+  gregGst(on ? 'Seitenumbruch-Vorschau an (ungefähre Lage der PDF-Seiten).' : 'Seitenumbruch-Vorschau aus.');
+}
+function gregPageMarksUi() {
+  document.querySelectorAll('.nt-pgprev-btn').forEach(b => { const on = gregPagePreviewOn(); b.style.background = on ? '#3d6b35' : ''; b.style.color = on ? '#fff' : ''; });
+}
+function gregPageMarksRedraw() {
+  document.querySelectorAll('.greg-pgmark').forEach(m => m.remove());
+  gregPageMarksUi();
+  if (!gregPagePreviewOn()) return;
+  const items = [];
+  if (window._gregMultiSection && gregSections.length) {
+    gregSections.forEach((sec, i) => {
+      const box = document.getElementById('greg-secbox-' + sec.id);
+      const content = box && box.querySelector('.greg-sec-content');
+      const svg = content && content.querySelector('svg');
+      if (!svg) return;
+      const act = i === gregActiveIdx;
+      items.push({ svg, host: content, entries: act ? gregEntries : sec.entries, clef: GREG_CLEF_MAP[sec.clef] || 'c3', clefRaw: sec.clefRaw || '',
+        score: act ? _gregScore : content._pbScore, ctxt: act ? _gregCtxtRef : content._pbCtxt, pb: !!sec.pb && i > 0 });
+    });
+  } else {
+    const wrap = document.getElementById('greg-svg-wrap'), svg = wrap && wrap.querySelector('svg');
+    if (svg) items.push({ svg, host: document.getElementById('greg-svg-original-slot') || wrap.parentElement, entries: gregEntries, clef: gregClefVal, clefRaw: gregClefRaw, score: _gregScore, ctxt: _gregCtxtRef, pb: false });
+  }
+  if (!items.length) return;
+  const PX_PER_MM = 96 / 25.4, targetW = 210 * PX_PER_MM - 48, contentH = 297 * PX_PER_MM - 48, EPS = 0.5;
+  let y = 0; const zones = [], forced = [];   // forced: {y}
+  items.forEach(it => {
+    const r = it.svg.getBoundingClientRect();
+    it.r = r; it.k = r.width ? targetW / r.width : 1; it.y0 = y; it.h = r.height * it.k;
+    const lines = Array.from(it.svg.querySelectorAll('g.chantLine')).map(g => { const b = g.getBoundingClientRect(); return { top: (b.top - r.top) * it.k - 4, bottom: (b.bottom - r.top) * it.k + 4 }; });
+    if (it.pb && y > 0.5) forced.push(y);
+    let brk = []; try { brk = gregBreakLinesFor(it.entries, it.clef, it.clefRaw, it.score, it.ctxt); } catch (e) {}
+    brk.forEach(li => { if (li === 0) { if (y > 0.5) forced.push(y); } else if (lines[li]) forced.push(y + lines[li].top); });
+    lines.forEach(z => zones.push({ top: y + z.top, bottom: y + z.bottom }));
+    y += it.h;
+  });
+  const totalH = y, breaks = [];
+  let cursor = 0;
+  while (cursor < totalH - EPS) {
+    let end = Math.min(cursor + contentH, totalH);
+    const fb = forced.find(b => b > cursor + EPS && b < end - EPS);
+    let manual = false;
+    if (fb) { end = fb; manual = true; }
+    else for (const z of zones) { if (z.top > cursor + EPS && end > z.top + EPS && end < z.bottom - EPS) { end = z.top; break; } }
+    if (end <= cursor + EPS) end = Math.min(cursor + contentH, totalH);
+    if (end < totalH - EPS) breaks.push({ y: end, manual });
+    cursor = end;
+  }
+  breaks.forEach((b, n) => {
+    const it = items.find(x => b.y >= x.y0 - EPS && b.y < x.y0 + x.h - EPS) || items[items.length - 1];
+    const hr = it.host.getBoundingClientRect();
+    const top = (it.r.top - hr.top) + Math.max(0, (b.y - it.y0)) / it.k;
+    const m = document.createElement('div');
+    m.className = 'greg-pgmark';
+    m.style.cssText = 'position:absolute;left:0;right:0;top:' + Math.round(top - 3) + 'px;height:0;border-top:2px ' + (b.manual ? 'solid #c0392b' : 'dashed #2a7ab8') + ';pointer-events:none;z-index:5';
+    const lb = document.createElement('span');
+    lb.textContent = 'Seite ' + (n + 2) + (b.manual ? ' · manuell' : '');
+    lb.style.cssText = 'position:absolute;right:4px;top:2px;font:10px system-ui,sans-serif;color:' + (b.manual ? '#c0392b' : '#2a7ab8') + ';background:rgba(255,255,255,.85);padding:0 4px;border-radius:2px';
+    m.appendChild(lb);
+    it.host.appendChild(m);
+  });
+}
+(function() {
+  let t = null;
+  const kick = () => { clearTimeout(t); t = setTimeout(() => { try { gregPageMarksRedraw(); } catch (e) { console.warn('pagemarks', e); } }, 300); };
+  const start = () => {
+    const w = document.getElementById('greg-canvas-wrap'); if (!w || w._pgObs) return;
+    const obs = new MutationObserver(ms => {
+      if (!gregPagePreviewOn()) return;
+      if (ms.every(m => Array.from(m.addedNodes).concat(Array.from(m.removedNodes)).every(n => n.classList && n.classList.contains('greg-pgmark')))) return;
+      kick();
+    });
+    obs.observe(w, { childList: true, subtree: true });
+    w._pgObs = obs;
+    window.addEventListener('resize', kick);
+    gregPageMarksUi(); if (gregPagePreviewOn()) kick();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else setTimeout(start, 0);
+})();
+
 function gregEffectiveCanvasWidth() {
   if (window._gregForcedCanvasWidth) return window._gregForcedCanvasWidth;
   const el = document.getElementById('greg-canvas-wrap');
@@ -2851,6 +2985,19 @@ function gregEditPopCreate(i) {
   const nNotes = gregEntries.slice(0, i + 1).filter(x => x.type === 'note').length;
   hd.textContent = e.type === 'note' ? 'Eintrag ' + (i + 1) + ' · Note ' + nNotes + (e.syllable ? ' · «' + e.syllable + '»' : '') : 'Eintrag ' + (i + 1);
   pop.appendChild(hd);
+  if (e.type === 'note') {
+    const pbRow = document.createElement('label'); pbRow.className = 'greg-pop-row';
+    pbRow.style.cssText = 'font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer';
+    pbRow.title = 'Im PDF beginnt vor der Notenzeile, in der diese Note steht, eine neue Seite';
+    const pbCb = document.createElement('input'); pbCb.type = 'checkbox'; pbCb.checked = !!e.pb;
+    pbCb.onchange = () => {
+      gregPush(); if (pbCb.checked) e.pb = true; else delete e.pb;
+      gregRender();
+      gregGst(pbCb.checked ? 'Seitenumbruch vor der Zeile mit dieser Note gesetzt.' : 'Seitenumbruch entfernt.');
+    };
+    pbRow.appendChild(pbCb); pbRow.appendChild(document.createTextNode('⤓ Seitenumbruch vor dieser Zeile'));
+    pop.appendChild(pbRow);
+  }
   // Tasten im Fenster: Enter = übernehmen, Esc = abbrechen, Alt+←/→ = vorige/nächste Note
   pop.addEventListener('keydown', ev => {
     if (ev.key === 'Enter' && !ev.shiftKey && ev.target.tagName !== 'TEXTAREA') { ev.preventDefault(); if (pop._save) pop._save(); }
@@ -8029,7 +8176,7 @@ function gregExportPDF() {
           lineBoxes = lineBoxes.map(z => ({ top: z.top - 4, bottom: z.bottom + 4 }));
           const finalSvg = new XMLSerializer().serializeToString(svgEl);
           document.body.removeChild(tmp);
-          doneCallback(finalSvg, lineBoxes);
+          doneCallback(finalSvg, lineBoxes, gregBreakLinesFor(gabcEntry.sec ? gabcEntry.sec.entries : gregEntries, gabcEntry.sec ? (GREG_CLEF_MAP[gabcEntry.sec.clef] || 'c3') : gregClefVal, gabcEntry.sec ? (gabcEntry.sec.clefRaw || '') : gregClefRaw, score, ctxt));
         });
       });
     } catch(e) { console.error('PDF render error:', e); doneCallback(null, []); }
@@ -8037,15 +8184,20 @@ function gregExportPDF() {
 
   const svgStrings = new Array(gabcList.length).fill(null);
   const svgLineBoxes = new Array(gabcList.length).fill(null);
+  const svgBreaks = new Array(gabcList.length).fill(null);
   let completed = 0;
   gabcList.forEach((entry, i) => {
-    renderGABCforPDF(entry, function(svg, lineBoxes) {
-      if (svg) { svgStrings[i] = svg; svgLineBoxes[i] = lineBoxes || []; }
+    renderGABCforPDF(entry, function(svg, lineBoxes, brk) {
+      if (svg) { svgStrings[i] = svg; svgLineBoxes[i] = lineBoxes || []; svgBreaks[i] = brk || []; }
       completed++;
       if (completed === gabcList.length) {
         const pairs = [];
         for (let i2 = 0; i2 < svgStrings.length; i2++) {
-          if (svgStrings[i2]) pairs.push({ svg: svgStrings[i2], lineBoxes: svgLineBoxes[i2] || [] });
+          if (svgStrings[i2]) {
+            const sc2 = gabcList[i2].sec, br = (svgBreaks[i2] || []).slice();
+            const first = br.indexOf(0); if (first >= 0) br.splice(first, 1); // Umbruch vor der 1. Zeile = vor dem Abschnitt (Titel bleibt bei seinen Noten)
+            pairs.push({ svg: svgStrings[i2], lineBoxes: svgLineBoxes[i2] || [], pageBreakBefore: !!((sc2 && sc2.pb && i2 > 0) || first >= 0) && i2 > 0, breakLines: br });
+          }
         }
         gregAssemblePdf(pairs, 'gregorianisch.pdf');
       }
@@ -8140,7 +8292,7 @@ function gregAssemblePdf(pairList, filename) {
       if (ci >= pairList.length) { buildPages(); return; }
       svgStringToCanvas(pairList[ci].svg, function(canvas, w, h) {
         const pr = pairList[ci];
-        if (canvas) canvases.push({canvas, w, h, lineBoxes: pr.lineBoxes || [], pageBreakBefore: !!pr.pageBreakBefore, itemIdx: pr.itemIdx, cover: !!pr.cover, tocRows: pr.tocRows || null});
+        if (canvas) canvases.push({canvas, w, h, lineBoxes: pr.lineBoxes || [], pageBreakBefore: !!pr.pageBreakBefore, breakLines: pr.breakLines || [], itemIdx: pr.itemIdx, cover: !!pr.cover, tocRows: pr.tocRows || null});
         ci++; nextCanvas();
       });
     }
@@ -8150,7 +8302,7 @@ function gregAssemblePdf(pairList, filename) {
       const targetW = pageWpx - marginPx * 2; // A4 content width for output scaling
       const scaledSections = canvases.map(s => {
         const scale = targetW / s.w;
-        return { canvas: s.canvas, scale, w: targetW, h: s.h * scale, lineBoxes: s.lineBoxes || [], pageBreakBefore: s.pageBreakBefore, itemIdx: s.itemIdx, cover: s.cover, tocRows: s.tocRows };
+        return { canvas: s.canvas, scale, w: targetW, h: s.h * scale, lineBoxes: s.lineBoxes || [], pageBreakBefore: s.pageBreakBefore, breakLines: s.breakLines || [], itemIdx: s.itemIdx, cover: s.cover, tocRows: s.tocRows };
       });
       const totalH = scaledSections.reduce((sum, s) => sum + s.h, 0);
       // Kein grosser Gesamt-Streifen mehr (Browser begrenzen die Canvas-Höhe,
@@ -8169,6 +8321,7 @@ function gregAssemblePdf(pairList, filename) {
       for (const s of scaledSections) {
         s.y0 = y;
         if (s.pageBreakBefore && y > 0.5) forcedBreaks.push(y);
+        (s.breakLines || []).slice().sort((a, b) => a - b).forEach(li => { const lb = s.lineBoxes[li]; if (lb) forcedBreaks.push(y + lb.top * s.scale); });
         for (const lb of s.lineBoxes) {
           forbiddenZones.push({ top: y + lb.top * s.scale, bottom: y + lb.bottom * s.scale });
         }
@@ -8312,7 +8465,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '358';
+const NOTATOR_BUILD_ID = '359';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9978,6 +10131,7 @@ function ntFileMenu(btn) {
   item('✚ Neues Stück', 'Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)', () => ntNewPiece());
   item('📂 Öffnen · Bibliothek …', 'Stück aus der Bibliothek, einem Drive-Ordner oder vom Gerät öffnen', () => gregLibShowModal());
   item('🎵 Song importieren (GregoBase) …', 'Nach Titel oder GregoBase-ID suchen und importieren', () => gregImportSongFromGregoBase());
+  item('▤ Seitenumbruch-Vorschau ein/aus', 'Zeigt im Notenbild, wo das PDF eine neue Seite beginnt', () => gregPagePreviewToggle());
   item('📎 Notator-Datei als Abschnitt einfügen …', 'Inhalt einer anderen Notator-Datei (Bibliothek, Gerät oder Drive) als neuen Abschnitt an dieses Stück anhängen', () => { toGreg(); ntInsertFileShow(); });
   sep();
   item('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadRow(true); });
@@ -18983,7 +19137,7 @@ function ntMappeBuild() {
       const collect = pairs => {
         const firstPiece = !allPairs.some(x => !x.cover);
         const itemIdx = i;
-        pairs.forEach((p, k) => allPairs.push(Object.assign({}, p, { itemIdx, pageBreakBefore: k === 0 && (m.newPage || (m.cover && firstPiece)) })));
+        pairs.forEach((p, k) => allPairs.push(Object.assign({}, p, { itemIdx, pageBreakBefore: (k === 0 && (m.newPage || (m.cover && firstPiece))) || (k > 0 && !!p.pageBreakBefore) })));
         resolve();
       };
       if (it.version === 'greg') {
