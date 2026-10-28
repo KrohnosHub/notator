@@ -8303,7 +8303,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '354';
+const NOTATOR_BUILD_ID = '355';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -17039,6 +17039,7 @@ function clGabcToAbc(gabcList, opts) {
       // Strophen: lyrs[0] = Haupttext, lyrs[k] = Strophe k+1; Platzhalter gehen an alle Zeilen
       const nVerse = ln.reduce((mx, u) => Math.max(mx, u.verses ? u.verses.length : 0), 0);
       const lyrs = Array.from({ length: nVerse + 1 }, () => []);
+      let lastVerseU = -1; ln.forEach((u, ui) => { if (u.verses) lastVerseU = ui; });
       const lyr = { push: x => lyrs.forEach(a => a.push(x)) };
       let measureAcc = {}; // "D" -> alt (Zeilenanfang = neue Messung)
       let lastLyricLen = 0;
@@ -17122,9 +17123,11 @@ function clGabcToAbc(gabcList, opts) {
           if (multi) music += ')';
           lbRanges.push({ s: sylStartPos, e: music.length, lb: { key: u.lbKey, start: !!u.lbStart, want: !!u.lbWant, chBrk: !!u.chBrk, set: lbOpt[u.lbKey] } });
           // Lyrics: erste Note = Silbe, weitere Noten = "_" (Silbe gehalten)
+          // Text nach den Strophen (z.B. «Amen») auf der untersten Strophenzeile
+          const toLast = nVerse > 0 && !u.verses && ln.indexOf(u) > lastVerseU;
           lyrs.forEach((arr, vi) => {
-            const vt = vi === 0 ? u.text : (u.verses && u.verses[vi - 1] ? u.verses[vi - 1].text : '');
-            const vh = vi === 0 ? u.hyphen : !!(u.verses && u.verses[vi - 1] && u.verses[vi - 1].hyphen);
+            const vt = toLast ? (vi === nVerse ? u.text : '') : vi === 0 ? u.text : (u.verses && u.verses[vi - 1] ? u.verses[vi - 1].text : '');
+            const vh = toLast ? (vi === nVerse && u.hyphen) : vi === 0 ? u.hyphen : !!(u.verses && u.verses[vi - 1] && u.verses[vi - 1].hyphen);
             if (vt) arr.push(clAbcEscapeLyric(vt) + (vh ? '-' : ''));
             else arr.push('*');
             for (let k = 0; k < u.notes.length; k++) {
@@ -17486,7 +17489,8 @@ function clScoreWidth() {
 }
 
 function clBuild(extra) {
-  const list = clCollectGabc();
+  let list = clCollectGabc();
+  if (extra && extra.verseMode) list = list.map(x => Object.assign({}, x, { gabc: ntVerseExpandGabc(x.gabc, extra.verseMode) }));
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
   const headers = list.map((x, i) => Object.assign({}, clEffectiveHead(i), { left: clCfg(i).left, right: clCfg(i).right }));
@@ -18058,11 +18062,31 @@ function ntPlayToggle(source, from) {
         try {
           const pb = clBuild({ playRests: true });
           const parts = pb ? pb.abc.split(/(?=^X:)/m).filter(x => x.trim()) : [];
+          // Strophen untereinander: jede Strophe abspielen (Zuordnung zur sichtbaren Note über die Wiederholung)
+          const gl = clCollectGabc(), split = b => b ? b.abc.split(/(?=^X:)/m).filter(x => x.trim()) : [];
+          const hasV = gl.some(x => ntVerseReps(x.gabc) > 1);
+          const partsF = hasV ? split(clBuild({ playRests: true, verseMode: 'full' })) : null;
+          const partsP = hasV ? split(clBuild({ playRests: true, verseMode: 'prefix' })) : null;
           if (parts.length === tunes.length) {
             tunes = tunes.map((t, ti) => {
-              const objs = ABCJS.renderAbc('*', ntSoftenAbc(parts[ti]));
+              let idxMap = null, src = parts[ti];
+              const reps = gl[ti] ? ntVerseReps(gl[ti].gabc) : 1;
+              const preHas = gl[ti] && clHasNotes([{ gabc: ntVerseExpandGabc(gl[ti].gabc, 'prefix') }]);
+              const preOk = !preHas || (partsP && partsP.length === parts.length && partsP[ti]);
+              if (reps > 1 && partsF && partsF.length === parts.length && preOk) {
+                try {
+                  const o0 = ABCJS.renderAbc('*', ntSoftenAbc(parts[ti]))[0], o1 = ABCJS.renderAbc('*', ntSoftenAbc(partsF[ti]))[0];
+                  const n0 = ntPlayMelody(o0).length, n1 = ntPlayMelody(o1).length, s0 = preHas ? ntPlayMelody(ABCJS.renderAbc('*', ntSoftenAbc(partsP[ti]))[0]).length : 0;
+                  const L = (n1 - n0) / (reps - 1);
+                  if (L > 0 && Number.isInteger(L)) {
+                    src = partsF[ti];
+                    idxMap = k => k < s0 ? k : k < s0 + reps * L ? s0 + ((k - s0) % L) : k - (reps - 1) * L;
+                  }
+                } catch (e) {}
+              }
+              const objs = ABCJS.renderAbc('*', ntSoftenAbc(src));
               if (!objs || !objs[0]) return t;
-              const map = ntPlayNoteMap(objs[0], t.obj);
+              const map = ntPlayNoteMap(objs[0], t.obj, idxMap);
               const out = { obj: objs[0], highlight: true, map };
               if (startEl && from.tune === ti) {
                 // sichtbare Note -> startChar in der Abspiel-Fassung
@@ -18086,6 +18110,7 @@ function ntPlayToggle(source, from) {
       }
     } else {
       let list = from && from.list ? from.list : clCollectGabc();
+      list = list.map(x => Object.assign({}, x, { gabc: ntVerseExpandGabc(x.gabc, 'full') }));
       if (!from && ntPlay.sec >= 0 && ntPlaySecCount() > 1) list = list[ntPlay.sec] ? [list[ntPlay.sec]] : [];
       if (!clHasNotes(list)) { gregGst('Keine Noten zum Abspielen.'); ntPlayStop(); return; }
       const r = clGabcToAbc(list, { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, playRests: true, flatToBar: (typeof clState === 'undefined' || clState.flatToBar !== false) });
@@ -18102,7 +18127,42 @@ function ntPlayToggle(source, from) {
 // Ordnet die Noten einer Abspiel-Fassung (mit zusätzlichen Pausen) den
 // Noten im sichtbaren Notenbild zu: gleiche Reihenfolge je Stimme, Pausen
 // zählen nicht. Ergebnis: startChar (Abspiel-Fassung) -> SVG-Elemente.
-function ntPlayNoteMap(playObj, visObj) {
+function ntPlayMelody(obj) {
+  const out = [];
+  (obj.lines || []).forEach(line => {
+    const sf = (line.staff || [])[0]; const v = sf && sf.voices && sf.voices[0];
+    (v || []).forEach(el => {
+      if (el.el_type !== 'note' || el.rest) return;
+      const p = el.pitches && el.pitches[0];
+      if (p && p.endTie) return; // Fortsetzung einer Bindung
+      out.push(el);
+    });
+  });
+  return out;
+}
+// Strophen (Text untereinander) zum Abspielen ausschreiben: der Bereich mit
+// «Silbe|Strophe 2|…» wird für jede Strophe wiederholt. mode 'full' = ganzes
+// Stück mit Wiederholungen, 'prefix' = nur der Teil vor den Strophen.
+function ntVerseExpandGabc(g, mode) {
+  const i = g.indexOf('%%'); const head = i >= 0 ? g.slice(0, i + 2) : ''; const body = i >= 0 ? g.slice(i + 2) : g;
+  const re = /([^()]*)\(([^)]*)\)/g; const gs = []; let m;
+  while ((m = re.exec(body))) gs.push({ s: m.index, e: re.lastIndex, t: m[1] });
+  const vi = []; gs.forEach((x, k) => { if (x.t.indexOf('|') >= 0) vi.push(k); });
+  if (!vi.length) return g;
+  const f = vi[0], l = vi[vi.length - 1];
+  let endG = l; for (let k = l + 1; k < gs.length; k++) { if (gs[k].t.trim()) break; endG = k; }
+  const a = gs[f].s, b = gs[endG].e;
+  if (mode === 'prefix') return head + body.slice(0, a);
+  const region = body.slice(a, b);
+  const reps = 1 + vi.reduce((mx, k) => Math.max(mx, gs[k].t.split('|').length - 1), 0);
+  const copies = [];
+  for (let r = 0; r < reps; r++) copies.push(region.replace(/([^()]*)\(/g, (m0, t) => (t.indexOf('|') >= 0 ? (t.match(/^\s*/)[0] + (t.trim().split('|')[r] || '')) : t) + '('));
+  return head + body.slice(0, a) + copies.join(' ') + body.slice(b);
+}
+function ntVerseReps(g) {
+  let n = 1; (g.match(/([^()]*)\(/g) || []).forEach(t => { n = Math.max(n, t.split('|').length); }); return n;
+}
+function ntPlayNoteMap(playObj, visObj, idxMap) {
   // Zuordnung über die Melodie (Oberstimme): k-te Melodienote der
   // Abspiel-Fassung <-> k-te Melodienote im Notenbild. Hervorgehoben wird
   // alles, was im Notenbild mit dieser Melodienote zusammen anschlägt.
@@ -18132,7 +18192,7 @@ function ntPlayNoteMap(playObj, visObj) {
     if (!els.length && el.abselem && el.abselem.elemset) el.abselem.elemset.forEach(x => els.push(x));
     return els;
   };
-  P.forEach((el, k) => { if (V[k]) map.set(el.startChar, groupFor(V[k])); });
+  P.forEach((el, k) => { const vk = idxMap ? idxMap(k) : k; if (V[vk]) map.set(el.startChar, groupFor(V[vk])); });
   map._mel = { P, V };
   return map;
 }
