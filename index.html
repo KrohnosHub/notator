@@ -8303,7 +8303,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '351';
+const NOTATOR_BUILD_ID = '352';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20051,11 +20051,21 @@ function ntViewScale(src) {
   if (ntViewScale._override) return 1;
   let o = null; try { o = JSON.parse(localStorage.getItem('notatorViewScale') || 'null'); } catch (e) {}
   const v = o && o[src];
-  if (typeof v === 'number' && v >= 0.3 && v <= 3) return v;
+  if (typeof v === 'number' && v >= 0.15 && v <= 3) return v;
   // Handy: Choral standardmässig grösser (Neumen lassen sich so besser setzen)
   return (src === 'greg' && typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) ? NT_MOBILE_GREG_SCALE : 1;
 }
-const NT_MOBILE_GREG_SCALE = 1.0;
+const NT_MOBILE_GREG_SCALE = 0.5;
+// Basis für die %-Anzeige: Handy-Choral 100 % = Skalierung 0,5 (Nutzerwunsch 2026-10-28)
+function ntVsBase(src) { return (src === 'greg' && typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) ? NT_MOBILE_GREG_SCALE : 1; }
+// einmalig: alte Handy-Einstellung verwerfen, damit die neue Grundgrösse gilt
+try {
+  if (!localStorage.getItem('notatorVsMig2') && window.matchMedia && matchMedia('(max-width: 700px)').matches) {
+    const o = JSON.parse(localStorage.getItem('notatorViewScale') || 'null');
+    if (o && 'greg' in o) { delete o.greg; localStorage.setItem('notatorViewScale', JSON.stringify(o)); }
+  }
+  localStorage.setItem('notatorVsMig2', '1');
+} catch (e) {}
 // Orgel: «An Seitenbreite anpassen» – ein gespeicherter, breiterer Zeilenumbruch
 // (clState.width) wird am Bildschirm ignoriert, sobald er nicht auf die Seite
 // passt (kein Seitwärts-Scrollen). Standard: ein auf dem Handy, sonst aus.
@@ -20100,13 +20110,13 @@ function ntPinchZoom(areaId, previewId, src) {
   area.addEventListener('touchmove', ev => {
     if (!st || ev.touches.length !== 2) return;
     ev.preventDefault();
-    const lim = v => Math.max(0.4, Math.min(3, v));
+    const bs = ntVsBase(src), lim = v => Math.max(0.4 * bs, Math.min(3 * bs, v));
     st.f = lim(st.s0 * dist(ev.touches) / st.d0) / st.s0;
     st.pv.style.transform = 'scale(' + st.f + ')';
   }, { passive: false });
   const end = () => {
     if (!st) return;
-    const s1 = Math.round(st.s0 * st.f * 20) / 20, pv = st.pv; st = null;
+    const bs = ntVsBase(src), s1 = Math.round(st.s0 * st.f / bs * 20) / 20 * bs, pv = st.pv; st = null;
     if (Math.abs(s1 - ntViewScale(src)) < 0.04) { pv.style.transform = ''; return; }
     ntSetViewScale(src, s1);
     setTimeout(() => { pv.style.transform = ''; }, 450); // nach dem Neusetzen
@@ -20115,7 +20125,7 @@ function ntPinchZoom(areaId, previewId, src) {
   area.addEventListener('touchcancel', end);
 }
 function ntViewScaleUpdateButtons() {
-  document.querySelectorAll('.nt-zoom-btn').forEach(b => { b.innerHTML = '&#128269; ' + Math.round(ntViewScale(b.getAttribute('data-src')) * 100) + '%'; });
+  document.querySelectorAll('.nt-zoom-btn').forEach(b => { b.innerHTML = '&#128269; ' + Math.round(ntViewScale(b.getAttribute('data-src')) / ntVsBase(b.getAttribute('data-src')) * 100) + '%'; });
 }
 function ntViewScalePop(btn) {
   const old = document.getElementById('nt-vs-pop');
@@ -20127,7 +20137,8 @@ function ntViewScalePop(btn) {
   const r = btn.getBoundingClientRect();
   d.style.top = Math.min(r.bottom + 4, window.innerHeight - 60) + 'px';
   d.style.left = Math.max(8, Math.min(r.left - 120, window.innerWidth - 308)) + 'px';
-  const cur = Math.round(ntViewScale(src) * 100);
+  const base = ntVsBase(src);
+  const cur = Math.round(ntViewScale(src) / base * 100);
   d.innerHTML = '<span>Grösse</span><input type="range" min="40" max="' + (gregIsMobileViewport() ? 300 : 160) + '" step="5" value="' + cur + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
     '<span class="v" style="min-width:36px;text-align:right">' + cur + '%</span><button class="b" style="font-size:11px;padding:3px 6px" title="Zurück auf 100 %">100%</button>';
   if (src === 'cl') {
@@ -20141,7 +20152,7 @@ function ntViewScalePop(btn) {
   }
   document.body.appendChild(d);
   const inp = d.querySelector('input'), val = d.querySelector('.v');
-  inp.oninput = () => { val.textContent = inp.value + '%'; ntSetViewScale(src, parseInt(inp.value, 10) / 100); };
+  inp.oninput = () => { val.textContent = inp.value + '%'; ntSetViewScale(src, parseInt(inp.value, 10) / 100 * base); };
   d.querySelector('button').onclick = () => { inp.value = 100; inp.oninput(); };
   const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close); } };
   setTimeout(() => document.addEventListener('pointerdown', close), 0);
