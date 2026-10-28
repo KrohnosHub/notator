@@ -8303,7 +8303,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '355';
+const NOTATOR_BUILD_ID = '356';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -13077,9 +13077,19 @@ var exsurge = (() => {
         }
         this.notationBounds.union(new Rect(this.notationBounds.x, altTop - altH, 1, altH));
       }
+      // Notator (Strophen): Text nach der letzten mehrzeiligen Silbe dieser Zeile
+      // (z.B. «Amen» nach den Strophen) steht auf der untersten Textzeile
+      var lastMulti = -1;
+      for (i2 = this.notationsStartIndex; i2 < lastIndex; i2++) if (notations[i2].lyrics.length > 1 && !notations[i2].lyrics.some(l => l.constructor && /Translation/.test(l.constructor.name))) lastMulti = i2;
+      var rowsN = this.lyricLineHeights.length;
       for (i2 = this.notationsStartIndex; i2 < lastIndex; i2++) {
         notation = notations[i2];
         var offset = this.notationBounds.y + this.notationBounds.height;
+        if (lastMulti >= 0 && i2 > lastMulti && rowsN > 1 && notation.lyrics.length === 1) {
+          for (var r2 = 0; r2 < rowsN - 1; r2++) offset += this.lyricLineHeights[r2];
+          notation.lyrics[0].bounds.y = offset + this.lyricLineBaselines[rowsN - 1];
+          continue;
+        }
         for (var j2 = 0; j2 < notation.lyrics.length; j2++) {
           notation.lyrics[j2].bounds.y = offset + this.lyricLineBaselines[j2];
           offset += this.lyricLineHeights[j2];
