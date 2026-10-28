@@ -530,7 +530,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
           <select onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche ;1–;6"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
           <button class="b" onclick="gregAddLinebreak()" title="Neue Notenlinie (Zeilenumbruch) einfügen">⏎ Linie</button>
           <button class="b" onclick="gregAddComment()" title="Freitextfeld platzieren (Notiz, standardmässig nicht im PDF)">💬 Freitext</button>
-          <button class="b" onclick="gregVersesShow()" title="Weitere Strophen unter derselben Melodie: ganzen Text eingeben, Notator verteilt die Silben">📜 Strophen …</button>
+          <button class="b" onclick="gregVersesShow()" title="Weitere Strophen unter derselben Melodie: ganzen Text eingeben, Notator verteilt die Silben">📜 Strophen …</button><button class="b" onclick="gregVersesSwitchLayout()" title="Bestehende Strophen umstellen: Text untereinander ⇄ eigene Noten je Strophe">⇄ Strophen-Anordnung</button>
           <button class="b" onclick="ntGloriaPatriShow()" title="Gloria Patri (ausgeschrieben) einfügen oder gekürzte Fassung «E u o u a e» ersetzen">✝ Gloria Patri …</button>
           <span class="qb-sep"></span>
           <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach dem Setzen abfragen</label>
@@ -8303,7 +8303,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '350';
+const NOTATOR_BUILD_ID = '351';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9941,6 +9941,7 @@ function ntFileMenu(btn) {
   item('♫ Psalmton-Assistent …', 'Psalmverse auf einen Psalmton setzen', () => { toGreg(); ntPsalmToneShow(); });
   item('✝ Gloria Patri …', 'Ausgeschriebenes Gloria Patri (Introitus oder Psalmton) einfügen bzw. «E u o u a e» ersetzen', () => { toGreg(); ntGloriaPatriShow(); });
   item('📜 Strophen …', 'Weitere Strophen unter derselben Melodie (ganzen Text eingeben)', () => { toGreg(); gregVersesShow(); });
+  item('⇄ Strophen-Anordnung wechseln', 'Text untereinander ⇄ eigene Noten je Strophe', () => { toGreg(); gregVersesSwitchLayout(); });
   item('📝 Text zuerst, Noten danach …', 'Text eingeben – jede gesetzte Neume bekommt die nächste Silbe', () => { toGreg(); gregTextFirstShow(); });
   sep();
   item('📑 Mappe …', 'Gottesdienst-Mappe: mehrere Stücke zu einem PDF', () => ntMappeShow());
@@ -19378,27 +19379,52 @@ function gregVersesShow() {
   const mk = (label, fn, css) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; if (css) b.style.cssText = css; b.onclick = fn; bEl.appendChild(b); };
   mk('Abbrechen', () => closeModal());
   mk('✓ Übernehmen', () => {
-    if (own0 && mode === 'own' && !confirm('Die Strophen-Kopien werden neu erzeugt – Änderungen an deren Noten gehen dabei verloren. Fortfahren?')) return;
-    gregPush();
+    if (own0 && gregVerseCopiesEdited() && !confirm('Die Noten der Strophen 2+ wurden von Hand geändert. Die Strophen-Kopien werden neu erzeugt (bzw. entfernt) – diese Änderungen gehen verloren. Fortfahren?')) return;
     const keep = drafts.map(d => d.trim()).filter(Boolean);
-    // Vorlage merken (bleibt beim Stück gespeichert)
-    const tplSet = new Set(ti.ents);
-    gregEntries.forEach(e => { if (tplSet.has(e)) e.vsTpl = true; else delete e.vsTpl; });
-    gregEntries = gregEntries.filter(e => !e.vsCopy);
-    for (let k = gregVerseCount(gregEntries) - 1; k >= 0; k--) gregVerseRemove(gregEntries, k);
-    gregEntries.forEach(e => { if (e.verses) delete e.verses; });
-    const tplEnts = gregEntries.filter(e => e.vsTpl);
-    if (mode === 'own') gregVerseOwnApply(keep, ti.numKind);
-    else keep.forEach((d, k) => {
-      const p = gregVerseParse(d);
-      if (ti.numKind && p.length) p[0].t = (k + 2) + '. ' + p[0].t;
-      gregVerseApply(tplEnts, k, p);
-    });
-    gregSelectedIndices.clear();
+    gregVersesApplyAll(mode, keep, ti);
     closeModal();
-    gregRefreshList(); gregBlockSync();
     gregGst(keep.length ? (keep.length + 1) + ' Strophen ' + (mode === 'own' ? 'mit eigenen Noten' : 'unter der Melodie') + ' – bitte im Notenbild prüfen.' : 'Weitere Strophen entfernt.');
   }, 'background:#3d6b35;color:#fff;border-color:#3d6b35');
+}
+
+// Strophen neu anordnen: mode 'stack' (Text untereinander) oder 'own' (eigene Noten)
+function gregVersesApplyAll(mode, keep, ti) {
+  gregPush();
+  const tplSet = new Set(ti.ents);
+  gregEntries.forEach(e => { if (tplSet.has(e)) e.vsTpl = true; else delete e.vsTpl; });
+  gregEntries = gregEntries.filter(e => !e.vsCopy);
+  gregEntries.forEach(e => { if (e.verses) delete e.verses; });
+  const tplEnts = gregEntries.filter(e => e.vsTpl);
+  if (mode === 'own') gregVerseOwnApply(keep, ti.numKind);
+  else keep.forEach((d, k) => {
+    const p = gregVerseParse(d);
+    if (ti.numKind && p.length) p[0].t = (k + 2) + '. ' + p[0].t;
+    gregVerseApply(tplEnts, k, p);
+  });
+  gregSelectedIndices.clear();
+  gregRefreshList(); gregBlockSync();
+}
+// Wurden Noten in den Strophen-Kopien von Hand geändert?
+function gregVerseCopiesEdited() {
+  const sig = arr => arr.filter(e => e.type === 'note').map(e => (e.pitches || []).join('') + (e.neume || '')).join('|');
+  const tpl = sig(gregEntries.filter(e => e.vsTpl && !e.vsCopy));
+  const by = {};
+  gregEntries.forEach(e => { if (e.vsCopy && !e.vsTail) (by[e.vsCopy] = by[e.vsCopy] || []).push(e); });
+  return Object.keys(by).some(n => sig(by[n]) !== tpl);
+}
+// Schnellwechsel zwischen «Text untereinander» und «eigene Noten» (Texte bleiben erhalten)
+function gregVersesSwitchLayout() {
+  if (window._ntTab !== 'greg') switchTab('greg');
+  const own = gregEntries.some(e => e.vsCopy);
+  const ti = gregVerseTplInfo(gregVerseTemplate());
+  let texts;
+  if (own) texts = gregVerseOwnTexts(gregEntries);
+  else { texts = []; const n = gregVerseCount(ti.ents); for (let k = 0; k < n; k++) texts.push(gregVsStripNum(gregVerseText(ti.ents, k))); }
+  texts = texts.map(t => t.trim()).filter(t => t && t.replace(/[~\s]/g, ''));
+  if (!texts.length) { gregGst('Noch keine weiteren Strophen – zuerst unter «📜 Strophen …» erfassen.'); return; }
+  if (own && gregVerseCopiesEdited() && !confirm('Die Noten der Strophen 2+ wurden von Hand geändert – beim Wechsel auf «Text untereinander» gehen diese Änderungen verloren. Fortfahren?')) return;
+  gregVersesApplyAll(own ? 'stack' : 'own', texts, ti);
+  gregGst((texts.length + 1) + ' Strophen jetzt ' + (own ? 'als Text untereinander (gleiche Noten)' : 'mit eigenen Noten') + ' – ↩ macht es rückgängig.');
 }
 
 // Introitus-Gloria-Patri je Modus (Graduale, vollständig ausgeschrieben; Quelle: GregoBase «Gloria Patri I–VIII»), alt = weitere Schlüsse (E u o u a e)
