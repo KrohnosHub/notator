@@ -575,7 +575,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
     <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Song importieren, PDF lesen, Psalmton, Text zuerst, Mappe, GABC einfügen">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
-    <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label></span>
+    <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label><button class="b nt-pgprev-btn" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt, wo das PDF eine neue Seite beginnt. Umbruch setzen: Silbe/Note antippen › «Neue Seite ab dieser Silbe» (im Bearbeiten-Modus); ganzer Abschnitt: «Neue Seite» im Choral-Abschnittskopf">&#9636; Seiten</button></span>
     <button class="b nt-o-file" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
     <span class="nt-o-title" id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
     <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
@@ -1978,7 +1978,22 @@ function gregPageMarksRedraw() {
   gregPageMarksUi();
   if (!gregPagePreviewOn()) return;
   const items = [];
-  if (window._gregMultiSection && gregSections.length) {
+  const organ = !!window._ntTab && window._ntTab !== 'greg';
+  if (organ) {
+    Array.from(document.querySelectorAll('#cl-score .cl-tune')).forEach((d, ti) => {
+      const svg = d.querySelector('svg'); if (!svg) return;
+      const groups = {};
+      svg.querySelectorAll('[class*="abcjs-l"]').forEach(n => {
+        const m = String(n.getAttribute('class') || '').match(/abcjs-l(\d+)/); if (!m) return;
+        const b = n.getBoundingClientRect(); if (!b.width && !b.height) return;
+        const z = groups[m[1]] || (groups[m[1]] = { top: Infinity, bottom: -Infinity });
+        z.top = Math.min(z.top, b.top); z.bottom = Math.max(z.bottom, b.bottom);
+      });
+      const keys = Object.keys(groups);
+      const secPb = !!(window._gregMultiSection && gregSections.length > 1 && gregSections[ti] && gregSections[ti].pb);
+      items.push({ svg, host: d, abs: keys.map(k => groups[k]), brk: (d._pbLineNums || []).map(n => keys.indexOf(String(n))).filter(i => i >= 0), pb: secPb && ti > 0 });
+    });
+  } else if (window._gregMultiSection && gregSections.length) {
     gregSections.forEach((sec, i) => {
       const box = document.getElementById('greg-secbox-' + sec.id);
       const content = box && box.querySelector('.greg-sec-content');
@@ -1998,9 +2013,10 @@ function gregPageMarksRedraw() {
   items.forEach(it => {
     const r = it.svg.getBoundingClientRect();
     it.r = r; it.k = r.width ? targetW / r.width : 1; it.y0 = y; it.h = r.height * it.k;
-    const lines = Array.from(it.svg.querySelectorAll('g.chantLine')).map(g => { const b = g.getBoundingClientRect(); return { top: (b.top - r.top) * it.k - 4, bottom: (b.bottom - r.top) * it.k + 4 }; });
+    const raw = it.abs || Array.from(it.svg.querySelectorAll('g.chantLine')).map(g => { const b = g.getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; });
+    const lines = raw.map(b => ({ top: (b.top - r.top) * it.k - 4, bottom: (b.bottom - r.top) * it.k + 4 }));
     if (it.pb && y > 0.5) forced.push(y);
-    let brk = []; try { brk = gregBreakLinesFor(it.entries, it.clef, it.clefRaw, it.score, it.ctxt); } catch (e) {}
+    let brk = it.brk || []; if (!it.abs) { try { brk = gregBreakLinesFor(it.entries, it.clef, it.clefRaw, it.score, it.ctxt); } catch (e) {} }
     brk.forEach(li => { if (li === 0) { if (y > 0.5) forced.push(y); } else if (lines[li]) forced.push(y + lines[li].top); });
     lines.forEach(z => zones.push({ top: y + z.top, bottom: y + z.bottom }));
     y += it.h;
@@ -2036,13 +2052,14 @@ function gregPageMarksRedraw() {
   const kick = () => { clearTimeout(t); t = setTimeout(() => { try { gregPageMarksRedraw(); } catch (e) { console.warn('pagemarks', e); } }, 300); };
   const start = () => {
     const w = document.getElementById('greg-canvas-wrap'); if (!w || w._pgObs) return;
-    const obs = new MutationObserver(ms => {
+    const mkObs = () => new MutationObserver(ms => {
       if (!gregPagePreviewOn()) return;
       if (ms.every(m => Array.from(m.addedNodes).concat(Array.from(m.removedNodes)).every(n => n.classList && n.classList.contains('greg-pgmark')))) return;
       kick();
     });
-    obs.observe(w, { childList: true, subtree: true });
+    const obs = mkObs(); obs.observe(w, { childList: true, subtree: true });
     w._pgObs = obs;
+    const cs = document.getElementById('cl-score'); if (cs) mkObs().observe(cs, { childList: true, subtree: true });
     window.addEventListener('resize', kick);
     gregPageMarksUi(); if (gregPagePreviewOn()) kick();
   };
@@ -8465,7 +8482,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '359';
+const NOTATOR_BUILD_ID = '360';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -17041,6 +17058,7 @@ function clGabcToAbc(gabcList, opts) {
     // Umbruch hier nicht übernehmen). Anker = vorige|eigene|nächste Silbe,
     // übersteht Einfügen/Löschen anderer Silben.
     const lbOpt = opts.lineBreaks || {};
+    const pbOpt = opts.pageBreaks || {};   // Seitenumbruch ab dieser Silbe (erzwingt auch eine neue Zeile)
     const sylU = units.filter(x => x.kind === 'syl');
     const lbT = x => x ? String(x.text == null ? '~' : x.text).replace(/[|#:]/g, '') : '^';
     const lbSeen = {};
@@ -17049,7 +17067,8 @@ function clGabcToAbc(gabcList, opts) {
       lbSeen[a] = (lbSeen[a] || 0) + 1;
       u.lbKey = si + ':' + a + (lbSeen[a] > 1 ? '#' + lbSeen[a] : '');
       const v = lbOpt[u.lbKey];
-      u.lbWant = v === true || (!!u.chBrk && v !== false);
+      u.pbWant = !!pbOpt[u.lbKey];
+      u.lbWant = v === true || (!!u.chBrk && v !== false) || u.pbWant;
     });
     const cap = opts.charsPerLine || 60;
     const lines = [];
@@ -17303,7 +17322,7 @@ function clGabcToAbc(gabcList, opts) {
             if (nt._seg) sRanges.push({ s: noteStart, e: music.length, key: nt._seg.key, note: { anchor: nt._anchor, segStart: nt._seg.notes[0] === nt, mergeable: !!nt._mergeable, auto: !!nt._autoBoundary } });
           });
           if (multi) music += ')';
-          lbRanges.push({ s: sylStartPos, e: music.length, lb: { key: u.lbKey, start: !!u.lbStart, want: !!u.lbWant, chBrk: !!u.chBrk, set: lbOpt[u.lbKey] } });
+          lbRanges.push({ s: sylStartPos, e: music.length, lb: { key: u.lbKey, start: !!u.lbStart, want: !!u.lbWant, chBrk: !!u.chBrk, set: lbOpt[u.lbKey], pb: !!u.pbWant } });
           // Lyrics: erste Note = Silbe, weitere Noten = "_" (Silbe gehalten)
           // Text nach den Strophen (z.B. «Amen») auf der untersten Strophenzeile
           const toLast = nVerse > 0 && !u.verses && ln.indexOf(u) > lastVerseU;
@@ -17371,7 +17390,7 @@ function clGabcToAbc(gabcList, opts) {
 // ── 4. Rendern mit abcjs (inkl. verkleinerter Liqueszenz-Noten) ──
 // Jedes Stück (X:-Block, = Abschnitt) bekommt ein eigenes SVG -- abcjs
 // rendert in ein einzelnes Element sonst nur das erste Stück.
-function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick) {
+function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick, pbRanges) {
   if (!window.ABCJS) { el.textContent = 'Notensatz-Bibliothek (abcjs) nicht geladen – Internetverbindung prüfen.'; return []; }
   el.innerHTML = '';
   const starts = [];
@@ -17393,6 +17412,20 @@ function clRenderAbc(el, abc, liqChars, staffwidth, onNoteClick) {
       staffwidth: staffwidth || 740,
       paddingleft: 10, paddingright: 10, paddingbottom: 6, // unten wenig Rand: Abstand zum nächsten Abschnitt wie im Choral
       format: { titlefont: '"Palatino Linotype", Palatino, serif 18', subtitlefont: '"Palatino Linotype", Palatino, serif 13', composerfont: '"Palatino Linotype", Palatino, serif 11 italic', infofont: '"Palatino Linotype", Palatino, serif 11 italic', vocalfont: '"Palatino Linotype", Palatino, serif 13', annotationfont: '"Palatino Linotype", Palatino, serif 13' },
+    });
+    // Zeilen (abcjs-l<N>), in denen ein manueller Seitenumbruch beginnt (für Vorschau und PDF)
+    div._pbLineNums = [];
+    (pbRanges || []).forEach(r => {
+      if (r.start < st || r.start >= en) return;
+      const rs = r.start - st, re = r.end - st; let ln = null;
+      tunes.forEach(t => (t.lines || []).forEach(line => (line.staff || []).forEach(sf => (sf.voices || []).forEach(v => v.forEach(elem => {
+        if (ln != null || elem.el_type !== 'note' || elem.rest || !(elem.startChar < re && elem.endChar > rs)) return;
+        (elem.abselem && elem.abselem.elemset || []).forEach(g => {
+          if (ln != null || !g || !g.getAttribute) return;
+          const m = String(g.getAttribute('class') || '').match(/abcjs-l(\d+)/); if (m) ln = +m[1];
+        });
+      })))));
+      if (ln != null && div._pbLineNums.indexOf(ln) < 0) div._pbLineNums.push(ln);
     });
     const liq = new Set((liqChars || []).filter(c => c >= st && c < en).map(c => c - st));
     if (liq.size) {
@@ -17558,6 +17591,7 @@ function clNormalizeState() {
   if (!Array.isArray(clState.texts)) clState.texts = [];
   if (!clState.chordOverrides || typeof clState.chordOverrides !== 'object') clState.chordOverrides = {};
   if (!clState.lineBreaks || typeof clState.lineBreaks !== 'object') clState.lineBreaks = {};
+  if (!clState.pageBreaks || typeof clState.pageBreaks !== 'object') clState.pageBreaks = {};
 }
 // Handbearbeiteter Quelltext wird je Fassung (mit/ohne Begleitsatz) getrennt geführt
 function clMK() { return clState.accomp ? 'manualAbcAcc' : 'manualAbc'; }
@@ -17677,7 +17711,7 @@ function clBuild(extra) {
   const sw = clScoreWidth();
   const headers = list.map((x, i) => Object.assign({}, clEffectiveHead(i), { left: clCfg(i).left, right: clCfg(i).right }));
   const sectionOpts = list.map((x, i) => ({ targetPc: clCfg(i).targetPc, octave: clCfg(i).octave || 0 }));
-  return clGabcToAbc(list, { sectionOpts, targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(10, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, chordBreaks: clState.chordBreaks, lineBreaks: clState.lineBreaks, playRests: !!(extra && extra.playRests) });
+  return clGabcToAbc(list, { sectionOpts, targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(10, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, pageBreaks: clState.pageBreaks || {}, chordBreaks: clState.chordBreaks, lineBreaks: clState.lineBreaks, playRests: !!(extra && extra.playRests) });
 }
 
 function clFillTargetSelect() {
@@ -17832,7 +17866,8 @@ function clRenderInner() {
     if (f > 1 || (f > 0 && f < 1 && (mobDef || (ntFit('cl') && window._clWidthTouched)))) vs *= f;
   }
   el.style.width = Math.round(sw * vs + 40) + 'px';
-  window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clLast && !clUi().view) ? clChordClick : null);
+  window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clLast && !clUi().view) ? clChordClick : null,
+    (!clState[clMK()] && clLast) ? (clLast.sylRanges || []).filter(r => r.lb && r.lb.pb) : []);
   if (vs !== 1) el.querySelectorAll('.cl-tune > svg').forEach(svg => {
     const w = parseFloat(svg.getAttribute('width')), h = parseFloat(svg.getAttribute('height'));
     if (!w || !h) return;
@@ -20934,12 +20969,16 @@ function clLineBreakItems(m, mk, lb) {
   sep.style.cssText = 'font-weight:bold;margin:6px 0 2px;color:#e0d4b0;border-top:1px solid #3a4a30;padding-top:4px';
   m.appendChild(sep);
   const set = v => { const o = clState.lineBreaks || (clState.lineBreaks = {}); if (v == null) delete o[lb.key]; else o[lb.key] = v; clRender(); };
-  if (!lb.want) {
+  const setPb = v => { const o = clState.pageBreaks || (clState.pageBreaks = {}); if (v) o[lb.key] = true; else delete o[lb.key]; clRender(); };
+  if (lb.pb) {
+    // Seitenumbruch erzwingt die neue Zeile – nur der Seitenumbruch ist hier änderbar
+  } else if (!lb.want) {
     if (!lb.start) mk('⏎ Neue Zeile ab dieser Silbe', () => set(true));
   } else {
     mk('⤺ Zeilenumbruch hier entfernen', () => set(lb.chBrk ? false : null));
   }
   if (lb.set === false) mk('↺ Umbruch wie im Choral', () => set(null));
+  mk(lb.pb ? '⤺ Seitenumbruch hier entfernen' : '⤓ Neue Seite ab dieser Silbe', () => setPb(!lb.pb));
 }
 function clLineBreakMenu(lr, ev) {
   const m = document.createElement('div');
@@ -21115,7 +21154,7 @@ function clExportPDF() {
   const printTexts = !!(document.getElementById('cl-pdf-print-texts') || {}).checked;
   const tunesEls = Array.from(document.querySelectorAll('#cl-score .cl-tune'));
   const pairs = [];
-  tunesEls.forEach(d => {
+  tunesEls.forEach((d, ti) => {
     const svg = d.querySelector('svg');
     if (!svg) return;
     // Zeilen-Zonen (Notensystem + Text) -> Seitenumbruch nie mittendurch
@@ -21131,7 +21170,12 @@ function clExportPDF() {
       } catch (e) {}
     });
     const vy0 = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.y) || 0;
-    const lineBoxes = Object.values(zones).filter(z => isFinite(z.top));
+    const zKeys = Object.keys(zones).filter(k => isFinite(zones[k].top));
+    const lineBoxes = zKeys.map(k => zones[k]);
+    let brkIdx = (d._pbLineNums || []).map(n => zKeys.indexOf(String(n))).filter(i => i >= 0).sort((a, b) => a - b);
+    const secPb = !!(window._gregMultiSection && gregSections.length > 1 && gregSections[ti] && gregSections[ti].pb);
+    const startNew = ti > 0 && (secPb || brkIdx.indexOf(0) >= 0);
+    brkIdx = brkIdx.filter(i => i > 0);
     if (printTexts) svg.querySelectorAll('text.cl-text').forEach(t => { try { const bb = t.getBBox(); lineBoxes.push({ top: bb.y, bottom: bb.y + bb.height }); } catch (e) {} });
     lineBoxes.forEach(z => { z.top -= vy0; z.bottom -= vy0; });
     const clone = svg.cloneNode(true);
@@ -21148,7 +21192,7 @@ function clExportPDF() {
     clone.insertBefore(bgr, clone.firstChild);
     clone.setAttribute('color', '#000000'); clone.setAttribute('style', 'color:#000;background:#fff');
     clone.setAttribute('xmlns', CL_SVGNS);
-    pairs.push({ svg: new XMLSerializer().serializeToString(clone), lineBoxes });
+    pairs.push({ svg: new XMLSerializer().serializeToString(clone), lineBoxes, pageBreakBefore: startNew, breakLines: brkIdx });
   });
   if (!pairs.length) { gregGst('PDF: keine Noten vorhanden'); return; }
   gregGst('PDF wird erstellt…');
