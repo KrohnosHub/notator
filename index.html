@@ -1357,6 +1357,7 @@ function gregSectionFromUI() {
   s.initialLines  = (document.getElementById('greg-dropcap2')||{}).checked ? 2 : 1;
   s.hdrExtra      = gregHdrExtra;
   s.clefRaw       = gregClefRaw;
+  s.sz            = gregSzRead();
 }
 
 // Load gregSections[idx] INTO the UI/editor state (becomes the live/active data)
@@ -1374,6 +1375,7 @@ function gregLoadSectionToUI(idx) {
   set('greg-commentary',    s.commentary);
   { const d2 = document.getElementById('greg-dropcap2'); if (d2) d2.checked = s.initialLines === 2; }
   gregHdrExtra = s.hdrExtra || '';
+  if (s.sz) gregSzWrite(s.sz); else s.sz = gregSzRead();
   gregSetClef(s.clef || 'do', true); // silent: no render here — caller renders once, after this returns
   gregClefRaw = s.clefRaw || ''; gregClefUi();
   gregRefreshListNoRender();
@@ -1417,6 +1419,7 @@ function gregAddSection() {
     first.initialLines  = (document.getElementById('greg-dropcap2')||{}).checked ? 2 : 1;
     first.hdrExtra      = gregHdrExtra;
     first.clefRaw       = gregClefRaw;
+    first.sz            = gregSzRead();
     gregSections = [first];
     gregActiveIdx = 0;
     gregEnableMultiSection(); // sets display toggles AND window._gregMultiSection
@@ -1424,6 +1427,7 @@ function gregAddSection() {
     gregSectionFromUI();
   }
   const newSec = gregMakeSection();
+  newSec.sz = gregSzRead();   // neuer Abschnitt startet mit der Grösse des bisherigen
   gregSections.push(newSec);
   gregActiveIdx = gregSections.length - 1;
   gregLoadSectionToUI(gregActiveIdx);
@@ -1519,7 +1523,8 @@ function gregImportTargetChoice() {
 function gregEnableMultiSection() {
   const svgWrapParent = document.getElementById('greg-svg-wrap').parentElement;
   const secContainer = document.getElementById('greg-sections-container');
-  if (svgWrapParent) svgWrapParent.style.display = 'none';
+  // nur den Original-Platz ausblenden – liegt die Zeichenfläche schon in einer Abschnitts-Box, darf diese nicht versteckt werden
+  if (svgWrapParent && svgWrapParent.id === 'greg-svg-original-slot') svgWrapParent.style.display = 'none';
   if (secContainer) secContainer.style.display = 'block';
   window._gregMultiSection = true;
 }
@@ -1718,7 +1723,7 @@ function gregRenderSectionPreview(sec, container) {
   // section's activeClef — this is what caused wrong custos pitches at the
   // end of an UNRELATED, already-finished section's lines right after
   // adding/importing notes into a different section.
-  const sz = gregGetSizing();
+  const sz = gregGetSizing(sec);
   const ctxt = gregBuildExsurgeCtxtFromSizing(sz);
   if (!ctxt) return;
 
@@ -1753,10 +1758,7 @@ function gregRenderSectionPreview(sec, container) {
       score._extraAnnotations = annArr.slice(0, -1);
     }
     const zoom = (sz.zoom || 1) * gregVS(); // inkl. Anzeige-Skalierung (nur Bildschirm)
-    const width = window._gregForcedCanvasWidth
-      ? Math.max(window._gregForcedCanvasWidth - 20, 400)
-      : Math.max(container.clientWidth - 20, gregIsMobileViewport() ? 200 : 400);
-    const layoutWidth = Math.max(width / zoom, gregIsMobileViewport() ? 140 : 300);
+    const layoutWidth = gregLayoutWidth(window._gregForcedCanvasWidth || container.clientWidth, zoom);
     // Capture sec's own title/subtitle as local consts — immune to later UI changes
     const secTitle = sec.title || '';
     const secSubtitle = sec.subtitle || '';
@@ -1909,6 +1911,10 @@ function gregRenderActiveOnly() {
 // re-opened document re-wraps identically to how it looked when saved
 // regardless of the current browser window size — otherwise the live
 // #greg-canvas-wrap element's actual width.
+// Eine Formel für Bildschirm (aktiv/Vorschau) und PDF – sonst brechen Abschnitte je nach Zustand anders um.
+function gregLayoutWidth(boxW, totalZoom) {
+  return Math.max((boxW - 20) / totalZoom, (typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) ? 140 : 300);
+}
 function gregEffectiveCanvasWidth() {
   if (window._gregForcedCanvasWidth) return window._gregForcedCanvasWidth;
   const el = document.getElementById('greg-canvas-wrap');
@@ -1970,8 +1976,8 @@ function gregRenderGABCInto(gabc, wrap, cb) {
     if (window._gregMultiSection && gregSections && gregSections[gregActiveIdx]) {
       const secBox = document.getElementById('greg-secbox-' + gregSections[gregActiveIdx].id);
       const secContent = secBox ? secBox.querySelector('.greg-sec-content') : null;
-      width = window._gregForcedCanvasWidth ? Math.max((canvasW - 20) / zoom, 300)
-            : secContent ? Math.max((secContent.clientWidth - 20) / zoom, 300)
+      width = window._gregForcedCanvasWidth ? gregLayoutWidth(canvasW, zoom)
+            : secContent ? gregLayoutWidth(secContent.clientWidth, zoom)
                           : Math.max(canvasW ? (canvasW - 80) / zoom : 700, 400);
     } else {
       width = Math.max(canvasW ? (canvasW - 80) / zoom : 700, gregIsMobileViewport() ? 140 : 400);
@@ -7821,7 +7827,7 @@ function gregExportPDF() {
     if (measuredForPDF) window._gregForcedCanvasWidth = measuredForPDF;
   }
 
-  const sz = gregGetSizing();
+  const sz = gregGetSizing();   // Standard (Einzelabschnitt); Abschnitte nutzen ihre eigene Grösse (siehe renderGABCforPDF)
   const zoom = sz.zoom || 1;
   const canvasW = gregEffectiveCanvasWidth();
   // Bildschirm-Ansicht skaliert zusätzlich mit dem Ansichts-Zoom (🔍, gregVS):
@@ -7835,17 +7841,19 @@ function gregExportPDF() {
   // section, which didn't match narrower/wider individual section boxes.
   // A forced/saved canvas width (loaded document) takes priority, same as
   // on screen, so the PDF matches a re-opened document's layout too.
-  function layoutWidthForSection(sec) {
+  function layoutWidthForSection(sec, vz) {
+    vz = vz || viewZoom;
     if (!sec) return fallbackLayoutW;
-    if (window._gregForcedCanvasWidth) return Math.max((canvasW - 20) / viewZoom, 300);
+    if (window._gregForcedCanvasWidth) return gregLayoutWidth(canvasW, vz);
     const secBox = document.getElementById('greg-secbox-' + sec.id);
     const secContent = secBox ? secBox.querySelector('.greg-sec-content') : null;
-    return secContent ? Math.max((secContent.clientWidth - 20) / viewZoom, 300) : fallbackLayoutW;
+    return secContent ? gregLayoutWidth(secContent.clientWidth, vz) : fallbackLayoutW;
   }
 
   // Build list of {gabc, section-state} to render for PDF
   // We render each section fresh at targetW with zoom=1 context
-  function buildPDFCtxt() {
+  function buildPDFCtxt(sz) {
+    const zoom = sz.zoom || 1;
     if (typeof exsurge === 'undefined') return null;
     const ctxt = new exsurge.ChantContext();
     const font = "'Crimson Text', 'Palatino Linotype', Georgia, serif";
@@ -7904,7 +7912,8 @@ function gregExportPDF() {
   let pending = gabcList.length;
 
   function renderGABCforPDF(gabcEntry, doneCallback) {
-    const ctxt = buildPDFCtxt();
+    const szS = gregGetSizing(gabcEntry.sec), zoomS = szS.zoom || 1;
+    const ctxt = buildPDFCtxt(szS);
     if (!ctxt) { doneCallback(null); return; }
     let body = gabcEntry.gabc;
     let annText = null, useDropCap = false;
@@ -7916,7 +7925,7 @@ function gregExportPDF() {
       body = body.substring(si + 2).trim();
     }
     if (!body || body === '(' + gregClefVal + ')') body = '(' + gregClefVal + ') (::)';
-    const layoutW = layoutWidthForSection(gabcEntry.sec);
+    const layoutW = layoutWidthForSection(gabcEntry.sec, zoomS * (typeof gregVS === 'function' ? gregVS() : 1));
     try {
       const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, body);
       const score = new exsurge.ChantScore(ctxt, mappings, useDropCap);
@@ -8303,7 +8312,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '357';
+const NOTATOR_BUILD_ID = '358';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8526,6 +8535,7 @@ function gregBuildStateObject() {
     commentary: (document.getElementById('greg-commentary')||{value:''}).value || undefined,
     hdrExtra: gregHdrExtra || undefined,
     secGap: gregSecGap(),
+    sz: gregSzRead(),
     initialLines: (document.getElementById('greg-dropcap2')||{}).checked ? 2 : undefined,
     canvasWidth,
     entries: JSON.parse(JSON.stringify(gregEntries)),
@@ -8610,12 +8620,14 @@ function gregApplyLoadedState(state) {
   // Restore entries
   if (state.multiSection && state.sections && state.sections.length > 1) {
     // Multi-section file
+    { const baseSz = state.sz || gregSzRead(); state.sections.forEach(sc => { if (sc && !sc.sz) sc.sz = Object.assign({}, baseSz); }); }
     gregSections = state.sections;
     gregActiveIdx = 0;
     gregLoadSectionToUI(0);
     gregEnableMultiSection();
     setTimeout(gregRenderAllSections, 200);
   } else {
+    if (state.sz) gregSzWrite(state.sz);
     gregCollapseSections();   // war vorher ein Mehr-Abschnitt-Stück offen, dessen Abschnitte entfernen
     gregEntries = state.entries;
     // Restore UI fields — only for single-section files. For multi-section
@@ -18375,7 +18387,7 @@ function ntSectionsFromState(state) {
   const cp = o => JSON.parse(JSON.stringify(o));
   const fresh = () => 's' + Date.now() + Math.floor(Math.random() * 100000);
   if (state.multiSection && state.sections && state.sections.length) {
-    return state.sections.map((sec, i) => Object.assign(cp(sec), { id: fresh() + '_' + i }));
+    return state.sections.map((sec, i) => Object.assign(cp(sec), { id: fresh() + '_' + i, sz: Object.assign({}, sec.sz || state.sz || gregSzRead()) }));
   }
   const n = gregMakeSection(fresh());
   n.entries = cp(state.entries || []);
@@ -18383,6 +18395,7 @@ function ntSectionsFromState(state) {
   n.commentary = state.commentary || ''; n.hdrExtra = state.hdrExtra || ''; n.clefRaw = state.clefRaw || '';
   n.dropCap = state.dropCap !== false; n.dropCapLetter = state.dropCapLetter || '';
   n.initialLines = state.initialLines === 2 ? 2 : 1; n.clef = state.clef || 'do';
+  n.sz = Object.assign({}, state.sz || gregSzRead());
   return [n];
 }
 function ntInsertState(state, label) {
@@ -21062,8 +21075,24 @@ function addSvgPadding(svgEl, pad, neededTopPad, bottomPad) {
   } catch(e) { return pad * 2.5; }
 }
 
-function gregGetSizing() {
-  const v = (id, def) => { const el=document.getElementById(id); return el ? parseFloat(el.value) : def; };
+// Grössen pro Abschnitt: sec.sz = { staff, ann, lyric, drop, hspace, vspace, neume } (Werte der Regler).
+const GREG_SZ_IDS = [['gs-staff', 'staff', 20], ['gs-ann', 'ann', 15], ['gs-lyric', 'lyric', 18], ['gs-drop', 'drop', 85], ['gs-hspace', 'hspace', 1], ['gs-vspace', 'vspace', 1], ['gs-neume', 'neume', 1.3]];
+function gregSzRead() {
+  const o = {};
+  GREG_SZ_IDS.forEach(([id, k, def]) => { const el = document.getElementById(id); const v = el ? parseFloat(el.value) : def; o[k] = isFinite(v) ? v : def; });
+  return o;
+}
+function gregSzWrite(o) {
+  if (!o) return;
+  GREG_SZ_IDS.forEach(([id, k]) => { const el = document.getElementById(id); if (el && isFinite(o[k])) el.value = o[k]; });
+  const upd = (slId, valId, suffix, dec) => { const sl = document.getElementById(slId), vl = document.getElementById(valId); if (sl && vl) vl.textContent = parseFloat(sl.value).toFixed(dec) + suffix; };
+  upd('gs-staff', 'gs-staff-v', 'pt', 1); upd('gs-ann', 'gs-ann-v', 'pt', 1); upd('gs-lyric', 'gs-lyric-v', 'pt', 1); upd('gs-drop', 'gs-drop-v', 'pt', 1);
+  upd('gs-hspace', 'gs-hspace-v', '×', 2); upd('gs-vspace', 'gs-vspace-v', '×', 2); upd('gs-neume', 'gs-neume-v', '×', 2);
+  _exsurgeCtxt = null;
+}
+function gregGetSizing(sec) {
+  const src = (sec && sec.sz) || null;
+  const v = (id, def) => { if (src) { const k = (GREG_SZ_IDS.find(x => x[0] === id) || [])[1]; return (k && isFinite(src[k])) ? +src[k] : def; } const el=document.getElementById(id); return el ? parseFloat(el.value) : def; };
   const staffPt = v('gs-staff', 20);
   return {
     staffScale:  1.0,                   // always 1.0 — glyphScaling stays constant
@@ -21075,7 +21104,7 @@ function gregGetSizing() {
     hSpace:      v('gs-hspace', 1.0),
     vSpace:      v('gs-vspace', 1.0),
     neumeScale:  v('gs-neume', 1.3),
-    secGap:      v('gs-secgap', 16),
+    secGap:      (function() { const el = document.getElementById('gs-secgap'); return el ? parseFloat(el.value) : 16; })(),
   };
 }
 
