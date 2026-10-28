@@ -8303,7 +8303,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '356';
+const NOTATOR_BUILD_ID = '357';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9080,7 +9080,13 @@ function gregLibSaveAs() {
     const base = (rec && rec.title) || ((document.getElementById('greg-title') || {}).value || '').trim() || 'Unbenanntes Stück';
     const t = prompt('Speichern unter – neuer Name:', base + ' (Kopie)');
     if (t === null || !t.trim()) return false;
-    const name = t.trim();
+    return gregLibSaveAsName(t.trim());
+  });
+}
+function gregLibSaveAsName(name) {
+  const cur = gregLibCurrentId;
+  const p = cur != null ? gregLibGet(cur).catch(() => null) : Promise.resolve(null);
+  return p.then(rec => {
     if (rec && name.toLowerCase() === String(rec.title || '').toLowerCase()) { gregGst('Gleicher Name wie das Original – dafür «Speichern» verwenden.'); return false; }
     const origPrompt = window.prompt;
     window.prompt = () => name; // gregLibSaveCurrent fragt bei neuem Eintrag nach dem Titel
@@ -9959,8 +9965,8 @@ function ntFileMenu(btn) {
   const sep = () => { const h = document.createElement('div'); h.style.cssText = 'border-top:1px solid #3a4a30;margin:2px 0'; d.appendChild(h); };
   item('✚ Neues Stück', 'Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)', () => ntNewPiece());
   item('📂 Öffnen · Bibliothek …', 'Stück aus der Bibliothek, einem Drive-Ordner oder vom Gerät öffnen', () => gregLibShowModal());
-  item('💾 Speichern unter …', 'Als neues Stück mit eigenem Namen in der Bibliothek speichern (das Original bleibt unverändert)', () => gregLibSaveAs());
   item('🎵 Song importieren (GregoBase) …', 'Nach Titel oder GregoBase-ID suchen und importieren', () => gregImportSongFromGregoBase());
+  item('📎 Notator-Datei als Abschnitt einfügen …', 'Inhalt einer anderen Notator-Datei (Bibliothek, Gerät oder Drive) als neuen Abschnitt an dieses Stück anhängen', () => { toGreg(); ntInsertFileShow(); });
   sep();
   item('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadRow(true); });
   item('📥 GABC einfügen …', 'GABC-Quelltext einfügen und importieren', () => { toGreg(); gregSetMode('details'); gregSideTab('gabc'); const pnl = document.getElementById('greg-gabc-import-panel'); if (pnl && pnl.style.display === 'none') gregToggleGABCImport(); });
@@ -18364,11 +18370,79 @@ function ntPdfSave(kind) {
     : ((((document.getElementById('greg-title') || {}).value || '').trim() || 'Stueck') + '_Choral');
   ntLoadLocalDir().then(() => ntPdfDialog({ kind, name: ntSanitizeName(base), dest: ntPdfPrefs().dest }));
 }
+// ── Notator-Datei als neuen Abschnitt (bzw. mehrere) an das offene Stück anhängen ──
+function ntSectionsFromState(state) {
+  const cp = o => JSON.parse(JSON.stringify(o));
+  const fresh = () => 's' + Date.now() + Math.floor(Math.random() * 100000);
+  if (state.multiSection && state.sections && state.sections.length) {
+    return state.sections.map((sec, i) => Object.assign(cp(sec), { id: fresh() + '_' + i }));
+  }
+  const n = gregMakeSection(fresh());
+  n.entries = cp(state.entries || []);
+  n.title = state.title || ''; n.subtitle = state.subtitle || ''; n.annotation = state.annotation || '';
+  n.commentary = state.commentary || ''; n.hdrExtra = state.hdrExtra || ''; n.clefRaw = state.clefRaw || '';
+  n.dropCap = state.dropCap !== false; n.dropCapLetter = state.dropCapLetter || '';
+  n.initialLines = state.initialLines === 2 ? 2 : 1; n.clef = state.clef || 'do';
+  return [n];
+}
+function ntInsertState(state, label) {
+  if (!state || (!state.entries && !state.sections)) { gregGst('Keine gültige Notator-Datei.'); return; }
+  const secs = ntSectionsFromState(state);
+  if (typeof gregFixDoubleAsterisk === 'function') secs.forEach(sc => gregFixDoubleAsterisk(sc.entries));
+  gregPush();
+  gregAddSection();                       // legt leeren neuen Abschnitt an (und schaltet ggf. auf Mehr-Abschnitt-Modus)
+  { const w = document.getElementById('greg-svg-wrap'), os = document.getElementById('greg-svg-original-slot'); if (w && os && w.parentElement !== os) os.appendChild(w); } // Zeichenfläche nicht mit der Box des ersetzten leeren Abschnitts entfernen
+  const at = gregSections.length - 1;     // der leere neue Abschnitt wird durch den Dateiinhalt ersetzt
+  gregSections.splice(at, 1, ...secs);
+  gregActiveIdx = at;
+  gregLoadSectionToUI(at);
+  gregRenderAllSections();
+  gregGst('«' + label + '» als ' + (secs.length > 1 ? secs.length + ' Abschnitte' : 'Abschnitt ' + (at + 1)) + ' eingefügt.');
+}
+function ntInsertFileShow() {
+  const driveOn = typeof gdConfigured === 'function' && gdConfigured();
+  showModal('📎 Notator-Datei als Abschnitt einfügen', 'Der Inhalt wird als neuer Abschnitt am Ende des offenen Stücks angehängt. Die Quelldatei bleibt unverändert.', []);
+  const body = document.getElementById('modal-body'), bEl = document.getElementById('modal-btns');
+  bEl.style.flexDirection = ''; bEl.style.alignItems = '';
+  bEl.innerHTML = '';
+  const mk = (label, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.onclick = fn; bEl.appendChild(b); };
+  mk('💻 Vom Gerät …', () => {
+    const useState = (f) => f.text().then(t => { closeModal(); ntInsertState(JSON.parse(t), f.name.replace(/\.(notator|json)$/i, '')); }).catch(err => gregGst('Datei nicht lesbar: ' + err.message));
+    if (window.showOpenFilePicker) {
+      window.showOpenFilePicker({ multiple: false, types: [{ description: 'Notator-Datei', accept: { 'application/json': ['.notator', '.json'] } }] })
+        .then(hs => hs[0].getFile()).then(useState).catch(err => { if (err && err.name !== 'AbortError') gregGst('Fehler: ' + err.message); });
+    } else {
+      const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.notator,.json';
+      inp.onchange = () => { if (inp.files[0]) useState(inp.files[0]); }; inp.click();
+    }
+  });
+  if (driveOn) mk('☁ Aus Drive-Ordner …', () => gdGetToken(true).then(() => ntDriveOpenBrowser(null, (st, nm) => ntInsertState(st, nm))).catch(err => gregGst(err.message)));
+  mk('Abbrechen', () => closeModal());
+  body.innerHTML = '<input id="nt-ins-q" type="search" placeholder="Bibliothek durchsuchen …" style="width:100%;box-sizing:border-box;font-size:13px;padding:4px;margin-bottom:6px">' +
+    '<div id="nt-ins-list" style="max-height:45vh;overflow-y:auto;border:1px solid var(--parch3);border-radius:4px"></div>';
+  const list = document.getElementById('nt-ins-list'), q = document.getElementById('nt-ins-q');
+  gregLibList().then(items => {
+    const draw = () => {
+      const f = q.value.trim().toLowerCase();
+      list.innerHTML = '';
+      const sel = items.filter(it => !f || String(it.title || '').toLowerCase().includes(f)).sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'de'));
+      if (!sel.length) list.innerHTML = '<div style="font-size:11px;color:var(--ink2);padding:6px">(keine Treffer in der lokalen Bibliothek)</div>';
+      sel.slice(0, 200).forEach(it => {
+        const b = document.createElement('button'); b.className = 'b'; b.textContent = '🎼 ' + (it.title || '(ohne Titel)');
+        b.style.cssText = 'display:block;width:100%;text-align:left;border:none;border-bottom:1px solid var(--parch3);border-radius:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        b.onclick = () => gregLibGet(it.id).then(rec => { closeModal(); ntInsertState(rec && rec.state, it.title); }).catch(err => gregGst('Fehler: ' + err.message));
+        list.appendChild(b);
+      });
+    };
+    q.oninput = draw; draw();
+  }).catch(err => { list.textContent = 'Fehler: ' + err.message; });
+}
+
 // Stück als Notator-Datei speichern: gleicher Dialog (Gerät oder Google Drive)
 function ntNotatorSave() {
   const title = (((document.getElementById('greg-title') || {}).value || '').trim() || 'unbenannt');
   const p = ntPdfPrefs();
-  ntLoadLocalDir().then(() => ntPdfDialog({ kind: 'notator', name: ntSanitizeName(title, '.notator'), dest: p.destNotator || 'local' }));
+  ntLoadLocalDir().then(() => ntPdfDialog({ kind: 'notator', name: ntSanitizeName(title, '.notator'), dest: p.destNotator || 'lib' }));
 }
 
 function ntPdfDialog(ctx) {
@@ -18376,7 +18450,8 @@ function ntPdfDialog(ctx) {
   const K = ntDestKeys(ctx), ext = K.n ? '.notator' : '.pdf';
   const driveOn = typeof gdConfigured === 'function' && gdConfigured();
   if (!driveOn && ctx.dest === 'drive') ctx.dest = 'local';
-  showModal(K.n ? '💾 Stück speichern (.notator)' : '↓ PDF speichern', '', []);
+  showModal(K.n ? '💾 Speichern unter …' : '↓ PDF speichern', '', []);
+  if (K.n && ctx.dest !== 'local' && ctx.dest !== 'drive' && ctx.dest !== 'lib') ctx.dest = 'local';
   const body = document.getElementById('modal-body');
   const localTxt = ntFsSupported()
     ? (_ntPdfLocalDir ? 'Speicherdialog öffnet im Ordner «' + ntEscAttr(_ntPdfLocalDir.name) + '»' : 'Speicherdialog öffnet im Ordner «Dokumente» (Standard)')
@@ -18387,9 +18462,10 @@ function ntPdfDialog(ctx) {
     '<span style="flex:1;font-size:12px"><b>' + label + '</b><br><span style="color:var(--ink2);font-size:11px">' + sub + '</span></span>' + (btn || '') + '</label>';
   body.innerHTML =
     '<label style="font-size:12px;display:block;margin-bottom:6px">Dateiname<br><input id="nt-pdf-name" type="text" value="' + ntEscAttr(ctx.name) + '" style="width:100%;box-sizing:border-box;font-size:13px;padding:4px"></label>' +
-    row('local', '💻 Auf diesem Gerät', localTxt,
+    (K.n ? row('lib', '📚 Neues Stück in der Bibliothek', 'Eigener Eintrag (Drive + lokale Kopie); du arbeitest danach in dieser Kopie weiter, das Original bleibt unverändert', '') : '') +
+    row('local', K.n ? '💻 Datei auf diesem Gerät (.notator)' : '💻 Auf diesem Gerät', localTxt,
       ntFsSupported() ? '<button class="b" id="nt-pdf-localdir" style="font-size:11px;padding:2px 6px">Standard ändern</button>' : '') +
-    row('drive', '☁ Google Drive', driveOn ? 'Ordner: ' + ntEscAttr(ntDrivePathText(pr[K.folder], K.n)) : 'Google Drive ist nicht eingerichtet',
+    row('drive', K.n ? '☁ Drive-Ordner (.notator-Datei)' : '☁ Google Drive', driveOn ? 'Ordner: ' + ntEscAttr(ntDrivePathText(pr[K.folder], K.n)) : 'Google Drive ist nicht eingerichtet',
       driveOn ? '<button class="b" id="nt-pdf-drivedir" style="font-size:11px;padding:2px 6px">Ordner ändern</button>' : '') +
     (K.n ? '' : '<label style="font-size:12px;display:flex;gap:6px;align-items:center;margin-top:6px">Druckqualität ' +
       '<select id="nt-pdf-dpi" style="font-size:12px">' + NT_PDF_DPI_OPTS.map(d => '<option value="' + d + '"' + (d === ntPdfDpi() ? ' selected' : '') + '>' + d + ' dpi' +
@@ -18429,6 +18505,12 @@ function ntPdfDialog(ctx) {
     const dpiEl = document.getElementById('nt-pdf-dpi'); if (dpiEl) p.dpi = +dpiEl.value;
     ntPdfSavePrefs(p);
     const what = K.n ? 'Gespeichert' : 'PDF gespeichert';
+    if (K.n && ctx.dest === 'lib') {
+      const nm = name.replace(/\.notator$/i, '').trim();
+      closeModal();
+      if (nm) gregLibSaveAsName(nm);
+      return;
+    }
     if (ctx.dest === 'drive') {
       // Anmeldung im Klick (Popup), danach Datei erzeugen und hochladen
       gdGetToken(true).then(() => {
@@ -18567,12 +18649,12 @@ function ntOpenLocalFile(_ok) {
 }
 
 // ── Öffnen: .notator-Datei aus beliebigem Drive-Ordner ──
-function ntDriveOpenBrowser(chain) {
+function ntDriveOpenBrowser(chain, pick) {
   showModal('☁ Aus Google Drive öffnen', 'Lade Ordner …', []);
   const body = document.getElementById('modal-body'), bEl = document.getElementById('modal-btns');
   bEl.style.flexDirection = ''; bEl.style.alignItems = '';
   bEl.innerHTML = '';
-  const back = document.createElement('button'); back.className = 'b'; back.textContent = 'Zurück zur Bibliothek'; back.onclick = () => gregLibShowModal();
+  const back = document.createElement('button'); back.className = 'b'; back.textContent = 'Zurück zur Bibliothek'; back.onclick = () => pick ? ntInsertFileShow() : gregLibShowModal();
   bEl.appendChild(back);
   const start = chain ? Promise.resolve(chain) : gdFolderChain(NOTATOR_GDRIVE_FOLDER_ID);
   start.then(ch => {
@@ -18585,7 +18667,7 @@ function ntDriveOpenBrowser(chain) {
         crumbs.style.cssText = 'font-size:11px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:2px;align-items:center';
         ch.forEach((c, i) => {
           const a = document.createElement('a'); a.href = '#'; a.textContent = c.name;
-          a.onclick = e => { e.preventDefault(); ntDriveOpenBrowser(ch.slice(0, i + 1)); };
+          a.onclick = e => { e.preventDefault(); ntDriveOpenBrowser(ch.slice(0, i + 1), pick); };
           if (i) crumbs.appendChild(document.createTextNode(' › '));
           crumbs.appendChild(a);
         });
@@ -18599,7 +18681,7 @@ function ntDriveOpenBrowser(chain) {
           const b = document.createElement('button'); b.className = 'b';
           b.textContent = (isDir ? '📁 ' : '🎼 ') + (isDir ? f.name : gdTitleFromName(f.name)) + (isDir ? '' : '  —  ' + gregLibFormatDate(Date.parse(f.modifiedTime)));
           b.style.cssText = 'display:block;width:100%;text-align:left;border:none;border-bottom:1px solid var(--parch3);border-radius:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-          b.onclick = isDir ? () => ntDriveOpenBrowser(ch.concat([{ id: f.id, name: f.name }])) : () => { closeModal(); gregLibLoadDrive(f); };
+          b.onclick = isDir ? () => ntDriveOpenBrowser(ch.concat([{ id: f.id, name: f.name }]), pick) : () => { if (pick) { closeModal(); gdDownload(f.id, true).then(st => pick(st, gdTitleFromName(f.name))).catch(err => gregGst('Drive-Ladefehler: ' + err.message)); } else { closeModal(); gregLibLoadDrive(f); } };
           list.appendChild(b);
         });
         body.appendChild(list);
@@ -20203,7 +20285,7 @@ function ntSaveMenu(btn) {
   const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:12px;padding:5px 8px';
     b.onclick = () => { d.remove(); fn(); }; d.appendChild(b); };
   item('📚 In Bibliothek speichern', 'In die Bibliothek (Google Drive, Ordner Notator) – mit lokaler Kopie für offline', () => gregLibSaveCurrent());
-  item('💾 Als Notator-Datei …', 'Als .notator-Datei auf diesem Gerät oder in einem beliebigen Drive-Ordner', () => ntNotatorSave());
+  item('💾 Speichern unter …', 'Unter neuem Namen speichern: als neues Stück in der Bibliothek, als .notator-Datei auf dem Gerät oder in einem Drive-Ordner (das Original bleibt unverändert)', () => ntNotatorSave());
   item('🏷 Einordnen …', 'Kirchenjahr, Gattung und Tags für die Bibliothek', () => gregEditCurrentMeta());
   document.body.appendChild(d);
   const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close); } };
