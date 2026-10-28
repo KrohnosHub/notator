@@ -46,6 +46,7 @@ html,body{height:100%;overflow:hidden}
 /* Menü «kompakt»: nur Rückgängig, Grundton/Oktave, Begleitsatz, Breite */
 #classic-panel.cl-menu-compact #cl-toolbar > :not(.cl-ess), #classic-panel.cl-menu-compact #cl-headrow, #classic-panel.cl-menu-compact #cl-info{display:none !important}
 #classic-panel.cl-view text.cl-text{pointer-events:none}
+#greg-svg-wrap .greg-blocksel, #greg-svg-wrap .greg-blocksel *{fill:#1565c0 !important}
 #cl-toolbar .cl-grp{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;min-width:0;max-width:100%}
 #cl-toolbar .cl-grp-w{flex:1 1 280px;max-width:420px}
 @media (max-width:700px){#cl-toolbar > span[style^="color:#3a4a30"]{display:none}}
@@ -516,6 +517,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b" id="greg-qb-finish" data-mshow="greg-finish-open-neume" onclick="gregFinishPendingNeume()" style="display:none;background:#1e4a1e;color:#d8f0c0" title="Offene Neume (z.B. Climacus) mit den bisher gesetzten Noten abschliessen (Enter)">✓ Fertig</button>
         <span class="qb-sep"></span>
         <button class="b" onclick="gregUndo()" title="Rückgängig (Strg+Z)">↩</button><button class="b" onclick="gregRedo()" title="Wiederholen (Strg+Y)">↪</button>
+        <button class="b" id="greg-qb-range" onclick="gregBlockRangeStart()" title="Bereich markieren: erste und letzte Note antippen – dann als Block löschen, duplizieren oder verschieben (am PC auch Shift+Klick / Strg+Klick auf Noten)">▭ Bereich</button>
         <button class="b qb-desk" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
         <button class="b" id="greg-qb-more-btn" onclick="gregQbExtraToggle()" title="Weitere, seltener gebrauchte Angaben: Iktus, Episema, Modifier, Trennstriche ;1–;6, Linie, Freitext">mehr ▾</button>
         <span id="greg-qb-extra" style="display:none;flex-basis:100%;gap:4px 10px;flex-wrap:wrap;align-items:center;padding-top:3px;border-top:1px solid #2a3820">
@@ -1870,9 +1872,10 @@ function gregRenderActiveOnly() {
       // accuracy (both for placing new notes and for click-to-edit) at any
       // Staff Size other than the 20pt/zoom=1 default.
       svgEl.onclick = function(ev) {
-        window._gregShiftClick = !!ev.shiftKey; // Shift+Klick: Neume ohne Silbe (Melisma)
+        window._gregShiftClick = !!ev.shiftKey; // Shift+Klick: Neume ohne Silbe (Melisma) / auf Note: Bereich markieren
+        window._gregCtrlClick = !!(ev.ctrlKey || ev.metaKey); // Strg/Cmd+Klick auf Note: einzeln markieren
         gregGhostRemove(svgEl);
-        try { gregHandleClick(svgEl, ev.clientX, ev.clientY); } finally { window._gregShiftClick = false; }
+        try { gregHandleClick(svgEl, ev.clientX, ev.clientY); } finally { window._gregShiftClick = false; window._gregCtrlClick = false; }
       };
       svgEl.onmousemove = function(ev) {
         const pt = svgEl.createSVGPoint();
@@ -1891,6 +1894,7 @@ function gregRenderActiveOnly() {
       // ANYTHING triggers a re-render (e.g. editing a different entry).
       gregHighlightEditingEntry(_gregEditingEntryIdx);
       gregEditPopPlace();
+      gregBlockHighlight();
       gregRunAfterRender();
     }
     gregUpdateStatus();
@@ -2114,6 +2118,10 @@ function gregHandleClick(svgEl, clientX, clientY) {
   // point, since a single-point/threshold check missed clicks on multi-note
   // neumes (Torculus, Podatus, etc.) whenever the click landed away from
   // the neume's anchor corner but still visibly on the glyph.
+  // Blockbearbeitung: Bereich markieren / Ziel zum Verschieben
+  if (window._gregBlockPick || window._gregBlockRange || ((window._gregShiftClick || window._gregCtrlClick) && !_gregPending)) {
+    if (gregBlockNoteClick(gregFindEntryAtNativePoint(_gregScore, gregEntries, svgP.x, svgP.y, ctxt))) return;
+  }
   if (!_gregPending && !window._gregForcePlace) {
     const entryIdx = gregFindEntryAtNativePoint(_gregScore, gregEntries, svgP.x, svgP.y, ctxt);
     if (entryIdx != null) { gregEditEntry(entryIdx); return; }
@@ -2928,11 +2936,19 @@ function gregRefreshListNoRender() {
       selCb.checked = gregSelectedIndices.has(i);
       selCb.style.cssText = 'flex-shrink:0;cursor:pointer';
       selCb.title = 'Für Mehrfachaktion auswählen';
+      selCb.title = 'Für Mehrfachaktion auswählen (Shift+Klick = ganzer Bereich ab dem zuletzt gewählten)';
       selCb.onclick = (ev) => {
         ev.stopPropagation();
-        if (selCb.checked) gregSelectedIndices.add(i); else gregSelectedIndices.delete(i);
+        if (ev.shiftKey && window._gregSelAnchor != null && window._gregSelAnchor < gregEntries.length) {
+          gregBlockSetRange(window._gregSelAnchor, i);
+          gregRefreshListNoRender();
+        } else {
+          if (selCb.checked) gregSelectedIndices.add(i); else gregSelectedIndices.delete(i);
+          window._gregSelAnchor = i;
+        }
         gregUpdateBulkToolbar();
       };
+      row.addEventListener('click', ev => { if (window._gregBlockPick) { ev.stopPropagation(); ev.preventDefault(); gregBlockPickAt(i); } }, true);
       // Drag handle
       const dh = document.createElement('span');
       dh.textContent='⠿'; dh.style.cssText='color:#3a5a30;cursor:grab;font-size:11px;line-height:1;flex-shrink:0';
@@ -3082,9 +3098,11 @@ function gregUpdateBulkToolbar() {
   gregSelectedIndices.forEach(idx => { if (idx >= gregEntries.length) gregSelectedIndices.delete(idx); });
 
   const bar = document.getElementById('greg-bulk-toolbar');
+  if (typeof gregBlockSync === 'function') gregBlockSync();
   if (!bar) return;
   const n = gregSelectedIndices.size;
   if (n === 0) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+  bar.style.flexWrap = 'wrap';
 
   bar.style.display = 'flex';
   bar.innerHTML = '';
@@ -3100,19 +3118,7 @@ function gregUpdateBulkToolbar() {
   clearBtn.onclick = () => { gregSelectedIndices.clear(); gregRefreshList(); };
   bar.appendChild(clearBtn);
 
-  if (window._gregMultiSection && gregSections.length > 1) {
-    const moveBtn = document.createElement('button');
-    moveBtn.textContent = '⇄ Verschieben';
-    moveBtn.style.cssText = 'font-size:9px;padding:1px 5px;background:#2a1a3a;color:#b090d0;border:1px solid #5a3a7a;border-radius:2px;cursor:pointer';
-    moveBtn.onclick = () => gregBulkMoveToSection();
-    bar.appendChild(moveBtn);
-  }
-
-  const delBtn = document.createElement('button');
-  delBtn.textContent = '✕ Löschen';
-  delBtn.style.cssText = 'font-size:9px;padding:1px 5px;background:#3a1010;color:#c05050;border:1px solid #6a2020;border-radius:2px;cursor:pointer';
-  delBtn.onclick = () => gregBulkDelete();
-  bar.appendChild(delBtn);
+  gregBlockButtons(bar, true);
 }
 
 function gregBulkDelete() {
@@ -3166,6 +3172,160 @@ function gregBulkMoveToSection() {
   gregRefreshList();
   gregGst('Verschoben nach Abschnitt ' + (target.idx + 1));
 }
+
+// ── Blockbearbeitung: Bereich markieren, als Block löschen / duplizieren / verschieben ──
+// Auswahl = gregSelectedIndices (wie die Kästchen in der Eintragsliste).
+// Bereich: «▭ Bereich» und zwei Noten antippen, Shift+Klick (Bereich) bzw.
+// Strg/Cmd+Klick (einzeln) auf Noten oder Shift+Klick auf die Kästchen.
+function gregBlockIdx() { return Array.from(gregSelectedIndices).filter(i => i < gregEntries.length).sort((a, b) => a - b); }
+function gregBlockSetRange(a, b) {
+  const lo = Math.min(a, b), hi = Math.max(a, b);
+  for (let i = lo; i <= hi; i++) gregSelectedIndices.add(i);
+}
+function gregBlockClone(ids) {
+  const off = gregEntries.reduce((m, e) => Math.max(m, typeof e.mappingIdx === 'number' ? e.mappingIdx : -1), -1) + 1;
+  return ids.map(i => gregEntries[i]).filter(e => e && e.type !== 'comment').map(e => {
+    const c = JSON.parse(JSON.stringify(e));
+    if (typeof c.mappingIdx === 'number') c.mappingIdx += off;
+    delete c.vsCopy;
+    return c;
+  });
+}
+function gregBlockSelectNew(at, n) { gregSelectedIndices.clear(); for (let i = at; i < at + n; i++) gregSelectedIndices.add(i); window._gregSelAnchor = at; }
+function gregBlockDuplicate(where) {
+  const ids = gregBlockIdx(); if (!ids.length) return;
+  if (_gregEditingEntryIdx != null) gregCloseEditForm();
+  gregPush();
+  const cp = gregBlockClone(ids);
+  const at = where === 'end' ? gregEntries.length : ids[ids.length - 1] + 1;
+  gregEntries.splice(at, 0, ...cp);
+  gregBlockSelectNew(at, cp.length);
+  gregRefreshList(); gregBlockSync();
+  gregGst(cp.length + ' Einträge als Block dupliziert ' + (where === 'end' ? 'ans Ende' : 'direkt danach') + ' – die Kopie ist markiert.');
+}
+function gregBlockDelete() {
+  const ids = gregBlockIdx(); if (!ids.length) return;
+  if (ids.length > 1 && !confirm(ids.length + ' Einträge löschen?')) return;
+  if (_gregEditingEntryIdx != null) gregCloseEditForm();
+  gregPush();
+  ids.slice().reverse().forEach(i => gregEntries.splice(i, 1));
+  gregSelectedIndices.clear();
+  gregRefreshList(); gregBlockSync();
+  gregGst(ids.length + ' Einträge gelöscht (↩ macht es rückgängig).');
+}
+// Block vor Position «target» (Index im aktuellen Stück) einsetzen
+function gregBlockMoveTo(target) {
+  const ids = gregBlockIdx(); if (!ids.length) return;
+  if (ids.indexOf(target - 1) >= 0 && ids.indexOf(target) >= 0) { gregGst('Ziel liegt im markierten Block.'); return; }
+  if (_gregEditingEntryIdx != null) gregCloseEditForm();
+  gregPush();
+  const blk = ids.map(i => gregEntries[i]);
+  ids.slice().reverse().forEach(i => gregEntries.splice(i, 1));
+  const t = Math.max(0, Math.min(gregEntries.length, target - ids.filter(i => i < target).length));
+  gregEntries.splice(t, 0, ...blk);
+  gregBlockSelectNew(t, blk.length);
+  window._gregBlockPick = false;
+  gregRefreshList(); gregBlockSync();
+  gregGst(blk.length + ' Einträge als Block verschoben.');
+}
+function gregBlockPickAt(idx) {
+  if (idx == null) { gregGst('Keine Note getroffen – eine Note antippen (der Block kommt danach).'); return; }
+  gregBlockMoveTo(idx + 1);
+}
+// Klick/Tippen auf eine vorhandene Note im Notenbild (true = verarbeitet)
+function gregBlockNoteClick(idx) {
+  if (window._gregBlockPick) { gregBlockPickAt(idx); return true; }
+  if (window._gregBlockRange) {
+    if (idx == null) { gregGst('Eine Note antippen.'); return true; }
+    if (window._gregBlockRange === 1) { gregSelectedIndices.clear(); gregSelectedIndices.add(idx); window._gregSelAnchor = idx; window._gregBlockRange = 2; }
+    else { gregBlockSetRange(window._gregSelAnchor, idx); window._gregBlockRange = 0; }
+    gregUpdateBulkToolbar(); gregBlockSync(); gregRefreshListNoRender();
+    return true;
+  }
+  if (idx == null) return false;
+  if (window._gregShiftClick) {
+    const a = window._gregSelAnchor != null ? window._gregSelAnchor : (_gregEditingEntryIdx != null ? _gregEditingEntryIdx : idx);
+    if (_gregEditingEntryIdx != null) gregCloseEditForm();
+    gregBlockSetRange(a, idx); window._gregSelAnchor = a;
+    gregUpdateBulkToolbar(); gregBlockSync(); gregRefreshListNoRender();
+    return true;
+  }
+  if (window._gregCtrlClick) {
+    if (gregSelectedIndices.has(idx)) gregSelectedIndices.delete(idx); else gregSelectedIndices.add(idx);
+    window._gregSelAnchor = idx;
+    gregUpdateBulkToolbar(); gregBlockSync(); gregRefreshListNoRender();
+    return true;
+  }
+  return false;
+}
+function gregBlockRangeStart() {
+  if (_gregEditingEntryIdx != null) gregCloseEditForm();
+  window._gregBlockPick = false;
+  window._gregBlockRange = window._gregBlockRange ? 0 : 1;
+  gregBlockSync();
+}
+function gregBlockCancel() { window._gregBlockPick = false; window._gregBlockRange = 0; gregSelectedIndices.clear(); gregUpdateBulkToolbar(); gregBlockSync(); gregRefreshListNoRender(); }
+function gregBlockButtons(bar, small) {
+  const css = small ? 'font-size:9px;padding:1px 5px' : 'font-size:12px;padding:3px 8px';
+  const mk = (t, title, fn, extra) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = t; b.title = title; b.style.cssText = css + (extra || ''); b.onclick = ev => { ev.stopPropagation(); fn(); }; bar.appendChild(b); return b; };
+  mk('⧉ danach', 'Markierte Einträge als Block kopieren und direkt nach dem Block einfügen', () => gregBlockDuplicate('after'));
+  mk('⧉ ans Ende', 'Markierte Einträge als Block kopieren und am Ende ' + (window._gregMultiSection && gregSections.length > 1 ? 'des Abschnitts' : 'des Stücks') + ' einfügen', () => gregBlockDuplicate('end'));
+  mk('⇅ Verschieben', 'Block verschieben: danach die Note antippen, nach der er stehen soll', () => { window._gregBlockPick = true; window._gregBlockRange = 0; gregBlockSync(); });
+  if (window._gregMultiSection && gregSections.length > 1) mk('⇄ Abschnitt', 'In einen anderen Abschnitt verschieben', () => gregBulkMoveToSection());
+  mk('✕ Löschen', 'Markierte Einträge löschen', () => gregBlockDelete(), ';background:#5a1a1a;color:#f0c0c0;border-color:#7a2a2a');
+}
+// schwebende Leiste über dem Notenbild + Markierung im Notenbild
+function gregBlockSync() {
+  let bar = document.getElementById('greg-block-bar');
+  const n = gregBlockIdx().length;
+  const show = window._ntTab === 'greg' && (n || window._gregBlockRange || window._gregBlockPick);
+  const rb = document.getElementById('greg-qb-range');
+  if (rb) { rb.style.background = window._gregBlockRange ? '#2a5a8a' : ''; rb.style.color = window._gregBlockRange ? '#fff' : ''; }
+  if (!show) { if (bar) bar.remove(); gregBlockHighlight(); return; }
+  if (!bar) {
+    bar = document.createElement('div'); bar.id = 'greg-block-bar';
+    bar.style.cssText = 'position:fixed;left:50%;bottom:40px;transform:translateX(-50%);z-index:2300;background:#1a2a3a;color:#d8e8f8;padding:6px 8px;border-radius:6px;border:1px solid #3a5a7a;box-shadow:0 4px 14px rgba(0,0,0,.45);font:13px system-ui,sans-serif;display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:96vw';
+    document.body.appendChild(bar);
+  }
+  bar.innerHTML = '';
+  const lab = document.createElement('span'); lab.style.cssText = 'margin-right:4px';
+  bar.appendChild(lab);
+  const mk = (t, fn, extra) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = t; b.style.cssText = 'font-size:12px;padding:3px 8px' + (extra || ''); b.onclick = ev => { ev.stopPropagation(); fn(); }; bar.appendChild(b); return b; };
+  if (window._gregBlockRange) {
+    lab.textContent = window._gregBlockRange === 1 ? '▭ Erste Note des Bereichs antippen' : '▭ Letzte Note des Bereichs antippen';
+    mk('Abbrechen', () => { window._gregBlockRange = 0; gregBlockSync(); });
+  } else if (window._gregBlockPick) {
+    lab.textContent = '⇅ ' + n + ' Einträge: Note antippen, nach der der Block stehen soll';
+    mk('an den Anfang', () => gregBlockMoveTo(0));
+    mk('ans Ende', () => gregBlockMoveTo(gregEntries.length));
+    mk('Abbrechen', () => { window._gregBlockPick = false; gregBlockSync(); });
+  } else {
+    lab.textContent = '▭ ' + n + ' markiert';
+    gregBlockButtons(bar, false);
+    mk('✕', () => gregBlockCancel(), ';padding:3px 7px').title = 'Auswahl aufheben (Esc)';
+  }
+  gregBlockHighlight();
+}
+function gregBlockHighlight() {
+  const wrap = document.getElementById('greg-svg-wrap');
+  const svgEl = wrap ? wrap.querySelector('svg') : null;
+  if (!svgEl) return;
+  svgEl.querySelectorAll('.greg-blocksel').forEach(el => el.classList.remove('greg-blocksel'));
+  const ids = gregBlockIdx(); if (!ids.length || !_gregScore || !_gregScore.notations) return;
+  const els = Array.from(svgEl.querySelectorAll('.ChantNotationElement')).filter(el => !/Clef|Custos/.test(el.getAttribute('class') || ''));
+  const noteEls = [];
+  for (let k = 0; k < _gregScore.notations.length; k++) { const nt = _gregScore.notations[k]; if (nt.notes && nt.notes.length && els[k]) noteEls.push(els[k]); }
+  const noteEntries = []; gregEntries.forEach((e, i) => { if (e.type === 'note' && e.pitches && e.pitches.length) noteEntries.push(i); });
+  const sel = new Set(ids);
+  if (noteEntries.length === noteEls.length) noteEntries.forEach((i, k) => { if (sel.has(i)) noteEls[k].classList.add('greg-blocksel'); });
+  else ids.slice(0, 80).forEach(i => gregEntryNotationEls(i).forEach(el => el.classList.add('greg-blocksel')));
+}
+document.addEventListener('keydown', ev => {
+  if (ev.key !== 'Escape' || window._ntTab !== 'greg') return;
+  if (document.getElementById('modal-bg') && document.getElementById('modal-bg').classList.contains('open')) return;
+  if (window._gregBlockPick || window._gregBlockRange) { window._gregBlockPick = false; window._gregBlockRange = 0; gregBlockSync(); }
+  else if (gregSelectedIndices.size) gregBlockCancel();
+});
 
 function gregRefreshList() {
   gregRefreshListNoRender();
@@ -7549,6 +7709,7 @@ function gregImportGABCString(gabcStr, opts) {
   gregRender();
   gregGst('GABC importiert: ' + gregEntries.length + ' Einträge');
   setTimeout(ntGpOffer, 900);
+  gregSelectedIndices.clear(); window._gregBlockPick = false; window._gregBlockRange = 0; gregBlockSync();
 }
 
 // Runde 65: zeigt/versteckt das Original-PDF-Seitenpanel + seine Ziehleiste.
@@ -8138,7 +8299,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '347';
+const NOTATOR_BUILD_ID = '348';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8421,6 +8582,7 @@ function gregFixDoubleAsterisk(entries) {
 
 function gregApplyLoadedState(state) {
   gregCloseEditForm();
+  gregSelectedIndices.clear(); window._gregBlockPick = false; window._gregBlockRange = 0;
   window._ntTrashedOpen = false;
   if (state) {
     gregFixDoubleAsterisk(state.entries);
@@ -19039,23 +19201,83 @@ function gregVerseApply(entries, k, parsed) {
 function gregVerseRemove(entries, k) {
   (entries || []).forEach(e => { if (Array.isArray(e.verses)) { e.verses.splice(k, 1); if (!e.verses.some(Boolean)) delete e.verses; } });
 }
+// Silben [{t, cont}] -> Eingabetext (Trennung nur, wo die automatische abweicht)
+function gregSylsToText(syls) {
+  const words = []; let cur = null;
+  syls.forEach(s => {
+    const v = String(s.t || '').trim();
+    if (!v) { if (cur) { words.push(cur); cur = null; } words.push(['~']); return; }
+    if (!cur) cur = [];
+    cur.push(v.replace(/\s+/g, '_'));
+    if (!s.cont) { words.push(cur); cur = null; }
+  });
+  if (cur) words.push(cur);
+  return words.map(p => {
+    if (p.length === 1) return p[0];
+    const j = p.join('');
+    if (/[_~]/.test(j)) return p.join('-');
+    const a = ntPtSyllabify(j);
+    return (a.length === p.length && a.every((x, i) => x === p[i])) ? j : p.join('-');
+  }).join(' ');
+}
+// «Eigene Noten je Strophe»: Kopien der Melodie (e.vsCopy = Strophennummer)
+function gregVerseOwnTexts(entries) {
+  const by = {};
+  (entries || []).forEach(e => { if (e && e.vsCopy) (by[e.vsCopy] = by[e.vsCopy] || []).push(e); });
+  return Object.keys(by).map(Number).sort((a, b) => a - b).map(n => gregSylsToText(gregVerseSlots(by[n]).map(e => ({ t: String(e.syllable || '').replace(/-$/, ''), cont: e.wordEnd === false || (e.wordEnd === undefined && !!e.hyphen) }))));
+}
+function gregVerseOwnApply(drafts) {
+  const base = gregEntries.filter(e => !e.vsCopy);
+  base.forEach(e => { if (e.verses) delete e.verses; });
+  gregEntries = base.slice();
+  drafts.forEach((d, k) => {
+    const n = k + 2, parsed = gregVerseParse(d);
+    const off = gregEntries.reduce((m, e) => Math.max(m, typeof e.mappingIdx === 'number' ? e.mappingIdx : -1), -1) + 1;
+    const copy = base.filter(e => e.type !== 'comment').map(e => { const c = JSON.parse(JSON.stringify(e)); if (typeof c.mappingIdx === 'number') c.mappingIdx += off; delete c.verses; c.vsCopy = n; return c; });
+    const slots = gregVerseSlots(copy);
+    slots.forEach((e, i) => {
+      const v = (i === slots.length - 1 && parsed.length > slots.length) ? { t: parsed.slice(i).map(x => x.t).join(' '), cont: false } : parsed[i];
+      e.syllable = v ? v.t : '';
+      const cont = !!(v && v.cont && v.t);
+      e.hyphen = cont; e.wordEnd = !cont; e.italic = false;
+      // Melisma-Fortsetzungen derselben Silbe: Wortgrenze nur über die Silbe steuern
+      for (let j = copy.indexOf(e) + 1; j < copy.length && copy[j].type === 'note' && !String(copy[j].syllable || '').trim(); j++) copy[j].wordEnd = false;
+    });
+    const last = gregEntries[gregEntries.length - 1];
+    if (last && last.type !== 'linebreak') gregEntries.push({ type: 'linebreak', vsCopy: n });
+    gregEntries.push({ type: 'directive', text: n + '.', vsCopy: n });
+    gregEntries.push(...copy);
+  });
+}
 function gregVersesShow() {
   if (window._ntTab !== 'greg') switchTab('greg');
-  const slots = gregVerseSlots(gregEntries);
+  const baseEntries = gregEntries.filter(e => !e.vsCopy);
+  const slots = gregVerseSlots(baseEntries);
   if (!slots.length) { gregGst('Zuerst die Melodie mit dem Text der 1. Strophe erfassen.'); return; }
-  const n0 = gregVerseCount(gregEntries);
-  const drafts = [];
-  for (let k = 0; k < n0; k++) drafts.push(gregVerseText(gregEntries, k));
+  const own0 = gregEntries.some(e => e.vsCopy);
+  let mode = own0 ? 'own' : 'stack';
+  const drafts = own0 ? gregVerseOwnTexts(gregEntries) : [];
+  if (!own0) { const n0 = gregVerseCount(gregEntries); for (let k = 0; k < n0; k++) drafts.push(gregVerseText(gregEntries, k)); }
   if (!drafts.length) drafts.push('');
   const multi = window._gregMultiSection && gregSections.length > 1;
   showModal('📜 Strophen' + (multi ? ' – Abschnitt ' + (gregActiveIdx + 1) : ''), '', []);
   const body = document.getElementById('modal-body');
   const mel = slots.map(e => String(e.syllable).replace(/[-_]$/, ''));
   body.innerHTML =
-    '<div style="font-size:12px;line-height:1.45;margin-bottom:6px">Weitere Strophen stehen unter derselben Melodie. Ganzen Text der Strophe eingeben – Notator verteilt die Silben auf die <b>' + slots.length + ' Noten mit Silbe</b> der 1. Strophe. Die Vorschau zeigt die Zuordnung; bei Abweichung Text anpassen.</div>' +
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;margin-bottom:6px;padding:4px 6px;background:#f3eedd;border-radius:4px">' +
+    '<label><input type="radio" name="vs-mode" value="stack"' + (mode === 'stack' ? ' checked' : '') + '> Text untereinander (gleiche Noten)</label>' +
+    '<label><input type="radio" name="vs-mode" value="own"' + (mode === 'own' ? ' checked' : '') + '> eigene Noten je Strophe</label></div>' +
+    '<div id="vs-intro" style="font-size:12px;line-height:1.45;margin-bottom:6px"></div>' +
     '<div style="font-size:11px;color:var(--ink2);margin-bottom:8px;line-height:1.4"><b>-</b> legt die Silbentrennung fest (Glo-ri-a) · <b>_</b> legt zwei Silben auf eine Note (tu_in) · <b>~</b> lässt eine Note ohne Silbe</div>' +
     '<div id="vs-list"></div>' +
     '<button class="b" id="vs-add" style="font-size:12px;margin-top:6px">+ Strophe hinzufügen</button>';
+  const intro = () => {
+    document.getElementById('vs-intro').innerHTML = mode === 'stack'
+      ? 'Weitere Strophen stehen als Textzeilen unter derselben Melodie. Ganzen Text der Strophe eingeben – Notator verteilt die Silben auf die <b>' + slots.length + ' Noten mit Silbe</b> der 1. Strophe.'
+      : 'Jede Strophe bekommt eine eigene Kopie der Melodie (neue Zeile, mit Strophennummer) am Ende ' + (multi ? 'des Abschnitts' : 'des Stücks') + '. Der Text wird auf die <b>' + slots.length + ' Noten mit Silbe</b> verteilt; die Noten lassen sich danach einzeln anpassen.';
+  };
+  document.querySelectorAll('input[name="vs-mode"]').forEach(r => r.onchange = () => { mode = r.value; intro(); });
+  intro();
   const list = document.getElementById('vs-list');
   const esc = s => ntEscAttr(s);
   const draw = () => {
@@ -19092,13 +19314,17 @@ function gregVersesShow() {
   const mk = (label, fn, css) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; if (css) b.style.cssText = css; b.onclick = fn; bEl.appendChild(b); };
   mk('Abbrechen', () => closeModal());
   mk('✓ Übernehmen', () => {
+    if (own0 && mode === 'own' && !confirm('Die Strophen-Kopien werden neu erzeugt – Änderungen an deren Noten gehen dabei verloren. Fortfahren?')) return;
     gregPush();
     const keep = drafts.map(d => d.trim()).filter(Boolean);
+    gregEntries = gregEntries.filter(e => !e.vsCopy);
     for (let k = gregVerseCount(gregEntries) - 1; k >= 0; k--) gregVerseRemove(gregEntries, k);
-    keep.forEach((d, k) => gregVerseApply(gregEntries, k, gregVerseParse(d)));
+    if (mode === 'own') gregVerseOwnApply(keep);
+    else keep.forEach((d, k) => gregVerseApply(gregEntries, k, gregVerseParse(d)));
+    gregSelectedIndices.clear();
     closeModal();
     gregRefreshList();
-    gregGst(keep.length ? (keep.length + 1) + ' Strophen unter der Melodie – Zuordnung im Notenbild prüfen.' : 'Weitere Strophen entfernt.');
+    gregGst(keep.length ? (keep.length + 1) + ' Strophen ' + (mode === 'own' ? 'mit eigenen Noten' : 'unter der Melodie') + ' – bitte im Notenbild prüfen.' : 'Weitere Strophen entfernt.');
   }, 'background:#3d6b35;color:#fff;border-color:#3d6b35');
 }
 
@@ -20408,6 +20634,7 @@ function switchTab(tab) {
   if (tab === 'gabc') tab = 'greg'; // eigener GABC-Tab entfällt (GABC-Feld steht im Choral)
   window._ntTab = tab;
   if (typeof ntPlayStop === 'function') ntPlayStop();
+  if (typeof gregBlockSync === 'function') setTimeout(gregBlockSync, 0);
   const clp=document.getElementById('classic-panel');
   if(clp) clp.style.display='none';
   const grp=document.getElementById('greg-panel');
