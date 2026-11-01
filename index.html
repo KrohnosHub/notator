@@ -287,7 +287,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
-    <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Song importieren, PDF lesen, Psalmton, Text zuerst, Mappe, GABC einfügen">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
+    <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Speichern unter, Importieren, Exportieren, Mappe">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
     <span class="nt-o-title" id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
     <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
@@ -519,6 +519,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b" onclick="gregUndo()" title="Rückgängig (Strg+Z)">↩</button><button class="b" onclick="gregRedo()" title="Wiederholen (Strg+Y)">↪</button>
         <button class="b" id="greg-qb-range" onclick="gregBlockRangeStart()" title="Bereich markieren: erste und letzte Note antippen – dann als Block löschen, duplizieren oder verschieben (am PC auch Shift+Klick / Strg+Klick auf Noten)">▭ Bereich</button>
         <button class="b qb-desk" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
+        <button class="b" id="greg-qb-ins-btn" onclick="ntInsertMenu(this)" title="Einfügen: Psalmton-Assistent, Gloria Patri, Strophen, Text zuerst">✚ Einfügen ▾</button>
         <button class="b" id="greg-qb-more-btn" onclick="gregQbExtraToggle()" title="Weitere, seltener gebrauchte Angaben: Iktus, Episema, Modifier, Trennstriche ;1–;6, Linie, Freitext">mehr ▾</button>
         <span id="greg-qb-extra" style="display:none;flex-basis:100%;gap:4px 10px;flex-wrap:wrap;align-items:center;padding-top:3px;border-top:1px solid #2a3820">
           <label><input type="checkbox" data-m="greg-iktus"> Iktus (')</label><span data-mshow="greg-iktus-pos-w" style="display:none"><select data-m="greg-iktus-pos"><option value="">Standard</option><option value="above">oben</option><option value="below">unten</option></select></span>
@@ -530,8 +531,6 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
           <select onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche ;1–;6"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
           <button class="b" onclick="gregAddLinebreak()" title="Neue Notenlinie (Zeilenumbruch) einfügen">⏎ Linie</button>
           <button class="b" onclick="gregAddComment()" title="Freitextfeld platzieren (Notiz, standardmässig nicht im PDF)">💬 Freitext</button>
-          <button class="b" onclick="gregVersesShow()" title="Weitere Strophen unter derselben Melodie: ganzen Text eingeben, Notator verteilt die Silben">📜 Strophen …</button><button class="b" onclick="gregVersesSwitchLayout()" title="Bestehende Strophen umstellen: Text untereinander ⇄ eigene Noten je Strophe">⇄ Strophen-Anordnung</button>
-          <button class="b" onclick="ntGloriaPatriShow()" title="Gloria Patri (ausgeschrieben) einfügen oder gekürzte Fassung «E u o u a e» ersetzen">✝ Gloria Patri …</button>
           <span class="qb-sep"></span>
           <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach dem Setzen abfragen</label>
         </span>
@@ -573,7 +572,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
-    <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Song importieren, PDF lesen, Psalmton, Text zuerst, Mappe, GABC einfügen">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
+    <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Speichern unter, Importieren, Exportieren, Mappe">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label><button class="b nt-pgprev-btn" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt, wo das PDF eine neue Seite beginnt. Umbruch setzen: Silbe/Note antippen › «Neue Seite ab dieser Silbe» (im Bearbeiten-Modus); ganzer Abschnitt: «Neue Seite» im Choral-Abschnittskopf">&#9636; Seiten</button></span>
     <button class="b nt-o-file" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
@@ -8486,7 +8485,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '361';
+const NOTATOR_BUILD_ID = '362';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -10149,21 +10148,50 @@ function ntFileMenu(btn) {
   const toGreg = () => { if (window._ntTab && window._ntTab !== 'greg') switchTab('greg'); };
   const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:13px;padding:6px 10px'; b.onclick = () => { d.remove(); fn(); }; d.appendChild(b); };
   const sep = () => { const h = document.createElement('div'); h.style.cssText = 'border-top:1px solid #3a4a30;margin:2px 0'; d.appendChild(h); };
+  // aufklappbare Untergruppe (▸) – auf dem Handy ohne zweites Fenster
+  const group = (label, title, build) => {
+    const h = document.createElement('button'); h.className = 'b'; h.textContent = '▸ ' + label; h.title = title; h.style.cssText = 'text-align:left;font-size:13px;padding:6px 10px';
+    const box = document.createElement('div'); box.style.cssText = 'display:none;flex-direction:column;gap:3px;padding-left:14px';
+    h.onclick = () => { const open = box.style.display === 'none'; box.style.display = open ? 'flex' : 'none'; h.textContent = (open ? '▾ ' : '▸ ') + label; };
+    d.appendChild(h); d.appendChild(box);
+    const keep = d; build((l, t, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = l; b.title = t; b.style.cssText = 'text-align:left;font-size:13px;padding:6px 10px'; b.onclick = () => { keep.remove(); fn(); }; box.appendChild(b); });
+  };
+  const tab = window._ntTab === 'classic' ? 'cl' : 'greg';
   item('✚ Neues Stück', 'Neues, leeres Stück (bei ungespeicherten Änderungen wird nachgefragt)', () => ntNewPiece());
   item('📂 Öffnen · Bibliothek …', 'Stück aus der Bibliothek, einem Drive-Ordner oder vom Gerät öffnen', () => gregLibShowModal());
-  item('🎵 Song importieren (GregoBase) …', 'Nach Titel oder GregoBase-ID suchen und importieren', () => gregImportSongFromGregoBase());
-  item('▤ Seitenumbruch-Vorschau ein/aus', 'Zeigt im Notenbild, wo das PDF eine neue Seite beginnt', () => gregPagePreviewToggle());
-  item('📎 Notator-Datei als Abschnitt einfügen …', 'Inhalt einer anderen Notator-Datei (Bibliothek, Gerät oder Drive) als neuen Abschnitt an dieses Stück anhängen', () => { toGreg(); ntInsertFileShow(); });
+  item('💾 Speichern unter …', 'Unter neuem Namen speichern: als neues Stück in der Bibliothek, als .notator-Datei auf dem Gerät oder in einem Drive-Ordner (das Original bleibt unverändert)', () => ntNotatorSave());
   sep();
-  item('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadRow(true); });
-  item('📥 GABC einfügen …', 'GABC-Quelltext einfügen und importieren', () => { toGreg(); gregSetMode('details'); gregSideTab('gabc'); const pnl = document.getElementById('greg-gabc-import-panel'); if (pnl && pnl.style.display === 'none') gregToggleGABCImport(); });
-  item('♫ Psalmton-Assistent …', 'Psalmverse auf einen Psalmton setzen', () => { toGreg(); ntPsalmToneShow(); });
-  item('✝ Gloria Patri …', 'Ausgeschriebenes Gloria Patri (Introitus oder Psalmton) einfügen bzw. «E u o u a e» ersetzen', () => { toGreg(); ntGloriaPatriShow(); });
-  item('📜 Strophen …', 'Weitere Strophen unter derselben Melodie (ganzen Text eingeben)', () => { toGreg(); gregVersesShow(); });
-  item('⇄ Strophen-Anordnung wechseln', 'Text untereinander ⇄ eigene Noten je Strophe', () => { toGreg(); gregVersesSwitchLayout(); });
-  item('📝 Text zuerst, Noten danach …', 'Text eingeben – jede gesetzte Neume bekommt die nächste Silbe', () => { toGreg(); gregTextFirstShow(); });
+  group('📥 Importieren', 'Noten aus GregoBase, PDF, GABC oder einer anderen Notator-Datei übernehmen', add => {
+    add('🎵 Aus GregoBase …', 'Nach Titel oder GregoBase-ID suchen und importieren', () => gregImportSongFromGregoBase());
+    add('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadRow(true); });
+    add('✍ GABC einfügen …', 'GABC-Quelltext einfügen und importieren', () => { toGreg(); gregSetMode('details'); gregSideTab('gabc'); const pnl = document.getElementById('greg-gabc-import-panel'); if (pnl && pnl.style.display === 'none') gregToggleGABCImport(); });
+    add('📎 Notator-Datei als Abschnitt einfügen …', 'Inhalt einer anderen Notator-Datei (Bibliothek, Gerät oder Drive) als neuen Abschnitt an dieses Stück anhängen', () => { toGreg(); ntInsertFileShow(); });
+  });
+  group('↓ Exportieren', 'PDF, GABC oder Teilen-Link', add => {
+    add('↓ PDF …', 'Als PDF speichern (Gerät oder Google Drive)', () => ntPdfSave(tab));
+    add('⬇ GABC-Datei', 'Choral als .gabc-Datei herunterladen (für Gregorio u.a.)', () => gregDownloadGABC());
+    if (tab === 'cl' && typeof clExportMenu === 'function') add('⬇ Orgel: ABC / MusicXML …', 'Orgelfassung für andere Notenprogramme exportieren', () => clExportMenu(btn));
+    add('🔗 Teilen …', 'Link zu Notator oder nur PDF', () => ntShareShow(tab));
+  });
   sep();
   item('📑 Mappe …', 'Gottesdienst-Mappe: mehrere Stücke zu einem PDF', () => ntMappeShow());
+  document.body.appendChild(d);
+  const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
+  setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+}
+// «✚ Einfügen»: Assistenten, die das offene Stück bearbeiten (Bearbeiten-Leiste)
+function ntInsertMenu(btn) {
+  const old = document.getElementById('nt-ins-pop'); if (old) { old.remove(); return; }
+  const d = document.createElement('div'); d.id = 'nt-ins-pop';
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:4px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:13px system-ui,sans-serif;display:flex;flex-direction:column;gap:3px;min-width:230px';
+  const r = btn.getBoundingClientRect();
+  d.style.top = Math.min(r.bottom + 4, window.innerHeight - 260) + 'px'; d.style.left = Math.max(6, Math.min(r.left, window.innerWidth - 250)) + 'px';
+  const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:13px;padding:6px 10px'; b.onclick = () => { d.remove(); if (window._ntTab !== 'greg') switchTab('greg'); fn(); }; d.appendChild(b); };
+  item('♫ Psalmton-Assistent …', 'Psalmverse auf einen Psalmton setzen', () => ntPsalmToneShow());
+  item('✝ Gloria Patri …', 'Ausgeschriebenes Gloria Patri (Introitus oder Psalmton) einfügen bzw. «E u o u a e» ersetzen', () => ntGloriaPatriShow());
+  item('📜 Strophen …', 'Weitere Strophen: Text untereinander oder eigene Noten je Strophe', () => gregVersesShow());
+  item('⇄ Strophen-Anordnung wechseln', 'Text untereinander ⇄ eigene Noten je Strophe', () => gregVersesSwitchLayout());
+  item('📝 Text zuerst, Noten danach …', 'Text eingeben – jede gesetzte Neume bekommt die nächste Silbe', () => gregTextFirstShow());
   document.body.appendChild(d);
   const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
   setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
