@@ -331,7 +331,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <div id="greg-kopf-panel" style="display:flex;flex-direction:column;gap:4px">
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
             <span style="font-size:9px;color:#6b8a60;min-width:55px">Schlüssel</span>
-            <select id="greg-clef-sel" onchange="gregClefRaw='';gregSetClef(this.value)" title="Schlüssel: Do- (c) oder Fa-Schlüssel (f) auf Linie 1–4 (von unten), wahlweise mit b" style="font-size:10px;padding:1px 3px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30">
+            <select id="greg-clef-sel" onchange="gregClefChange(this.value)" title="Schlüssel: Do- (c) oder Fa-Schlüssel (f) auf Linie 1–4 (von unten), wahlweise mit b" style="font-size:10px;padding:1px 3px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30">
               <optgroup label="Do-Schlüssel"><option value="c1">Do c1</option><option value="c2">Do c2</option><option value="c3" selected>Do c3</option><option value="c4">Do c4</option></optgroup>
               <optgroup label="Fa-Schlüssel"><option value="f1">Fa f1</option><option value="f2">Fa f2</option><option value="f3">Fa f3</option><option value="f4">Fa f4</option></optgroup>
               <optgroup label="mit b (Schlüssel-b)"><option value="cb1">Do c1 ♭</option><option value="cb2">Do c2 ♭</option><option value="cb3">Do c3 ♭</option><option value="cb4">Do c4 ♭</option><option value="fb1">Fa f1 ♭</option><option value="fb2">Fa f2 ♭</option><option value="fb3">Fa f3 ♭</option><option value="fb4">Fa f4 ♭</option></optgroup>
@@ -4677,6 +4677,39 @@ function gregShiftEntryPitch(i, d) {
   gregRefreshList();
   return true;
 }
+// Alle Noten des Abschnitts um d Stufen verschieben (gleicher Ablauf wie Pfeil hoch/runter bei einer Note)
+function gregShiftAllPitches(d) {
+  const sh = ch => { if (!ch) return ch; const lo = String(ch).toLowerCase(); const c = lo.charCodeAt(0) + d; if (c < 97 || c > 109) return null; const n = String.fromCharCode(c); return ch === lo ? n : n.toUpperCase(); };
+  const notes = gregEntries.filter(e => e.type === 'note');
+  if (notes.some(e => [].concat(e.pitches || [], e.rawPitches || [], (e.notes || []).map(n => n.pitch), e.accidentalPitch ? [e.accidentalPitch] : []).some(p => sh(p) === null))) return false;
+  notes.forEach(e => {
+    if (e.pitches) e.pitches = e.pitches.map(sh);
+    if (e.rawPitches) e.rawPitches = e.rawPitches.map(sh);
+    (e.notes || []).forEach(n => { const keep = n.gabcSuf !== undefined && n.gabcSig === gregRawNoteSig(n); n.pitch = sh(n.pitch); if (keep) n.gabcSig = gregRawNoteSig(n); });
+    if (e.accidentalPitch) e.accidentalPitch = sh(e.accidentalPitch);
+  });
+  return true;
+}
+// Schlüssel wechseln: wahlweise Melodie beibehalten (Noten wandern mit, Tonhöhen bleiben gleich)
+function gregClefChange(v) {
+  const old = gregClefVal;
+  const sel = document.getElementById('greg-clef-sel');
+  const hasNotes = gregEntries.some(e => e.type === 'note' && e.pitches && e.pitches.length);
+  const d = ntGpDoIdx(v) - ntGpDoIdx(old);
+  const flatDiff = /^[cf]b/.test(v) !== /^[cf]b/.test(old);
+  if (!hasNotes || old === v || (!d && !flatDiff)) { gregClefRaw = ''; gregSetClef(v); return; }
+  if (sel) sel.value = old;
+  showModal('Schlüssel ändern', 'Neuer Schlüssel: ' + v + ' (bisher ' + old + ').\n\n«Melodie beibehalten» verschiebt alle Noten mit, sodass die Tonhöhen gleich bleiben – das Notenbild steht dann nur höher oder tiefer im System.\n«Nur Schlüssel» lässt die Noten an ihrem Platz; die Melodie klingt dann anders.', [
+    { label: '♫ Melodie beibehalten', fn: () => {
+      closeModal(); gregPush();
+      if (d && !gregShiftAllPitches(d)) { gregHistory.pop(); gregGst('Geht nicht: einige Noten lägen ausserhalb des Notensystems.'); return; }
+      gregClefRaw = ''; gregSetClef(v); gregRefreshList();
+      gregGst('Schlüssel ' + v + ' – Noten um ' + Math.abs(d) + ' Stufe(n) ' + (d > 0 ? 'nach oben' : 'nach unten') + ' verschoben, Melodie unverändert.');
+    } },
+    { label: 'Nur Schlüssel', fn: () => { closeModal(); gregClefRaw = ''; gregSetClef(v); } },
+    { label: 'Abbrechen', fn: () => closeModal() }
+  ]);
+}
 function gregShortcutHelp() {
   showModal('⌨ Tastenkürzel (Choral)',
     'Neume wählen:  1 Punctum · 2 Virga · 3 Quilisma · P Podatus · C Clivis · T Torculus · R Porrectus · S Scandicus · K Climacus · L Salicus · I Puncta inclinata\n' +
@@ -8511,7 +8544,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '364';
+const NOTATOR_BUILD_ID = '365';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19525,7 +19558,10 @@ function ntPsalmToneGabc(o) {
     return g;
   });
   const ann = o.tone.replace(/\.$/, '').replace(/^per$/, 'per.') + (o.ending ? ' ' + o.ending : '');
-  return 'name: ' + (o.title || 'Psalm') + ';\nannotation: ' + ann + ';\nmode: ' + o.tone.replace(/\..*$/, '') + ';\n%%\n(' + T.c + ') ' + verses.join(' (z)\n');
+  // anderer Schlüssel: dieselbe Melodie in anderer Lage im System
+  const clef = o.clef && o.clef !== T.c ? o.clef : T.c;
+  const body = clef === T.c ? verses.join(' (z)\n') : ntGpShiftGabc(verses.join(' (z)\n'), ntGpDoIdx(clef) - ntGpDoIdx(T.c));
+  return 'name: ' + (o.title || 'Psalm') + ';\nannotation: ' + ann + ';\nmode: ' + o.tone.replace(/\..*$/, '') + ';\n%%\n(' + clef + ') ' + body;
 }
 function ntPsalmToneShow() {
   let p = {}; try { p = JSON.parse(localStorage.getItem('notatorPsalmTone') || '{}'); } catch (e) {}
@@ -19536,6 +19572,7 @@ function ntPsalmToneShow() {
     '<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12px;align-items:center">' +
     '<label>Ton <select id="pt-tone" style="font-size:13px">' + tones.map(t => '<option' + (t === (p.tone || '8.') ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></label>' +
     '<label>Endung <select id="pt-end" style="font-size:13px"></select></label>' +
+    '<label title="Schlüssel des Ergebnisses: «wie Psalmton» = übliche Lage dieses Tons; ein anderer Schlüssel schreibt dieselbe Melodie höher/tiefer ins System (z.B. wie in deiner Vorlage)">Schlüssel <select id="pt-clef" style="font-size:13px"><option value="">wie Psalmton</option>' + ['c1', 'c2', 'c3', 'c4', 'f2', 'f3', 'f4'].map(c => '<option' + (c === p.clef ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></label>' +
     '<label>Titel <input id="pt-title" type="text" value="' + ntEscAttr(p.title || '') + '" placeholder="z.B. Psalm 109" style="font-size:13px;width:150px"></label></div>' +
     '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;margin:6px 0">' +
     '<label><input type="checkbox" id="pt-every"' + (p.every ? ' checked' : '') + '> Initium in jedem Vers (Canticum)</label>' +
@@ -19558,8 +19595,8 @@ function ntPsalmToneShow() {
   mk('♫ Noten setzen', async () => {
     const o = { tone: document.getElementById('pt-tone').value, ending: document.getElementById('pt-end').value, title: document.getElementById('pt-title').value.trim(),
       everyIntonation: document.getElementById('pt-every').checked, solemn: document.getElementById('pt-solemn').checked && !document.getElementById('pt-solemn').disabled,
-      gloria: document.getElementById('pt-gloria').checked, text: document.getElementById('pt-text').value };
-    try { localStorage.setItem('notatorPsalmTone', JSON.stringify({ tone: o.tone, ending: o.ending, title: o.title, every: o.everyIntonation, solemn: o.solemn, gloria: o.gloria, text: o.text })); } catch (e) {}
+      gloria: document.getElementById('pt-gloria').checked, text: document.getElementById('pt-text').value, clef: document.getElementById('pt-clef').value };
+    try { localStorage.setItem('notatorPsalmTone', JSON.stringify({ tone: o.tone, ending: o.ending, title: o.title, every: o.everyIntonation, solemn: o.solemn, gloria: o.gloria, text: o.text, clef: o.clef })); } catch (e) {}
     let gabc;
     try { gabc = ntPsalmToneGabc(o); } catch (e) { document.getElementById('pt-msg').textContent = e.message; return; }
     closeModal();
