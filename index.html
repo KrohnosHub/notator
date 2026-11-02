@@ -210,6 +210,8 @@ input[type=file]{display:none}
 #greg-quickbar .qb-mob{display:none}
 #greg-qb-signs{display:none;gap:3px;align-items:center;flex-wrap:wrap}
 #greg-quickbar.signs-open #greg-qb-signs{display:inline-flex}
+/* PC/Tablet: genug Platz – Zeichen immer sichtbar, kein Aufklapp-Knopf */
+@media (min-width:701px){ #greg-qb-signs{display:inline-flex} #greg-qb-signs-btn{display:none} }
 .nt-mode{display:inline-flex;gap:0}
 .nt-mode .b{border-radius:0;margin:0}
 .nt-mode .b:first-child{border-radius:3px 0 0 3px}.nt-mode .b:last-child{border-radius:0 3px 3px 0}
@@ -530,6 +532,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
           <span class="qb-sep"></span>
           <select onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche ;1–;6"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
           <button class="b" onclick="gregAddLinebreak()" title="Neue Notenlinie (Zeilenumbruch) einfügen">⏎ Linie</button>
+          <button class="b" onclick="gregAddSection()" title="Neuen Abschnitt hinzufügen (eigener Titel, Schlüssel, Kopfzeile)">+ Abschnitt</button>
           <button class="b" onclick="gregAddComment()" title="Freitextfeld platzieren (Notiz, standardmässig nicht im PDF)">💬 Freitext</button>
           <span class="qb-sep"></span>
           <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach dem Setzen abfragen</label>
@@ -8485,7 +8488,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '362';
+const NOTATOR_BUILD_ID = '363';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
