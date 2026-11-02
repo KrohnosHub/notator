@@ -5022,6 +5022,14 @@ function gregPickPieceModal(pieces) {
       allBtn.textContent = '📑 Alle ' + pieces.length + ' Stücke laden (je ein eigener Abschnitt)';
       allBtn.onclick = () => { closeModal(); bEl.style.flexDirection = ''; bEl.style.alignItems = ''; resolve('ALL'); };
       bEl.appendChild(allBtn);
+      // zusammengehörige Teile (z.B. Graduale + Vers) als EIN Stück in einem Abschnitt
+      const mergeBtn = document.createElement('button');
+      mergeBtn.className = 'b';
+      mergeBtn.style.cssText = 'text-align:left;margin:-4px 0 8px 0;background:#2a4a2a;color:#c0e0a0;border-color:#4a7a3a';
+      mergeBtn.textContent = '🔗 Alle ' + pieces.length + ' als ein Stück laden (zusammen in einem Abschnitt)';
+      mergeBtn.title = 'Für Teile, die fest zusammengehören (z.B. Graduale mit Vers «Vs.»)';
+      mergeBtn.onclick = () => { closeModal(); bEl.style.flexDirection = ''; bEl.style.alignItems = ''; resolve('MERGE'); };
+      bEl.appendChild(mergeBtn);
     }
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'b';
@@ -6323,6 +6331,21 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
       const picked = await gregPickPieceModal(pieces);
       if (picked == null) { gregGst('Abgebrochen'); return; }
       if (picked === 'ALL') loadAllPieces = true;
+      else if (picked === 'MERGE') {
+        // alle erkannten Teile zu einem Stück zusammenfassen: ein Systembereich, ein Abschnitt
+        const srt = pieces.slice().sort((a, b) => a.index - b.index);
+        const first = srt[0];
+        const merged = Object.assign({}, first, {
+          index: first.index,
+          _startIdx: Math.min(...srt.map(p => p._startIdx)),
+          _endIdx: Math.max(...srt.map(p => p._endIdx)),
+          systems: srt.reduce((a, p) => a + (typeof p.systems === 'number' ? p.systems : 0), 0) || first.systems,
+          pages: Array.from(new Set([].concat(...srt.map(p => p.pages || [])))).sort((a, b) => a - b),
+          _merged: srt.map(p => p.index)
+        });
+        pieces.splice(0, pieces.length, merged);
+        chosenIdx = merged.index;
+      }
       else chosenIdx = picked;
     }
 
@@ -6465,7 +6488,7 @@ Here is a THIRD example showing a hymn immediately followed by its versicle/resp
     // compare against) still has enough information to recognize "this
     // text doesn't belong here" and refuse it, rather than needing an
     // in-context comparison it can't make.
-    const otherIncipits = pieces.filter(p => p.index !== chosen.index).map(p => p.incipit).filter(Boolean);
+    const otherIncipits = pieces.filter(p => p.index !== chosen.index && !(chosen._merged || []).includes(p.index)).map(p => p.incipit).filter(Boolean);
 
     function gregSystemItemToBlocks(item, label) {
       if (item.type === 'crop') {
@@ -8488,7 +8511,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '363';
+const NOTATOR_BUILD_ID = '364';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
