@@ -297,7 +297,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label><button class="b nt-pgprev-btn" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt im Notenbild, wo das PDF eine neue Seite beginnt (Umbrüche setzen: Abschnitts-Kopf «Neue Seite» bzw. Note öffnen › «Seitenumbruch davor»)">&#9636; Seiten</button></span>
     <button class="b nt-o-file" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
-    <span class="nt-o-view nt-mode" id="greg-mode"><button class="b" data-mode="view" onclick="gregSetMode('view')" title="Ansehen: nur Noten (zum Singen/Spielen)">&#128065;<span class="nt-lbl"> Ansehen</span></button><button class="b" data-mode="edit" onclick="gregSetMode('edit')" title="Bearbeiten: Noten mit Werkzeugleiste">&#9998;<span class="nt-lbl"> Bearbeiten</span></button><button class="b" data-mode="details" onclick="gregSetMode('details')" title="Details: Stück (Titel, Schlüssel …), Abschnitte &amp; Einträge, GABC">&#9776;<span class="nt-lbl"> Details</span></button></span>
+    <span class="nt-o-view nt-mode" id="greg-mode"><button class="b" data-mode="view" onclick="gregSetMode('view')" title="Ansehen: nur Noten (zum Singen/Spielen)">&#128065;<span class="nt-lbl"> Ansehen</span></button><button class="b" data-mode="edit" onclick="gregSetMode('edit')" title="Bearbeiten: Noten mit Werkzeugleiste">&#9998;<span class="nt-lbl"> Bearbeiten</span></button><button class="b" data-mode="details" onclick="gregSetMode('details')" title="Details: Stück (Titel, Schlüssel …), Einträge, GABC">&#9776;<span class="nt-lbl"> Details</span></button></span>
 <select class="nt-play-sec nt-pm nt-o-play" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
     <button class="b nt-zoom-btn nt-pm nt-o-play" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
@@ -8546,7 +8546,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '366';
+const NOTATOR_BUILD_ID = '367';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -10196,6 +10196,9 @@ function gregSetMode(mode) {
   if (!mob && (wasView !== (mode === 'view') || wasSide !== sideNow) && typeof gregRender === 'function') setTimeout(gregRender, 60);
   if (!mob) { try { localStorage.setItem('notatorGregMode', mode); localStorage.setItem('notatorGregView', mode === 'view' ? 'view' : 'edit'); } catch (e) {} }
   if (mode === 'view') { gregCloseEditForm && gregCloseEditForm(); }
+  // Details öffnen: immer mit dem Reiter «Stück» beginnen
+  if (mode === 'details' && window._gregLastMode !== 'details' && typeof gregSideTab === 'function') gregSideTab('piece');
+  window._gregLastMode = mode;
 }
 function gregMobileSetEditMode(on) {
   if (!on) { gregSetMode('view'); return; }
@@ -10286,18 +10289,18 @@ function gregSideRestructure() {
   [undoRow, neu, divRow, modRow].forEach(e => e && hidden.appendChild(e));
   const tabs = document.createElement('div'); tabs.className = 'greg-side-tabs';
   const mkTab = (key, label) => { const b = document.createElement('button'); b.className = 'b'; b.dataset.tab = key; b.textContent = label; b.onclick = () => gregSideTab(key); tabs.appendChild(b); const c = document.createElement('div'); c.className = 'greg-side-tab'; c.dataset.tab = key; return c; };
-  const tSt = mkTab('piece', 'Stück'), tEn = mkTab('entries', 'Abschnitte & Einträge'), tGa = mkTab('gabc', 'GABC');
+  const tSt = mkTab('piece', 'Stück'), tEn = mkTab('entries', 'Einträge'), tGa = mkTab('gabc', 'GABC');
   // «Original» (PDF-Vorlage) bleibt im Reiter Stück erreichbar
   const orig = document.getElementById('greg-pdf-panel-toggle'); if (orig) { const w = document.createElement('div'); w.style.cssText = 'padding:4px 8px'; w.appendChild(orig); tSt.appendChild(w); }
   [kopf, sizing].forEach(e => e && tSt.appendChild(e));
-  if (secRow) { secRow.querySelectorAll('button').forEach(b => { if (!/gregAddSection/.test(b.getAttribute('onclick') || '')) b.remove(); }); tEn.appendChild(secRow); }
+  if (secRow) secRow.remove(); // «+ Abschnitt» steht jetzt in der Bearbeiten-Leiste (mehr ▾, neben «⏎ Linie»)
   tEn.appendChild(entries); entries.style.flex = '1';
   [gabcOut, gabcImp].forEach(e => e && tGa.appendChild(e));
   const gta = document.getElementById('greg-gabc-out'); if (gta) gta.style.height = '50vh';
   P.innerHTML = '';
   [back, pdfRow, tabs, tSt, tEn, tGa, hidden].forEach(e => e && P.appendChild(e));
   if (!P.style.width || P.style.width === '540px') P.style.width = '360px';
-  let t = 'entries'; try { t = localStorage.getItem('notatorSideTab') || 'entries'; } catch (e) {}
+  let t = 'piece'; // Standard: immer «Stück»
   gregSideTab(t);
 }
 function gregSideTab(key) {
