@@ -53,6 +53,18 @@ html,body{height:100%;overflow:hidden}
 .nt-playing, .nt-playing path, .nt-playing text{fill:#c0392b !important;stroke:#c0392b}
 body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
 #shell{display:flex;flex-direction:column;height:100vh;height:var(--nt-vh,100dvh)}
+@media (min-width:701px){ #greg-pdf-panel .nt-mob-only{display:none !important} }
+/* Handy: Original-PDF als Blatt unten (Kopfzeile ziehen = Höhe, ▾ = minimieren), Noten bleiben voll breit */
+@media (max-width:700px){
+  #greg-pdf-drag-handle{display:none !important}
+  #greg-pdf-panel{position:fixed !important;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom));width:auto !important;min-width:0 !important;height:var(--pdf-h,38vh);z-index:1500;border-left:none !important;border-top:2px solid #5a8a40;box-shadow:0 -4px 14px rgba(0,0,0,.45)}
+  #greg-pdf-panel.pdf-min{height:auto !important}
+  #greg-pdf-panel.pdf-min > div:last-child{display:none}
+  #greg-pdf-head{touch-action:none;cursor:ns-resize}
+  #greg-pdf-panel .nt-desk-only{display:none !important}
+  body.pdf-sheet-open #greg-canvas-wrap{padding-bottom:calc(var(--pdf-h,38vh) + 30px) !important}
+  body.pdf-sheet-min #greg-canvas-wrap{padding-bottom:90px !important}
+}
 /* Handy: letzte Notenzeile nicht unter Browser-/Systemleiste verstecken */
 @media (max-width:700px){ #greg-canvas-wrap, #cl-score-wrap{padding-bottom:calc(40px + env(safe-area-inset-bottom)) !important} }
 #hdr{background:#1a1209;padding:6px 12px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
@@ -556,7 +568,8 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
          geladene PDF-Seite in voller Deckkraft, ausklappbar per Ziehleiste. -->
     <div id="greg-pdf-drag-handle" style="display:none;width:5px;flex-shrink:0;background:#2a3820;cursor:col-resize;position:relative;z-index:10;transition:background .15s" onmouseenter="this.style.background='#4a7a40'" onmouseleave="this.style.background='#2a3820'"></div>
     <div id="greg-pdf-panel" style="display:none;width:360px;min-width:200px;flex-shrink:0;background:#1a2414;border-left:1px solid #3a4a30;flex-direction:column;overflow:hidden">
-      <div style="padding:4px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <div id="greg-pdf-head" style="padding:4px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span class="nt-mob-only" style="width:36px;height:4px;border-radius:2px;background:#5a7a50;flex-basis:100%;max-width:36px;margin:0 auto 2px"></span>
         <span style="font-size:9px;color:#6b8a60;font-variant:small-caps;flex:1">Original-PDF</span>
         <span id="greg-pdf-nav" style="display:none;align-items:center;gap:6px">
           <button class="b" onclick="gregPdfPage(-1)" style="font-size:10px;padding:1px 6px">&#9664;</button>
@@ -564,7 +577,10 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
           <button class="b" onclick="gregPdfPage(1)" style="font-size:10px;padding:1px 6px">&#9654;</button>
         </span>
         <button class="b" onclick="gregClearPDF()" style="font-size:10px;padding:1px 6px;color:#c05050" title="Original-PDF komplett entfernen">&#10005; PDF</button>
-        <button class="b" onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:1px 6px" title="Panel schliessen (Original bleibt geladen, über Toolbar-Knopf wieder einblendbar)">&#8722;</button>
+        <button class="b nt-mob-only" onclick="gregPdfZoom(1)" style="font-size:12px;padding:1px 7px" title="Original vergrössern">🔍+</button>
+        <button class="b nt-mob-only" onclick="gregPdfZoom(-1)" style="font-size:12px;padding:1px 7px" title="Original verkleinern">🔍−</button>
+        <button class="b nt-mob-only" id="greg-pdf-sheet-btn" onclick="gregPdfSheet()" style="font-size:12px;padding:1px 8px" title="Original minimieren / wieder aufklappen (Kopfzeile ziehen = Höhe ändern)">▾</button>
+        <button class="b nt-desk-only" onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:1px 6px" title="Panel schliessen (Original bleibt geladen, über Toolbar-Knopf wieder einblendbar)">&#8722;</button>
       </div>
       <div style="flex:1;overflow:auto;padding:8px;background:#0a0f08">
         <canvas id="greg-pdf-bg" style="display:none;width:100%"></canvas>
@@ -6132,6 +6148,8 @@ async function gregLoadPDF(input) {
   try {
     _gregPdfDoc = await pdfjsLib.getDocument({data: ab}).promise;
     _gregPdfPage = 1;
+    // Handy: gleich zu den Noten wechseln (Original unten als einblendbares Blatt)
+    if (gregIsMobileViewport() && window._gregMode === 'details') gregSetMode('edit');
 
     // Step 1: Try text extraction (works for text-PDFs with embedded GABC)
     let allText = '';
@@ -7182,6 +7200,7 @@ After all ${batch.length} system lines, output the line "===GABC===" on its own,
       const chosen = pieces.find(p=>p.index===chosenIdx) || pieces[0];
       await gregProcessOnePiece(chosen);
     }
+    if (gregIsMobileViewport() && window._gregMode !== 'edit') gregSetMode('edit');
   } catch(e) {
     gregGst('Fehler: ' + e.message);
     console.error(e);
@@ -7961,6 +7980,48 @@ function gregToggleOriginalPdf(forceOpen) {
   panel.style.display = show ? 'flex' : 'none';
   if (handle) handle.style.display = show ? 'block' : 'none';
   if (toggleBtn && _gregPdfDoc) toggleBtn.style.display = 'inline-block';
+  gregPdfSheetSync();
+  gregPdfDragInit();
+}
+// Handy: Blatt minimieren / aufklappen
+function gregPdfSheet(min) {
+  const panel = document.getElementById('greg-pdf-panel'); if (!panel) return;
+  const on = min !== undefined ? !!min : !panel.classList.contains('pdf-min');
+  panel.classList.toggle('pdf-min', on);
+  gregPdfSheetSync();
+}
+function gregPdfSheetSync() {
+  const panel = document.getElementById('greg-pdf-panel'); if (!panel) return;
+  const open = panel.style.display === 'flex', min = panel.classList.contains('pdf-min');
+  document.body.classList.toggle('pdf-sheet-open', open && !min);
+  document.body.classList.toggle('pdf-sheet-min', open && min);
+  const b = document.getElementById('greg-pdf-sheet-btn'); if (b) { b.textContent = min ? '▴' : '▾'; b.title = min ? 'Original wieder aufklappen' : 'Original minimieren (Kopfzeile ziehen = Höhe ändern)'; }
+}
+function gregPdfZoom(d) {
+  window._gregPdfZoom = Math.max(1, Math.min(4, (window._gregPdfZoom || 1) * (d > 0 ? 1.5 : 1 / 1.5)));
+  if (_gregPdfDoc) gregRenderPDFPage(_gregPdfPage);
+}
+// Handy: Kopfzeile des Blatts ziehen = Höhe ändern (ganz nach unten = minimieren)
+function gregPdfDragInit() {
+  const head = document.getElementById('greg-pdf-head'), panel = document.getElementById('greg-pdf-panel');
+  if (!head || !panel || head._drag) return; head._drag = true;
+  let st = null;
+  head.addEventListener('touchstart', ev => {
+    if (!gregIsMobileViewport() || ev.target.closest('button')) return;
+    st = { y: ev.touches[0].clientY, h: panel.getBoundingClientRect().height, min: panel.classList.contains('pdf-min') };
+  }, { passive: true });
+  head.addEventListener('touchmove', ev => {
+    if (!st) return; ev.preventDefault();
+    const h = Math.max(60, Math.min(window.innerHeight * 0.88, st.h + (st.y - ev.touches[0].clientY)));
+    if (st.min && h > 90) { panel.classList.remove('pdf-min'); st.min = false; }
+    document.documentElement.style.setProperty('--pdf-h', Math.round(h) + 'px');
+  }, { passive: false });
+  head.addEventListener('touchend', () => {
+    if (!st) return;
+    const h = panel.getBoundingClientRect().height; st = null;
+    if (h < 100) { gregPdfSheet(true); document.documentElement.style.setProperty('--pdf-h', '38vh'); }
+    gregPdfSheetSync();
+  });
 }
 
 async function gregRenderPDFPage(pageNum) {
@@ -7973,7 +8034,7 @@ async function gregRenderPDFPage(pageNum) {
   // greg-canvas-wrap. Siehe gregToggleOriginalPdf().
   gregToggleOriginalPdf(true); // Panel automatisch öffnen, falls noch zu
   const panel = document.getElementById('greg-pdf-panel');
-  const availW = panel ? Math.max(panel.clientWidth - 32, 200) : 320;
+  const availW = (panel ? Math.max(panel.clientWidth - 32, 200) : 320) * (gregIsMobileViewport() ? (window._gregPdfZoom || 1) : 1);
   const vp0 = page.getViewport({scale: 1});
   const scale = availW / vp0.width;
   const vp = page.getViewport({scale});
@@ -8546,7 +8607,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '368';
+const NOTATOR_BUILD_ID = '369';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
