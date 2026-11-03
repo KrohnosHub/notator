@@ -8546,7 +8546,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '367';
+const NOTATOR_BUILD_ID = '368';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -10198,6 +10198,9 @@ function gregSetMode(mode) {
   if (mode === 'view') { gregCloseEditForm && gregCloseEditForm(); }
   // Details öffnen: immer mit dem Reiter «Stück» beginnen
   if (mode === 'details' && window._gregLastMode !== 'details' && typeof gregSideTab === 'function') gregSideTab('piece');
+  // Handy: in «Details» ist das Notenbild ausgeblendet – dort gesetzte Abschnitte haben keine
+  // Breite (sehr schmaler Umbruch). Beim Zurückwechseln mit der richtigen Breite neu setzen.
+  if (mob && window._gregLastMode === 'details' && mode !== 'details' && typeof gregRender === 'function') setTimeout(gregRender, 60);
   window._gregLastMode = mode;
 }
 function gregMobileSetEditMode(on) {
