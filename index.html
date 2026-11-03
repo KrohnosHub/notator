@@ -52,7 +52,9 @@ html,body{height:100%;overflow:hidden}
 @media (max-width:700px){#cl-toolbar > span[style^="color:#3a4a30"]{display:none}}
 .nt-playing, .nt-playing path, .nt-playing text{fill:#c0392b !important;stroke:#c0392b}
 body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
-#shell{display:flex;flex-direction:column;height:100vh}
+#shell{display:flex;flex-direction:column;height:100vh;height:var(--nt-vh,100dvh)}
+/* Handy: letzte Notenzeile nicht unter Browser-/Systemleiste verstecken */
+@media (max-width:700px){ #greg-canvas-wrap, #cl-score-wrap{padding-bottom:calc(40px + env(safe-area-inset-bottom)) !important} }
 #hdr{background:#1a1209;padding:6px 12px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
 #hdr-left{display:flex;align-items:center;min-width:0;overflow:hidden;white-space:nowrap}
 #hdr-right{display:flex;justify-content:flex-end;align-items:center;gap:6px;min-width:0}
@@ -155,7 +157,7 @@ input[type=file]{display:none}
   #greg-mobile-bar{display:flex}
   #greg-drag-handle{display:none}
   #greg-pdf-drag-handle,#greg-pdf-panel{display:none}
-  #greg-canvas-wrap{padding:8px !important}
+  #greg-canvas-wrap{padding:8px 8px calc(48px + env(safe-area-inset-bottom)) !important}
 
   /* Ansicht (Default): Eingabespalte aus, Notation an. !important nötig,
      da #greg-input-panel inline display:flex trägt (inline schlägt eine
@@ -8544,7 +8546,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '365';
+const NOTATOR_BUILD_ID = '366';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9947,6 +9949,12 @@ function gregScheduleMobileScale() {
   _gregMobileScaleTimer = setTimeout(gregMobileApplyScale, 120);
 }
 
+(function ntTrackVh() {
+  const set = () => { const h = window.innerHeight; if (h > 200) document.documentElement.style.setProperty('--nt-vh', Math.round(h) + 'px'); };
+  set();
+  window.addEventListener('resize', set);
+  window.addEventListener('orientationchange', () => setTimeout(set, 300));
+})();
 function gregMobileApplyScale() {
   const outer = document.getElementById('greg-canvas-wrap');
   const sizer = document.getElementById('greg-mobile-scale-outer');
@@ -10306,6 +10314,8 @@ function gregStatusRight() {
   el.innerHTML = n + ' Einträge · ' + (dirty ? '<span style="color:#e0b060">● ungespeichert</span>' : '<span style="color:#8bc070">✓ gespeichert</span>') + drive;
 }
 setInterval(gregStatusRight, 1500);
+// Handy: Höhe des Notenbereichs nachführen (Abschnitte werden zeitversetzt gesetzt)
+setInterval(() => { try { if (gregIsMobileViewport() && window._ntTab === 'greg') gregMobileApplyScale(); } catch (e) {} }, 1500);
 function gregQbSignsToggle(force) {
   const qb = document.getElementById('greg-quickbar'); if (!qb) return;
   const on = force !== undefined ? !!force : !qb.classList.contains('signs-open'); qb.classList.toggle('signs-open', on);
