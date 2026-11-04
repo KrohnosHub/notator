@@ -8692,7 +8692,7 @@ function gregCopyGABC() {
 function gregDownloadGABC() {
   const txt = document.getElementById('greg-gabc-out').value;
   if (!txt) { gregGst('Nichts zu exportieren'); return; }
-  const title = (document.getElementById('greg-title')||{value:''}).value.trim() || 'unbenannt';
+  const title = ntFileBaseName();
   const filename = title.replace(/[^a-zA-Z0-9äöüÄÖÜ_ -]/g, '_') + '.gabc';
   gregDownloadTextAsFile(txt, filename);
   gregGst('Gespeichert: ' + filename);
@@ -8720,7 +8720,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '378';
+const NOTATOR_BUILD_ID = '379';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8967,7 +8967,7 @@ function gregBuildStateObject() {
 }
 
 function gregSavePiece() {
-  const title = (document.getElementById('greg-title')||{value:''}).value;
+  const title = ntFileBaseName();
   const state = gregBuildStateObject();
   const json = JSON.stringify(state, null, 2);
   const blob = new Blob([json], {type: 'application/json'});
@@ -18981,7 +18981,7 @@ function ntInsertFileShow() {
 
 // Stück als Notator-Datei speichern: gleicher Dialog (Gerät oder Google Drive)
 function ntNotatorSave() {
-  const title = (((document.getElementById('greg-title') || {}).value || '').trim() || 'unbenannt');
+  const title = ntFileBaseName(); // Name der Notator-Datei, sonst Titel des 1. Abschnitts
   const p = ntPdfPrefs();
   ntLoadLocalDir().then(() => ntPdfDialog({ kind: 'notator', name: ntSanitizeName(title, '.notator'), dest: p.destNotator || 'lib' }));
 }
