@@ -8614,7 +8614,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '371';
+const NOTATOR_BUILD_ID = '372';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19647,8 +19647,30 @@ function ntPsalmToneGabc(o) {
   const body = clef === T.c ? verses.join(' (z)\n') : ntGpShiftGabc(verses.join(' (z)\n'), ntGpDoIdx(clef) - ntGpDoIdx(T.c));
   return 'name: ' + (o.title || 'Psalm') + ';\nannotation: ' + ann + ';\nmode: ' + o.tone.replace(/\..*$/, '') + ';\n%%\n(' + clef + ') ' + body;
 }
+function ntPsalmSecKey() {
+  const multi = window._gregMultiSection && gregSections.length > 1;
+  return (multi && gregSections[gregActiveIdx] ? gregSections[gregActiveIdx].id : 'single') + '@' + (typeof gregLibCurrentId !== 'undefined' && gregLibCurrentId != null ? gregLibCurrentId : '-');
+}
+// Wohin mit dem gesetzten Psalmvers? Leerer Abschnitt: direkt hinein; sonst Auswahl
+function ntPsalmTargetChoice() {
+  if (!gregEntries.some(e => e.type === 'note')) return Promise.resolve('section');
+  const multi = window._gregMultiSection && gregSections.length > 1;
+  const nm = multi ? 'Abschnitt ' + (gregActiveIdx + 1) : 'dem Stück';
+  return new Promise(resolve => {
+    showModal('♫ Psalmvers einfügen', 'Wohin soll der Psalmvers?', [
+      { label: '➕ Als neuen Abschnitt anfügen', fn: () => { closeModal(); resolve('newsec'); } },
+      { label: '↧ Ans Ende von ' + nm, fn: () => { closeModal(); resolve('append'); } },
+      { label: '⟲ ' + (multi ? 'Abschnitt ' + (gregActiveIdx + 1) : 'Stück') + ' ersetzen', fn: () => { closeModal(); resolve(multi ? 'section' : 'new'); } },
+      ...(multi ? [{ label: '✚ Neues Stück', fn: () => { closeModal(); resolve('new'); } }] : []),
+      { label: 'Abbrechen', fn: () => { closeModal(); resolve(null); } }
+    ]);
+  });
+}
 function ntPsalmToneShow() {
   let p = {}; try { p = JSON.parse(localStorage.getItem('notatorPsalmTone') || '{}'); } catch (e) {}
+  // Text und Titel nur im selben Abschnitt vorschlagen (pro Abschnitt ein eigener Psalmvers)
+  const secKey = ntPsalmSecKey();
+  if (p.secKey !== secKey) { p.text = ''; p.title = ''; }
   showModal('♫ Psalmton-Assistent', '', []);
   const body = document.getElementById('modal-body');
   const tones = Object.keys(NT_PSALM_TONES);
@@ -19680,18 +19702,30 @@ function ntPsalmToneShow() {
     const o = { tone: document.getElementById('pt-tone').value, ending: document.getElementById('pt-end').value, title: document.getElementById('pt-title').value.trim(),
       everyIntonation: document.getElementById('pt-every').checked, solemn: document.getElementById('pt-solemn').checked && !document.getElementById('pt-solemn').disabled,
       gloria: document.getElementById('pt-gloria').checked, text: document.getElementById('pt-text').value, clef: document.getElementById('pt-clef').value };
-    try { localStorage.setItem('notatorPsalmTone', JSON.stringify({ tone: o.tone, ending: o.ending, title: o.title, every: o.everyIntonation, solemn: o.solemn, gloria: o.gloria, text: o.text, clef: o.clef })); } catch (e) {}
     let gabc;
     try { gabc = ntPsalmToneGabc(o); } catch (e) { document.getElementById('pt-msg').textContent = e.message; return; }
     closeModal();
     if (window._ntTab !== 'greg') switchTab('greg');
-    const target = await gregImportTargetChoice();
+    const target = await ntPsalmTargetChoice();
     if (!target) return;
     if (target === 'new' && !(await ntConfirmDiscard())) return;
     if (target === 'new' && typeof gregCollapseSections === 'function') gregCollapseSections();
     gregPush();
-    gregImportGABCString(gabc);
+    if (target === 'newsec') { gregAddSection(); gregImportGABCString(gabc); }
+    else if (target === 'append') {
+      // ans Ende des aktiven Abschnitts, im Schlüssel dieses Abschnitts
+      const T = NT_PSALM_TONES[o.tone], src = o.clef && o.clef !== T.c ? o.clef : T.c;
+      let body = gabc.slice(gabc.indexOf('%%') + 2).replace(/^\s*\([cf]b?[1-5]\)\s*/, '');
+      body = ntGpShiftGabc(body, ntGpDoIdx(gregClefVal) - ntGpDoIdx(src));
+      const ne = gregGabcToEntries('(' + gregClefVal + ') ' + body);
+      const last = gregEntries[gregEntries.length - 1];
+      if (last && last.type !== 'divisio') gregEntries.push({ type: 'divisio', div: '::', glueToPrevSpecial: false });
+      gregEntries.push({ type: 'linebreak' }, ...ne);
+      gregRefreshList();
+    }
+    else gregImportGABCString(gabc);
     if (target === 'new' && typeof clState !== 'undefined') ntResetOrganForImport();
+    try { localStorage.setItem('notatorPsalmTone', JSON.stringify({ tone: o.tone, ending: o.ending, title: o.title, every: o.everyIntonation, solemn: o.solemn, gloria: o.gloria, text: o.text, clef: o.clef, secKey: ntPsalmSecKey() })); } catch (e) {}
     gregGst('Psalmton ' + o.tone + (o.ending ? ' ' + o.ending : '') + ' gesetzt – bitte Silbentrennung und Akzente prüfen.');
   }, 'background:#3d6b35;color:#fff;border-color:#3d6b35');
 }
