@@ -8614,7 +8614,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '372';
+const NOTATOR_BUILD_ID = '373';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8648,7 +8648,7 @@ function ntUpdateReload(newId) {
   const doReload = () => {
     try {
       const st = gregBuildStateObject();
-      const rec = JSON.stringify({ savedAt: Date.now(), state: st });
+      const rec = JSON.stringify({ savedAt: Date.now(), state: st, libId: gregLibCurrentId });
       sessionStorage.setItem('notatorGregAutosave_v1_' + newId, rec);
       sessionStorage.setItem(NOTATOR_AUTOSAVE_KEY, rec);
       sessionStorage.setItem('notatorForceRestore', '1');
@@ -8672,7 +8672,7 @@ function gregAutosaveNow() {
   try {
     const state = gregBuildStateObject();
     if (!window._ntMappeBusy) ntRecoveryWrite(state);
-    sessionStorage.setItem(NOTATOR_AUTOSAVE_KEY, JSON.stringify({ savedAt: Date.now(), state }));
+    sessionStorage.setItem(NOTATOR_AUTOSAVE_KEY, JSON.stringify({ savedAt: Date.now(), state, libId: gregLibCurrentId }));
   } catch (err) {
     // Best-effort only — e.g. Safari private browsing throws on setItem,
     // or sessionStorage may be disabled/full. Silently skip; this must never
@@ -8715,9 +8715,20 @@ function ntConfirmDiscard(what) {
     ]);
   });
 }
+// Bibliothekseintrag nach Neuladen/Wiederherstellen wieder zuordnen – sonst fragt
+// «Speichern» nach einem neuen Titel und legt eine zweite Datei an (Nutzerbericht 2026-11-04)
+function ntPieceTitle(state) {
+  const s0 = state && state.sections && state.sections[0];
+  return ((s0 && s0.title) || (state && state.title) || 'Unbenanntes Stück').trim() || 'Unbenanntes Stück';
+}
+function ntRestoreLibId(id) {
+  if (id == null || typeof gregLibGet !== 'function') return;
+  gregLibCurrentId = id;
+  gregLibGet(id).then(r => { if (!r && gregLibCurrentId === id) gregLibCurrentId = null; }).catch(() => {});
+}
 function ntRecoveryWrite(st) {
   try {
-    if (ntIsDirty(st)) localStorage.setItem(NT_RECOVERY_KEY, JSON.stringify({ savedAt: Date.now(), state: st }));
+    if (ntIsDirty(st)) localStorage.setItem(NT_RECOVERY_KEY, JSON.stringify({ savedAt: Date.now(), state: st, libId: gregLibCurrentId }));
     else localStorage.removeItem(NT_RECOVERY_KEY);
   } catch (e) {}
 }
@@ -8739,7 +8750,7 @@ function ntInitDirtyTracking(restoredFromSession) {
   bar.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:3000;background:#6a4a1a;color:#fff;padding:8px 12px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.4);font:13px system-ui,sans-serif;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 24px);box-sizing:border-box';
   const sp = document.createElement('span'); sp.textContent = 'Nicht gespeicherter Stand gefunden: «' + t + '» (' + when + ')'; bar.appendChild(sp);
   const go = document.createElement('button'); go.className = 'b'; go.textContent = '↺ Wiederherstellen'; go.style.cssText = 'font-size:12px;padding:3px 10px';
-  go.onclick = () => { bar.remove(); gregApplyLoadedState(rec.state); gregLibCurrentId = null; gregRefreshList(); gregRender(); gregGst('Nicht gespeicherten Stand wiederhergestellt – bitte speichern.'); gregScheduleAutosave(); };
+  go.onclick = () => { bar.remove(); gregApplyLoadedState(rec.state); gregLibCurrentId = null; ntRestoreLibId(rec.libId); gregRefreshList(); gregRender(); gregGst('Nicht gespeicherten Stand wiederhergestellt – bitte speichern.'); gregScheduleAutosave(); };
   const no = document.createElement('button'); no.className = 'b'; no.textContent = 'Verwerfen'; no.style.cssText = 'font-size:12px;padding:3px 8px';
   no.onclick = () => { bar.remove(); try { localStorage.removeItem(NT_RECOVERY_KEY); } catch (e) {} };
   bar.appendChild(go); bar.appendChild(no); document.body.appendChild(bar);
@@ -8793,6 +8804,7 @@ function gregTryRestoreAutosave() {
     if (!hasContent) return false; // nothing worth restoring — leave the blank sheet as-is
     gregApplyLoadedState(state);
     gregRefreshList();
+    ntRestoreLibId(saved.libId);
     const when = saved.savedAt ? new Date(saved.savedAt).toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'}) : '';
     gregGst('Letzter Stand automatisch wiederhergestellt' + (when ? ' (' + when + ' Uhr)' : '') + ' — bei Bedarf über "Neu" oder "Öffnen" verwerfen');
     return true;
@@ -9373,12 +9385,12 @@ function gregLibSaveCurrent() {
   if (gregLibCurrentId != null) {
     gregLibGet(gregLibCurrentId).then(function(existing) {
       if (existing) { finish(existing); return; }
-      const t = prompt('Titel für die Bibliothek:', state.title || 'Unbenanntes Stück');
+      const t = prompt('Titel für die Bibliothek:', ntPieceTitle(state));
       if (t === null) { _done(false); return; }
       finish({ title: t.trim() || 'Unbenanntes Stück' });
     }).catch(function() { _done(false); });
   } else {
-    const title = prompt('Titel für die Bibliothek:', state.title || 'Unbenanntes Stück');
+    const title = prompt('Titel für die Bibliothek:', ntPieceTitle(state));
     if (title === null) { _done(false); return done; } // abgebrochen
     finish({ title: title.trim() || 'Unbenanntes Stück' });
   }
