@@ -1647,7 +1647,7 @@ function gregRenderAllSections() {
         const sc = gregSections[curIdx]; if (!sc) return;
         gregPush(); sc.hidden = !sc.hidden;
         gregRenderAllSections(); if (typeof gregScheduleAutosave === 'function') gregScheduleAutosave();
-        gregGst(sc.hidden ? 'Abschnitt ' + (curIdx + 1) + ' ausgeblendet – erscheint nicht im PDF.' : 'Abschnitt ' + (curIdx + 1) + ' wieder eingeblendet.');
+        gregGst(sc.hidden ? 'Abschnitt ' + (curIdx + 1) + ' ausgeblendet – erscheint nicht im PDF und nicht in der Orgel.' : 'Abschnitt ' + (curIdx + 1) + ' wieder eingeblendet.');
       };
       handle.appendChild(label);
       handle.appendChild(pbBtn);
@@ -1687,7 +1687,7 @@ function gregRenderAllSections() {
         hB.textContent = sec.hidden ? '🙈 ausgeblendet' : '👁';
         hB.style.marginLeft = curIdx === 0 ? 'auto' : '';
         hB.style.background = sec.hidden ? '#e8c8a8' : 'transparent';
-        hB.title = sec.hidden ? 'Abschnitt ist ausgeblendet (nicht im PDF) – tippen zum Einblenden' : 'Abschnitt ausblenden (bleibt gespeichert, erscheint nicht im PDF)';
+        hB.title = sec.hidden ? 'Abschnitt ist ausgeblendet (nicht im PDF, nicht in der Orgel) – tippen zum Einblenden' : 'Abschnitt ausblenden (bleibt gespeichert, erscheint nicht im PDF und nicht in der Orgel)';
       } }
     box.style.opacity = sec.hidden ? '0.85' : '';
 
@@ -8637,7 +8637,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '375';
+const NOTATOR_BUILD_ID = '376';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -17206,6 +17206,7 @@ function clGabcToAbc(gabcList, opts) {
   info = computeT(firstParsed, gabcList[0].gabc, secTpc(0));
 
   gabcList.forEach((sec, si) => {
+    const ki = sec.si != null ? sec.si : si; // Schlüssel-Index (ursprünglicher Abschnitt)
     const parsed = si === 0 ? firstParsed : clParseGabc(sec.gabc, opts);
     const secInfo = si === 0 ? info : computeT(parsed, sec.gabc, secTpc(si));
     infos.push(secInfo);
@@ -17298,7 +17299,7 @@ function clGabcToAbc(gabcList, opts) {
     sylU.forEach((u, k) => {
       const a = lbT(sylU[k - 1]) + '|' + lbT(u) + '|' + lbT(sylU[k + 1]);
       lbSeen[a] = (lbSeen[a] || 0) + 1;
-      u.lbKey = si + ':' + a + (lbSeen[a] > 1 ? '#' + lbSeen[a] : '');
+      u.lbKey = ki + ':' + a + (lbSeen[a] > 1 ? '#' + lbSeen[a] : '');
       const v = lbOpt[u.lbKey];
       u.pbWant = !!pbOpt[u.lbKey];
       u.lbWant = v === true || (!!u.chBrk && v !== false) || u.pbWant;
@@ -17371,8 +17372,8 @@ function clGabcToAbc(gabcList, opts) {
             const a = a0 + 'o' + nt.oD, aOld = a0 + nt.pitch.D;
             noteSeen[a] = (noteSeen[a] || 0) + 1;
             noteSeen['~' + aOld] = (noteSeen['~' + aOld] || 0) + 1;
-            nt._anchor = si + ':' + a + (noteSeen[a] > 1 ? '#' + noteSeen[a] : '');
-            nt._anchorOld = si + ':' + aOld + (noteSeen['~' + aOld] > 1 ? '#' + noteSeen['~' + aOld] : '');
+            nt._anchor = ki + ':' + a + (noteSeen[a] > 1 ? '#' + noteSeen[a] : '');
+            nt._anchorOld = ki + ':' + aOld + (noteSeen['~' + aOld] > 1 ? '#' + noteSeen['~' + aOld] : '');
             if (brk[nt._anchor] == null && brk[nt._anchorOld] != null) { brk[nt._anchor] = brk[nt._anchorOld]; delete brk[nt._anchorOld]; }
             const hard = !cur || lineStart; // Anfang / neue Zeile: immer neuer Akkord
             // Mögliche Akkordwechsel (2026-10-13, Nutzervorgabe): ein Akkord dauert
@@ -17396,7 +17397,7 @@ function clGabcToAbc(gabcList, opts) {
             if (boundary) {
               let oa = aOld; anchorSeen[oa] = (anchorSeen[oa] || 0) + 1;
               if (anchorSeen[oa] > 1) oa += '#' + anchorSeen[oa];
-              cur = { notes: [], pulses: 0, line: li, key: nt._anchor, legacyKeys: [nt._anchorOld, si + ':' + oa, si + ':' + segs.length] }; segs.push(cur);
+              cur = { notes: [], pulses: 0, line: li, key: nt._anchor, legacyKeys: [nt._anchorOld, ki + ':' + oa, ki + ':' + segs.length] }; segs.push(cur);
             }
             cur.notes.push(nt); cur.pulses += nt.dur; nt._seg = cur;
             lineStart = false; lastNt = nt;
@@ -17858,15 +17859,21 @@ function clEnsureAbcjs(cb) {
 
 // Alle Abschnitte als GABC einsammeln (aktiver Abschnitt = Live-Daten),
 // samt Titel/Untertitel des Chorals.
-function clCollectGabc() {
+// vis = true: ausgeblendete Abschnitte weglassen (Orgelansicht/-PDF); jedes
+// Element trägt in .si seinen ursprünglichen Abschnittsindex (Einstellungen,
+// Akkord-/Umbruch-Schlüssel). Sind alle ausgeblendet, wird nichts weggelassen.
+function clCollectGabc(vis) {
   if (window._gregMultiSection && gregSections.length > 1) {
     if (typeof gregSectionFromUI === 'function') gregSectionFromUI();
-    return gregSections.map(sec => ({ gabc: gregBuildGABCFor(sec), title: sec.title || '', subtitle: sec.subtitle || '' }));
+    let l = gregSections.map((sec, i) => ({ gabc: gregBuildGABCFor(sec), title: sec.title || '', subtitle: sec.subtitle || '', si: i, hidden: !!sec.hidden }));
+    if (vis && l.some(x => !x.hidden)) l = l.filter(x => !x.hidden);
+    return l;
   }
   const t = (document.getElementById('greg-title') || { value: '' }).value;
   const st = (document.getElementById('greg-subtitle') || { value: '' }).value;
-  return [{ gabc: gregBuildGABC(), title: t, subtitle: st }];
+  return [{ gabc: gregBuildGABC(), title: t, subtitle: st, si: 0 }];
 }
+function clVisIdx() { return clCollectGabc(true).map(x => x.si); }
 
 function clHasNotes(list) {
   return list.some(x => /\([^)]*[a-mA-M][^)]*\)/.test((x.gabc.split('%%').pop() || '').replace(/\((?:c|f)b?[1-5]\)/g, '')));
@@ -17938,12 +17945,12 @@ function clScoreWidth() {
 }
 
 function clBuild(extra) {
-  let list = clCollectGabc();
+  let list = clCollectGabc(true);
   if (extra && extra.verseMode) list = list.map(x => Object.assign({}, x, { gabc: ntVerseExpandGabc(x.gabc, extra.verseMode) }));
   if (!clHasNotes(list)) return null;
   const sw = clScoreWidth();
-  const headers = list.map((x, i) => Object.assign({}, clEffectiveHead(i), { left: clCfg(i).left, right: clCfg(i).right }));
-  const sectionOpts = list.map((x, i) => ({ targetPc: clCfg(i).targetPc, octave: clCfg(i).octave || 0 }));
+  const headers = list.map(x => Object.assign({}, clEffectiveHead(x.si), { left: clCfg(x.si).left, right: clCfg(x.si).right }));
+  const sectionOpts = list.map(x => ({ targetPc: clCfg(x.si).targetPc, octave: clCfg(x.si).octave || 0 }));
   return clGabcToAbc(list, { sectionOpts, targetPc: clState.targetPc, octave: clState.octave, charsPerLine: Math.max(10, Math.round(sw / 11.5)), headers, accomp: !!clState.accomp, pedal: !!clState.pedal, flatToBar: !!clState.flatToBar, chordOverrides: clState.chordOverrides, pageBreaks: clState.pageBreaks || {}, chordBreaks: clState.chordBreaks, lineBreaks: clState.lineBreaks, playRests: !!(extra && extra.playRests) });
 }
 
@@ -18511,7 +18518,7 @@ function ntPlayToggle(source, from) {
           const pb = clBuild({ playRests: true });
           const parts = pb ? pb.abc.split(/(?=^X:)/m).filter(x => x.trim()) : [];
           // Strophen untereinander: jede Strophe abspielen (Zuordnung zur sichtbaren Note über die Wiederholung)
-          const gl = clCollectGabc(), split = b => b ? b.abc.split(/(?=^X:)/m).filter(x => x.trim()) : [];
+          const gl = clCollectGabc(true), split = b => b ? b.abc.split(/(?=^X:)/m).filter(x => x.trim()) : [];
           const hasV = gl.some(x => ntVerseReps(x.gabc) > 1);
           const partsF = hasV ? split(clBuild({ playRests: true, verseMode: 'full' })) : null;
           const partsP = hasV ? split(clBuild({ playRests: true, verseMode: 'prefix' })) : null;
@@ -18552,9 +18559,11 @@ function ntPlayToggle(source, from) {
       }
       if (from && from.tune != null) {
         if (tunes[from.tune] && tunes[from.tune].startChar == null) tunes[from.tune].startChar = startEl.startChar;
-        tunes = (ntPlay.sec >= 0 && ntPlaySecCount() > 1 && from.tune === ntPlay.sec) ? [tunes[from.tune]] : tunes.slice(from.tune);
+        const vt = clVisIdx().indexOf(ntPlay.sec);
+        tunes = (ntPlay.sec >= 0 && ntPlaySecCount() > 1 && from.tune === vt) ? [tunes[from.tune]] : tunes.slice(from.tune);
       } else if (ntPlay.sec >= 0 && ntPlaySecCount() > 1) {
-        tunes = tunes[ntPlay.sec] ? [tunes[ntPlay.sec]] : [];
+        const vt = clVisIdx().indexOf(ntPlay.sec);
+        tunes = tunes[vt] ? [tunes[vt]] : [];
       }
     } else {
       let list = from && from.list ? from.list : clCollectGabc();
@@ -18655,7 +18664,7 @@ function ntPlayStartTone(src) {
   if (src === 'greg' && multi && ntPlay.sec < 0 && typeof gregActiveIdx !== 'undefined') k = gregActiveIdx;
   let model = null;
   try {
-    if (src === 'cl' && !clState[clMK()]) { const r = clBuild(); model = r && r.models[k]; }
+    if (src === 'cl' && !clState[clMK()]) { const r = clBuild(); const vk = clVisIdx().indexOf(k); model = r && r.models[vk >= 0 ? vk : 0]; }
     else { const r = clGabcToAbc([list[k]], { targetPc: null, octave: 0, accomp: false, charsPerLine: 400, flatToBar: clState.flatToBar !== false }); model = r && r.models[0]; }
   } catch (e) { console.warn(e); }
   let first = null;
