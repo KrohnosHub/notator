@@ -1260,7 +1260,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
     // convention exactly: "()" WITH a normal space before the next word
     // (as requested), with the tight visual spacing handled purely at the
     // rendering layer instead.
-    else if (e.type === 'directive') { frags.push({text: '<i>' + e.text + '</i>()', glue:false}); }
+    else if (e.type === 'directive') { frags.push({text: '<i>' + e.text + '</i>()', glue:false}); prevRunHyphen = false; /* folgende Noten nie ins gleiche Wort ziehen (sonst «ij.-») */ }
     else if (e.type === 'dropcapletter') { frags.push({text: '<sp>' + e.text + '</sp>()', glue:false}); }
     else if (e.type === 'comment')   { /* no GABC output */ }
     else if (e.type === 'linebreak') { frags.push({text: e.justify ? '(z)' : '(Z)', glue:false}); lastWasLinebreak = true; continue; }
@@ -1638,8 +1638,20 @@ function gregRenderAllSections() {
         gregRenderAllSections();
         gregGst(sc.pb ? 'Abschnitt ' + (curIdx + 1) + ' beginnt auf einer neuen Seite.' : 'Seitenumbruch vor Abschnitt ' + (curIdx + 1) + ' entfernt.');
       };
+      const hideBtn = document.createElement('span');
+      hideBtn.className = 'greg-sec-hide';
+      hideBtn.style.cssText = 'cursor:pointer;padding:0 6px;margin-right:8px;border:1px solid #c0b898;border-radius:3px;font-size:10px';
+      hideBtn.onclick = function(e) {
+        e.stopPropagation();
+        const curIdx = gregSections.findIndex(s2 => s2.id === sec.id);
+        const sc = gregSections[curIdx]; if (!sc) return;
+        gregPush(); sc.hidden = !sc.hidden;
+        gregRenderAllSections(); if (typeof gregScheduleAutosave === 'function') gregScheduleAutosave();
+        gregGst(sc.hidden ? 'Abschnitt ' + (curIdx + 1) + ' ausgeblendet – erscheint nicht im PDF.' : 'Abschnitt ' + (curIdx + 1) + ' wieder eingeblendet.');
+      };
       handle.appendChild(label);
       handle.appendChild(pbBtn);
+      handle.appendChild(hideBtn);
       handle.appendChild(closeBtn);
       handle.addEventListener('mousedown', function(e) {
         if (e.target === closeBtn) return;
@@ -1670,8 +1682,17 @@ function gregRenderAllSections() {
         pbB.style.background = sec.pb ? '#c8e0b8' : 'transparent';
         pbB.title = 'Seitenumbruch vor diesem Abschnitt (PDF beginnt hier eine neue Seite)';
       } }
+    { const hB = box.querySelector('.greg-sec-hide');
+      if (hB) {
+        hB.textContent = sec.hidden ? '🙈 ausgeblendet' : '👁';
+        hB.style.marginLeft = curIdx === 0 ? 'auto' : '';
+        hB.style.background = sec.hidden ? '#e8c8a8' : 'transparent';
+        hB.title = sec.hidden ? 'Abschnitt ist ausgeblendet (nicht im PDF) – tippen zum Einblenden' : 'Abschnitt ausblenden (bleibt gespeichert, erscheint nicht im PDF)';
+      } }
+    box.style.opacity = sec.hidden ? '0.85' : '';
 
     const content = box.querySelector('.greg-sec-content');
+    content.style.display = sec.hidden ? 'none' : '';
 
     if (curIdx === gregActiveIdx) {
       // Move the REAL interactive svg-wrap into this box.
@@ -2021,7 +2042,7 @@ function gregPageMarksRedraw() {
       const box = document.getElementById('greg-secbox-' + sec.id);
       const content = box && box.querySelector('.greg-sec-content');
       const svg = content && content.querySelector('svg');
-      if (!svg) return;
+      if (!svg || sec.hidden) return;
       const act = i === gregActiveIdx;
       items.push({ svg, host: content, entries: act ? gregEntries : sec.entries, clef: GREG_CLEF_MAP[sec.clef] || 'c3', clefRaw: sec.clefRaw || '',
         score: act ? _gregScore : content._pbScore, ctxt: act ? _gregCtxtRef : content._pbCtxt, pb: !!sec.pb && i > 0 });
@@ -8176,6 +8197,7 @@ function gregExportPDF() {
   if (window._gregMultiSection) {
     gregSectionFromUI();
     for (const sec of (gregSections || [])) {
+      if (sec.hidden) continue; // ausgeblendeter Abschnitt: nicht im PDF
       const gabc = gregBuildGABCFor(sec);
       // NOT `sec.title || undefined` — an intentionally EMPTY title/subtitle
       // (e.g. a continuation section that shouldn't show its own heading)
@@ -8332,6 +8354,7 @@ function gregExportPDF() {
   const svgLineBoxes = new Array(gabcList.length).fill(null);
   const svgBreaks = new Array(gabcList.length).fill(null);
   let completed = 0;
+  if (!gabcList.length) { gregGst('Alle Abschnitte sind ausgeblendet – nichts für das PDF.'); if (window._ntPdfDeliver) window._ntPdfDeliver = null; return; }
   gabcList.forEach((entry, i) => {
     renderGABCforPDF(entry, function(svg, lineBoxes, brk) {
       if (svg) { svgStrings[i] = svg; svgLineBoxes[i] = lineBoxes || []; svgBreaks[i] = brk || []; }
@@ -8614,7 +8637,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '374';
+const NOTATOR_BUILD_ID = '375';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9256,7 +9279,7 @@ function ntTrashMarkTitles() {
     el.textContent = on ? '🗑 gelöscht · ' + base : base;
     el.style.color = on ? '#ff6b6b' : '#c0d890';
     el.style.fontWeight = on ? '600' : '';
-    el.title = on ? 'Dieses Stück liegt im Google-Drive-Papierkorb. Speichern holt es zurück.' : '';
+    if (on) el.title = 'Dieses Stück liegt im Google-Drive-Papierkorb. Speichern holt es zurück.';
   });
   const t = document.getElementById('greg-title');
   if (t) { t.style.color = on ? '#ff6b6b' : '#c0d890'; t.title = on ? 'Stück liegt im Drive-Papierkorb' : ''; }
@@ -10060,11 +10083,25 @@ function gregMobileApplyScale() {
 
 // Spiegelt den Titel in die Mobile-Leiste (dort ist #greg-input-panel mit
 // dem echten Titelfeld ausgeblendet).
-function gregMobileSyncTitle() {
-  const el = document.getElementById('greg-mobile-title');
-  const src = document.getElementById('greg-title');
-  if (el) el.textContent = (src && src.value) ? src.value : 'Unbenanntes Stück';
+// Name der Notator-Datei (Bibliothekseintrag) – oben angezeigt statt des Abschnittstitels
+function ntFileTitleRefresh(force) {
+  const id = typeof gregLibCurrentId !== 'undefined' ? gregLibCurrentId : null;
+  if (!force && window._ntFileTitleId === id) return;
+  window._ntFileTitleId = id;
+  if (id == null) { window._ntFileTitle = null; ntFileTitleShow(); return; }
+  gregLibGet(id).then(r => { if (window._ntFileTitleId === id) { window._ntFileTitle = r ? r.title : null; ntFileTitleShow(); } }).catch(() => {});
+}
+function ntFileTitleShow() {
+  const f = window._ntFileTitle;
+  const sec = ((document.getElementById('greg-title') || {}).value || '').trim();
+  const txt = '📄 ' + (f || 'Neu – nicht gespeichert');
+  const tip = (f ? 'Datei: ' + f : 'Noch nicht in der Bibliothek gespeichert') + (sec && sec !== f ? '\nTitel (aktueller Abschnitt): ' + sec : '');
+  ['greg-mobile-title', 'cl-vb-title'].forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = txt; el.title = tip; } });
   ntTrashMarkTitles();
+}
+function gregMobileSyncTitle() {
+  ntFileTitleRefresh();
+  ntFileTitleShow();
   ntUpdateGbLinks();
 }
 
@@ -10400,6 +10437,8 @@ function gregStatusRight() {
   el.innerHTML = n + ' Einträge · ' + (dirty ? '<span style="color:#e0b060">● ungespeichert</span>' : '<span style="color:#8bc070">✓ gespeichert</span>') + drive;
 }
 setInterval(gregStatusRight, 1500);
+// Dateiname oben aktuell halten (Speichern, Speichern unter, Umbenennen, Öffnen)
+setInterval(() => { try { window._ntFtTick = (window._ntFtTick || 0) + 1; ntFileTitleRefresh(window._ntFtTick % 4 === 0); } catch (e) {} }, 1500);
 // Handy: Höhe des Notenbereichs nachführen (Abschnitte werden zeitversetzt gesetzt)
 setInterval(() => { try { if (gregIsMobileViewport() && window._ntTab === 'greg') gregMobileApplyScale(); } catch (e) {} }, 1500);
 function gregQbSignsToggle(force) {
@@ -15553,6 +15592,8 @@ var exsurge = (() => {
         var proposedLyricType;
         if (!cne.isNeume && cne.constructor !== TextOnly)
           proposedLyricType = LyricType.Directive;
+        else if (cne.constructor === TextOnly)
+          proposedLyricType = LyricType.SingleSyllable; // Notator: Text ohne Noten (ij., Ps., Ant. …) nie mit Bindestrich
         else if (currSyllable === 0 && j2 === matches.length - 1)
           proposedLyricType = LyricType.SingleSyllable;
         else if (currSyllable === 0 && j2 < matches.length - 1)
@@ -15622,6 +15663,11 @@ var exsurge = (() => {
       }
       if (text === "*" || text === "\u2020")
         lyricType = LyricType.Directive;
+      // Notator: Wiederholungs-/Rubrikzeichen (ij., iij., Ps., Ant., V/., R/.) nie mit Bindestrich
+      if (/^\s*(?:<i>|_)?\s*(?:i{1,3}j|Ps|Ant|[VR]\/?)\.?\s*(?:<\/i>|_)?\s*$/i.test(text)) {
+        if (lyricType === LyricType.BeginningSyllable) lyricType = LyricType.SingleSyllable;
+        else if (lyricType === LyricType.MiddleSyllable) lyricType = LyricType.EndingSyllable;
+      }
       var lyric = new Lyric(ctxt2, text, lyricType);
       lyric.elidesToNext = elides;
       return lyric;
@@ -18088,9 +18134,7 @@ function clApplyUi() {
     nb.title = 'Menü ' + ['ausgeblendet', 'kompakt', 'voll'][u.lvl] + ' – tippen: ' + ['voll', 'aus', 'kompakt'][u.lvl];
     nb.style.background = u.lvl === 2 ? '' : '#6a5a30'; nb.style.color = u.lvl === 2 ? '' : '#fff';
   }
-  const t = document.getElementById('cl-vb-title');
-  if (t) { const h = clEffectiveHead(); t.textContent = h.title || 'Unbenanntes Stück'; }
-  ntTrashMarkTitles();
+  ntFileTitleRefresh(); ntFileTitleShow();
   ntUpdateGbLinks();
 }
 function clToggleView() { const u = clUi(); u.view = !u.view; if (!u.view) u.menu = true; clSaveUi(u); clApplyUi(); clRender(); }
