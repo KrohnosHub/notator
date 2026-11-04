@@ -2432,6 +2432,10 @@ function gregInputConsumed() {
   if (gregTextQueue()) setTimeout(() => gregTextQueueAfterPlace(gregEntries[gregEntries.length - 1]), 0);
   // Mora gilt nur für die eben gesetzte Neume (Nutzerwunsch 2026-10-22)
   [1,2,3,4].forEach(p => { const m = document.getElementById('greg-mora-n' + p); if (m) m.checked = false; });
+  // ebenso Iktus, Episema und Modifier (Liqueszenz, Oriscus, Strophicus, Pressus, Quilisma) – Nutzerwunsch 2026-11-04
+  ['greg-iktus', 'greg-episema', 'greg-liquescent', 'greg-oriscus', 'greg-strophicus', 'greg-pressus', 'greg-quilisma'].forEach(id => {
+    const c = document.getElementById(id); if (c && c.checked) { c.checked = false; c.dispatchEvent(new Event('change', { bubbles: true })); }
+  });
   const ap = document.getElementById('greg-acc-pos'); if (ap) { ap.value = ''; ap.style.display = 'none'; }
   ['x','#','y'].forEach(a => { document.querySelectorAll(`button[onclick="gregSetAccidental('${a}')"]`).forEach(btn => { btn.style.background = ''; btn.style.color = ''; }); });
   gregQuickbarSync();
@@ -8610,7 +8614,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '370';
+const NOTATOR_BUILD_ID = '371';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
