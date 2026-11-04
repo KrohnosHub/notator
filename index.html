@@ -8451,7 +8451,7 @@ function gregExportPDF() {
             pairs.push({ svg: svgStrings[i2], lineBoxes: svgLineBoxes[i2] || [], pageBreakBefore: !!((sc2 && sc2.pb && i2 > 0) || first >= 0) && i2 > 0, breakLines: br });
           }
         }
-        gregAssemblePdf(pairs, 'gregorianisch.pdf');
+        gregAssemblePdf(pairs, ntFileBaseName() + '_Choral.pdf');
       }
     });
   });
@@ -8720,7 +8720,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '377';
+const NOTATOR_BUILD_ID = '378';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -18907,7 +18907,7 @@ function ntPdfSave(kind) {
   window._ntPdfDeliver = null;
   const base = kind === 'cl' ? clFileBase() + '_Orgel'
     : kind === 'mappe' ? (ntMappeCur().title || 'Mappe')
-    : ((((document.getElementById('greg-title') || {}).value || '').trim() || 'Stueck') + '_Choral');
+    : ntFileBaseName() + '_Choral';
   ntLoadLocalDir().then(() => ntPdfDialog({ kind, name: ntSanitizeName(base), dest: ntPdfPrefs().dest }));
 }
 // ── Notator-Datei als neuen Abschnitt (bzw. mehrere) an das offene Stück anhängen ──
@@ -20596,7 +20596,7 @@ function ntShareState() {
 }
 
 function ntShareShow(from) {
-  const title = ((document.getElementById('greg-title') || {}).value || '').trim() || 'Stück';
+  const title = ntFileBaseName();
   const ctx = { from: from === 'cl' ? 'cl' : 'greg', title, pdfBlob: null, pdfName: null };
   ntShareDialog(ctx);
 }
@@ -21220,10 +21220,15 @@ function clCurrentAbc() {
   return clState[clMK()] || (clLast && clLast.abc) || '';
 }
 
-function clFileBase() {
-  const h = clEffectiveHead();
-  return ((h.title || '').trim() || 'Stueck').replace(/[\\/:*?"<>|]+/g, '_');
+// Grundname für Exporte (PDF, ABC, MusicXML, Teilen): Name der Notator-Datei
+// (Bibliothekseintrag); sonst Titel des 1. Abschnitts bzw. des Stücks – nie der aktive Abschnitt
+function ntFileBaseName() {
+  let n = (window._ntFileTitle || '').trim();
+  if (!n) { try { n = ntPieceTitle(gregBuildStateObject()); } catch (e) {} if (n === 'Unbenanntes Stück') n = ''; }
+  if (!n && typeof clEffectiveHead === 'function') { try { n = (clEffectiveHead(0).title || '').trim(); } catch (e) {} }
+  return (n || 'Stueck').replace(/\.(notator|pdf)$/i, '').replace(/[\\/:*?"<>|]+/g, '_');
 }
+function clFileBase() { return ntFileBaseName(); }
 
 function clDownloadAbc() {
   const abc = clCurrentAbc();
