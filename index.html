@@ -8766,7 +8766,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '381';
+const NOTATOR_BUILD_ID = '382';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19092,10 +19092,16 @@ function ntPdfDialog(ctx) {
     const dpiEl = document.getElementById('nt-pdf-dpi'); if (dpiEl) p.dpi = +dpiEl.value;
     ntPdfSavePrefs(p);
     const what = K.n ? 'Gespeichert' : 'PDF gespeichert';
-    if (K.n && ctx.dest === 'lib') {
+    // Bibliothek – und der Drive-Ordner der Bibliothek selbst (dort liegen die Bibliotheks-
+    // dateien): wie «Speichern unter» in Word/Excel: neue Datei, danach in ihr weiterarbeiten,
+    // das Original bleibt auf dem Stand der letzten Speicherung. Gleicher Name = normal speichern.
+    const libFolder = (() => { const f = ntPdfPrefs()[K.folder]; return !f || !f.id || f.id === NOTATOR_GDRIVE_FOLDER_ID; })();
+    if (K.n && (ctx.dest === 'lib' || (ctx.dest === 'drive' && libFolder))) {
       const nm = name.replace(/\.notator$/i, '').trim();
       closeModal();
-      if (nm) gregLibSaveAsName(nm);
+      if (!nm) return;
+      if (gregLibCurrentId != null && nm.toLowerCase() === String(window._ntFileTitle || '').trim().toLowerCase()) gregLibSaveCurrent();
+      else gregLibSaveAsName(nm);
       return;
     }
     // Speichern unter (.notator auf Drive/Gerät) mit neuem Namen: danach im Stück unter diesem
