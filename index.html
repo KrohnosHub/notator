@@ -149,7 +149,7 @@ input[type=file]{display:none}
      die Wiedergabe-Knöpfe gesammelt, dann Titel/Links */
   .nt-o-file{order:1} .nt-o-view{order:2} .nt-o-full{order:3}
   .nt-o-break{display:block;order:4;flex-basis:100%;height:0}
-  .nt-o-play{order:5} .nt-o-title{order:6} .nt-o-spacer{display:none}
+  .nt-o-play{order:5} .nt-o-title{order:6} .nt-o-spacer{display:none} .nt-bar-sep{display:none}
 }
 @media (max-width: 700px) {
   .nt-noh-txt{display:none}
@@ -219,6 +219,21 @@ input[type=file]{display:none}
 </style>
 <style>
 /* ── Bearbeiten an der Note / Werkzeugleiste / Komfort (Build 317) ── */
+/* Desktop-Seitenansicht: Notenblatt in Seitenbreite (A4) mittig auf dunkler Fläche, Breite an den Blatträndern ziehbar */
+@media (min-width:701px){
+  body.nt-paper #greg-canvas-wrap, body.nt-paper #cl-score-wrap{background:#2b3524 !important;align-items:center}
+  body.nt-paper #greg-quickbar{align-self:stretch}
+  body.nt-paper #greg-mobile-scale-outer{position:relative;flex-shrink:0;background:#fff;color:#000;width:var(--greg-paper-w,812px);max-width:100%;padding:var(--greg-paper-pad,20px);min-height:calc(var(--greg-paper-w,812px) * 1.414);margin:0 auto 24px;box-shadow:0 2px 10px rgba(0,0,0,.55)}
+  body.nt-paper #cl-score{position:relative;background:#fff;color:#000;margin:0 auto 24px;max-width:100%;min-height:calc(var(--cl-paper-w,780px) * 1.414);box-shadow:0 2px 10px rgba(0,0,0,.55);padding-top:8px}
+  body.nt-paper .cl-grp-w{display:none !important}
+  .nt-paper-h{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;z-index:40;touch-action:none}
+  .nt-paper-h.l{left:-12px}.nt-paper-h.r{right:-12px}
+  .nt-paper-h::after{content:"";position:absolute;top:90px;left:4px;width:4px;height:56px;border-radius:2px;background:#5a7a48;opacity:.55;transition:opacity .15s,background .15s}
+  .nt-paper-h:hover::after,.nt-paper-h.on::after{opacity:1;background:#a8d878}
+  body:not(.nt-paper) .nt-paper-h{display:none}
+  .nt-paper-lab{position:absolute;top:6px;right:8px;z-index:41;font:11px system-ui,sans-serif;color:#556;background:rgba(255,255,255,.92);border:1px solid #c8c0a8;border-radius:3px;padding:1px 6px;display:none;white-space:nowrap}
+  .nt-paper-h.on ~ .nt-paper-lab{display:block}
+}
 #greg-quickbar{position:sticky;top:-20px;margin:-20px -20px 12px;z-index:20;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:6px 10px;background:#1a2414;border-bottom:1px solid #3a4a30;font:12px system-ui,sans-serif;color:#a8d878}
 #greg-panel.greg-view #greg-quickbar{display:none}
 #greg-quickbar .qb-mob{display:none}
@@ -304,16 +319,17 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
     <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Speichern unter, Importieren, Exportieren, Mappe">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
-    <span class="nt-o-title" id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
-    <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
     <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label><button class="b nt-pgprev-btn" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt im Notenbild, wo das PDF eine neue Seite beginnt (Umbrüche setzen: Abschnitts-Kopf «Neue Seite» bzw. Note öffnen › «Seitenumbruch davor»)">&#9636; Seiten</button></span>
     <button class="b nt-o-file" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
+    <span class="nt-o-title" id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
+    <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
     <span class="nt-o-view nt-mode" id="greg-mode"><button class="b" data-mode="view" onclick="gregSetMode('view')" title="Ansehen: nur Noten (zum Singen/Spielen)">&#128065;<span class="nt-lbl"> Ansehen</span></button><button class="b" data-mode="edit" onclick="gregSetMode('edit')" title="Bearbeiten: Noten mit Werkzeugleiste">&#9998;<span class="nt-lbl"> Bearbeiten</span></button><button class="b" data-mode="details" onclick="gregSetMode('details')" title="Details: Stück (Titel, Schlüssel …), Einträge, GABC">&#9776;<span class="nt-lbl"> Details</span></button></span>
+    <button class="b nt-zoom-btn nt-pm nt-o-view" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
+    <button class="b nt-o-full" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
+    <span class="nt-bar-sep" style="width:1px;align-self:stretch;background:#3a4a30;margin:0 2px"></span>
 <select class="nt-play-sec nt-pm nt-o-play" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
-    <button class="b nt-zoom-btn nt-pm nt-o-play" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
-    <button class="b nt-o-full" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
     <span class="nt-o-break"></span>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
@@ -601,10 +617,11 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
     <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
     <button class="b nt-o-view" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
     <button class="b nt-o-view" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü: voll → kompakt → ausgeblendet">&#9776;<span class="nt-lbl"> Menü</span></button>
+    <button class="b nt-zoom-btn nt-pm nt-o-view" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
+    <button class="b nt-o-full" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
+    <span class="nt-bar-sep" style="width:1px;align-self:stretch;background:#3a4a30;margin:0 2px"></span>
 <select class="nt-play-sec nt-pm nt-o-play" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="cl" onclick="ntPlayStartTone('cl')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
     <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
-    <button class="b nt-zoom-btn nt-pm nt-o-play" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
-    <button class="b nt-o-full" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
     <span class="nt-o-break"></span>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -1912,6 +1929,7 @@ function gregNeutralizeRubricRed(svgEl) {
 function gregVS() { return typeof ntViewScale === 'function' ? ntViewScale('greg') : 1; }
 
 function gregRender() {
+  try { gregPaperApply(); } catch (e) { console.warn(e); }
   if (window._gregMultiSection) gregRenderAllSections();
   else gregRenderActiveOnly();
   if (typeof ntRefreshOrganIfVisible === 'function') ntRefreshOrganIfVisible();
@@ -2111,8 +2129,73 @@ function gregPageMarksRedraw() {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else setTimeout(start, 0);
 })();
 
+// ── Desktop-Seitenansicht ("Papier") ──
+// Choral: logische Blattbreite (bei 100 % Anzeigegrösse) inkl. 20 px Rand je Seite.
+// 812 px ergibt eine Zeilenbreite von ca. 746 px = A4-Druckbreite des PDFs (1:1).
+// null = Standard A4. Gespeichert je Stück (pageW); geräteunabhängig.
+const GREG_PAPER_A4 = 812, CL_PAPER_A4 = 740, NT_PAPER_MIN = 420, NT_PAPER_MAX = 1700;
+function ntPaperOn() { return !(typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()); }
+function gregPaperW() { return window._gregPageW || GREG_PAPER_A4; }
+function gregPaperApply() {
+  const on = ntPaperOn();
+  document.body.classList.toggle('nt-paper', on);
+  if (!on) return;
+  const vs = gregVS(), st = document.documentElement.style;
+  const w = Math.round(gregPaperW() * vs) + 'px', pad = Math.round(20 * vs) + 'px';
+  if (st.getPropertyValue('--greg-paper-w') !== w) st.setProperty('--greg-paper-w', w);
+  if (st.getPropertyValue('--greg-paper-pad') !== pad) st.setProperty('--greg-paper-pad', pad);
+  const paper = document.getElementById('greg-mobile-scale-outer');
+  if (paper) ntPaperHandles(paper, {
+    getW: () => gregPaperW(), vs: () => gregVS(), a4: GREG_PAPER_A4,
+    live: w2 => st.setProperty('--greg-paper-w', Math.round(w2 * gregVS()) + 'px'),
+    commit: w2 => { window._gregPageW = Math.abs(w2 - GREG_PAPER_A4) < 4 ? null : w2; gregRender(); },
+    reset: () => { window._gregPageW = null; gregRender(); gregGst('Seitenbreite: A4'); }
+  });
+}
+// Ziehgriffe links/rechts am Blatt: Blatt ist mittig -> Breite ändert sich um 2 × Mausweg
+function ntPaperHandles(paper, o) {
+  paper._ntPaper = o;
+  if (paper.querySelector(':scope > .nt-paper-h')) return;
+  const lab = document.createElement('div'); lab.className = 'nt-paper-lab';
+  ['l', 'r'].forEach(side => {
+    const h = document.createElement('div'); h.className = 'nt-paper-h ' + side;
+    h.title = 'Seitenbreite: ziehen zum Verbreitern/Verschmälern · Doppelklick = A4';
+    h.addEventListener('dblclick', e => { e.preventDefault(); e.stopPropagation(); paper._ntPaper.reset(); });
+    h.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      e.preventDefault(); e.stopPropagation();
+      const P = paper._ntPaper, x0 = e.clientX, w0 = P.getW(), vs = P.vs() || 1;
+      let w = w0;
+      h.classList.add('on'); h.setPointerCapture(e.pointerId);
+      const show = () => { lab.textContent = 'Breite ' + Math.round(w) + ' px' + (Math.abs(w - P.a4) < 4 ? ' · A4' : (w > P.a4 ? ' · breiter als A4 (kleiner im PDF)' : ' · schmaler als A4 (grösser im PDF)')); };
+      show();
+      const mv = ev => {
+        const dx = (ev.clientX - x0) * (side === 'r' ? 1 : -1);
+        w = Math.max(NT_PAPER_MIN * P.a4 / GREG_PAPER_A4, Math.min(NT_PAPER_MAX, w0 + 2 * dx / vs));
+        if (Math.abs(w - P.a4) < 10) w = P.a4; // bei A4 einrasten
+        P.live(w); show();
+      };
+      const up = () => {
+        h.removeEventListener('pointermove', mv); h.removeEventListener('pointerup', up); h.removeEventListener('pointercancel', up);
+        h.classList.remove('on');
+        if (Math.round(w) !== Math.round(w0)) P.commit(Math.round(w));
+      };
+      h.addEventListener('pointermove', mv); h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
+    });
+    paper.appendChild(h);
+  });
+  paper.appendChild(lab);
+}
+window.addEventListener('resize', () => { try { gregPaperApply(); } catch (e) {} });
+
 function gregEffectiveCanvasWidth() {
   if (window._gregForcedCanvasWidth) return window._gregForcedCanvasWidth;
+  // Seitenansicht: Blattbreite; Korrektur, damit der Zeilenumbruch nicht von der Anzeigegrösse abhängt
+  // (Zeilenbreite = (Breite - 80) / (Zoom × Anzeigegrösse) wie bisher bei 100 %)
+  if (ntPaperOn()) {
+    const p = document.getElementById('greg-mobile-scale-outer');
+    if (p && p.clientWidth) return p.clientWidth + 80 * (1 - gregVS());
+  }
   const el = document.getElementById('greg-canvas-wrap');
   return el ? el.clientWidth : null;
 }
@@ -8637,7 +8720,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '376';
+const NOTATOR_BUILD_ID = '377';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -8859,8 +8942,9 @@ function gregBuildStateObject() {
   // opened in a differently-sized window can re-wrap onto a different
   // number of lines, which also throws off any freetext ("comment") entry
   // positions saved as a % of the page.
-  const canvasWrapEl = document.getElementById('greg-canvas-wrap');
-  const canvasWidth = canvasWrapEl ? canvasWrapEl.clientWidth : undefined;
+  // Seitenbreite (logisch, geräteunabhängig); canvasWidth für ältere Versionen
+  const pageW = window._gregPageW || undefined;
+  const canvasWidth = gregPaperW();
   return {
     version: '1.2',
     multiSection: hasSections,
@@ -8875,6 +8959,7 @@ function gregBuildStateObject() {
     sz: gregSzRead(),
     initialLines: (document.getElementById('greg-dropcap2')||{}).checked ? 2 : undefined,
     canvasWidth,
+    pageW,
     entries: JSON.parse(JSON.stringify(gregEntries)),
     classic: (typeof clState !== 'undefined') ? JSON.parse(JSON.stringify(clState)) : null,
     meta: Object.assign(ntMetaNorm(gregMeta), { txt: ntCurrentIncipit() || ntMetaNorm(gregMeta).txt })
@@ -8936,6 +9021,8 @@ function gregApplyLoadedState(state) {
   gregSelectedIndices.clear(); window._gregBlockPick = false; window._gregBlockRange = 0;
   window._ntTrashedOpen = false;
   if (state) {
+    // Seitenbreite des Stücks übernehmen (ältere Dateien: gespeicherte Notenbreite; Handy-Breiten < 600 ignorieren)
+    { const pw = +state.pageW || ((+state.canvasWidth >= 600) ? +state.canvasWidth : 0); window._gregPageW = (pw && Math.abs(pw - GREG_PAPER_A4) >= 4) ? Math.max(NT_PAPER_MIN, Math.min(NT_PAPER_MAX, Math.round(pw))) : null; }
     gregFixDoubleAsterisk(state.entries);
     (state.sections || []).forEach(sec => gregFixDoubleAsterisk(sec && sec.entries));
   }
@@ -9456,7 +9543,7 @@ function gregLibSaveAsName(name) {
 function ntNewPiece() {
   const go = () => {
     if (window._ntTab !== 'greg') switchTab('greg');
-    gregCollapseSections(); gregClear();
+    gregCollapseSections(); window._gregPageW = null; gregClear();
     if (typeof gregMeta !== 'undefined') gregMeta = {};
     if (typeof clState !== 'undefined') { clState = {}; clNormalizeState(); clUndoReset(); }
     gregLibCurrentId = null; ntSetTrashedOpen(false);
@@ -17932,6 +18019,8 @@ function clMobileDefaultW() { return (!window._clWidthTouched && !ntViewScale._o
 function clScoreWidth() {
   const wrap = document.getElementById('cl-score-wrap');
   if (clMobileDefaultW()) return CL_MOBILE_DEFAULT_W;
+  // Seitenansicht (Desktop): ohne gespeicherte Breite gilt A4
+  if (ntPaperOn() && !clState.width && !ntFit('cl')) return CL_PAPER_A4;
   if (clState.width) {
     // Anpassen: gespeicherte Breite nur verwenden, wenn sie auf den Bildschirm passt
     // Ausnahme: Breite wurde auf diesem Gerät gerade von Hand eingestellt -> gilt (Anzeige wird eingepasst)
@@ -18117,6 +18206,16 @@ function clRenderInner() {
   clApplyUi();
   clSyncControls();
   clDrawTexts();
+  if (ntPaperOn()) {
+    document.body.classList.add('nt-paper');
+    document.documentElement.style.setProperty('--cl-paper-w', parseInt(el.style.width, 10) + 'px');
+    ntPaperHandles(el, {
+      getW: () => clScoreWidth(), vs: () => ntViewScale('cl'), a4: CL_PAPER_A4,
+      live: w2 => { el.style.width = Math.round(w2 * ntViewScale('cl') + 40) + 'px'; },
+      commit: w2 => clSetWidth(w2),
+      reset: () => { clWidthAuto(); gregGst('Seitenbreite: A4'); }
+    });
+  }
 }
 
 // ── Anzeige/Bearbeiten, Menü, (geräte-lokal gespeichert) ──
@@ -20884,6 +20983,16 @@ function ntViewScalePop(btn) {
   const cur = Math.round(ntViewScale(src) / base * 100);
   d.innerHTML = '<span>Grösse</span><input type="range" min="40" max="' + (gregIsMobileViewport() ? 300 : 160) + '" step="5" value="' + cur + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
     '<span class="v" style="min-width:36px;text-align:right">' + cur + '%</span><button class="b" style="font-size:11px;padding:3px 6px" title="Zurück auf 100 %">100%</button>';
+  if (ntPaperOn()) {
+    const pb = document.createElement('button'); pb.className = 'b';
+    pb.style.cssText = 'font-size:11px;padding:3px 6px;flex-basis:100%';
+    const isA4 = src === 'cl' ? !clState.width : !window._gregPageW;
+    pb.textContent = isA4 ? '▭ Seitenbreite: A4 (am Blattrand ziehen zum Ändern)' : '▭ Seitenbreite auf A4 zurücksetzen';
+    pb.title = 'Die Seitenbreite bestimmt Zeilenumbruch und Notengrösse im PDF. Ändern: Griff links/rechts am Notenblatt ziehen; Doppelklick auf den Griff = A4.';
+    pb.onclick = () => { if (src === 'cl') clWidthAuto(); else { window._gregPageW = null; gregRender(); } d.remove(); gregGst('Seitenbreite: A4'); };
+    d.style.flexWrap = 'wrap';
+    d.appendChild(pb);
+  }
   if (src === 'cl') {
     const fl = document.createElement('label');
     fl.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;cursor:pointer';
@@ -21045,7 +21154,8 @@ function clSetOctave(delta) {
 let _clWidthTimer = null;
 function clSetWidth(v) {
   window._clWidthTouched = true; // Nutzer stellt die Breite bewusst ein -> nicht durch «Anpassen» übersteuern
-  clState.width = Math.max(500, Math.min(1300, parseInt(v, 10) || 740)); // Regler 500–1300 px
+  clState.width = Math.max(400, Math.min(1600, parseInt(v, 10) || 740)); // Regler 500–1300 px, Ziehen am Blatt 400–1600 px
+  if (ntPaperOn() && Math.abs(clState.width - CL_PAPER_A4) < 4) clState.width = null; // = A4
   clSyncControls();
   clearTimeout(_clWidthTimer);
   _clWidthTimer = setTimeout(clRender, 120);
