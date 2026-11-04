@@ -234,6 +234,32 @@ input[type=file]{display:none}
   .nt-paper-lab{position:absolute;top:6px;right:8px;z-index:41;font:11px system-ui,sans-serif;color:#556;background:rgba(255,255,255,.92);border:1px solid #c8c0a8;border-radius:3px;padding:1px 6px;display:none;white-space:nowrap}
   .nt-paper-h.on ~ .nt-paper-lab{display:block}
 }
+/* Gruppen in Kopf- und Werkzeugleisten (PC) */
+.nt-bgrp{display:inline-flex;align-items:center;gap:4px}
+@media (min-width:1001px){
+  .nt-bgrp{position:relative;padding:3px 5px;border:1px solid #2e3e26;border-radius:4px}
+  .nt-bgrp::before{content:attr(data-l);font:10px system-ui,sans-serif;color:#7f9a68;margin-right:2px}
+}
+@media (max-width:1000px){ .nt-bgrp{display:contents} }
+#greg-mobile-bar .nt-filegrp label, #cl-viewbar .nt-filegrp label{display:none !important} /* Notizen mitdrucken: im PDF-Dialog */
+#greg-quickbar.qb-desk-layout{flex-direction:column;align-items:stretch;gap:5px}
+#greg-quickbar .qb-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#greg-quickbar .qb-g{display:inline-flex;flex-wrap:wrap;align-items:center;gap:3px 4px;padding:2px 6px 2px 5px;border:1px solid #2e3e26;border-radius:4px}
+#greg-quickbar .qb-g.qb-g-plain{border-color:transparent;padding-left:0;padding-right:0}
+#greg-quickbar .qb-g::before{content:attr(data-l);font-size:10px;color:#7f9a68;margin-right:2px}
+#greg-quickbar .qb-g.qb-g-plain::before{display:none}
+#greg-quickbar .qb-row:last-of-type .qb-g:last-child{margin-left:auto}
+#greg-quickbar.qb-desk-layout > .qb-sep, #greg-quickbar.qb-desk-layout > #greg-qb-more-btn, #greg-quickbar.qb-desk-layout > #greg-qb-extra, #greg-quickbar.qb-desk-layout > #greg-qb-signs-btn{display:none !important}
+#greg-quickbar.qb-desk-layout #greg-qb-signs{display:inline-flex !important}
+#greg-quickbar.qb-desk-layout #greg-qb-signs .qb-sep{display:none}
+#greg-quickbar.qb-desk-layout #greg-qb-mora{display:inline-flex;align-items:center;gap:3px}
+#greg-quickbar.qb-desk-layout [data-dg="s01"]{display:none}
+/* Orgel-Werkzeugleiste: Gruppen mit Beschriftung (PC) */
+@media (min-width:701px){
+  #cl-toolbar .cl-g{padding:2px 6px 2px 5px;border:1px solid #2e3e26;border-radius:4px;flex-wrap:wrap}
+  #cl-toolbar .cl-g::before{content:attr(data-l);font:10px system-ui,sans-serif;color:#7f9a68;margin-right:2px}
+}
+#classic-panel.cl-menu-compact #cl-toolbar > .cl-g > :not(.cl-ess){display:none !important}
 #greg-quickbar{position:sticky;top:-20px;margin:-20px -20px 12px;z-index:20;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:6px 10px;background:#1a2414;border-bottom:1px solid #3a4a30;font:12px system-ui,sans-serif;color:#a8d878}
 #greg-panel.greg-view #greg-quickbar{display:none}
 #greg-quickbar .qb-mob{display:none}
@@ -318,18 +344,11 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
 <!-- GREG EDITOR PANEL -->
 <div id="greg-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column">
   <div id="greg-mobile-bar" style="padding:6px 8px;background:#121c0e;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #3a4a30;flex-shrink:0">
-    <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Speichern unter, Importieren, Exportieren, Mappe">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
-    <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
-    <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label><button class="b nt-pgprev-btn" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt im Notenbild, wo das PDF eine neue Seite beginnt (Umbrüche setzen: Abschnitts-Kopf «Neue Seite» bzw. Note öffnen › «Seitenumbruch davor»)">&#9636; Seiten</button></span>
-    <button class="b nt-o-file" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
+    <span class="nt-bgrp nt-o-file" data-l="Datei"><button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Speichern unter, Importieren, Exportieren, Mappe">&#128193;<span class="nt-lbl"> Datei ▾</span></button><button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button><span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('greg')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitext-Einträge (Kommentare) im PDF-Export mit ausdrucken. Standardmässig sind sie nur ein Notiz-Overlay im Editor und erscheinen nicht im PDF."><input id="greg-pdf-print-comments" type="checkbox"> Freitext</label></span><button class="b nt-o-file" onclick="ntShareShow('greg')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button></span>
     <span class="nt-o-title" id="greg-mobile-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
     <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
-    <span class="nt-o-view nt-mode" id="greg-mode"><button class="b" data-mode="view" onclick="gregSetMode('view')" title="Ansehen: nur Noten (zum Singen/Spielen)">&#128065;<span class="nt-lbl"> Ansehen</span></button><button class="b" data-mode="edit" onclick="gregSetMode('edit')" title="Bearbeiten: Noten mit Werkzeugleiste">&#9998;<span class="nt-lbl"> Bearbeiten</span></button><button class="b" data-mode="details" onclick="gregSetMode('details')" title="Details: Stück (Titel, Schlüssel …), Einträge, GABC">&#9776;<span class="nt-lbl"> Details</span></button></span>
-    <button class="b nt-zoom-btn nt-pm nt-o-view" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
-    <button class="b nt-o-full" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
-    <span class="nt-bar-sep" style="width:1px;align-self:stretch;background:#3a4a30;margin:0 2px"></span>
-<select class="nt-play-sec nt-pm nt-o-play" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
-    <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
+    <span class="nt-bgrp nt-o-view" data-l="Ansicht"><span class="nt-o-view nt-mode" id="greg-mode"><button class="b" data-mode="view" onclick="gregSetMode('view')" title="Ansehen: nur Noten (zum Singen/Spielen)">&#128065;<span class="nt-lbl"> Ansehen</span></button><button class="b" data-mode="edit" onclick="gregSetMode('edit')" title="Bearbeiten: Noten mit Werkzeugleiste">&#9998;<span class="nt-lbl"> Bearbeiten</span></button><button class="b" data-mode="details" onclick="gregSetMode('details')" title="Details: Stück (Titel, Schlüssel …), Einträge, GABC">&#9776;<span class="nt-lbl"> Details</span></button></span><button class="b nt-pgprev-btn nt-o-view" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt im Notenbild, wo das PDF eine neue Seite beginnt (Umbrüche setzen: Abschnitts-Kopf «Neue Seite» bzw. Note öffnen › «Seitenumbruch davor»)">&#9636; Seiten</button><button class="b nt-zoom-btn nt-pm nt-o-view" data-src="greg" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button><button class="b nt-o-full" onclick="ntToggleFullscreen('greg-canvas-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button><button class="b nt-pm nt-o-view nt-gear-btn" data-src="greg" onclick="ntSettingsMenu(this)" style="font-size:11px;padding:3px 7px" title="Einstellungen (Bildschirm wach halten, Silbe nach dem Setzen abfragen)">&#9881;&#xFE0E;</button></span>
+    <span class="nt-bgrp nt-o-play" data-l="Wiedergabe"><select class="nt-play-sec nt-pm nt-o-play" data-src="greg" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="greg" onclick="ntPlayToggle('greg')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="greg" onclick="ntPlayPick('greg')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="greg" onclick="ntPlayStartTone('greg')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="greg" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button></span>
     <span class="nt-o-break"></span>
   </div>
   <div style="display:flex;flex:1;overflow:hidden;min-height:500px">
@@ -490,7 +509,7 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b" onclick="gregAddDirective('iij.')" style="font-size:10px;padding:0px 5px" title="iij. (Dreifach-Antiphon, kursiv)"><i>iij.</i></button>
         <button class="b" onclick="gregInsertTextOnly()" style="font-size:10px;padding:0px 5px" title="Text ohne Noten in der Textzeile (z.B. «℟. Roráte.» als Wiederholungsangabe) – nimmt den Text aus dem Feld «Silbe», sonst Eingabefenster">Text ohne Noten</button>
         <button class="b" onclick="gregAddLinebreak()" style="font-size:10px;padding:0px 5px" title="Neue leere Notenlinie einfügen">&#9135; Linie</button>
-        <button class="b" onclick="gregAddComment()" style="font-size:10px;padding:0px 5px" title="Freitextfeld platzieren">&#128172; Text</button>
+        <button class="b" onclick="gregAddComment()" style="font-size:10px;padding:0px 5px" title="Notiz (freier Text) platzieren">&#128172; Notiz</button>
       </div>
       <!-- Liquescence + special neume modifiers -->
       <div style="padding:3px 8px;background:#151e10;border-bottom:1px solid #2a3820;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
@@ -530,40 +549,40 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
     <div id="greg-drag-handle" style="width:5px;flex-shrink:0;background:#2a3820;cursor:col-resize;position:relative;z-index:10;transition:background .15s" onmouseenter="this.style.background='#4a7a40'" onmouseleave="this.style.background='#2a3820'"></div>
     <div id="greg-canvas-wrap" style="flex:1;overflow:auto;background:#ffffff;padding:20px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start">
       <div id="greg-quickbar">
-        <span id="greg-qb-neumes" style="display:inline-flex;gap:3px;flex-wrap:wrap"></span>
-        <button class="b" id="greg-qb-more" onclick="gregQbMoreNeumes(this)" title="Weitere Neumen (mit Bild)">weitere Neumen ▾</button>
+        <span id="greg-qb-neumes" data-dg="n01" style="display:inline-flex;gap:3px;flex-wrap:wrap"></span>
+        <button class="b" id="greg-qb-more" data-dg="n02" onclick="gregQbMoreNeumes(this)" title="Weitere Neumen (mit Bild)">weitere Neumen ▾</button>
         <span class="qb-sep"></span>
-        <span>Silbe</span><input id="greg-qb-syl" type="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Ky-" title="Silbe für die nächste gesetzte Neume (gleich wie das Feld «Silbe» links)">
-        <label title="Wortende: nach dieser Silbe beginnt ein neues Wort (gilt für die nächste Neume) – Leerzeichen am Ende der Silbe oder Leertaste"><input type="checkbox" id="greg-qb-we"> Wortende</label>
+        <span data-dg="s01">Silbe</span><input id="greg-qb-syl" data-dg="s02" type="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Ky-" title="Silbe für die nächste gesetzte Neume (gleich wie das Feld «Silbe» links)">
+        <label data-dg="s03" title="Wortende: nach dieser Silbe beginnt ein neues Wort (gilt für die nächste Neume) – Leerzeichen am Ende der Silbe oder Leertaste"><input type="checkbox" id="greg-qb-we"> Wortende</label>
         <span class="qb-sep"></span>
-        <span id="greg-qb-mora" title="Mora (.) auf Note 1–4 der nächsten Neume – wird nach dem Setzen automatisch zurückgesetzt (Taste M = Mora auf der letzten Note)">Mora (.): <label><input type="checkbox" data-p="1">N1</label><label><input type="checkbox" data-p="2">N2</label><label><input type="checkbox" data-p="3">N3</label><label><input type="checkbox" data-p="4">N4</label></span>
+        <span id="greg-qb-mora" data-dg="z04" title="Mora (.) auf Note 1–4 der nächsten Neume – wird nach dem Setzen automatisch zurückgesetzt (Taste M = Mora auf der letzten Note)">Mora (.): <label><input type="checkbox" data-p="1">N1</label><label><input type="checkbox" data-p="2">N2</label><label><input type="checkbox" data-p="3">N3</label><label><input type="checkbox" data-p="4">N4</label></span>
         <span class="qb-sep"></span>
-        <button class="b qb-acc" data-acc="x" onclick="gregSetAccidental('x')" title="b molle für die nächste Note (Taste B)">&#x266D;</button><button class="b qb-acc" data-acc="#" onclick="gregSetAccidental('#')" title="Kreuz für die nächste Note (Taste #)">&#x266F;</button><button class="b qb-acc" data-acc="y" onclick="gregSetAccidental('y')" title="Auflösungszeichen für die nächste Note (Taste N)">&#x266E;</button>
-        <span data-mshow="greg-acc-pos" style="display:none"><select data-m="greg-acc-pos" title="Vorzeichen vor welcher Note der nächsten Neume"><option value="">auto</option><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option><option value="4">auf N4</option></select></span>
+        <button class="b qb-acc" data-dg="z01" data-acc="x" onclick="gregSetAccidental('x')" title="b molle für die nächste Note (Taste B)">&#x266D;</button><button class="b qb-acc" data-dg="z02" data-acc="#" onclick="gregSetAccidental('#')" title="Kreuz für die nächste Note (Taste #)">&#x266F;</button><button class="b qb-acc" data-dg="z03" data-acc="y" onclick="gregSetAccidental('y')" title="Auflösungszeichen für die nächste Note (Taste N)">&#x266E;</button>
+        <span data-dg="z035" data-mshow="greg-acc-pos" style="display:none"><select data-m="greg-acc-pos" title="Vorzeichen vor welcher Note der nächsten Neume"><option value="">auto</option><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option><option value="4">auf N4</option></select></span>
         <span class="qb-sep"></span>
         <button class="b" id="greg-qb-signs-btn" onclick="gregQbSignsToggle()" title="Trennstriche, ℣ ℟, Ant./Ps./ij./iij., Text ohne Noten (Tasten , ; : am PC)">Zeichen ▾</button>
-        <span id="greg-qb-signs"><button class="b" onclick="gregAddDiv(',')" title="Divisio minima (Taste ,)">,</button><button class="b" onclick="gregAddDiv(';')" title="Divisio minor (Taste ;)">;</button><button class="b" onclick="gregAddDiv(':')" title="Divisio maior (Taste :)">:</button><button class="b" onclick="gregAddDiv('::')" title="Doppelstrich (Taste : zweimal)">::</button><button class="b" onclick="gregAddSpecial('*')" title="Asterisk">&#x2217;</button><button class="b" onclick="gregInsertVers()" title="Vers (Vorsänger)">℣</button><button class="b" onclick="gregInsertResp()" title="Responsorium">℟</button>
+        <span id="greg-qb-signs" data-dg="t01"><button class="b" onclick="gregAddDiv(',')" title="Divisio minima (Taste ,)">,</button><button class="b" onclick="gregAddDiv(';')" title="Divisio minor (Taste ;)">;</button><button class="b" onclick="gregAddDiv(':')" title="Divisio maior (Taste :)">:</button><button class="b" onclick="gregAddDiv('::')" title="Doppelstrich (Taste : zweimal)">::</button><button class="b" onclick="gregAddSpecial('*')" title="Asterisk">&#x2217;</button><button class="b" onclick="gregInsertVers()" title="Vers (Vorsänger)">℣</button><button class="b" onclick="gregInsertResp()" title="Responsorium">℟</button>
         <span class="qb-sep"></span>
         <button class="b" onclick="gregAddDirective('Ant.')" title="Ant. (Antiphon-Rubrik)"><i>Ant.</i></button><button class="b" onclick="gregAddDirective('Ps.')" title="Ps. (Psalm-Rubrik)"><i>Ps.</i></button><button class="b" onclick="gregAddDirective('ij.')" title="ij. (zweimal)"><i>ij.</i></button><button class="b" onclick="gregAddDirective('iij.')" title="iij. (dreimal)"><i>iij.</i></button>
         <button class="b" onclick="gregInsertTextOnly()" title="Text ohne Noten in der Textzeile (z.B. «℟. Roráte.») – nimmt den Text aus dem Silbenfeld, sonst Eingabefenster">Text ohne Noten</button></span>
-        <button class="b" id="greg-qb-finish" data-mshow="greg-finish-open-neume" onclick="gregFinishPendingNeume()" style="display:none;background:#1e4a1e;color:#d8f0c0" title="Offene Neume (z.B. Climacus) mit den bisher gesetzten Noten abschliessen (Enter)">✓ Fertig</button>
+        <button class="b" id="greg-qb-finish" data-dg="n03" data-mshow="greg-finish-open-neume" onclick="gregFinishPendingNeume()" style="display:none;background:#1e4a1e;color:#d8f0c0" title="Offene Neume (z.B. Climacus) mit den bisher gesetzten Noten abschliessen (Enter)">✓ Fertig</button>
         <span class="qb-sep"></span>
-        <button class="b" onclick="gregUndo()" title="Rückgängig (Strg+Z)">↩</button><button class="b" onclick="gregRedo()" title="Wiederholen (Strg+Y)">↪</button>
-        <button class="b" id="greg-qb-range" onclick="gregBlockRangeStart()" title="Bereich markieren: erste und letzte Note antippen – dann als Block löschen, duplizieren oder verschieben (am PC auch Shift+Klick / Strg+Klick auf Noten)">▭ Bereich</button>
-        <button class="b qb-desk" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
-        <button class="b" id="greg-qb-ins-btn" onclick="ntInsertMenu(this)" title="Einfügen: Psalmton-Assistent, Gloria Patri, Strophen, Text zuerst">✚ Einfügen ▾</button>
-        <button class="b" id="greg-qb-more-btn" onclick="gregQbExtraToggle()" title="Weitere, seltener gebrauchte Angaben: Iktus, Episema, Modifier, Trennstriche ;1–;6, Linie, Freitext">mehr ▾</button>
+        <button class="b" data-dg="u01" onclick="gregUndo()" title="Rückgängig (Strg+Z)">↩</button><button class="b" data-dg="u02" onclick="gregRedo()" title="Wiederholen (Strg+Y)">↪</button>
+        <button class="b" id="greg-qb-range" data-dg="k05" onclick="gregBlockRangeStart()" title="Bereich markieren: erste und letzte Note antippen – dann als Block löschen, duplizieren oder verschieben (am PC auch Shift+Klick / Strg+Klick auf Noten)">▭ Bereich</button>
+        <button class="b qb-desk" data-dg="e01" onclick="gregShortcutHelp()" title="Tastenkürzel (Taste ?)">⌨ ?</button>
+        <button class="b" id="greg-qb-ins-btn" data-dg="k04" onclick="ntInsertMenu(this)" title="Einfügen: Psalmton-Assistent, Gloria Patri, Strophen, Text zuerst">✚ Einfügen ▾</button>
+        <button class="b" id="greg-qb-more-btn" onclick="gregQbExtraToggle()" title="Weitere, seltener gebrauchte Angaben: Iktus, Episema, Modifier, Trennstriche ;1–;6, Linie, Notiz">mehr ▾</button>
         <span id="greg-qb-extra" style="display:none;flex-basis:100%;gap:4px 10px;flex-wrap:wrap;align-items:center;padding-top:3px;border-top:1px solid #2a3820">
-          <label><input type="checkbox" data-m="greg-iktus"> Iktus (')</label><span data-mshow="greg-iktus-pos-w" style="display:none"><select data-m="greg-iktus-pos"><option value="">Standard</option><option value="above">oben</option><option value="below">unten</option></select></span>
-          <label><input type="checkbox" data-m="greg-episema"> Episema (_)</label><span data-mshow="greg-episema-pos" style="display:none"><select data-m="greg-episema-pos"><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option></select></span>
+          <label data-dg="z05"><input type="checkbox" data-m="greg-iktus"> Iktus (')</label><span data-dg="z06" data-mshow="greg-iktus-pos-w" style="display:none"><select data-m="greg-iktus-pos"><option value="">Standard</option><option value="above">oben</option><option value="below">unten</option></select></span>
+          <label data-dg="z07"><input type="checkbox" data-m="greg-episema"> Episema (_)</label><span data-dg="z08" data-mshow="greg-episema-pos" style="display:none"><select data-m="greg-episema-pos"><option value="1">auf N1</option><option value="2">auf N2</option><option value="3">auf N3</option></select></span>
           <span class="qb-sep"></span>
           <span style="opacity:.8">Modifier</span>
-          <label title="Liqueszenz"><input type="checkbox" data-m="greg-liquescent"> Liq.</label><label title="Oriscus"><input type="checkbox" data-m="greg-oriscus"> Orisc.</label><label title="Strophicus"><input type="checkbox" data-m="greg-strophicus"> Stroph.</label><label title="Pressus"><input type="checkbox" data-m="greg-pressus"> Pres.</label><label title="Quilisma"><input type="checkbox" data-m="greg-quilisma"> Quilisma</label><span data-mshow="greg-quilisma-pos-w" style="display:none">auf <select data-m="greg-quilisma-pos"><option value="1">Note 1</option><option value="2">Note 2</option><option value="3">Note 3</option><option value="4">Note 4</option></select></span>
+          <label data-dg="z09" title="Liqueszenz"><input type="checkbox" data-m="greg-liquescent"> Liq.</label><label data-dg="z10" title="Oriscus"><input type="checkbox" data-m="greg-oriscus"> Orisc.</label><label data-dg="z11" title="Strophicus"><input type="checkbox" data-m="greg-strophicus"> Stroph.</label><label data-dg="z12" title="Pressus"><input type="checkbox" data-m="greg-pressus"> Pres.</label><label data-dg="z13" title="Quilisma"><input type="checkbox" data-m="greg-quilisma"> Quilisma</label><span data-dg="z14" data-mshow="greg-quilisma-pos-w" style="display:none">auf <select data-m="greg-quilisma-pos"><option value="1">Note 1</option><option value="2">Note 2</option><option value="3">Note 3</option><option value="4">Note 4</option></select></span>
           <span class="qb-sep"></span>
-          <select onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche ;1–;6"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
-          <button class="b" onclick="gregAddLinebreak()" title="Neue Notenlinie (Zeilenumbruch) einfügen">⏎ Linie</button>
-          <button class="b" onclick="gregAddSection()" title="Neuen Abschnitt hinzufügen (eigener Titel, Schlüssel, Kopfzeile)">+ Abschnitt</button>
-          <button class="b" onclick="gregAddComment()" title="Freitextfeld platzieren (Notiz, standardmässig nicht im PDF)">💬 Freitext</button>
+          <select data-dg="t02" onchange="if(this.value){gregAddDiv(this.value);this.value='';}" title="Weitere Trennstriche ;1–;6"><option value="">;n ▾</option><option value=";1">;1</option><option value=";2">;2</option><option value=";3">;3</option><option value=";4">;4</option><option value=";5">;5</option><option value=";6">;6</option></select>
+          <button class="b" data-dg="k01" onclick="gregAddLinebreak()" title="Neue Notenlinie (Zeilenumbruch) einfügen">⏎ Linie</button>
+          <button class="b" data-dg="k02" onclick="gregAddSection()" title="Neuen Abschnitt hinzufügen (eigener Titel, Schlüssel, Kopfzeile)">+ Abschnitt</button>
+          <button class="b" data-dg="k03" onclick="gregAddComment()" title="Notiz (freier Text) platzieren – standardmässig nicht im PDF">💬 Notiz</button>
           <span class="qb-sep"></span>
           <label title="Nach dem Setzen einer Neume ohne Silbe erscheint direkt unter der Note ein Feld für die Silbe (Enter = übernehmen, Tab = weiter zur nächsten Note, Esc = überspringen)"><input type="checkbox" id="greg-qb-ask" onchange="gregAskSylSet(this.checked)"> Silbe nach dem Setzen abfragen</label>
         </span>
@@ -609,52 +628,34 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
 <!-- Klassische Orgelnoten (ersetzt den alten Klick-Noten-Editor) -->
 <div id="classic-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:#1a2414">
   <div id="cl-viewbar" style="padding:5px 8px;background:#0e1609;border-bottom:1px solid #3a4a30;display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0">
-    <button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Speichern unter, Importieren, Exportieren, Mappe">&#128193;<span class="nt-lbl"> Datei ▾</span></button>
-    <button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button>
-    <span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label><button class="b nt-pgprev-btn" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt, wo das PDF eine neue Seite beginnt. Umbruch setzen: Silbe/Note antippen › «Neue Seite ab dieser Silbe» (im Bearbeiten-Modus); ganzer Abschnitt: «Neue Seite» im Choral-Abschnittskopf">&#9636; Seiten</button></span>
-    <button class="b nt-o-file" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button>
+    <span class="nt-bgrp nt-o-file" data-l="Datei"><button class="b nt-o-file nt-file-btn" onclick="ntFileMenu(this)" style="font-size:11px;padding:3px 8px" title="Datei: Neu, Öffnen, Speichern unter, Importieren, Exportieren, Mappe">&#128193;<span class="nt-lbl"> Datei ▾</span></button><button class="b nt-o-file" onclick="ntSaveMenu(this)" style="font-size:11px;padding:3px 8px;background:#2a4a6a;color:#fff;border-color:#2a4a6a" title="Speichern: in die Bibliothek oder als Notator-Datei">&#128190;<span class="nt-lbl"> Speichern</span></button><span class="nt-filegrp nt-o-file" style="display:inline-flex;align-items:center;gap:4px"><button class="b" onclick="ntPdfSave('cl')" style="font-size:11px;padding:3px 8px" title="Als PDF speichern (Gerät oder Google Drive)">&#8595; PDF</button><label style="font-size:10px;color:#a8d878;display:flex;align-items:center;gap:2px;cursor:pointer" title="Freitexte im PDF mit ausgeben"><input id="cl-pdf-print-texts" type="checkbox"> Freitext</label></span><button class="b nt-o-file" onclick="ntShareShow('cl')" style="font-size:11px;padding:3px 8px" title="Teilen: Link zu Notator oder nur PDF">&#128279;<span class="nt-lbl"> Teilen</span></button></span>
     <span class="nt-o-title" id="cl-vb-title" style="flex:0 1 auto;min-width:40px;font-size:11px;color:#c0d890;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><a class="nt-gb-link nt-o-title" href="#" onclick="return ntGbLinkClick(event,this)" target="_blank" rel="noopener" style="display:none;font-size:11px;color:#9cc8ff;white-space:nowrap;text-decoration:none" title="Dieses Stück in GregoBase öffnen (neuer Tab)">↗ GregoBase</a><a class="nt-noh-piece nt-o-title" href="#" onclick="return ntNohPieceClick(event,this)" style="display:none;font-size:11px;color:#e0c070;white-space:nowrap;text-decoration:none" title="Passende Fassungen in der Notenbibliothek (Orgelsatz, Choralbuch)">📚 NOH ▾</a>
     <span class="nt-bar-spacer nt-o-spacer" style="flex:1 1 0;min-width:0"></span>
-    <button class="b nt-o-view" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button>
-    <button class="b nt-o-view" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü: voll → kompakt → ausgeblendet">&#9776;<span class="nt-lbl"> Menü</span></button>
-    <button class="b nt-zoom-btn nt-pm nt-o-view" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button>
-    <button class="b nt-o-full" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button>
-    <span class="nt-bar-sep" style="width:1px;align-self:stretch;background:#3a4a30;margin:0 2px"></span>
-<select class="nt-play-sec nt-pm nt-o-play" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="cl" onclick="ntPlayStartTone('cl')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button>
-    <button class="b nt-wake-btn nt-pm nt-o-play" onclick="ntWakeToggle()" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Bildschirm wach halten">&#9728;&#xFE0E;</button>
+    <span class="nt-bgrp nt-o-view" data-l="Ansicht"><button class="b nt-o-view" id="cl-mode-btn" onclick="clToggleView()" style="font-size:11px;padding:3px 8px" title="Zwischen Anzeige (nur Noten) und Bearbeiten wechseln">&#128065; Anzeige</button><button class="b nt-o-view" id="cl-menu-btn" onclick="clToggleMenu()" style="font-size:11px;padding:3px 8px" title="Menü: voll → kompakt → ausgeblendet">&#9776;<span class="nt-lbl"> Menü</span></button><button class="b nt-pgprev-btn nt-o-view" onclick="gregPagePreviewToggle()" style="font-size:11px;padding:3px 6px" title="Seitenumbruch-Vorschau: zeigt, wo das PDF eine neue Seite beginnt. Umbruch setzen: Silbe/Note antippen › «Neue Seite ab dieser Silbe» (im Bearbeiten-Modus); ganzer Abschnitt: «Neue Seite» im Choral-Abschnittskopf">&#9636; Seiten</button><button class="b nt-zoom-btn nt-pm nt-o-view" data-src="cl" onclick="ntViewScalePop(this)" style="font-size:11px;padding:3px 6px;white-space:nowrap" title="Anzeigegrösse (nur Bildschirm, nicht PDF)">&#128269; 100%</button><button class="b nt-o-full" onclick="ntToggleFullscreen('cl-score-wrap')" style="font-size:11px;padding:3px 8px" title="Vollbild (nur Noten)">&#x26F6;</button><button class="b nt-pm nt-o-view nt-gear-btn" data-src="cl" onclick="ntSettingsMenu(this)" style="font-size:11px;padding:3px 7px" title="Einstellungen (Bildschirm wach halten)">&#9881;&#xFE0E;</button></span>
+    <span class="nt-bgrp nt-o-play" data-l="Wiedergabe"><select class="nt-play-sec nt-pm nt-o-play" data-src="cl" onfocus="ntPlaySecUi()" onchange="ntPlaySecSet(this.value)" style="display:none;font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #4a6a30;padding:2px;max-width:120px" title="Alle Abschnitte oder nur einen Abschnitt abspielen"></select><button class="b nt-play-btn nt-o-play" data-src="cl" onclick="ntPlayToggle('cl')" style="font-size:11px;padding:3px 8px;min-width:30px" title="Abspielen">&#9654;</button><button class="b nt-pick-btn nt-pm nt-o-play" data-src="cl" onclick="ntPlayPick('cl')" style="font-size:11px;padding:3px 6px" title="Ab einer Stelle abspielen: danach die Note anklicken, ab der gespielt werden soll">&#9654;&#8739;</button><button class="b nt-tone-btn nt-o-play" data-src="cl" onclick="ntPlayStartTone('cl')" style="font-size:11px;padding:3px 7px" title="Anfangston (Orgel: Anfangsakkord) zum Anstimmen spielen">&#9833;<span class="nt-lbl"> Ton</span></button><button class="b nt-o-play" onclick="ntPlayStop()" style="font-size:11px;padding:3px 8px" title="Stopp">&#9632;</button><button class="b nt-mob-only nt-o-play" data-src="cl" onclick="ntPlayMore(this)" style="font-size:12px;padding:3px 9px" title="Weitere Wiedergabe- und Anzeige-Optionen">&#8943;</button><button class="b nt-pm nt-o-play" onclick="ntPlaySettings(this)" style="font-size:11px;padding:3px 8px" title="Tempo und Klang">&#9834;</button></span>
     <span class="nt-o-break"></span>
   </div>
   <div id="cl-toolbar" style="padding:6px 8px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
 <span class="cl-ess cl-grp"><button class="b" onclick="clUndo()" style="font-size:11px;padding:3px 8px" title="Orgel: letzte Änderung rückgängig (Strg+Z)">&#8617;</button>
     <button class="b" onclick="clRedo()" style="font-size:11px;padding:3px 8px" title="Orgel: wiederholen (Strg+Y)">&#8618;</button></span>
-    <button class="b" onclick="clRegenerate()" style="font-size:11px;padding:3px 8px" title="Klassische Fassung neu aus dem aktuellen Choral erzeugen">&#8635; Aus Choral übernehmen</button>
-    <span style="color:#3a4a30">|</span>
-    <label class="cl-ess" id="cl-sec-wrap" style="font-size:11px;color:#e0c070;display:none;align-items:center;gap:4px" title="Grundton, Oktave, Titel, Untertitel und Kopfzeile gelten für den hier gewählten Abschnitt">Einstellungen für
-      <select id="cl-sec-sel" onchange="clSelectSection(this.value)" style="font-size:11px;background:#0a1406;color:#e0c070;border:1px solid #6a5a30;padding:2px"></select></label>
-<span class="cl-ess cl-grp"><label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px;min-width:0">Grundton
+<span class="cl-g cl-grp" data-l="Quelle"><button class="b" onclick="clRegenerate()" style="font-size:11px;padding:3px 8px" title="Klassische Fassung neu aus dem aktuellen Choral erzeugen">&#8635; Aus Choral übernehmen</button><button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button></span>
+<span class="cl-g cl-grp cl-ess" data-l="Tonart"><label class="cl-ess" id="cl-sec-wrap" style="font-size:11px;color:#e0c070;display:none;align-items:center;gap:4px" title="Grundton, Oktave, Titel, Untertitel und Kopfzeile gelten für den hier gewählten Abschnitt">Einstellungen für
+      <select id="cl-sec-sel" onchange="clSelectSection(this.value)" style="font-size:11px;background:#0a1406;color:#e0c070;border:1px solid #6a5a30;padding:2px"></select></label><span class="cl-ess cl-grp"><label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px;min-width:0">Grundton
       <select id="cl-target" onchange="clSetTarget(this.value)" style="font-size:11px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;padding:2px;min-width:0;max-width:62vw"></select></label>
-    <button class="b" id="cl-target-all" onclick="clTargetToAll()" style="font-size:10px;padding:2px 6px;display:none" title="Diesen Grundton für alle Abschnitte übernehmen (danach je Abschnitt weiter einzeln änderbar)">&#8594; alle Abschnitte</button></span>
-    <span class="cl-ess cl-grp"><span style="font-size:11px;color:#a8d878">Oktave</span>
+    <button class="b" id="cl-target-all" onclick="clTargetToAll()" style="font-size:10px;padding:2px 6px;display:none" title="Diesen Grundton für alle Abschnitte übernehmen (danach je Abschnitt weiter einzeln änderbar)">&#8594; alle Abschnitte</button></span><span class="cl-ess cl-grp"><span style="font-size:11px;color:#a8d878">Oktave</span>
     <button class="b" onclick="clSetOctave(-1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave tiefer">&minus;</button>
     <span id="cl-oct" style="font-size:11px;color:#c0d890;min-width:18px;text-align:center">0</span>
-    <button class="b" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button></span>
-    <span style="color:#3a4a30">|</span>
-    <button class="b" id="cl-src-btn" onclick="clToggleSource()" style="font-size:11px;padding:3px 8px" title="ABC-Quelltext anzeigen und von Hand korrigieren">&#9998; Quelltext</button>
-    <button class="b cl-ess" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button>
-    <button class="b" id="cl-flat-btn" onclick="clToggleFlatScope()" style="font-size:11px;padding:3px 8px" title="Gültigkeit eines b-Vorzeichens aus dem Choral: bis zum nächsten Trennstrich (Standard – auch über Wortgrenzen) oder streng nach Solesmes nur bis Wortende">♭ gilt bis Trennstrich</button>
-    <button class="b" id="cl-pedal-btn" onclick="clTogglePedal()" style="font-size:11px;padding:3px 8px;display:none" title="Bass als eigenes Pedalsystem (Orgelsatz mit 3 Systemen) oder im unteren Manualsystem">Pedal: im Bass-System</button>
-    <button class="b" onclick="clResetChords()" style="font-size:11px;padding:3px 8px" title="Von Hand gewählte Akkorde zurücksetzen">&#8634; Akkorde</button>
-    <button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Freitext einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Text</button>
-    <span style="color:#3a4a30">|</span>
+    <button class="b" onclick="clSetOctave(1)" style="font-size:11px;padding:2px 8px" title="Eine Oktave höher">+</button></span></span>
+<span class="cl-g cl-grp cl-ess" data-l="Satz"><button class="b cl-ess" id="cl-accomp-btn" onclick="clToggleAccomp()" style="font-size:11px;padding:3px 8px" title="Zwischen Fassung mit und ohne Begleitsatz umschalten">&#127929; Begleitsatz: aus</button><button class="b" id="cl-pedal-btn" onclick="clTogglePedal()" style="font-size:11px;padding:3px 8px;display:none" title="Bass als eigenes Pedalsystem (Orgelsatz mit 3 Systemen) oder im unteren Manualsystem">Pedal: im Bass-System</button><button class="b" id="cl-flat-btn" onclick="clToggleFlatScope()" style="font-size:11px;padding:3px 8px" title="Gültigkeit eines b-Vorzeichens aus dem Choral: bis zum nächsten Trennstrich (Standard – auch über Wortgrenzen) oder streng nach Solesmes nur bis Wortende">♭ gilt bis Trennstrich</button><button class="b" onclick="clResetChords()" style="font-size:11px;padding:3px 8px" title="Von Hand gewählte Akkorde zurücksetzen">&#8634; Akkorde</button></span>
+<span class="cl-g cl-grp" data-l="Einfügen"><button class="b" onclick="clAddText()" style="font-size:11px;padding:3px 8px" title="Notiz (freier Text) einfügen – danach mit der Maus verschieben, Doppelklick zum Bearbeiten/Löschen">&#128172; Notiz</button></span>
 <span class="cl-ess cl-grp cl-grp-w" title="Layoutbreite: bestimmt Zeilenumbruch und Druckgrösse (breiter = kleinere Noten, mehr pro Zeile im PDF)"><span style="font-size:11px;color:#a8d878">Breite</span>
     <button class="b" onclick="clWidthStep(-20)" style="font-size:11px;padding:2px 7px" title="Breite verkleinern (weniger Noten pro Zeile)">&minus;</button>
     <input type="range" id="cl-width" min="500" max="1300" step="10" oninput="clSetWidth(this.value)" style="flex:1 1 110px;min-width:50px;max-width:200px;accent-color:#5a8a40">
     <button class="b" onclick="clWidthStep(20)" style="font-size:11px;padding:2px 7px" title="Breite vergrössern (mehr Noten pro Zeile)">+</button>
     <span id="cl-width-val" style="font-size:10px;color:#c0d890;min-width:44px;text-align:center"></span>
     <button class="b" id="cl-width-auto" onclick="clWidthAuto()" style="font-size:11px;padding:2px 6px" title="Breite wieder automatisch ans Fenster anpassen">Auto</button></span>
-    <span style="color:#3a4a30">|</span>
-    <button class="b" onclick="clExportMenu(this)" style="font-size:11px;padding:3px 8px" title="Für andere Notenprogramme exportieren (ABC, MusicXML)">&#8595; Exportieren &#9662;</button>
-    <span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
+<span class="cl-g cl-grp" data-l="Export"><button class="b" onclick="clExportMenu(this)" style="font-size:11px;padding:3px 8px" title="Für andere Notenprogramme exportieren (ABC, MusicXML)">&#8595; Exportieren &#9662;</button></span>
+<span id="cl-status" style="font-size:10px;color:#8b9a70;margin-left:6px"></span>
   </div>
   <div id="cl-headrow" style="padding:4px 10px;background:#151e10;border-bottom:1px solid #2a3820;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
     <label style="font-size:11px;color:#a8d878;display:flex;align-items:center;gap:4px">Titel
@@ -3869,6 +3870,51 @@ function gregQbMirror() {
   });
   const mb = document.getElementById('greg-qb-more-btn'), ex = document.getElementById('greg-qb-extra');
   if (mb && ex) mb.textContent = ex.style.display === 'none' ? 'mehr ▾' : 'weniger ▴';
+}
+// PC (ab 701 px): Werkzeugleiste in beschriftete Gruppen umordnen (Elemente mit data-dg);
+// Handy: ursprüngliche Anordnung (Platzhalter merken die alte Stelle).
+const GREG_QB_ROWS = [[['u', ''], ['n', 'Neume'], ['s', 'Silbe'], ['z', 'Zeichen']], [['t', 'Trennung / Text'], ['k', 'Struktur'], ['e', '']]];
+function gregQbLayout() {
+  const qb = document.getElementById('greg-quickbar'); if (!qb) return;
+  const desk = !gregIsMobileViewport();
+  if (desk === !!qb._deskLayout) return;
+  if (desk) {
+    const els = Array.from(qb.querySelectorAll('[data-dg]'));
+    qb._dgHome = els.map(el => { const ph = document.createComment('dg'); el.parentNode.insertBefore(ph, el); return [el, ph]; });
+    const groups = {};
+    const rows = GREG_QB_ROWS.map(row => {
+      const rw = document.createElement('div'); rw.className = 'qb-row';
+      row.forEach(([k, l]) => { const g = document.createElement('span'); g.className = 'qb-g' + (l ? '' : ' qb-g-plain'); if (l) g.dataset.l = l; groups[k] = g; rw.appendChild(g); });
+      return rw;
+    });
+    els.sort((a, b) => a.dataset.dg.localeCompare(b.dataset.dg)).forEach(el => { const g = groups[el.dataset.dg[0]]; if (g) g.appendChild(el); });
+    qb.insertBefore(rows[1], qb.firstChild); qb.insertBefore(rows[0], qb.firstChild);
+    qb._dgRows = rows;
+  } else {
+    (qb._dgHome || []).forEach(([el, ph]) => { if (ph.parentNode) { ph.parentNode.insertBefore(el, ph); ph.remove(); } });
+    (qb._dgRows || []).forEach(rw => rw.remove());
+    qb._dgHome = qb._dgRows = null;
+  }
+  qb._deskLayout = desk;
+  qb.classList.toggle('qb-desk-layout', desk);
+}
+window.addEventListener('resize', () => { try { gregQbLayout(); } catch (e) {} });
+document.addEventListener('DOMContentLoaded', () => { try { gregQbLayout(); } catch (e) { console.warn(e); } });
+// ⚙ Einstellungen in der Kopfleiste (PC): Bildschirm wach halten, Silbe abfragen
+function ntSettingsMenu(btn) {
+  const old = document.getElementById('nt-set-pop'); if (old) { old.remove(); if (old._btn === btn) return; }
+  const src = btn.getAttribute('data-src');
+  const d = document.createElement('div'); d.id = 'nt-set-pop'; d._btn = btn;
+  d.style.cssText = 'position:fixed;z-index:2600;background:#1a2414;border:1px solid #5a8a40;border-radius:3px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.5);font:12px system-ui,sans-serif;color:#c0d890;display:flex;flex-direction:column;gap:7px;min-width:240px';
+  const rc = btn.getBoundingClientRect();
+  d.style.top = (rc.bottom + 4) + 'px';
+  const opt = (label, on, fn, tip) => { const l = document.createElement('label'); l.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer'; if (tip) l.title = tip; const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!on; c.style.accentColor = '#5a8a40'; c.onchange = () => fn(c.checked); l.appendChild(c); l.appendChild(document.createTextNode(label)); d.appendChild(l); };
+  opt('Bildschirm wach halten', ntWakePref(), v => { if (!!ntWakePref() !== v) ntWakeToggle(); }, 'Verhindert, dass der Bildschirm beim Singen/Spielen dunkel wird');
+  if (src === 'greg') opt('Silbe nach dem Setzen abfragen', gregAskSylOn(), v => gregAskSylSet(v), 'Nach dem Setzen einer Neume ohne Silbe erscheint unter der Note ein Feld für die Silbe');
+  document.body.appendChild(d);
+  d.style.left = Math.max(8, Math.min(rc.left, window.innerWidth - d.offsetWidth - 8)) + 'px';
+  const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
+  setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
 }
 function gregQbExtraToggle() {
   const ex = document.getElementById('greg-qb-extra'); if (!ex) return;
@@ -8720,7 +8766,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '379';
+const NOTATOR_BUILD_ID = '380';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19016,7 +19062,7 @@ function ntPdfDialog(ctx) {
   if (ftSrc && !K.n) {
     const lab = document.createElement('label'); lab.style.cssText = 'font-size:12px;display:flex;gap:6px;align-items:center;margin-top:6px';
     const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = ftSrc.checked; cb.onchange = () => { ftSrc.checked = cb.checked; };
-    lab.appendChild(cb); lab.appendChild(document.createTextNode(' Freitext mitdrucken')); body.appendChild(lab);
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(' Notizen mitdrucken')); body.appendChild(lab);
   }
   const bEl = document.getElementById('modal-btns');
   const ok = document.createElement('button'); ok.className = 'b'; ok.textContent = 'Speichern';
@@ -21496,7 +21542,7 @@ function clTextDragStart(ev, tx, el, svg) {
 }
 
 function clAddText() {
-  const text = window.prompt('Freitext eingeben (\\n für Zeilenumbruch):', '');
+  const text = window.prompt('Notiz eingeben (\\n für Zeilenumbruch):', '');
   if (!text || !text.trim()) return;
   // Mitte des sichtbaren Bereichs im passenden Stück-SVG
   const wrap = document.getElementById('cl-score-wrap');
@@ -21516,7 +21562,7 @@ function clAddText() {
 function clEditText(id) {
   const tx = clState.texts.find(x => x.id === id);
   if (!tx) return;
-  const v = window.prompt('Freitext bearbeiten (leer lassen = löschen, \\n = Zeilenumbruch):', tx.text.replace(/\n/g, '\\n'));
+  const v = window.prompt('Notiz bearbeiten (leer lassen = löschen, \\n = Zeilenumbruch):', tx.text.replace(/\n/g, '\\n'));
   if (v === null) return;
   if (!v.trim()) clState.texts = clState.texts.filter(x => x.id !== id);
   else tx.text = v.replace(/\\n/g, '\n');
