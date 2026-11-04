@@ -1486,7 +1486,10 @@ function gregCloseSection(idx) {
     gregLoadSectionToUI(gregActiveIdx);
     // Detach the real svg-wrap before wiping stale section boxes, then let
     // gregRenderAllSections re-attach it to the correct (new) active box.
-    if (realSvgWrap && realSvgWrap.parentElement) realSvgWrap.parentElement.removeChild(realSvgWrap);
+    // NICHT aus dem Dokument lösen (sonst findet gregRenderAllSections #greg-svg-wrap nicht mehr
+    // und bricht ab -> leeres weisses Notenblatt, Nutzerbericht 2026-11-04): zurück in den
+    // (ausgeblendeten) Originalplatz, gregRenderAllSections hängt ihn in den aktiven Abschnitt.
+    { const slot = document.getElementById('greg-svg-original-slot'); if (realSvgWrap && slot && realSvgWrap.parentElement !== slot) slot.appendChild(realSvgWrap); }
     const secContainer = document.getElementById('greg-sections-container');
     if (secContainer) secContainer.innerHTML = '';
     gregRenderAllSections();
@@ -8607,7 +8610,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '369';
+const NOTATOR_BUILD_ID = '370';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
