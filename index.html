@@ -8614,7 +8614,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '373';
+const NOTATOR_BUILD_ID = '374';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19697,7 +19697,14 @@ function ntPsalmToneShow() {
     '<label><input type="checkbox" id="pt-solemn"' + (p.solemn ? ' checked' : '') + '> feierliche Mediante (Magnificat/Benedictus)</label>' +
     '<label><input type="checkbox" id="pt-gloria"' + (p.gloria ? ' checked' : '') + '> Gloria Patri anhängen</label></div>' +
     '<textarea id="pt-text" rows="9" style="width:100%;box-sizing:border-box;font-size:13px;font-family:inherit" placeholder="Ein Vers pro Zeile, Mitte mit *, Flexa mit †, z.B.\nDixit Dóminus Dómino méo: * Sede a déxtris méis.\nDonec ponam inimícos túos, * scabéllum pédum tuórum.">' + ntEscAttr(p.text || '') + '</textarea>' +
-    '<div style="font-size:11px;color:var(--ink2);margin:4px 0;line-height:1.4">Betonte Silben mit Akut markieren (Dóminus); zweisilbige Wörter ohne Akut werden auf der 1. Silbe betont, längere auf der vorletzten. Silbentrennung automatisch (Latein) – mit Bindestrich selbst festlegen, z.B. «Herr-lich-keit». Ergebnis bitte prüfen.</div>' +
+    '<div style="font-size:11px;color:var(--ink2);margin:4px 0;line-height:1.5">' +
+    '<b>Zeichen im Text:</b><br>' +
+    '• <b>Zeilenumbruch</b> = neuer Vers (jeder Vers eine Zeile; eine Versnummer am Zeilenanfang wird ignoriert)<br>' +
+    '• <b>*</b> = Mitte des Verses (Mediante) – in <b>jedem</b> Vers nötig: <i>Dixit Dóminus Dómino meo: * Sede a dextris meis.</i><br>' +
+    '• <b>†</b> oder <b>+</b> = Flexa (Atempause im ersten Halbvers, Ton sinkt kurz), nur bei langen Versen: <i>Donec ponam inimícos tuos † scabéllum pedum tuórum: * …</i><br>' +
+    '• <b>´</b> Akut = betonte Silbe (Dóminus) – bestimmt, wo die Kadenzen ansetzen. Ohne Akut: zweisilbige Wörter auf der 1. Silbe, längere auf der vorletzten betont.<br>' +
+    '• <b>-</b> Bindestrich = Silbentrennung selbst festlegen (Herr-lich-keit), sonst automatisch (Latein).<br>' +
+    'Gloria Patri und Intonation (Initium) setzt der Assistent selbst – Häkchen oben. Ergebnis bitte prüfen.</div>' +
     '<div id="pt-msg" style="font-size:11px;color:#a03020;min-height:14px"></div>';
   const fillEnd = () => {
     const T = NT_PSALM_TONES[document.getElementById('pt-tone').value];
