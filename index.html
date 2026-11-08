@@ -3147,23 +3147,44 @@ function gregEditPopCreate(i) {
     };
     pbRow.appendChild(pbCb); pbRow.appendChild(document.createTextNode('⤓ Seitenumbruch vor dieser Zeile'));
     pop.appendChild(pbRow);
+    // Zeilenumbruch vor dieser Note: fügt vor dem Eintrag einen {type:'linebreak'} ein bzw. entfernt ihn (wie ⏎ in der Eintragsliste)
+    const lbRow = document.createElement('label'); lbRow.className = 'greg-pop-row';
+    lbRow.style.cssText = 'font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer';
+    lbRow.title = 'Vor dieser Note beginnt eine neue Notenzeile';
+    const lbCb = document.createElement('input'); lbCb.type = 'checkbox';
+    const ix = () => gregEntries.indexOf(e);
+    lbCb.checked = ix() > 0 && gregEntries[ix() - 1].type === 'linebreak';
+    lbCb.onchange = () => {
+      const k = ix(); if (k < 0) return;
+      gregPush();
+      if (lbCb.checked) { if (!(k > 0 && gregEntries[k - 1].type === 'linebreak')) gregEntries.splice(k, 0, { type: 'linebreak' }); }
+      else { let a = k; while (a > 0 && gregEntries[a - 1].type === 'linebreak') a--; gregEntries.splice(a, k - a); }
+      const n = ix(); pop._idx = n;
+      if (typeof _gregEditingEntryIdx !== 'undefined') _gregEditingEntryIdx = n;
+      hd.textContent = 'Eintrag ' + (n + 1) + ' · Note ' + gregEntries.slice(0, n + 1).filter(x => x.type === 'note').length + (e.syllable ? ' · «' + e.syllable + '»' : '');
+      gregRefreshListNoRender(); gregRender();
+      gregGst(lbCb.checked ? 'Zeilenumbruch vor dieser Note gesetzt.' : 'Zeilenumbruch entfernt.');
+    };
+    lbRow.appendChild(lbCb); lbRow.appendChild(document.createTextNode('⏎ Zeilenumbruch vor dieser Note'));
+    pop.appendChild(lbRow);
   }
   // Tasten im Fenster: Enter = übernehmen, Esc = abbrechen, Alt+←/→ = vorige/nächste Note
   pop.addEventListener('keydown', ev => {
     if (ev.key === 'Enter' && !ev.shiftKey && ev.target.tagName !== 'TEXTAREA') { ev.preventDefault(); if (pop._save) pop._save(); }
     else if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); gregCloseEditForm(); gregRefreshListNoRender(); }
-    else if (ev.altKey && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) { ev.preventDefault(); gregEditStep(i, ev.key === 'ArrowRight' ? 1 : -1); }
+    else if (ev.altKey && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) { ev.preventDefault(); gregEditStep(pop._idx, ev.key === 'ArrowRight' ? 1 : -1); }
   });
   document.body.appendChild(pop);
   return pop;
 }
 function gregEditPopButtons(host, i, save) {
   host._btns = true;
+  const cur = () => { const p = document.getElementById('greg-edit-pop'); return p && p._idx != null ? p._idx : i; }; // Index kann sich durch Zeilenumbruch-Option verschieben
   const bar = document.createElement('div'); bar.className = 'greg-pop-row greg-pop-btns';
   const mk = (txt, title, fn, cls) => { const b = document.createElement('button'); b.className = 'b' + (cls ? ' ' + cls : ''); b.textContent = txt; b.title = title; b.onclick = fn; bar.appendChild(b); return b; };
-  mk('◀', 'Vorige Note (Alt+←) – Änderungen werden übernommen', () => gregEditStep(i, -1));
-  mk('▶', 'Nächste Note (Alt+→) – Änderungen werden übernommen', () => gregEditStep(i, 1));
-  mk('🗑 Löschen', 'Eintrag löschen (Entf)', () => { gregCloseEditForm(); gregPush(); gregEntries.splice(i, 1); gregRefreshList(); });
+  mk('◀', 'Vorige Note (Alt+←) – Änderungen werden übernommen', () => gregEditStep(cur(), -1));
+  mk('▶', 'Nächste Note (Alt+→) – Änderungen werden übernommen', () => gregEditStep(cur(), 1));
+  mk('🗑 Löschen', 'Eintrag löschen (Entf)', () => { gregCloseEditForm(); gregPush(); gregEntries.splice(cur(), 1); gregRefreshList(); });
   const sp = document.createElement('span'); sp.style.flex = '1'; bar.appendChild(sp);
   mk('✕ Abbrechen', 'Schliessen ohne Übernehmen (Esc)', () => { gregCloseEditForm(); gregRefreshListNoRender(); });
   if (save) { save.textContent = '✓ Übernehmen'; save.title = 'Übernehmen (Enter)'; save.className = 'b greg-pop-ok'; save.style.cssText = ''; bar.appendChild(save); }
@@ -8773,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '382';
+const NOTATOR_BUILD_ID = '383';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
