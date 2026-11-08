@@ -8794,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '383';
+const NOTATOR_BUILD_ID = '384';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -21069,7 +21069,26 @@ function ntViewScalePop(btn) {
   const cur = Math.round(ntViewScale(src) / base * 100);
   d.innerHTML = '<span>Grösse</span><input type="range" min="40" max="' + (gregIsMobileViewport() ? 300 : 160) + '" step="5" value="' + cur + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
     '<span class="v" style="min-width:36px;text-align:right">' + cur + '%</span><button class="b" style="font-size:11px;padding:3px 6px" title="Zurück auf 100 %">100%</button>';
-  if (ntPaperOn()) {
+  if (ntPaperOn() && src !== 'cl') {
+    // Choral: Breitenregler in px wie bei der Orgel (−/Regler/+/A4); Breite = logische Blattbreite, bestimmt Zeilenumbruch und Druckgrösse
+    const row = document.createElement('div');
+    row.style.cssText = 'flex-basis:100%;display:flex;align-items:center;gap:6px';
+    row.title = 'Seitenbreite: bestimmt Zeilenumbruch und Notengrösse im PDF (breiter = kleinere Noten, mehr pro Zeile). A4 = Standard.';
+    row.innerHTML = '<span>Breite</span><button class="b" data-w="-20" style="font-size:11px;padding:2px 7px" title="Schmaler (weniger Noten pro Zeile)">&minus;</button>' +
+      '<input type="range" min="' + NT_PAPER_MIN + '" max="' + NT_PAPER_MAX + '" step="10" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
+      '<button class="b" data-w="20" style="font-size:11px;padding:2px 7px" title="Breiter (mehr Noten pro Zeile)">+</button>' +
+      '<span class="wv" style="min-width:48px;text-align:right"></span><button class="b" data-w="0" style="font-size:11px;padding:2px 6px" title="Zurück auf A4">A4</button>';
+    const ri = row.querySelector('input'), rv = row.querySelector('.wv');
+    const show = w => { ri.value = w; rv.textContent = Math.round(w) + ' px'; };
+    show(gregPaperW());
+    const live = w => document.documentElement.style.setProperty('--greg-paper-w', Math.round(w * gregVS()) + 'px');
+    const commit = w => { w = Math.max(NT_PAPER_MIN, Math.min(NT_PAPER_MAX, Math.round(w))); window._gregPageW = Math.abs(w - GREG_PAPER_A4) < 4 ? null : w; show(gregPaperW()); gregRender(); };
+    ri.oninput = () => { rv.textContent = ri.value + ' px'; live(+ri.value); };
+    ri.onchange = () => commit(+ri.value);
+    row.querySelectorAll('button').forEach(b => b.onclick = () => { const dv = +b.dataset.w; commit(dv ? gregPaperW() + dv : GREG_PAPER_A4); if (!dv) gregGst('Seitenbreite: A4'); });
+    d.style.flexWrap = 'wrap';
+    d.appendChild(row);
+  } else if (ntPaperOn()) {
     const pb = document.createElement('button'); pb.className = 'b';
     pb.style.cssText = 'font-size:11px;padding:3px 6px;flex-basis:100%';
     const isA4 = src === 'cl' ? !clState.width : !window._gregPageW;
