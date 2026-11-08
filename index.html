@@ -6009,6 +6009,13 @@ async function gregSearchGregoBase(incipit, opts) {
     const srcMatch = trailing.match(/\(([^)]*)\)/);
     const source = srcMatch ? srcMatch[1] : '';
     let ok = norm(title).startsWith(incipitNorm) || incipitNorm.startsWith(norm(title));
+    // Titel und Text-Incipit weichen oft ab (Satzzeichen, Zusatz in Klammern, z.B. Titel «Ave Maria (Salutatio Angelica)» für den Text
+    // «Ave Maria, gratia plena…»): zusätzlich ohne Klammern/Satzzeichen wortweise vergleichen.
+    if (!ok) {
+      const cl = s => norm(s).replace(/\(.*?\)/g, ' ').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+      const tc = cl(title), ic = cl(incipit);
+      if (tc && ic) ok = tc === ic || (tc + ' ').startsWith(ic + ' ') || (ic + ' ').startsWith(tc + ' ') || tc.startsWith(ic);
+    }
     let score = 0;
     if (!ok && loose) {
       // Ähnlichkeitssuche: gemeinsame Wörter (ab 4 Buchstaben, Wortanfang) zählen; erstes Wort zählt doppelt
