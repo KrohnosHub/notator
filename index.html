@@ -8794,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '385';
+const NOTATOR_BUILD_ID = '386';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -18094,7 +18094,7 @@ function clScoreWidth() {
   const wrap = document.getElementById('cl-score-wrap');
   if (clMobileDefaultW()) return CL_MOBILE_DEFAULT_W;
   // Seitenansicht (Desktop): ohne gespeicherte Breite gilt A4
-  if (ntPaperOn() && !clState.width && !ntFit('cl')) return CL_PAPER_A4;
+  if (ntPaperOn() && !clState.width) return CL_PAPER_A4;
   if (clState.width) {
     // Anpassen: gespeicherte Breite nur verwenden, wenn sie auf den Bildschirm passt
     // Ausnahme: Breite wurde auf diesem Gerät gerade von Hand eingestellt -> gilt (Anzeige wird eingepasst)
@@ -18262,11 +18262,13 @@ function clRenderInner() {
   // Von Hand eingestellte Breite mit «An Seitenbreite anpassen»: breiter als der
   // Bildschirm = mehr Noten pro Zeile, verkleinert eingepasst (kein Seitwärts-Scrollen)
   const mobDef = clMobileDefaultW();
-  if ((clState.width || mobDef) && !ntViewScale._override && (gregIsMobileViewport() || (ntFit('cl') && window._clWidthTouched))) {
+  if ((clState.width || mobDef) && !ntViewScale._override && (gregIsMobileViewport() || (ntFit('cl') && (window._clWidthTouched || ntPaperOn())))) {
     const wrap = document.getElementById('cl-score-wrap');
     const avail = wrap ? wrap.clientWidth - 24 : 0;
     const f = (avail - 40) / (sw * vs); // Ergebnis: sw*vs+40 = avail (kein Seitwärts-Scrollen)
-    if (f > 1 || (f > 0 && f < 1 && (mobDef || (ntFit('cl') && window._clWidthTouched)))) vs *= f;
+    // Seitenansicht (PC): nie über die Fensterbreite vergrössern – das Blatt behält seine Breite,
+    // nur ein zu breites Blatt wird mit «an Breite anpassen» verkleinert
+    if (ntPaperOn() ? (f > 0 && f < 1) : (f > 1 || (f > 0 && f < 1 && (mobDef || (ntFit('cl') && window._clWidthTouched))))) vs *= f;
   }
   el.style.width = Math.round(sw * vs + 40) + 'px';
   window._clTuneObjs = clRenderAbc(el, abc, liq, sw, (!clState[clMK()] && clLast && !clUi().view) ? clChordClick : null,
