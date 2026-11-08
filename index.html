@@ -8292,9 +8292,9 @@ function gregExportPDF() {
   // the visual line breaks and any anchored freetext positions.
   const hadPermanentForcedWidthForPDF = !!window._gregForcedCanvasWidth;
   if (!hadPermanentForcedWidthForPDF) {
-    const activeContent = document.querySelector('.greg-sec-content') ||
-      document.getElementById('greg-canvas-wrap');
-    const measuredForPDF = activeContent && activeContent.clientWidth;
+    // Einzelabschnitt: Breite des Notenblatts (Seitenansicht) statt des ganzen Arbeitsbereichs
+    const activeContent = document.querySelector('.greg-sec-content');
+    const measuredForPDF = activeContent ? activeContent.clientWidth : gregEffectiveCanvasWidth();
     if (measuredForPDF) window._gregForcedCanvasWidth = measuredForPDF;
   }
 
@@ -8794,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '386';
+const NOTATOR_BUILD_ID = '387';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
