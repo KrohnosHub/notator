@@ -8794,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '384';
+const NOTATOR_BUILD_ID = '385';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -21065,6 +21065,32 @@ function ntViewScalePop(btn) {
   const r = btn.getBoundingClientRect();
   d.style.top = Math.min(r.bottom + 4, window.innerHeight - 60) + 'px';
   d.style.left = Math.max(8, Math.min(r.left - 120, window.innerWidth - 308)) + 'px';
+  if (src === 'greg' && gregIsMobileViewport()) {
+    // Handy-Choral: Breite in px statt Grösse in %. Zeilenbreite = (Feldbreite − 20) / (Zoom × Anzeigegrösse) – gleiche Wirkung wie bisher,
+    // nur als Breite ausgedrückt: kleiner = weniger Noten pro Zeile, dafür grösser (nur Bildschirm, PDF unverändert).
+    const wrapEl = document.getElementById('greg-canvas-wrap');
+    const boxW = () => Math.max(100, (wrapEl ? wrapEl.clientWidth : 360));
+    const zm = () => { try { return gregGetSizing().zoom || 1; } catch (e) { return 1; } };
+    const toW = vs => Math.round((boxW() - 20) / (zm() * vs));
+    const toVs = w => (boxW() - 20) / (zm() * w);
+    const defW = Math.round(toW(NT_MOBILE_GREG_SCALE) / 10) * 10;
+    const MIN = 300, MAX = 1700;
+    const cw = Math.max(MIN, Math.min(MAX, toW(ntViewScale('greg'))));
+    d.style.flexWrap = 'wrap';
+    d.title = 'Breite = Zeilenbreite des Notenbilds: kleiner = weniger Noten pro Zeile, dafür grösser. Nur Bildschirm, PDF unverändert.';
+    d.innerHTML = '<span>Breite</span><button class="b" data-w="-20" style="font-size:11px;padding:3px 8px">&minus;</button>' +
+      '<input type="range" min="' + MIN + '" max="' + MAX + '" step="10" value="' + cw + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
+      '<button class="b" data-w="20" style="font-size:11px;padding:3px 8px">+</button>' +
+      '<span class="v" style="min-width:52px;text-align:right">' + cw + ' px</span><button class="b" data-w="0" style="font-size:11px;padding:3px 6px" title="Zurück auf die Standardbreite">Auto</button>';
+    document.body.appendChild(d);
+    const ri = d.querySelector('input'), rv = d.querySelector('.v');
+    const apply = w => { w = Math.max(MIN, Math.min(MAX, Math.round(w))); ri.value = w; rv.textContent = w + ' px'; ntSetViewScale('greg', toVs(w)); };
+    ri.oninput = () => apply(+ri.value);
+    d.querySelectorAll('button').forEach(b => b.onclick = () => { const dv = +b.dataset.w; if (dv) apply(+ri.value + dv); else { ri.value = defW; rv.textContent = defW + ' px'; ntSetViewScale('greg', NT_MOBILE_GREG_SCALE); } });
+    const close0 = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close0); } };
+    setTimeout(() => document.addEventListener('pointerdown', close0), 0);
+    return;
+  }
   const base = ntVsBase(src);
   const cur = Math.round(ntViewScale(src) / base * 100);
   d.innerHTML = '<span>Grösse</span><input type="range" min="40" max="' + (gregIsMobileViewport() ? 300 : 160) + '" step="5" value="' + cur + '" style="flex:1;min-width:0;accent-color:#5a8a40;height:28px">' +
