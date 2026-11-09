@@ -8794,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '387';
+const NOTATOR_BUILD_ID = '388';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20080,10 +20080,33 @@ function gregSylsToText(syls) {
 // Vorlage-Strophe bestimmen: 1. aktuelle Markierung, 2. gespeicherte Vorlage (e.vsTpl),
 // 3. erkannter Strophenbeginn «1.», 4. ganzes Stück. Liefert Indexbereich a..b.
 const NT_VS_NUM = /^\s*(\d+)\.\s*/;
+// Ende der Strophe, die bei Index a beginnt: nächster Doppelstrich. Steht die Strophennummer als eigener Eintrag («1.») und gleich danach
+// ein Doppelstrich (Nummer | Strophe), gehört dieser zum Strophenanfang und zählt nicht als Strophenende.
+function gregVerseStanzaEnd(a) {
+  const all = gregEntries; let j = a;
+  if (all[a] && all[a].type !== 'note') {
+    let k = a + 1; while (k < all.length && (all[k].vsCopy || all[k].type === 'linebreak')) k++;
+    if (k < all.length && all[k].type === 'divisio' && all[k].div === '::') j = k + 1;
+  }
+  for (let i = j; i < all.length; i++) if (!all[i].vsCopy && all[i].type === 'divisio' && all[i].div === '::') return i;
+  for (let i = all.length - 1; i >= 0; i--) if (!all[i].vsCopy) return i;
+  return -1;
+}
+// Kehrvers = Anfang des Stücks (gleiche Silben und Töne wie die ersten Noten, z.B. «Sal-ve.» nach jeder Strophe von «Salve Mater»):
+// Index der letzten Note des Kehrverses, der direkt nach Index b folgt, sonst -1.
+function gregVerseRefrainEnd(b) {
+  const all = gregEntries, nz = x => String(x || '').replace(/<[^>]*>/g, '').toLowerCase().normalize('NFD').replace(/[^a-z]/g, '');
+  const key = e => nz(e.syllable) + '|' + (e.pitches || []).join('');
+  const head = []; for (let i = 0; i < all.length && head.length < 40; i++) { const e = all[i]; if (e.vsCopy) continue; if (e.type === 'note' && nz(e.syllable)) head.push(key(e)); else if (e.type === 'divisio' && e.div === '::') break; }
+  const seg = []; let last = -1;
+  for (let i = b + 1; i < all.length; i++) { const e = all[i]; if (e.vsCopy) break; if (e.type === 'linebreak') continue; if (e.type === 'divisio' && e.div === '::') break; if (e.type === 'note') { seg.push(key(e)); last = i } else if (e.type !== 'special') return -1 }
+  if (!seg.length || seg.length > head.length) return -1;
+  return seg.every((k, i) => k === head[i]) ? last : -1;
+}
 function gregVerseTemplate() {
   const all = gregEntries;
   const lastNon = () => { for (let i = all.length - 1; i >= 0; i--) if (!all[i].vsCopy) return i; return -1; };
-  const endFrom = a => { for (let i = a; i < all.length; i++) if (!all[i].vsCopy && all[i].type === 'divisio' && all[i].div === '::') return i; return lastNon(); };
+  const endFrom = a => gregVerseStanzaEnd(a) ;
   const sel = (typeof gregBlockIdx === 'function' ? gregBlockIdx() : []).filter(i => !all[i].vsCopy);
   if (sel.length > 1) return { a: sel[0], b: sel[sel.length - 1], src: 'markierter Bereich' };
   const fl = []; all.forEach((e, i) => { if (e.vsTpl && !e.vsCopy) fl.push(i); });
@@ -20121,12 +20144,16 @@ function gregVerseMarkerIdx(n, from) {
 }
 // Von Hand angelegte Strophen («2. …», «3. …») nach der Vorlage finden: [{k, a, b}]
 function gregVerseManualFind(tplEnd) {
-  const out = []; let from = tplEnd + 1;
+  const out = []; let from = tplEnd + 1, prevEnd = tplEnd;
   for (let n = 2; n < 40; n++) {
-    let a = gregVerseMarkerIdx(n, from); if (a < 0) break;
-    if (a > 0 && gregEntries[a - 1].type === 'linebreak') a--;
-    let b = a; while (b < gregEntries.length - 1 && !(gregEntries[b].type === 'divisio' && gregEntries[b].div === '::')) b++;
-    out.push({ k: n - 2, a, b }); from = b + 1;
+    const m = gregVerseMarkerIdx(n, from); if (m < 0) break;
+    let a = m; if (a > 0 && gregEntries[a - 1].type === 'linebreak') a--;
+    const b = gregVerseStanzaEnd(m);
+    // Kehrvers (Noten) zwischen dem vorigen Strophenende und der Nummer: wird mit entfernt (einmal bleibt er nach den Strophen stehen)
+    let ra = a;
+    const mid = gregEntries.slice(prevEnd + 1, a);
+    if (mid.some(e => e.type === 'note') && !mid.some(e => e.type === 'divisio' && e.div === '::')) ra = prevEnd + 1;
+    out.push({ k: n - 2, a, b, ra }); from = b + 1; prevEnd = b;
   }
   return out;
 }
@@ -20164,6 +20191,10 @@ function gregVerseOwnApply(drafts, numKind) {
       while (j < gregEntries.length && !gregEntries[j].vsCopy) { tEnd = j; if (gregEntries[j].type === 'divisio' && gregEntries[j].div === '::') break; j++; }
       tail = gregEntries.slice(b + 1, tEnd + 1);
     }
+  }
+  if (!tail.length) { // Kehrvers ohne ℟-Zeichen: gleiche Silben/Töne wie der Anfang des Stücks (z.B. «Sal-ve.»)
+    const re = gregVerseRefrainEnd(b);
+    if (re > b) { tEnd = re; tail = gregEntries.slice(b + 1, re + 1); }
   }
   let at = tEnd + 1;
   drafts.forEach((d, k) => {
@@ -20219,7 +20250,7 @@ function gregVersesShow() {
     const n0 = gregVerseCount(ti.ents); for (let k = 0; k < n0; k++) drafts.push(gregVsStripNum(gregVerseText(ti.ents, k)));
     if (!n0) {
       const mf = gregVerseManualFind(tpl.b);
-      if (mf.length) { mode = 'own'; drafts = mf.map(m => gregVerseRangeText(m.a, m.b)); mf.forEach(m => { manual[m.k] = [m.a, m.b]; }); }
+      if (mf.length) { mode = 'own'; drafts = mf.map(m => gregVerseRangeText(m.a, m.b)); mf.forEach(m => { manual[m.k] = [m.a, m.b, m.ra]; }); }
     }
   }
   if (st) { drafts = st.drafts; mode = st.mode; manual = st.manual || {}; }
@@ -20302,11 +20333,12 @@ function gregVersesShow() {
     // von Hand angelegte Strophen (aus Noten) werden zu Strophen-Kopien und dann ersetzt
     const tplSet0 = new Set(ti.ents);
     const marks = [];
-    Object.keys(manual).forEach(k => { const [a, b] = manual[k]; for (let i = a; i <= b && i < gregEntries.length; i++) if (!tplSet0.has(gregEntries[i])) marks.push([gregEntries[i], +k + 2]); });
-    const hadVs = new Map(); marks.forEach(([e, n]) => { hadVs.set(e, e.vsCopy); e.vsCopy = n; });
+    Object.keys(manual).forEach(k => { const [a, b, ra] = manual[k]; for (let i = (ra != null ? ra : a); i <= b && i < gregEntries.length; i++) if (!tplSet0.has(gregEntries[i])) marks.push([gregEntries[i], +k + 2, i < a]); });
+    const hadVs = new Map(), hadTail = new Map(); marks.forEach(([e, n, tl]) => { hadVs.set(e, e.vsCopy); e.vsCopy = n; if (tl && !e.vsTail) { e.vsTail = true; hadTail.set(e, 1) } });
     gregEntries.forEach(e => { if (tplSet0.has(e)) e.vsTpl = true; });
     if ((own0 || marks.length) && gregVerseCopiesEdited() && !confirm('Die Noten der Strophen 2+ weichen von der Vorlage ab (von Hand geändert). Sie werden ' + (mode === 'own' ? 'durch Kopien der Vorlage ersetzt' : 'entfernt (Text kommt unter die Vorlage)') + ' – diese Abweichungen gehen verloren. Fortfahren?')) {
       hadVs.forEach((v, e) => { if (v) e.vsCopy = v; else delete e.vsCopy; });
+      hadTail.forEach((v, e) => { delete e.vsTail; });
       return;
     }
     window._gregVsState = null;
