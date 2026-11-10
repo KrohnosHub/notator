@@ -8794,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '388';
+const NOTATOR_BUILD_ID = '389';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20108,9 +20108,11 @@ function gregVerseTemplate() {
   const lastNon = () => { for (let i = all.length - 1; i >= 0; i--) if (!all[i].vsCopy) return i; return -1; };
   const endFrom = a => gregVerseStanzaEnd(a) ;
   const sel = (typeof gregBlockIdx === 'function' ? gregBlockIdx() : []).filter(i => !all[i].vsCopy);
-  if (sel.length > 1) return { a: sel[0], b: sel[sel.length - 1], src: 'markierter Bereich' };
+  // endet die Vorlage mit dem Kehrvers (Stück-Anfang nach dem Strophenende), wird dieser abgeschnitten
+  const trim = (a, b) => { const se = gregVerseStanzaEnd(a); return (se > a && se < b && gregVerseRefrainEnd(se) >= b) ? se : b; };
+  if (sel.length > 1) return { a: sel[0], b: trim(sel[0], sel[sel.length - 1]), src: 'markierter Bereich' };
   const fl = []; all.forEach((e, i) => { if (e.vsTpl && !e.vsCopy) fl.push(i); });
-  if (fl.length) return { a: fl[0], b: fl[fl.length - 1], src: 'gespeicherte Vorlage' };
+  if (fl.length) return { a: fl[0], b: trim(fl[0], fl[fl.length - 1]), src: 'gespeicherte Vorlage' };
   for (let i = 0; i < all.length; i++) {
     const e = all[i]; if (e.vsCopy) continue;
     const isNum = (e.type === 'note' && NT_VS_NUM.test(e.syllable || '') && /^\s*1\./.test(e.syllable)) || ((e.type === 'directive' || e.type === 'special' || e.type === 'textonly') && /^\s*1\.?\s*$/.test(e.text || ''));
