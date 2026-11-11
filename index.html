@@ -1036,7 +1036,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
   {
     const isNum = x => x && (x.type === 'directive' || x.type === 'special' || x.type === 'textonly') && /^\s*\d+\.?\s*$/.test(x.text || '');
     let moved = null;
-    if (entries.some(x => x && (x.type === 'linebreak' || isNum(x)))) {
+    if (entries.some(x => x && (x.type === 'linebreak' || isNum(x) || (Array.isArray(x.verses) && x.syllable)))) {
       const out = []; let ch = false;
       for (let i = 0; i < entries.length; i++) {
         const e = entries[i];
@@ -1057,6 +1057,14 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
           const n = out.pop();
           if (!(out.length && out[out.length - 1].type === 'linebreak')) out.push(e);
           out.push(n); ch = true; continue;
+        }
+        // «℟.» + Doppelstrich + Kehrvers-Noten mit Strophentexten: ℟ als Silbenvorsatz (wie in den übrigen Strophenzeilen), damit es direkt vor dem Kehrvers steht
+        if (e.type === 'note' && Array.isArray(e.verses) && e.syllable && out.length >= 2) {
+          const d = out[out.length - 1], r = out[out.length - 2];
+          if (d.type === 'divisio' && d.div === '::' && (r.type === 'special' || r.type === 'textonly' || r.type === 'directive') && /^\s*(℟|R\/\.?)\s*$/.test(r.text || '')) {
+            out.splice(out.length - 2, 2, Object.assign({}, d, { glueToPrevSpecial: false })); // ℟ entfernen, Doppelstrich bleibt
+            out.push(Object.assign({}, e, { startsWord: true, syllable: 'R/. ' + e.syllable })); ch = true; continue;
+          }
         }
         out.push(e);
       }
@@ -8837,7 +8845,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '395';
+const NOTATOR_BUILD_ID = '396';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
