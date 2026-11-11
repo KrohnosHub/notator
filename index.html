@@ -208,7 +208,7 @@ input[type=file]{display:none}
      ohne obigen Fix schrumpfte dieser Bereich (inline flex:1) auf seine
      Mindesthöhe zusammen. Jetzt bekommt er stattdessen eine grosszügige,
      eigenständig scrollbare Höhe, unabhängig vom Rest der Spalte. */
-  #greg-panel.greg-mobile-edit #greg-entries-wrap{flex:none !important;height:44vh !important;min-height:220px !important}
+  #greg-panel.greg-mobile-edit #greg-entries-wrap{flex:none !important;height:calc(100vh - 285px) !important;height:calc(100dvh - 285px) !important;min-height:220px !important}
 
   /* Grössere Tastflächen für die einzelnen Einträge (Zeilen werden per JS
      mit eigener inline font-size/padding erzeugt -- !important nötig). */
@@ -1030,6 +1030,29 @@ function gregVerseEsc(v) {
   return String(v || '').replace(/[()|{}\[\]*_^%<>]/g, '').replace(/\s+/g, ' ').trim();
 }
 function gregEntriesToBody(entries, clefGabc, clefRaw) {
+  // Zeilenumbruch direkt nach «Strophennummer + Doppelstrich» gehört vor die Nummer (sonst bleibt «1.» am Ende der oberen Zeile hängen)
+  {
+    const isNum = x => x && (x.type === 'directive' || x.type === 'special' || x.type === 'textonly') && /^\s*\d+\.?\s*$/.test(x.text || '');
+    let moved = null;
+    if (entries.some(x => x && x.type === 'linebreak')) {
+      const out = [];
+      for (let i = 0; i < entries.length; i++) {
+        const e = entries[i];
+        if (e.type === 'linebreak') {
+          const n = out.length; let j = -1;
+          if (n >= 2 && out[n - 1].type === 'divisio' && isNum(out[n - 2])) j = n - 2; else if (n >= 1 && isNum(out[n - 1])) j = n - 1;
+          if (j >= 0) {
+            const held = out.splice(j);
+            if (!(out.length && out[out.length - 1].type === 'linebreak')) out.push(e); // steht schon ein Umbruch vor der Nummer: zusammenführen
+            out.push(...held); moved = out; continue;
+          }
+        }
+        out.push(e);
+      }
+      if (moved) moved = out;
+    }
+    if (moved) entries = moved;
+  }
   if (clefRaw === undefined) clefRaw = (entries === gregEntries && clefGabc === gregClefVal) ? gregClefRaw : '';
   if (clefRaw) clefGabc = clefRaw;
   // WICHTIG (Session 21, per echtem Rendering-Test widerlegt): ein
@@ -1056,6 +1079,10 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
   // Weitere Strophen (Text unter gleicher Melodie): e.verses = ['Silbe Str. 2', 'Silbe Str. 3', …]
   const verseN = entries.reduce((m, e) => Math.max(m, e && e.type === 'note' && e.syllable && Array.isArray(e.verses) ? e.verses.length : 0), 0);
   let runVerses = null;
+  // Strophen untereinander: erste Silbe jeder Phrase (Stückanfang, nach Zeilenumbruch/Teilstrich) mit dem 1. Buchstaben unter der Note
+  // verankern ({x}-Zentrierung), damit alle Strophen an derselben Stelle beginnen statt je nach Silbenlänge zentriert verschoben
+  let atPhraseStart = true, runPhraseStart = false;
+  const leftMark = t => { const m = /^(\s*\d+\.\s*)?([^\s{}<>_|]*?)([A-Za-zÀ-ÿ])/.exec(t); if (!m || m[2] || /[<>_{}]/.test(t)) return t; const i = m[0].length - 1; return t.slice(0, i) + '{' + t[i] + '}' + t.slice(i + 1); };
 
   let prevRunHyphen = false;
   let inRun = false;
@@ -1089,7 +1116,10 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
     let sylText = '';
     if (!runEmittedSyllable) {
       sylText = runItalic ? '_' + runSyllable + '_' : runSyllable;
-      if (verseN && runSyllable && Array.isArray(runVerses)) for (let k = 0; k < verseN; k++) sylText += '|' + gregVerseEsc(runVerses && runVerses[k]);
+      if (verseN && runSyllable && Array.isArray(runVerses)) {
+        if (runPhraseStart && !runItalic) sylText = leftMark(sylText);
+        for (let k = 0; k < verseN; k++) { const vt = gregVerseEsc(runVerses && runVerses[k]); sylText += '|' + (runPhraseStart ? leftMark(vt) : vt); }
+      }
       runEmittedSyllable = true;
     }
 
@@ -1190,6 +1220,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
         if (inRun) endRun();
         runSyllable = e.syllable; runItalic = e.italic; runHyphenForThisRun = e.hyphen; runWordEnd = e.wordEnd;
         runVerses = e.verses || null;
+        runPhraseStart = atPhraseStart; atPhraseStart = false;
         runMappingIdx = e.mappingIdx;
         runEmittedSyllable = false;
         inRun = true;
@@ -1205,6 +1236,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
 
     if (e.type === 'divisio') {
       const midMelisma = inRun && nextNoteContinuesRun(idx, runMappingIdx);
+      if (!midMelisma) atPhraseStart = true;
       const glueDivisio = (inRun && midMelisma) || !!e.glueToPrevSpecial;
       emitParenGroup();
       frags.push({text: '(' + e.div + ')', glue: glueDivisio, div: true});
@@ -8794,7 +8826,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '393';
+const NOTATOR_BUILD_ID = '394';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20413,6 +20445,17 @@ function gregVersesApplyAll(mode, keep, ti, noPush) {
     if (ti.numKind && p.length) p[0].t = (k + 2) + '. ' + p[0].t;
     gregVerseApply(tplEnts, k, p);
   });
+  // Kehrvers nach der Vorlage (z.B. «Sal-ve.»): erscheint nach jeder Strophe → in jeder Strophenzeile denselben Text unter den Noten setzen
+  if (mode !== 'own' && keep.length && tplEnts.length) {
+    const tb = gregEntries.lastIndexOf(tplEnts[tplEnts.length - 1]);
+    let re = gregVerseRefrainEnd(tb);
+    if (re < 0) { const f = gregEntries[tb + 1], tx = f ? (f.type === 'note' ? f.syllable : f.text) : ''; if (f && /^\s*(℟|R\/\.?|<sp>R\/<\/sp>)/.test(tx || '')) { let j = tb + 1; while (j < gregEntries.length) { if (gregEntries[j].type === 'divisio' && gregEntries[j].div === '::') break; re = j; j++; } } }
+    for (let i = tb + 1; i <= re; i++) {
+      const e = gregEntries[i]; if (e.type !== 'note' || !String(e.syllable || '').trim()) continue;
+      const v = String(e.syllable).replace(/-$/, '') + ((e.hyphen && e.wordEnd !== true) ? '-' : '');
+      e.verses = keep.map(() => v);
+    }
+  }
   gregSelectedIndices.clear();
   gregRefreshList(); gregBlockSync();
 }
