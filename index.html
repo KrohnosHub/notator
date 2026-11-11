@@ -8854,7 +8854,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '398';
+const NOTATOR_BUILD_ID = '399';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -9327,7 +9327,9 @@ const NOTATOR_GDRIVE_FOLDER_ID = '144wHwMFQUFhNxcpun6CO9fXtewhFcLe3';
 const NOTATOR_GOOGLE_CLIENT_ID = '689606502893-na74rng5bet9477m4pkuvpmdvtcl7aug.apps.googleusercontent.com';
 const GD_SCOPE = 'https://www.googleapis.com/auth/drive';
 const GD_TOKEN_KEY = 'notatorGdToken';
-let _gdTokenClient = null, _gdGisLoading = null;
+// Token (gültig ca. 1 h) in localStorage, damit er Tab-/App-Wechsel (z. B. Link aus
+// dem Schola-Planer) überlebt; sessionStorage nur als Ausweichlösung.
+const GD_HINT_KEY = 'notatorGdHint';
 
 function gdClientId() {
   let ls = '';
@@ -9336,48 +9338,117 @@ function gdClientId() {
 }
 function gdConfigured() { return !!gdClientId(); }
 
-function gdLoadGis() {
-  if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
-  if (_gdGisLoading) return _gdGisLoading;
-  _gdGisLoading = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.async = true;
-    s.onload = () => resolve();
-    s.onerror = () => { _gdGisLoading = null; reject(new Error('Google-Anmeldedienst nicht erreichbar')); };
-    document.head.appendChild(s);
-  });
-  return _gdGisLoading;
-}
-
-// Token (gültig ca. 1 h) in localStorage, damit er Tab-/App-Wechsel (z. B. Link aus
-// dem Schola-Planer) überlebt; sessionStorage nur als Ausweichlösung.
-const GD_HINT_KEY = 'notatorGdHint';
-function gdCachedToken() {
-  for (const st of ['localStorage', 'sessionStorage']) {
-    try {
-      const t = JSON.parse(window[st].getItem(GD_TOKEN_KEY) || 'null');
-      if (t && t.token && t.exp > Date.now() + 60000) return t.token;
-    } catch (e) {}
+/* gd-core:begin – NICHT HIER BEARBEITEN: Quelle shared/gd-core.js, übernehmen mit python3 tools/gd-core-sync.py */
+/* gd-core v1 – gemeinsamer Google-Drive-Kern für Notator und Schola-Planer.
+   QUELLE: KrohnosHub/notator, shared/gd-core.js. Nur dort bearbeiten, dann:
+     Notator:      python3 tools/gd-core-sync.py        (schreibt den Block in index.html)
+     Schola-Planer: src/gd-core.js durch diese Datei ersetzen, python3 build.py
+   Beide Apps laufen auf krohnoshub.github.io und teilen Token und Konto-Hinweis
+   (gleiche Schlüssel im localStorage): eine Anmeldung gilt für beide.
+   Meldungstexte nicht ändern, ohne die Apps zu prüfen: dort wird auf
+   «abgelaufen», «Nicht bei Google» und «Drive-Fehler <Status>» geprüft. */
+function gdCoreCreate(o) {
+  const TK = o.tokenKey, HK = o.hintKey;
+  let client = null, clientId = '', gis = null, pending = null;
+  const read = () => {
+    for (const st of ['localStorage', 'sessionStorage']) {
+      try { const t = JSON.parse(window[st].getItem(TK) || 'null'); if (t && t.token) return t; } catch (e) {}
+    }
+    return null;
+  };
+  // Gültiger Token (noch mind. 1 Min.) oder null
+  const cached = () => { const t = read(); return t && t.exp > Date.now() + 60000 ? t.token : null; };
+  // Restlaufzeit in ms (-1: kein Token)
+  const expiresIn = () => { const t = read(); return t ? t.exp - Date.now() : -1; };
+  const hint = () => { try { return localStorage.getItem(HK) || ''; } catch (e) { return ''; } };
+  const clear = () => { for (const st of ['localStorage', 'sessionStorage']) { try { window[st].removeItem(TK); } catch (e) {} } };
+  function store(token, expiresInSec) {
+    const v = JSON.stringify({ token, exp: Date.now() + (expiresInSec || 3600) * 1000 });
+    try { localStorage.setItem(TK, v); } catch (e) { try { sessionStorage.setItem(TK, v); } catch (e2) {} }
+    // Konto merken: beim nächsten Mal ohne Kontoauswahl (und evtl. still) anmelden
+    try { localStorage.setItem(HK, localStorage.getItem(HK) || '1'); } catch (e) {}
+    fetch('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)', { headers: { Authorization: 'Bearer ' + token } })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j && j.user && j.user.emailAddress) { try { localStorage.setItem(HK, j.user.emailAddress); } catch (e) {} } })
+      .catch(() => {});
   }
-  return null;
+  function loadGis() {
+    if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+    if (gis) return gis;
+    gis = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => { gis = null; reject(new Error('Google-Anmeldung nicht erreichbar (offline?)')); };
+      document.head.appendChild(s);
+    });
+    return gis;
+  }
+  // interactive: darf ein Google-Fenster öffnen (nur aus einer Nutzeraktion heraus).
+  // opts.silent: ohne Kontoauswahl/Rückfrage (prompt 'none', kurze Wartezeit).
+  // opts.force: gespeicherten Token nicht verwenden, sondern erneuern – der alte
+  //   bleibt bis zum Erfolg gespeichert (andere Tabs/Apps sehen nie «abgemeldet»).
+  function token(interactive, opts) {
+    opts = opts || {};
+    if (!opts.force) { const c = cached(); if (c) return Promise.resolve(c); }
+    if (!interactive) return Promise.reject(new Error('Nicht bei Google angemeldet'));
+    const cid = String(o.clientId() || '').trim();
+    if (!cid) return Promise.reject(new Error('Google Drive ist noch nicht eingerichtet (Client-ID fehlt)'));
+    if (pending) return pending; // laufende Anmeldung teilen
+    const p = loadGis().then(() => new Promise((resolve, reject) => {
+      if (!client || clientId !== cid) {
+        const cfg = { client_id: cid, scope: o.scope, callback: () => {} };
+        const h = hint(); if (h.indexOf('@') > 0) cfg.hint = h;
+        client = google.accounts.oauth2.initTokenClient(cfg); clientId = cid;
+      }
+      client.callback = r => {
+        if (r.error) { reject(new Error('Google-Anmeldung: ' + r.error)); return; }
+        store(r.access_token, r.expires_in); resolve(r.access_token);
+      };
+      client.error_callback = e => reject(new Error('Google-Anmeldung abgebrochen' + (e && e.type ? ' (' + e.type + ')' : '')));
+      client.requestAccessToken({ prompt: opts.silent ? 'none' : '' });
+      setTimeout(() => reject(new Error('Google-Anmeldung: keine Antwort (Popup blockiert?)')), opts.silent ? 12000 : 90000);
+    }));
+    pending = p;
+    const done = () => { if (pending === p) pending = null; };
+    p.then(done, done);
+    return p;
+  }
+  // fetch mit Token; 401 → Token löschen, sonst Fehler mit Status und Textanfang
+  function api(url, opts, interactive) {
+    return token(interactive).then(t => {
+      const op = Object.assign({}, opts || {});
+      op.headers = Object.assign({}, op.headers || {}, { Authorization: 'Bearer ' + t });
+      return fetch(url, op).then(r => {
+        if (r.status === 401) { clear(); throw new Error('Google-Anmeldung abgelaufen – bitte neu anmelden'); }
+        if (!r.ok) return r.text().then(tx => { throw new Error('Drive-Fehler ' + r.status + ': ' + tx.slice(0, 160)); });
+        return r;
+      });
+    });
+  }
+  // Nach geänderter Client-ID: Google-Client neu aufbauen
+  const reset = () => { client = null; clientId = ''; };
+  return { cached, expiresIn, hint, clear, store, loadGis, token, fetch: api, reset };
 }
-function gdHasToken() { return !!gdCachedToken(); }
-function gdClearToken() { for (const st of ['localStorage', 'sessionStorage']) { try { window[st].removeItem(GD_TOKEN_KEY); } catch (e) {} } }
-function gdStoreToken(token, expiresIn) {
-  const v = JSON.stringify({ token, exp: Date.now() + (expiresIn || 3600) * 1000 });
-  try { localStorage.setItem(GD_TOKEN_KEY, v); } catch (e) { try { sessionStorage.setItem(GD_TOKEN_KEY, v); } catch (e2) {} }
-  // Konto merken: beim nächsten Mal ohne Kontoauswahl (und evtl. still) anmelden
-  try { localStorage.setItem(GD_HINT_KEY, localStorage.getItem(GD_HINT_KEY) || '1'); } catch (e) {}
-  fetch('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)', { headers: { Authorization: 'Bearer ' + token } })
-    .then(r => r.ok ? r.json() : null).then(j => { if (j && j.user && j.user.emailAddress) { try { localStorage.setItem(GD_HINT_KEY, j.user.emailAddress); } catch (e) {} } }).catch(() => {});
-}
+/* gd-core:end */
+const GD = gdCoreCreate({ clientId: gdClientId, scope: GD_SCOPE, tokenKey: GD_TOKEN_KEY, hintKey: GD_HINT_KEY });
+
+function gdLoadGis() { return GD.loadGis(); }
+function gdCachedToken() { return GD.cached(); }
+function gdHasToken() { return !!GD.cached(); }
+function gdClearToken() { GD.clear(); }
+function gdStoreToken(token, expiresIn) { GD.store(token, expiresIn); }
+function gdTokenExpiresIn() { return GD.expiresIn(); }
+// interactive=true: darf ein Google-Anmeldefenster öffnen (nur aus einem
+// Klick heraus aufrufen, sonst blockiert der Browser das Popup).
+function gdGetToken(interactive) { return GD.token(interactive); }
+function gdFetch(url, opts, interactive) { return GD.fetch(url, opts, interactive); }
+
 // Ohne Klick versuchen (nur wenn schon früher verbunden): liefert Token oder null
 function gdTrySilent() {
-  const c = gdCachedToken(); if (c) return Promise.resolve(c);
-  let h = ''; try { h = localStorage.getItem(GD_HINT_KEY) || ''; } catch (e) {}
-  if (!h || !gdConfigured()) return Promise.resolve(null);
-  return Promise.race([gdGetToken(true).catch(() => null), new Promise(r => setTimeout(() => r(null), 6000))]);
+  const c = GD.cached(); if (c) return Promise.resolve(c);
+  if (!GD.hint() || !gdConfigured()) return Promise.resolve(null);
+  return Promise.race([GD.token(true).catch(() => null), new Promise(r => setTimeout(() => r(null), 6000))]);
 }
 
 // Automatische Anmeldung (Nutzerwunsch 2026-10-16): War Notator schon einmal
@@ -9387,73 +9458,23 @@ function gdTrySilent() {
 // kurze Google-Fenster nur nach einer Nutzeraktion; es schliesst sich von
 // selbst, ohne Kontoauswahl). Läuft der Zugang (ca. 1 h) bald ab, wird er bei
 // der nächsten Aktion ebenso still erneuert.
-function gdTokenExpiresIn() {
-  for (const st of ['localStorage', 'sessionStorage']) {
-    try { const t = JSON.parse(window[st].getItem(GD_TOKEN_KEY) || 'null'); if (t && t.token) return t.exp - Date.now(); } catch (e) {}
-  }
-  return -1;
-}
 let _gdAutoBusy = false;
 function gdAutoConnectInit() {
-  let h = ''; try { h = localStorage.getItem(GD_HINT_KEY) || ''; } catch (e) {}
-  if (!h || !gdConfigured()) return; // noch nie verbunden: erst über die Bibliothek anmelden
-  gdLoadGis().catch(() => {}); // Google-Skript schon laden, damit die Erneuerung im Klick sofort geht
+  if (!GD.hint() || !gdConfigured()) return; // noch nie verbunden: erst über die Bibliothek anmelden
+  GD.loadGis().catch(() => {}); // Google-Skript schon laden, damit die Erneuerung im Klick sofort geht
   const onAct = () => {
     if (_gdAutoBusy || !navigator.onLine) return;
-    if (gdTokenExpiresIn() > 10 * 60000) return; // noch mind. 10 Min. gültig
-    if (!(window.google && google.accounts && google.accounts.oauth2)) { gdLoadGis().catch(() => {}); return; }
+    if (GD.expiresIn() > 10 * 60000) return; // noch mind. 10 Min. gültig
+    if (!(window.google && google.accounts && google.accounts.oauth2)) { GD.loadGis().catch(() => {}); return; }
     _gdAutoBusy = true;
-    let old = null; try { old = localStorage.getItem(GD_TOKEN_KEY); } catch (e) {}
-    gdClearToken();
-    gdGetToken(true).then(() => { gregGst('Mit Google Drive verbunden.'); })
-      .catch(() => { if (old) try { localStorage.setItem(GD_TOKEN_KEY, old); } catch (e) {} }) // alter Zugang gilt evtl. noch
+    // force: erneuern, ohne den alten Token vorher zu löschen (Schola-Planer im anderen Tab bleibt angemeldet)
+    GD.token(true, { force: true }).then(() => { gregGst('Mit Google Drive verbunden.'); })
+      .catch(() => {}) // alter Zugang gilt evtl. noch
       .finally(() => { _gdAutoBusy = false; });
   };
   document.addEventListener('pointerdown', onAct, true);
 }
 setTimeout(() => { try { gdAutoConnectInit(); } catch (e) {} }, 800);
-
-// interactive=true: darf ein Google-Anmeldefenster öffnen (nur aus einem
-// Klick heraus aufrufen, sonst blockiert der Browser das Popup).
-function gdGetToken(interactive) {
-  const cached = gdCachedToken();
-  if (cached) return Promise.resolve(cached);
-  if (!interactive) return Promise.reject(new Error('Nicht bei Google angemeldet'));
-  if (!gdConfigured()) return Promise.reject(new Error('Google Drive ist noch nicht eingerichtet (Client-ID fehlt)'));
-  if (window._gdPending) return window._gdPending; // laufende Anmeldung teilen (z.B. automatische + Bibliothek gleichzeitig)
-  const p = gdLoadGis().then(() => new Promise((resolve, reject) => {
-    if (!_gdTokenClient) {
-      let hint = ''; try { hint = localStorage.getItem(GD_HINT_KEY) || ''; } catch (e) {}
-      const cfg = { client_id: gdClientId(), scope: GD_SCOPE, callback: () => {} };
-      if (hint.indexOf('@') > 0) cfg.hint = hint;
-      _gdTokenClient = google.accounts.oauth2.initTokenClient(cfg);
-    }
-    _gdTokenClient.callback = resp => {
-      if (resp.error) { reject(new Error('Google-Anmeldung: ' + resp.error)); return; }
-      gdStoreToken(resp.access_token, resp.expires_in);
-      resolve(resp.access_token);
-    };
-    _gdTokenClient.error_callback = err => reject(new Error('Google-Anmeldung abgebrochen' + (err && err.type ? ' (' + err.type + ')' : '')));
-    _gdTokenClient.requestAccessToken({ prompt: '' });
-    setTimeout(() => reject(new Error('Google-Anmeldung: keine Antwort (Popup blockiert?)')), 90000); // nie dauerhaft hängen bleiben
-  }));
-  window._gdPending = p;
-  const done = () => { if (window._gdPending === p) window._gdPending = null; };
-  p.then(done, done);
-  return p;
-}
-
-function gdFetch(url, opts, interactive) {
-  return gdGetToken(interactive).then(token => {
-    const o = Object.assign({}, opts || {});
-    o.headers = Object.assign({}, o.headers || {}, { Authorization: 'Bearer ' + token });
-    return fetch(url, o).then(r => {
-      if (r.status === 401) { gdClearToken(); throw new Error('Google-Anmeldung abgelaufen – bitte neu verbinden'); }
-      if (!r.ok) return r.text().then(t => { throw new Error('Drive-Fehler ' + r.status + ': ' + t.slice(0, 160)); });
-      return r;
-    });
-  });
-}
 
 function gdList(interactive) {
   const q = encodeURIComponent("'" + NOTATOR_GDRIVE_FOLDER_ID + "' in parents and trashed = false and name contains '.notator'");
@@ -9529,7 +9550,7 @@ function gdSetupDialog() {
   const v = prompt('Google-Client-ID für Notator eingeben (aus der Google Cloud Console, endet auf .apps.googleusercontent.com).\nWird nur in diesem Browser gespeichert.', cur);
   if (v === null) return;
   try { localStorage.setItem('notatorGoogleClientId', v.trim()); } catch (e) {}
-  _gdTokenClient = null;
+  GD.reset();
   gdClearToken();
   gregLibShowModal();
 }
