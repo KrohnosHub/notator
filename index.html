@@ -8794,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '391';
+const NOTATOR_BUILD_ID = '392';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20110,9 +20110,15 @@ function gregVerseTemplate() {
   const sel = (typeof gregBlockIdx === 'function' ? gregBlockIdx() : []).filter(i => !all[i].vsCopy);
   // endet die Vorlage mit dem Kehrvers (Stück-Anfang nach dem Strophenende), wird dieser abgeschnitten
   const trim = (a, b) => { const se = gregVerseStanzaEnd(a); return (se > a && se < b && gregVerseRefrainEnd(se) >= b) ? se : b; };
-  if (sel.length > 1) return { a: sel[0], b: trim(sel[0], sel[sel.length - 1]), src: 'markierter Bereich' };
+  // beginnt die Vorlage direkt nach «1.» + Doppelstrich, gehört die Strophennummer zur Vorlage (dann bekommen die weiteren Strophen auch Nummern)
+  const lead = a => {
+    let k = a - 1; while (k >= 0 && all[k].type === 'linebreak') k--;
+    if (k >= 1 && all[k].type === 'divisio' && all[k].div === '::') { const m = all[k - 1]; if (m && !m.vsCopy && (m.type === 'directive' || m.type === 'special' || m.type === 'textonly') && /^\s*1\.?\s*$/.test(m.text || '')) return k - 1; }
+    return a;
+  };
+  if (sel.length > 1) return { a: lead(sel[0]), b: trim(sel[0], sel[sel.length - 1]), src: 'markierter Bereich' };
   const fl = []; all.forEach((e, i) => { if (e.vsTpl && !e.vsCopy) fl.push(i); });
-  if (fl.length) return { a: fl[0], b: trim(fl[0], fl[fl.length - 1]), src: 'gespeicherte Vorlage' };
+  if (fl.length) return { a: lead(fl[0]), b: trim(fl[0], fl[fl.length - 1]), src: 'gespeicherte Vorlage' };
   for (let i = 0; i < all.length; i++) {
     const e = all[i]; if (e.vsCopy) continue;
     const isNum = (e.type === 'note' && NT_VS_NUM.test(e.syllable || '') && /^\s*1\./.test(e.syllable)) || ((e.type === 'directive' || e.type === 'special' || e.type === 'textonly') && /^\s*1\.?\s*$/.test(e.text || ''));
@@ -20233,8 +20239,17 @@ function gregVerseTplPick() {
   window._gregVsPick = true; window._gregBlockPick = false; window._gregBlockRange = 1;
   gregUpdateBulkToolbar(); gregBlockSync(); gregRefreshListNoRender();
 }
+// Veraltete Markierungen aus früheren Läufen entfernen: eine «Kopie» (vsCopy) ohne eigene Noten ist keine echte Strophen-Kopie,
+// sondern Rest einer Markierung (z.B. nur «2.» + Doppelstrich) – sie würde im Notenbild ausgeblendet und den Assistenten verwirren.
+function gregVerseSanitize() {
+  const by = {}; gregEntries.forEach(e => { if (e.vsCopy) (by[e.vsCopy] = by[e.vsCopy] || []).push(e); });
+  let fixed = 0;
+  Object.keys(by).forEach(n => { if (!by[n].some(e => e.type === 'note')) by[n].forEach(e => { delete e.vsCopy; delete e.vsTail; fixed++; }); });
+  return fixed;
+}
 function gregVersesShow() {
   if (window._ntTab !== 'greg') switchTab('greg');
+  if (gregVerseSanitize()) { gregRefreshList(); gregBlockSync(); }
   // Zustand nach einer Auswahl im Notenbild (Vorlage bzw. Strophe aus Noten) wiederherstellen
   const st = window._gregVsState || null; window._gregVsState = null;
   const pickK = window._gregVsPickK; window._gregVsPickK = null;
@@ -20385,6 +20400,7 @@ function gregVerseCopiesEdited() {
 // Schnellwechsel zwischen «Text untereinander» und «eigene Noten» (Texte bleiben erhalten)
 function gregVersesSwitchLayout() {
   if (window._ntTab !== 'greg') switchTab('greg');
+  gregVerseSanitize();
   const own = gregEntries.some(e => e.vsCopy);
   const ti = gregVerseTplInfo(gregVerseTemplate());
   let texts;
