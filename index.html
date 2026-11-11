@@ -8794,7 +8794,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '392';
+const NOTATOR_BUILD_ID = '393';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -10062,10 +10062,10 @@ function gregLibShowModal() {
   openRow.className = 'nt-lib-row';
   openRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px';
   openRow.appendChild(mkBtn('✚ Neues Stück', function() { closeModal(); ntNewPiece(); }, '', 'Neues, leeres Stück beginnen (bei ungespeicherten Änderungen wird nachgefragt)'));
-  openRow.appendChild(mkBtn('💻 Vom Gerät öffnen …', function() { ntOpenLocalFile(); }, 'background:#3d6b35;color:#fff;border-color:#3d6b35', '.notator-Datei aus einem lokalen Ordner öffnen'));
   if (driveOn) openRow.appendChild(mkBtn('☁ Anderer Drive-Ordner …', function() {
     gdGetToken(true).then(function() { ntDriveOpenBrowser(); }).catch(function(err) { gregGst(err.message); });
-  }, '', '.notator-Datei aus einem beliebigen Ordner in Google Drive öffnen'));
+  }, 'background:#3d6b35;color:#fff;border-color:#3d6b35', '.notator-Datei aus einem beliebigen Ordner in Google Drive öffnen (mit Suche)'));
+  openRow.appendChild(mkBtn('💻 Vom Gerät öffnen …', function() { ntOpenLocalFile(); }, '', 'Nur wenn nötig: lokale Datei (Achtung: kann von Drive abweichen – Drive ist die zentrale Ablage)'));
   bEl.appendChild(openRow);
   topRow.appendChild(mkBtn('💾 Aktuelles Stück speichern', function() { gregLibSaveCurrent(); }));
   topRow.appendChild(mkBtn('📑 Mappe', function() { ntMappeShow(); }, '', 'Gottesdienst-Mappe: mehrere Stücke zu einem PDF'));
@@ -19301,18 +19301,45 @@ function ntDriveOpenBrowser(chain, pick) {
           crumbs.appendChild(a);
         });
         body.appendChild(crumbs);
-        const list = document.createElement('div');
-        list.style.cssText = 'max-height:50vh;overflow-y:auto;border:1px solid var(--parch3);border-radius:4px';
+        const norm = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const files = (j.files || []).filter(f => f.mimeType === 'application/vnd.google-apps.folder' || /\.notator$/i.test(f.name));
-        if (!files.length) list.innerHTML = '<div style="font-size:11px;color:var(--ink2);padding:6px">(keine Unterordner und keine .notator-Dateien)</div>';
-        files.forEach(f => {
+        const inp = document.createElement('input'); inp.type = 'search'; inp.placeholder = '🔎 Suchen (in diesem Ordner und in ganz Drive) …';
+        inp.style.cssText = 'width:100%;box-sizing:border-box;margin-bottom:6px;padding:6px 8px;font-size:14px;border:1px solid var(--parch3);border-radius:4px';
+        body.appendChild(inp);
+        const list = document.createElement('div');
+        list.style.cssText = 'max-height:46vh;overflow-y:auto;border:1px solid var(--parch3);border-radius:4px';
+        const open = f => { if (pick) { closeModal(); gdDownload(f.id, true).then(st => pick(st, gdTitleFromName(f.name))).catch(err => gregGst('Drive-Ladefehler: ' + err.message)); } else { closeModal(); gregLibLoadDrive(f); } };
+        const mkRow = (f, extra) => {
           const isDir = f.mimeType === 'application/vnd.google-apps.folder';
           const b = document.createElement('button'); b.className = 'b';
-          b.textContent = (isDir ? '📁 ' : '🎼 ') + (isDir ? f.name : gdTitleFromName(f.name)) + (isDir ? '' : '  —  ' + gregLibFormatDate(Date.parse(f.modifiedTime)));
+          b.textContent = (isDir ? '📁 ' : '🎼 ') + (isDir ? f.name : gdTitleFromName(f.name)) + (isDir ? '' : '  —  ' + gregLibFormatDate(Date.parse(f.modifiedTime))) + (extra || '');
           b.style.cssText = 'display:block;width:100%;text-align:left;border:none;border-bottom:1px solid var(--parch3);border-radius:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-          b.onclick = isDir ? () => ntDriveOpenBrowser(ch.concat([{ id: f.id, name: f.name }]), pick) : () => { if (pick) { closeModal(); gdDownload(f.id, true).then(st => pick(st, gdTitleFromName(f.name))).catch(err => gregGst('Drive-Ladefehler: ' + err.message)); } else { closeModal(); gregLibLoadDrive(f); } };
-          list.appendChild(b);
-        });
+          b.onclick = isDir ? () => ntDriveOpenBrowser(ch.concat([{ id: f.id, name: f.name }]), pick) : () => open(f);
+          return b;
+        };
+        const note = t => { const d = document.createElement('div'); d.style.cssText = 'font-size:11px;color:var(--ink2);padding:6px'; d.textContent = t; return d; };
+        let seq = 0, timer = null;
+        const render = () => {
+          const q = norm(inp.value).trim(), words = q.split(/\s+/).filter(Boolean), my = ++seq;
+          list.innerHTML = '';
+          const shown = words.length ? files.filter(f => words.every(w => norm(f.name).includes(w))) : files;
+          if (!shown.length && !words.length) list.appendChild(note('(keine Unterordner und keine .notator-Dateien)'));
+          shown.forEach(f => list.appendChild(mkRow(f)));
+          if (q.length >= 2) {
+            const st = note('Suche in ganz Drive …'); list.appendChild(st);
+            const w0 = words.map(w => "name contains '" + w.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'").join(' and ');
+            gdFetch('https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent(w0 + " and name contains '.notator' and trashed = false") + '&orderBy=name&pageSize=100&fields=files(id,name,mimeType,modifiedTime,appProperties)', {}, false)
+              .then(r => r.json()).then(jj => {
+                if (my !== seq) return; st.remove();
+                const have = new Set(shown.map(f => f.id));
+                const more = (jj.files || []).filter(f => !have.has(f.id) && /\.notator$/i.test(f.name));
+                if (more.length) { const h = note('In anderen Ordnern gefunden:'); h.style.fontWeight = '600'; list.appendChild(h); more.forEach(f => list.appendChild(mkRow(f))); }
+                else if (!shown.length) list.appendChild(note('Keine Treffer.'));
+              }).catch(() => { if (my === seq) st.textContent = shown.length ? '' : 'Keine Treffer (Drive-Suche nicht möglich).'; });
+          } else if (words.length && !shown.length) list.appendChild(note('Keine Treffer in diesem Ordner.'));
+        };
+        inp.oninput = () => { clearTimeout(timer); timer = setTimeout(render, 250); };
+        render();
         body.appendChild(list);
       });
   }).catch(err => { body.textContent = 'Fehler: ' + err.message; });
