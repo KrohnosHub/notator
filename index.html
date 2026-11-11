@@ -8851,7 +8851,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '397';
+const NOTATOR_BUILD_ID = '398';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -21834,9 +21834,23 @@ function clExportPDF() {
     if (mobDef) clState.width = mobDef;
     else if (clState.width && shownW !== clState.width) clState.width = Math.round(shownW);
     else if (!clState.width && shownW < 700) clState.width = 740;
+    // Anzeige einfrieren: Druckdurchgang ausserhalb des sichtbaren Bereichs rendern,
+    // solange zeigt eine Kopie das bisherige Notenbild (kein kurzes Vergrössern)
+    const sc = document.getElementById('cl-score');
+    let frz = null;
+    if (sc && sc.parentNode) {
+      const cs = getComputedStyle(sc);
+      frz = sc.cloneNode(true); frz.removeAttribute('id');
+      frz.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+      ['width', 'background', 'padding', 'margin', 'minHeight', 'boxShadow', 'color'].forEach(k => { frz.style[k] = cs[k]; });
+      frz.style.pointerEvents = 'none';
+      sc.parentNode.insertBefore(frz, sc.nextSibling);
+      sc.style.position = 'absolute'; sc.style.left = '-30000px'; sc.style.top = '0';
+    }
+    const unfreeze = () => { if (sc) { sc.style.position = sc.style.left = sc.style.top = ''; } if (frz) frz.remove(); };
     clExportPDF._printPass = true; ntViewScale._override = true;
     clRender();
-    try { clExportPDF(); } finally { clExportPDF._printPass = false; ntViewScale._override = false; clState.width = oldW; setTimeout(clRender, 50); }
+    try { clExportPDF(); } finally { clExportPDF._printPass = false; ntViewScale._override = false; clState.width = oldW; setTimeout(() => { try { clRender(); } finally { unfreeze(); } }, 50); }
     return;
   }
   const printTexts = !!(document.getElementById('cl-pdf-print-texts') || {}).checked;
