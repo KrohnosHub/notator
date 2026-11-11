@@ -1035,25 +1035,31 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
   // gesetzt, damit «1.» an derselben Stelle steht wie die anderen Nummern.
   {
     const isNum = x => x && (x.type === 'directive' || x.type === 'special' || x.type === 'textonly') && /^\s*\d+\.?\s*$/.test(x.text || '');
+    const isResp = x => x && (x.type === 'directive' || x.type === 'special' || x.type === 'textonly') && /^\s*(℟|R\/\.?)\s*$/.test(x.text || '');
+    const isMark = x => isNum(x) || isResp(x);
     let moved = null;
     if (entries.some(x => x && (x.type === 'linebreak' || isNum(x) || (Array.isArray(x.verses) && x.syllable)))) {
       const out = []; let ch = false;
       for (let i = 0; i < entries.length; i++) {
         const e = entries[i];
-        if (isNum(e) && entries[i + 1] && entries[i + 1].type === 'divisio' && entries[i + 1].div === '::') {
-          let j = i + 2, lbs = 0; while (j < entries.length && entries[j].type === 'linebreak') { lbs++; j++; }
-          const nx = entries[j];
-          if (nx && nx.type === 'note') {
-            const preLB = out.length && out[out.length - 1].type === 'linebreak';
-            if (preLB) out.pop();
-            out.push(Object.assign({}, entries[i + 1], { glueToPrevSpecial: false })); // steht jetzt hinter den Noten der vorigen Zeile, nicht mehr hinter der Nummer
-            if (preLB || lbs) out.push({ type: 'linebreak' });
-            if (Array.isArray(nx.verses) && nx.syllable) out.push(Object.assign({}, nx, { startsWord: true, syllable: String(e.text).trim().replace(/\.?$/, '.') + ' ' + nx.syllable }));
-            else { out.push(e); out.push(nx); }
-            i = j; ch = true; continue;
+        if (isMark(e)) {
+          let j = i + 1, lb1 = 0; while (j < entries.length && entries[j].type === 'linebreak') { lb1++; j++; }
+          const dv = entries[j];
+          if (dv && dv.type === 'divisio' && dv.div === '::') {
+            let k = j + 1, lb2 = 0; while (k < entries.length && entries[k].type === 'linebreak') { lb2++; k++; }
+            const nx = entries[k], lbs = lb1 + lb2;
+            if (nx && nx.type === 'note' && (isNum(e) || lbs)) {
+              const preLB = out.length && out[out.length - 1].type === 'linebreak';
+              if (preLB) out.pop();
+              out.push(Object.assign({}, dv, { glueToPrevSpecial: false })); // steht jetzt hinter den Noten der vorigen Zeile, nicht mehr hinter der Marke
+              if (preLB || lbs) out.push({ type: 'linebreak' });
+              if (Array.isArray(nx.verses) && nx.syllable) out.push(Object.assign({}, nx, { startsWord: true, syllable: (isNum(e) ? String(e.text).trim().replace(/\.?$/, '.') : 'R/.') + ' ' + nx.syllable }));
+              else { out.push(e); out.push(nx); }
+              i = k; ch = true; continue;
+            }
           }
         }
-        if (e.type === 'linebreak' && out.length && isNum(out[out.length - 1])) {
+        if (e.type === 'linebreak' && out.length && isMark(out[out.length - 1])) {
           const n = out.pop();
           if (!(out.length && out[out.length - 1].type === 'linebreak')) out.push(e);
           out.push(n); ch = true; continue;
@@ -8845,7 +8851,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '396';
+const NOTATOR_BUILD_ID = '397';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
