@@ -1030,26 +1030,37 @@ function gregVerseEsc(v) {
   return String(v || '').replace(/[()|{}\[\]*_^%<>]/g, '').replace(/\s+/g, ' ').trim();
 }
 function gregEntriesToBody(entries, clefGabc, clefRaw) {
-  // Zeilenumbruch direkt nach «Strophennummer + Doppelstrich» gehört vor die Nummer (sonst bleibt «1.» am Ende der oberen Zeile hängen)
+  // Strophennummer + Doppelstrich + (Zeilenumbruch) + Noten: Der Doppelstrich gehört ans Ende der vorhergehenden Zeile, die Nummer
+  // mit den Noten auf die neue Zeile. Bei untereinander gesetzten Strophen wird die Nummer (wie «2.», «3.» …) in die erste Silbe
+  // gesetzt, damit «1.» an derselben Stelle steht wie die anderen Nummern.
   {
     const isNum = x => x && (x.type === 'directive' || x.type === 'special' || x.type === 'textonly') && /^\s*\d+\.?\s*$/.test(x.text || '');
     let moved = null;
-    if (entries.some(x => x && x.type === 'linebreak')) {
-      const out = [];
+    if (entries.some(x => x && (x.type === 'linebreak' || isNum(x)))) {
+      const out = []; let ch = false;
       for (let i = 0; i < entries.length; i++) {
         const e = entries[i];
-        if (e.type === 'linebreak') {
-          const n = out.length; let j = -1;
-          if (n >= 2 && out[n - 1].type === 'divisio' && isNum(out[n - 2])) j = n - 2; else if (n >= 1 && isNum(out[n - 1])) j = n - 1;
-          if (j >= 0) {
-            const held = out.splice(j);
-            if (!(out.length && out[out.length - 1].type === 'linebreak')) out.push(e); // steht schon ein Umbruch vor der Nummer: zusammenführen
-            out.push(...held); moved = out; continue;
+        if (isNum(e) && entries[i + 1] && entries[i + 1].type === 'divisio' && entries[i + 1].div === '::') {
+          let j = i + 2, lbs = 0; while (j < entries.length && entries[j].type === 'linebreak') { lbs++; j++; }
+          const nx = entries[j];
+          if (nx && nx.type === 'note') {
+            const preLB = out.length && out[out.length - 1].type === 'linebreak';
+            if (preLB) out.pop();
+            out.push(Object.assign({}, entries[i + 1], { glueToPrevSpecial: false })); // steht jetzt hinter den Noten der vorigen Zeile, nicht mehr hinter der Nummer
+            if (preLB || lbs) out.push({ type: 'linebreak' });
+            if (Array.isArray(nx.verses) && nx.syllable) out.push(Object.assign({}, nx, { startsWord: true, syllable: String(e.text).trim().replace(/\.?$/, '.') + ' ' + nx.syllable }));
+            else { out.push(e); out.push(nx); }
+            i = j; ch = true; continue;
           }
+        }
+        if (e.type === 'linebreak' && out.length && isNum(out[out.length - 1])) {
+          const n = out.pop();
+          if (!(out.length && out[out.length - 1].type === 'linebreak')) out.push(e);
+          out.push(n); ch = true; continue;
         }
         out.push(e);
       }
-      if (moved) moved = out;
+      if (ch) moved = out;
     }
     if (moved) entries = moved;
   }
@@ -1082,7 +1093,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
   // Strophen untereinander: erste Silbe jeder Phrase (Stückanfang, nach Zeilenumbruch/Teilstrich) mit dem 1. Buchstaben unter der Note
   // verankern ({x}-Zentrierung), damit alle Strophen an derselben Stelle beginnen statt je nach Silbenlänge zentriert verschoben
   let atPhraseStart = true, runPhraseStart = false;
-  const leftMark = t => { const m = /^(\s*\d+\.\s*)?([^\s{}<>_|]*?)([A-Za-zÀ-ÿ])/.exec(t); if (!m || m[2] || /[<>_{}]/.test(t)) return t; const i = m[0].length - 1; return t.slice(0, i) + '{' + t[i] + '}' + t.slice(i + 1); };
+  const leftMark = t => { const m = /^(\s*(?:\d+\.|R\/\.)\s*)?([^\s{}<>_|]*?)([A-Za-zÀ-ÿ])/.exec(t); if (!m || m[2] || /[<>_{}]/.test(t)) return t; const i = m[0].length - 1; return t.slice(0, i) + '{' + t[i] + '}' + t.slice(i + 1); };
 
   let prevRunHyphen = false;
   let inRun = false;
@@ -1225,7 +1236,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
         runEmittedSyllable = false;
         inRun = true;
         openParts = [{e, noGapBefore:false}];
-        openGroupGlue = prevRunHyphen;
+        openGroupGlue = prevRunHyphen && !e.startsWord;
       } else {
         openParts.push({e, noGapBefore: !!e.noGapBefore, gapWide: !!e.gapWide});
         if (e.wordEnd === true) runWordEnd = true; // Wortende nach silbenloser Gruppe ("A(f)(g) B")
@@ -8826,7 +8837,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '394';
+const NOTATOR_BUILD_ID = '395';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20450,10 +20461,14 @@ function gregVersesApplyAll(mode, keep, ti, noPush) {
     const tb = gregEntries.lastIndexOf(tplEnts[tplEnts.length - 1]);
     let re = gregVerseRefrainEnd(tb);
     if (re < 0) { const f = gregEntries[tb + 1], tx = f ? (f.type === 'note' ? f.syllable : f.text) : ''; if (f && /^\s*(℟|R\/\.?|<sp>R\/<\/sp>)/.test(tx || '')) { let j = tb + 1; while (j < gregEntries.length) { if (gregEntries[j].type === 'divisio' && gregEntries[j].div === '::') break; re = j; j++; } } }
+    // «℟.» vor dem Kehrvers (Vorsänger/Antwort): in Strophe 1 steht es als eigener Eintrag, in den anderen Zeilen wird es dem Text vorangestellt
+    let hasResp = false;
+    for (let q = tb; q >= 0 && q > tb - 4; q--) { const x = gregEntries[q]; if (x.type === 'divisio') continue; hasResp = (x.type === 'special' || x.type === 'textonly' || x.type === 'directive') && /^\s*(℟|R\/\.?)/.test(x.text || ''); break; }
+    let firstRef = true;
     for (let i = tb + 1; i <= re; i++) {
       const e = gregEntries[i]; if (e.type !== 'note' || !String(e.syllable || '').trim()) continue;
       const v = String(e.syllable).replace(/-$/, '') + ((e.hyphen && e.wordEnd !== true) ? '-' : '');
-      e.verses = keep.map(() => v);
+      e.verses = keep.map(() => (hasResp && firstRef ? 'R/. ' : '') + v); firstRef = false;
     }
   }
   gregSelectedIndices.clear();
