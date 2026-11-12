@@ -10,9 +10,11 @@
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path');
 
-const ROOT = path.resolve(__dirname, '../..');
+// VISUAL_ROOT: andere Notator-Kopie rendern (z. B. den Ziel-Branch in der CI); VISUAL_BASELINE: anderer Referenzordner.
+// So kann die CI die Referenz auf derselben Maschine aus dem Ziel-Branch erzeugen und nur echte Änderungen melden.
+const ROOT = path.resolve(process.env.VISUAL_ROOT || path.join(__dirname, '../..'));
 const DIR = __dirname;
-const CASES = path.join(DIR, 'cases'), BASE = path.join(DIR, 'baseline'), DIFF = path.join(DIR, 'diff');
+const CASES = path.join(DIR, 'cases'), BASE = path.resolve(process.env.VISUAL_BASELINE || path.join(DIR, 'baseline')), DIFF = path.join(DIR, 'diff');
 const UPDATE = process.argv.includes('--update');
 const TOL = 0.00002; // erlaubter Anteil abweichender Pixel (Render ist lokal deterministisch; Spielraum für Kantenglättung)
 
@@ -88,7 +90,7 @@ async function compare(page, aB64, bB64) {
   if (errors.length) console.log('JS-Fehler auf der Seite:\n  ' + errors.join('\n  '));
   const bad = results.filter(r => r.status === 'abweichung');
   if (bad.length) {
-    const rows = bad.map(r => `<h2>${r.name} – ${(r.ratio * 100).toFixed(3)} %</h2><div class=g><figure><img src="../baseline/${r.name}.png"><figcaption>Referenz</figcaption></figure><figure><img src="${r.name}.neu.png"><figcaption>Neu</figcaption></figure><figure><img src="${r.name}.png"><figcaption>Unterschied (rot)</figcaption></figure></div>`).join('');
+    const rows = bad.map(r => `<h2>${r.name} – ${(r.ratio * 100).toFixed(3)} %</h2><div class=g><figure><img src="${path.relative(DIFF, path.join(BASE, r.name + '.png'))}"><figcaption>Referenz</figcaption></figure><figure><img src="${r.name}.neu.png"><figcaption>Neu</figcaption></figure><figure><img src="${r.name}.png"><figcaption>Unterschied (rot)</figcaption></figure></div>`).join('');
     fs.writeFileSync(path.join(DIFF, 'bericht.html'), `<!doctype html><meta charset=utf-8><title>Notator Bildvergleich</title><style>body{font:14px system-ui;margin:16px}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}img{width:100%;border:1px solid #ccc}figure{margin:0}</style><h1>Abweichungen</h1>${rows}`);
     console.log('\n' + bad.length + ' Abweichung(en) – siehe tests/visual/diff/bericht.html');
   }
