@@ -1,0 +1,39 @@
+{
+  "id": "salve-mater",
+  "scan": "scan.pdf",
+  "source": {
+    "book": "Nr. 393 «Salve Mater», S. 334, Scan aus dem Drive des Nutzers",
+    "reference": "Salve mater misericordiae.notator (GregoBase 20723, Cantus Mariales 1906)",
+    "rights": "ungeklärt – Scan nicht im Repo"
+  },
+  "tags": [
+    "do-schluessel",
+    "initiale",
+    "strophen-unterlegt",
+    "kehrvers",
+    "1-seite"
+  ],
+  "checkedBy": "",
+  "checkedOn": "",
+  "notes": "Soll aus der Notator-Datei des Nutzers (GregoBase-Fassung) abgeleitet, von Claude anhand des Scans auf die gedruckten Systeme verteilt und stichprobenweise geprüft. Noch nicht Note für Note vom Nutzer bestätigt. Text: nur Strophe 1 (der Druck unterlegt 6 Strophen). Trennstriche nach dem Scan gesetzt, unsicher. Mora-Punkte des Drucks fehlen in der Vorlage.",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae",
+      "mode": "5",
+      "clef": "c4",
+      "hasDropCap": true,
+      "pages": [
+        1
+      ],
+      "systems": [
+        "Sal(g)ve,(g) ma(j)ter(j) mi(j)se(i)ri(h)cór(g)di(h)æ,(g) (:) Ma(e)ter(e) De(g)i,(g) et(f) ma(e)ter(d)",
+        "vé(c)ni(d)æ.(c) (:) Ma(c)ter(c) spe(d)i,(e) et(d) ma(e)ter(f) grá(g)ti(g)æ,(g) (:) Ma(g)ter(g)",
+        "ple(h)na(g) san(g)ctæ(f) læ(f)tí(g)ti(f)æ,(e) (::) O(d) Ma(e)rí(dd)a!(c) (::) Sal(g)ve(g) ma(j)ter(j)",
+        "Sal(e)ve,(g) de(fe)cus(d) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e) (:) Sal(c)ve,(e) Vir(g)",
+        "go(h) díg(j)ni(i)or(g) cé(h)te(f)ris,(g) (:) Quæ(j) vír(j)gi(g)nes(h) om(g)nes(g)",
+        "trans(f)gré(e)de(d)ris,(e) (:) Et(e) ál(c)ti(e)us(g) se(e)des(f) in(g) sú(h)pe(i)ris,(j) (::)",
+        "O(j) Ma(h)rí(kk)a.(j) (::) Sal(g)ve(g) (::)"
+      ]
+    }
+  ]
+}

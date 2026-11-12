@@ -1,0 +1,33 @@
+{
+  "model": "claude-opus-5-5",
+  "effort": "medium",
+  "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+  "case": "surrexit-ad-cenam",
+  "stage": "Einzeldurchlauf 2",
+  "pieces": [
+    {
+      "incipit": "Surrexit Dominus vere",
+      "mode": "VI",
+      "hasDropCap": true,
+      "systemsDetected": 4,
+      "clef": "c4",
+      "systems": [
+        "Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fg)re,(dfghih.) (;) Al(i)le(i)lú(ihg)ia,(hig.) (,) al(de)",
+        "le(fhi)lú(hgf)ia.(ghff.) (::) Sur(f)ré(fg)xit.(f) (::) ℣. Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghih.) (::)",
+        "Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(gf)li(ed)o,(d.) (;) et(d) Spi(g)rí(hj)",
+        "tu(ih)i(hg) Sanc(gf)to.(f.) (::) Sur(f)ré(fg)xit.(f) (::)"
+      ]
+    },
+    {
+      "incipit": "Ad coenam Agni providi",
+      "mode": "VIII",
+      "hasDropCap": true,
+      "systemsDetected": 2,
+      "clef": "c4",
+      "systems": [
+        "Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(fg) al(g)bis(fg) cán(g)di(f)",
+        ""
+      ]
+    }
+  ]
+}

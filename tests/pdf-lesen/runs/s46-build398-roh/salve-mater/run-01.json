@@ -1,0 +1,26 @@
+{
+  "model": "claude-sonnet-4-6",
+  "effort": null,
+  "pipeline": "index.html unverändert",
+  "case": "salve-mater",
+  "stage": "Einzeldurchlauf 1",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae, Mater Dei",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 8,
+      "clef": "c4",
+      "systems": [
+        "Sal(hi)ve,(h) ma(h)ter(hi) mi(h)se(h)ri(ih)cór(h)di(h)ae,(gh) (;) Ma(h)ter(h) De(h)i,(h) (,) et(h) ma(h)ter(hi)",
+        "gra(f)ti(gh)ae,(h) (;) Ma(h)ter(h) mi(h)se(h)ri(h)cór(h)di(h)ae,(gh) (::)",
+        "vé(j)ni(j)æ.(j) Ma(h)ter(h) spe(j)i,(j) (;) et(h) ma(h)ter(h) grá(j)ti(j)æ,(j) (;) Ma(d)ter(d)",
+        "ple(k)na(h.) sanctæ(h) læ(h)tí(h)ti(g)æ,(g.) (;) O(g) Ma(hg)rí(hh)a!(j) ij. (::) Sal(jh)ve(h) ma(h)ter..(hj)",
+        "Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)",
+        "(f)go(e) pu(f)ér(e)pe(f)ra:(e) (;) Nam(f) qui(f) se(f)",
+        "E(g)sto,(f) Ma(g)ter,(f) nos(g)trum(g) so(g)la(f)ti(g)um;(f.) (;) No(j)strum(i) e(ji)",
+        "(no notes visible — text only)"
+      ]
+    }
+  ]
+}

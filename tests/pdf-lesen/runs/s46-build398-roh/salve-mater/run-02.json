@@ -1,0 +1,26 @@
+{
+  "model": "claude-sonnet-4-6",
+  "effort": null,
+  "pipeline": "index.html unverändert",
+  "case": "salve-mater",
+  "stage": "Einzeldurchlauf 2",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae, Mater Dei",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 8,
+      "clef": "c4",
+      "systems": [
+        "Sal(ji)ve,(ih) (;) ma(hi)ter(hg) mi(gh)se(h)ri(gh)cór(ih)di(h)ae,(gh) (;) Ma(h)ter(gh) De(h)i,(g.) (::) et(h) ma(hi)ter(ih)",
+        "ve(h)ni(gh)ae,(h) (;) tu(h) spes(h) no(h)stra,(h) (;) tu(gh) re(h)fú(hg)gi(h)um.(gh)",
+        "vé(j)ni(j)æ.(j) (;) Ma(j)ter(ij) spe(j)i,(j) (,) et(j) ma(j)ter(j) grá(j)ti(j)æ,(j) (;) Ma(j)ter(j)",
+        "ple(j)na(ij) sanc(j)tæ(j) læ(j)tí(j)ti(j)æ,(j) (;) O(j) Ma(j)rí(ij)a!(j) (,) ij. (::) Sal(j)ve(j) ma(j)ter..(ij)",
+        "Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)",
+        "(no musical notes visible — lyrics only)",
+        "E(g)sto,(f) Ma(g)ter,(f) no(g)strum(f) so(g)lá(g)ti(f)um;(f.) (;) No(j)strum(ij) e(ig)",
+        "go(f) díg(f)ni(f)or(f) cé(f)te(f)ris,(f) (;) Quæ(f) vír(f)gi(f)nes(f) om(f)nes(f)"
+      ]
+    }
+  ]
+}

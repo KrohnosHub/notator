@@ -1,0 +1,29 @@
+{
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+  "case": "salve-mater",
+  "stage": "Endergebnis nach Geometrie",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 6,
+      "clef": "c4",
+      "systems": [
+        "Sal(jh)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h) (,) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)",
+        "gra(d)ti(h)æ(d) (;) Ma(d)ter(d) mi(d)se(e)ri(g)cór(e)di(f)æ,(g.) (;) Ma(h)ter(h)",
+        "vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)",
+        "ple(j)na(i) sanc(ih.)tæ(i) læ(h)tí(g)ti(h)æ,(g) (:) O Ma(f)rí(g)a!(ff) (:) ij. Sal(l)ve(l) ma(j)ter..(j)",
+        "(c) Sal(d)ve,(e) de(e)cus(ed) hu(g)má(f)ni(e) gé(d)ne(d)ris,(d) (:) Sal(d)ve,(e) Vir(f)"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 66696,
+    "output_tokens": 2745,
+    "costUsd": 0.1608
+  },
+  "durationMs": 36525
+}

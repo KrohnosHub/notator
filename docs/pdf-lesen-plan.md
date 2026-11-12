@@ -1,6 +1,7 @@
 # «PDF lesen» – Analyse, Testset, Migrationsplan
 
-Stand 12.11.2026, Build 398. Phase 1+2 von Teil B des Konzepts
+Stand 12.11.2026, Build 398. Phase 1+2 von Teil B des Konzepts, ergänzt um
+eine erste Messung (Abschnitt 5). Konzept:
 «Notator: Orgel-Begleitsatz & PDF lesen». `index.html` wurde nicht geändert.
 Zeilenangaben beziehen sich auf `index.html` in Build 398.
 
@@ -214,11 +215,77 @@ Grenzen:
 - GregoBase hilft nur beim Standard-Repertoire und hängt am Incipit aus
   Step A und am Proxy.
 
+## 5. Erste Messung (12.11.2026)
+
+Drei Fälle, 15 Systeme, je ein Pipeline-Lauf pro Modell. Jeder Lauf enthält
+drei Einzeldurchläufe je System; daraus stammt die Streuung. Kosten gesamt
+3.37 USD.
+
+| | Sonnet 4.6, Build 398 | Sonnet 5.5, `medium` | Opus 5.5, `medium` |
+| --- | --- | --- | --- |
+| Tonhöhen je Stück (ohne Systemschnitt) | 36 % | 29 % | **72 %** |
+| Tonhöhen je System, ausgerichtet | 30 % | 20 % | **59 %** |
+| Notenzahl je System richtig | 7 % | 20 % | **47 %** |
+| Neumen-Gruppierung | 67 % | 62 % | **86 %** |
+| Silben | 55 % | 55 % | 65 % |
+| Trennstriche | 14 % | 37 % | 64 % |
+| Schlüssel | 1 von 3 | 3 von 3 | 3 von 3 |
+| Systemzahl je Stück richtig | 2 von 4 | 3 von 4 | 3 von 4 |
+| Streuung: Notenpositionen gleich | 42 % | 39 % | 62 % |
+| Kosten für 3 Seiten | 0.74 USD | 0.45 USD | 2.08 USD |
+| Dauer für 3 Seiten | 353 s | 105 s | 743 s |
+
+Was die Messung zeigt:
+
+- **Der Ausgangswert ist tief.** Sonnet 4.6 trifft rund ein Drittel der
+  Tonhöhen. Die Streuung von 42 % bestätigt die bekannten ca. 46 %.
+- **Sonnet 5.5 allein löst es nicht.** Mit unveränderter Pipeline liest es
+  Schlüssel und Stückgrenzen richtig, die Tonhöhen aber nicht besser. Nur
+  `medium` gemessen; `high` ist offen.
+- **Opus 5.5 liest etwa doppelt so gut**, kostet aber knapp das Dreifache von
+  Sonnet 4.6 und braucht doppelt so lange. 72 % reichen nicht für einen
+  Import ohne Nacharbeit.
+- **Der Systemschnitt ist eine eigene Fehlerquelle** (neu, in Abschnitt 1
+  nicht erkannt). Bei 2 von 3 Scans schneidet `gregDetectStaffBands` falsch:
+  - «Salve mater»: 8 Ausschnitte statt 7 Systeme. Drei enthalten nur
+    Liedtext, die Systeme 6 und 7 fehlen ganz, und der Text jedes Systems
+    landet im Ausschnitt des nächsten.
+  - «Surrexit»: das erste Hymnus-System wird mitten durch die Notenlinien in
+    zwei Ausschnitte geteilt.
+  - Ursache vermutlich: Textzeilen zählen als «Linien» und verfälschen den
+    geschätzten Linienabstand (5146–5153, 5200–5221). [Annahme]
+- **Die geometrische Korrektur greift selten**: bei 4 bis 5 von 19 Ausschnitten
+  je Serie, beim «Ave Maria» nie (kein brauchbares Notenkopf-Template).
+- **Kein Lauf brach technisch ab**: überall `end_turn`, Marker immer vorhanden.
+  In 1 bis 3 Batches je Serie stimmte aber die Zeilenzahl nicht mit der Zahl
+  der Systeme überein (Schwachstelle 4).
+- **Sonnet 4.6 erzählt trotz Verbot** («I'll analyze each system carefully…»)
+  und verbraucht dafür Ausgabe-Tokens.
+
+Folgerung für die Reihenfolge: zuerst den Systemschnitt reparieren, dann die
+Eingabe für das Lesen verbessern (Hilfslinien oder Kandidaten-Liste,
+Abschnitt 4), erst danach das Modell festlegen. Ein Modellwechsel allein
+bringt mit der heutigen Pipeline wenig.
+
+Grenzen dieser Messung:
+
+- 15 Systeme sind wenig; Unterschiede von wenigen Prozentpunkten sagen nichts.
+- Das Soll stammt aus Ihren Notator-Dateien (GregoBase-Fassungen), von mir
+  auf die gedruckten Systeme verteilt und nur stichprobenweise gegen den Scan
+  geprüft. Trennstriche bei «Salve mater» sind unsicher.
+- GregoBase war im Test abgeschaltet. Alle drei Stücke stehen dort; im echten
+  Gebrauch wären sie importiert statt gelesen worden.
+- Fable 5.2 wurde aus Kostengründen nicht gemessen.
+- Pflichtänderung 4 (Bildbreite) war hier ohne Wirkung: die Ausschnitte sind
+  1833 px breit. Für Sonnet 4.6 werden sie auf 1568 px verkleinert
+  (Faktor 0.86); die im Prompt genannten Pixelzeilen stimmen dort also nicht.
+
 ## Offene Fragen
 
-1. Scans: 10–15 Seiten (Liber Usualis, Graduale, Antiphonale; Do- und
-   Fa-Schlüssel; mit Initiale; mehrere Stücke je Seite; 3 Stücke ausserhalb
-   GregoBase). Ablage im Repo oder privat?
-2. Zustimmung und Kostenrahmen für die Messläufe (5 Serien × 3 Läufe).
-3. Läufe erzeugen per Playwright (b) oder Export-Knopf (a)?
-4. Bleibt der Aufruf direkt aus dem Browser?
+1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).
+2. Weitere Fälle: Fa-Schlüssel, Schlüsselwechsel, Mehrseiter und Stücke
+   ausserhalb GregoBase fehlen noch.
+3. Dürfen die Scans ins Repo? Bisher liegen sie nur lokal.
+4. Nächster Schritt: Systemschnitt reparieren (Eingriff in `index.html`, nach
+   der Begleitsatz-Session) oder zuerst die Lese-Varianten ausserhalb von
+   Notator testen?

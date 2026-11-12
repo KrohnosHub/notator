@@ -1,0 +1,24 @@
+{
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+  "case": "salve-mater",
+  "stage": "Einzeldurchlauf 2",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 6,
+      "clef": "c4",
+      "systems": [
+        "Sal(hf)ve,(f) ma(j)ter(j) mi(j)se(j)ri(i)có(h)r(g)di(f)æ,(g.) (:) Ma(e)ter(f) De(h)i,(h) et(h) ma(g)ter(f)",
+        "al(f)ve,(f) ma(f)ter(e) mi(e)se(e)ri(g)có(g)r(h)di(i)æ,(i.) (:) Ma(i)ter(i)",
+        "vé(k)ni(k)æ.(k.) Ma(k)ter(k) spe(k)i,(k) et(k) ma(k)ter(k) grá(k)ti(k)æ,(k) Ma(k)ter(k)",
+        "ple(i)na(h) sanctæ(hgh) læ(g)tí(g)ti(h)æ,(g) (::) O(f) Ma(f)rí(e)a!(ee) ij.(c) (::) Sal(i)ve(i) ma(k)ter..(k)",
+        "(c) Sal(d)ve,(e) de(e)cus(ed) hu(g)má(f)ni(e) gé(d)ne(d)ris,(d) (:) Sal(d)ve,(e) Vir(f)",
+        ""
+      ]
+    }
+  ]
+}

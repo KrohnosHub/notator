@@ -1,0 +1,34 @@
+{
+  "model": "claude-sonnet-4-6",
+  "effort": null,
+  "pipeline": "index.html unverändert",
+  "case": "surrexit-ad-cenam",
+  "stage": "Einzeldurchlauf 1",
+  "pieces": [
+    {
+      "incipit": "Surréxit Dóminus vere, Allelúia",
+      "mode": "VI",
+      "hasDropCap": true,
+      "systemsDetected": 4,
+      "clef": "f3",
+      "systems": [
+        "Sur(hi)ré(hg)xit(fg) Dó(f)mi(f)nus(ef) ve(f)re, (;) *(,) Al(ghi)le(ig)lú(hi)ia,(h) al(ji)",
+        "le(ih)lú(hg)ia.(f.) (::) Sur(f)ré(f)xit.(f.) (;) ℣.(,) Et(f) ap(f)pá(f)ru(f)it(f) Si(f)mó(fe)ni.(fd)",
+        "*(;) Al(hg)le(g)lú(g)ia.(gh.) (;) ℣. Gló(h)ri(h)a(h) Pa(h)tri,(h) et(h) Fí(h)li(g)o,(gh) et(h) Spi(h)rí(ij)",
+        "tu(gh)i(h) San(hg)cto.(g.) Sur(h)ré(hi)xit.(h.) (::)"
+      ]
+    },
+    {
+      "incipit": "Ad coenam Agni próvidi, Et stolis",
+      "mode": "VIII",
+      "hasDropCap": true,
+      "systemsDetected": 3,
+      "clef": "f3",
+      "systems": [
+        "A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(hg)vi(h)di,(g) (;) Et(h) sto(ih)lis(h) al(gh)bis(h) cán(hg)di(h)",
+        "di(h)",
+        "di,(f) Post(h)trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(hi)mus(h) Prín(h)ci(h)-pi.(h.) (::)"
+      ]
+    }
+  ]
+}

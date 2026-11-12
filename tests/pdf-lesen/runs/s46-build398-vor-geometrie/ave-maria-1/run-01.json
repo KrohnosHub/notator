@@ -1,0 +1,22 @@
+{
+  "model": "claude-sonnet-4-6",
+  "effort": null,
+  "pipeline": "index.html unverändert",
+  "case": "ave-maria-1",
+  "stage": "Konsens vor Geometrie",
+  "pieces": [
+    {
+      "incipit": "Ave Maria, gratia plena, Dominus tecum",
+      "mode": "1",
+      "hasDropCap": true,
+      "systemsDetected": 4,
+      "clef": "f3",
+      "systems": [
+        "A(hi)ve(h) Ma(h)rí(hi)a,(h) (;) grá(hi)ti(h)a(g) plé(hi)na,(h) (;) Dó(h)mi(g)nus(h) té(ih)cum,(h) (,)",
+        "be(g)ne(h)díc(g)ta(f) tu(g) (;) in(g) mu(h)li(g)é(f)ri(g)bus,(f) (,) et(g) be(h)ne(g)díc(f)tus(g) frúc(h)tus(g) vén(hg)",
+        "tris(fh) tú-(h)i,(gh) Jé-(fe)sus.(f) (;) Sánc-(fg)ta(h) Ma-(h)rí-(ih)a,(h) Má-(h)ter(gh) Dé-(h)i,(hg) (;) ó-(h)ra(h) pro(gh)",
+        "nó-(gh)bis(h) pec-(h)ca-(gh)tó-(h)ri-(h)bus,(gh) (;) nunc(f) et(gh) (,) in(h) hó-(h)ra(gh) mór-(h)tis(h) nós-(gh)trae.(h) (;) A-(hg)men.(f.)"
+      ]
+    }
+  ]
+}

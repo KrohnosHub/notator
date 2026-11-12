@@ -147,6 +147,7 @@ function compareSystem(expLine, actLine) {
 }
 
 const normIncipit = s => normText(String(s || ''), true).replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+const firstWords = s => normIncipit(s).split(' ').slice(0, 2).join(' ');
 const normMode = s => {
   const t = String(s == null ? '' : s).trim().toUpperCase();
   const roman = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8 };
@@ -163,15 +164,20 @@ function compareCase(expected, run) {
     const ep = ePieces[k], ap = aPieces[k];
     if (!ep) { pieces.push({ index: k + 1, extra: true }); continue; }
     const eSys = ep.systems || [], aSys = (ap && ap.systems) || [];
+    const nExpected = ep.systems ? eSys.length : ep.systemCount;
+    const allNotes = lines => lines.flatMap(l => parseSystemLine(l || '').notes);
     pieces.push({
       index: k + 1,
       missing: !ap,
-      incipitOk: !!ap && normIncipit(ap.incipit) === normIncipit(ep.incipit),
+      incipitOk: !!ap && firstWords(ap.incipit) === firstWords(ep.incipit), // erste zwei Woerter: Step A liefert bewusst laengere Incipits
       modeOk: !!ap && normMode(ap.mode) === normMode(ep.mode),
-      clefOk: !!ap && String(ap.clef || '').toLowerCase() === String(ep.clef || '').toLowerCase(),
+      clefOk: ep.clef ? !!ap && String(ap.clef || '').toLowerCase() === String(ep.clef).toLowerCase() : null,
+      // ganzes Stueck als eine Notenfolge: unabhaengig davon, wie die Seite in Systeme geschnitten wurde
+      pieceNotes: ep.systems ? similarity(allNotes(eSys), allNotes(aSys)) : null,
+      pieceNoteCountDiff: ep.systems ? allNotes(aSys).length - allNotes(eSys).length : null,
       dropCapOk: !!ap && (ep.hasDropCap == null || !!ap.hasDropCap === !!ep.hasDropCap),
-      systemCountOk: eSys.length === aSys.length,
-      expectedSystems: eSys.length,
+      systemCountOk: nExpected === aSys.length,
+      expectedSystems: nExpected,
       actualSystems: aSys.length,
     });
     for (let s = 0; s < eSys.length; s++) {
@@ -215,7 +221,8 @@ function summarize(comparisons) {
     pieces: pcs.length,
     pieceCountOk: share(comparisons, c => c.pieceCountOk),
     systemCountOk: share(pcs, p => p.systemCountOk),
-    clefOk: share(pcs, p => p.clefOk),
+    clefOk: share(pcs.filter(p => p.clefOk != null), p => p.clefOk),
+    pieceNotes: mean(pcs.map(p => p.pieceNotes).filter(x => x != null)),
     incipitOk: share(pcs, p => p.incipitOk),
     modeOk: share(pcs, p => p.modeOk),
   };
@@ -296,6 +303,7 @@ function validateExpected(c) {
   if (!Array.isArray(e.pieces) || !e.pieces.length) problems.push('keine pieces');
   (e.pieces || []).forEach((p, i) => {
     if (!p.incipit) problems.push('Stueck ' + (i + 1) + ': incipit fehlt');
+    if (!p.systems && typeof p.systemCount === 'number') return; // Stueck ohne Soll-GABC: nur Systemzahl
     if (!/^(c|f)b?[1-4]$/.test(p.clef || '')) problems.push('Stueck ' + (i + 1) + ': clef fehlt/ungueltig (' + p.clef + ')');
     if (!Array.isArray(p.systems) || !p.systems.length) problems.push('Stueck ' + (i + 1) + ': systems fehlt');
     (p.systems || []).forEach((line, s) => {
@@ -317,6 +325,7 @@ function printSummary(title, s) {
   console.log('  Verglichen (über alle Läufe): ' + s.systems + ' Systeme, ' + s.pieces + ' Stücke');
   console.log('  Notenzahl je System richtig     ' + pct(s.noteCountOk));
   console.log('  Tonhöhen-Treffer (ausgerichtet) ' + pct(s.pitch) + '   positionsgenau ' + pct(s.pitchPositional));
+  console.log('  Tonhöhen je Stück (ohne Systemschnitt) ' + pct(s.pieceNotes));
   console.log('  Neumen-Gruppierung              ' + pct(s.grouping) + '   exakt ' + pct(s.groupingExact));
   console.log('  Silben                          ' + pct(s.syllables) + '   ohne Akzente ' + pct(s.syllablesPlain));
   console.log('  Wortgrenzen                     ' + pct(s.wordBreaks));
@@ -338,7 +347,7 @@ function main(argv) {
   let bad = 0;
   cases.forEach(c => validateExpected(c).forEach(p => { bad++; console.log('FEHLER im Testset ' + c.id + ': ' + p); }));
   if (bad) return 2;
-  const nSys = cases.reduce((n, c) => n + c.expected.pieces.reduce((m, p) => m + p.systems.length, 0), 0);
+  const nSys = cases.reduce((n, c) => n + c.expected.pieces.reduce((m, p) => m + (p.systems ? p.systems.length : 0), 0), 0);
   console.log('Testset: ' + cases.length + ' Fall/Fälle, ' + nSys + ' Systeme — Format in Ordnung.');
 
   const only = arg('--runs');

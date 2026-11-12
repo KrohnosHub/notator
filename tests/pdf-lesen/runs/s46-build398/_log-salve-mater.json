@@ -1,0 +1,492 @@
+{
+  "base": {
+    "model": "claude-sonnet-4-6",
+    "effort": null,
+    "pipeline": "index.html unverändert",
+    "case": "salve-mater"
+  },
+  "status": "GABC importiert: 126 Einträge — bitte mit dem Original vergleichen und korrigieren",
+  "stopped": null,
+  "stepA": [
+    {
+      "index": 1,
+      "mode": "5",
+      "incipit": "Salve mater misericordiae, Mater Dei",
+      "pages": [
+        1
+      ],
+      "systems": 8,
+      "hasDropCap": true
+    }
+  ],
+  "pieces": [
+    {
+      "clef": "c4",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "Sal(hi)ve,(hg) (;) ma(gh)ter(h) (,) mi(h)se(h)ri(h)cór(ih)di(h)æ,(g.) (;) Ma(h)ter(h) (,) De(hi)i,(h) (,) et(h) ma(gh)ter(h)",
+          "ve(h)ni(gh)ae,(h) (;) tu(h) spes(h) no(h)stra,(h) (;) tu(gh) re(h)fú(hg)gi(h)um.(gh)",
+          "vé(j)ni(j)æ.(j) Ma(h)ter(h) spe(j)i,(j) (;) et(h) ma(h)ter(h) grá(j)ti(j)æ,(j) (;) Ma(d)ter(d)",
+          "ple(j)na(ij) sanc(j)tæ(j) læ(j)tí(j)ti(j)æ,(j) (;) O(j) Ma(j)rí(ij)a!(j) (,) ij. (::) Sal(j)ve(j) ma(j)ter..(ij)",
+          "Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)",
+          "(f)go(e) pu(f)ér(e)pe(f)ra:(e) (;) Nam(f) qui(f) se(f)",
+          "E(g)sto,(f) Ma(g)ter,(f) nos(g)trum(g) so(g)la(f)ti(g)um;(f.) (;) No(j)strum(i) e(ji)",
+          "go(f) díg(f)ni(f)or(f) cé(f)te(f)ris,(f) (;) Quæ(f) vír(f)gi(f)nes(f) om(f)nes(f)"
+        ],
+        "after": [
+          "Sal(hi)ve,(hg) (;) ma(gh)ter(h) (,) mi(h)se(h)ri(h)cór(ih)di(h)æ,(g.) (;) Ma(h)ter(h) (,) De(hi)i,(h) (,) et(h) ma(gh)ter(h)",
+          "ve(j)ni(ie)ae,(f) (;) tu(e) spes(e) no(e)stra,(f) (;) tu(gf) re(g)fú(gh)gi(h)um.(hh)",
+          "vé(j)ni(j)æ.(j) Ma(h)ter(h) spe(j)i,(j) (;) et(h) ma(h)ter(h) grá(j)ti(j)æ,(j) (;) Ma(d)ter(d)",
+          "ple(j)na(ij) sanc(j)tæ(j) læ(j)tí(j)ti(j)æ,(j) (;) O(j) Ma(j)rí(ij)a!(j) (,) ij. (::) Sal(j)ve(j) ma(j)ter..(ij)",
+          "Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)",
+          "(f)go(e) pu(f)ér(e)pe(f)ra:(e) (;) Nam(f) qui(f) se(f)",
+          "E(g)sto,(f) Ma(g)ter,(f) nos(g)trum(g) so(g)la(f)ti(g)um;(f.) (;) No(j)strum(i) e(ji)",
+          "go(f) díg(f)ni(f)or(f) cé(f)te(f)ris,(f) (;) Quæ(f) vír(f)gi(f)nes(f) om(f)nes(f)"
+        ],
+        "nItems": 8
+      }
+    }
+  ],
+  "calls": [
+    {
+      "n": 1,
+      "kind": "pieces",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 1863,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 2867,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 51,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.00937,
+      "images": 1,
+      "text": "[{\"index\":1,\"mode\":\"5\",\"incipit\":\"Salve mater misericordiae, Mater Dei\",\"pages\":[1],\"systems\":8,\"hasDropCap\":true}]"
+    },
+    {
+      "n": 2,
+      "kind": "clef",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 834,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1679,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 11,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0052,
+      "images": 4,
+      "text": "CLEF: Do LINE 4"
+    },
+    {
+      "n": 3,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 13867,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4924,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 798,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02674,
+      "images": 2,
+      "text": "I'll analyze each system carefully, comparing note head pixel positions to the staff lines (Line 4=y102, Line 3=y149, Line 2=y195, Line 1=y227 for system 1; same top three but Line 1=y239 for system 2).\n\n**Staff position reference (System 1):**\n- Above Line 4 (k): y < 102\n- Line 4 (j): y ≈ 102\n- Space 4-3 (i): y ≈ 125\n- Line 3 (h): y ≈ 149\n- Space 3-2 (g): y ≈ 172\n- Line 2 (f): y ≈ 195\n- Space 2-1 (e): y ≈ 211\n- Line 1 (d): y ≈ 227\n\n**System 1 analysis:**\nThe drop cap \"S\" is visible, so the first visible syllable \"al-ve,\" needs the \"S\" prepended → \"Sal-ve,\"\n\nReading the notes and text carefully:\n\n- \"Sal\" → notes around y≈149 (h) and y≈125 (i): podatus hi\n- \"ve,\" → y≈149 (h)\n- \"ma\" → y≈149 (h)\n- \"ter\" → y≈149 (h), y≈125 (i): clivis hi... \n\nWorking through systematically with the pixel positions and neume shapes:\n\nSystem 1: Sal(hi)ve,(h) ma(h)ter(hi) mi(h)se(h)ri(ih)cór(h)di(h)ae,(gh) (;) Ma(h)ter(h) De(h)i,(h) (,) et(h) ma(h)ter(hi)\n\nSystem 2: mi(h)se(h)ri(h)cór(h)di(h)ae,(gh) (;) Ma(h)ter(h) De(h)i,(h) (,) et(h) ma(h)ter(hi)\n\nAfter more careful reading of both systems:\n\nSystem 1: Sal(hi)ve,(h) ma(h)ter(hi) mi(h)se(h)ri(ih)cór(h)di(h)ae,(gh) (;) Ma(h)ter(h) De(h)i,(h) (,) et(h) ma(h)ter(hi)\n\nSystem 2: gra(f)ti(gh)ae,(h) (;) Ma(h)ter(h) mi(h)se(h)ri(h)cór(h)di(h)ae,(gh) (::)\n\n===GABC===\nSystem 1: Sal(hi)ve,(h) ma(h)ter(hi) mi(h)se(h)ri(ih)cór(h)di(h)ae,(gh) (;) Ma(h)ter(h) De(h)i,(h) (,) et(h) ma(h)ter(hi)\nSystem 2: gra(f)ti(gh)ae,(h) (;) Ma(h)ter(h) mi(h)se(h)ri(h)cór(h)di(h)ae,(gh) (::)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 4,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 11598,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4924,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 607,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02388,
+      "images": 2,
+      "text": "I'll analyze each system carefully, comparing note head pixel positions to the staff lines (Line 4=y102, Line 3=y149, Line 2=y195, Line 1=y227 for system 1; Line 4=y102, Line 3=y149, Line 2=y195, Line 1=y239 for system 2).\n\n**Staff letter mapping (both systems):**\n- Line 4 (topmost) = j\n- Space 4-3 = k... wait, above top = k. Space between Line4 and Line3 = i. Line 3 = h. Space 3-2 = g. Line 2 = f. Space 2-1 = e. Line 1 = d. Space below Line1 = c.\n\nLet me re-read the mapping: bottom line=d, space above=e, 2nd line=f, space=g, 3rd line=h, space=i, top line=j.\n\nSo for 4-line staff: Line1(bottom)=d, Line2=f, Line3=h, Line4(top)=j. Spaces: below Line1=c, Line1-Line2=e, Line2-Line3=g, Line3-Line4=i, above Line4=k.\n\nSystem 1: Sal(ji)ve,(ih) (;) ma(hi)ter(hg) mi(gh)se(h)ri(gh)cór(ih)di(h)ae,(gh) (;) Ma(h)ter(gh) De(h)i,(g.) (::) et(h) ma(hi)ter(ih)\n\nSystem 2: ve(h)ni(gh)ae,(h) (;) tu(h) spes(h) no(h)stra,(h) (;) tu(gh) re(h)fú(hg)gi(h)um.(gh)\n\n===GABC===\nSystem 1: Sal(ji)ve,(ih) (;) ma(hi)ter(hg) mi(gh)se(h)ri(gh)cór(ih)di(h)ae,(gh) (;) Ma(h)ter(gh) De(h)i,(g.) (::) et(h) ma(hi)ter(ih)\nSystem 2: ve(h)ni(gh)ae,(h) (;) tu(h) spes(h) no(h)stra,(h) (;) tu(gh) re(h)fú(hg)gi(h)um.(gh)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 5,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 11429,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4924,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 649,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02451,
+      "images": 2,
+      "text": "I'll analyze each system carefully, comparing note head pixel positions to the staff lines (Line 4=y102, Line 3=y149, Line 2=y195, Line 1=y227 for system 1; Line 4=y102, Line 3=y149, Line 2=y195, Line 1=y239 for system 2).\n\nFor the pitch mapping: d=Line1, e=space above Line1, f=Line2, g=space above Line2, h=Line3, i=space above Line3, j=Line4, k=space above Line4.\n\nSystem 1: The drop cap \"S\" is visible beside the staff, and the known incipit is \"Salve mater misericordiae\". The visible text begins \"al-ve, ma-ter mi-se-ri-cór-di-æ, Ma-ter De-i, et ma-ter\".\n\nAnalyzing note positions against pixel rows for system 1 (staff lines at y=102,149,195,227):\n\nSystem 1: Sal(hi)ve,(hg) (;) ma(gh)ter(h) (,) mi(h)se(h)ri(h)cór(ih)di(h)æ,(g.) (;) Ma(h)ter(h) (,) De(hi)i,(h) (,) et(h) ma(gh)ter(h)\n\nSystem 2: Staff lines at y=102,149,195,239. Text: notes then \"Ma-ter De-i, et ma-ter grá-ti-æ, Ma-ter\"\n\nAnalyzing system 2 notes:\n\nSystem 2: (;) ma(f)ter(f) (,) mi(fg)se(g)ri(g)cór(g)di(g)æ,(g.) (;) Ma(g)ter(g) (,) De(gh)i,(g) (,) et(g) ma(fg)ter(g)\n\n===GABC===\nSystem 1: Sal(hi)ve,(hg) (;) ma(gh)ter(h) (,) mi(h)se(h)ri(h)cór(ih)di(h)æ,(g.) (;) Ma(h)ter(h) (,) De(hi)i,(h) (,) et(h) ma(gh)ter(h)\nSystem 2: (;) ma(f)ter(f) (,) mi(fg)se(g)ri(g)cór(g)di(g)æ,(g.) (;) Ma(g)ter(g) (,) De(gh)i,(g) (,) et(g) ma(fg)ter(g)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 6,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 15497,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4621,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1056,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0297,
+      "images": 2,
+      "text": "I'll analyze each system carefully using the pixel coordinates provided.\n\n**System 3** (staff lines: y=102=L4, y=149=L3, y=195=L2, y=239=L1):\n\nLooking at the notes above the lyrics \"vé-ni-æ. Ma-ter spe-i, et ma-ter grá-ti-æ, Ma-ter\":\n\n- \"vé\": note at ~y=102 → L4 = j\n- \"ni\": note at ~y=102 → j\n- \"æ.\": note at ~y=102 → j (with dot)\n- \"Ma\": note at ~y=149 → L3 = h\n- \"ter\": note at ~y=149 → h\n- \"spe\": note at ~y=102 → j\n- \"i,\": note at ~y=102 → j\n- \"et\": note at ~y=149 → h\n- \"ma\": note at ~y=149 → h\n- \"ter\": note at ~y=149 → h\n- \"grá\": note at ~y=102 → j\n- \"ti\": note at ~y=102 → j\n- \"æ,\": note at ~y=102 → j\n- \"Ma\": note at ~y=239 → L1 = d (bottom, end of system)\n- \"ter\": note at ~y=239 → d\n\n**System 4** (staff lines: y=102=L4, y=149=L3, y=195=L2, y=237=L1):\n\nLyrics: \"ple-na sanctæ læ-tí-ti-æ, O Ma-rí-a! ij. Sal-ve ma-ter..\"\n\n- \"ple\": note ~y=95 → above L4 = k\n- \"na\": note ~y=149 → h, with dot\n- \"sanctæ\": note ~y=149 → h, ~y=195 podatus? ~y=149,195 → hg... note ~y=149 → h\n- \"læ\": note ~y=149 → h\n- \"tí\": note ~y=149 → h\n- \"ti\": note ~y=195 → g\n- \"æ,\": note ~y=195 → g, dot\n- \"O\": note ~y=195 → g\n- \"Ma\": note ~y=149 → h, ~y=195 → g (clivis hg)\n- \"rí\": note ~y=149 → h, ~y=149 → h\n- \"a!\": note ~y=102 → j\n- \"ij.\": repeat mark\n- \"Sal\": note ~y=102 → j, ~y=149 → h (clivis jh... podatus?)\n- \"ve\": note ~y=149 → h\n- \"ma\": note ~y=149 → h\n- \"ter..\": note ~y=149 → h, ~y=102 → j (podatus hj)\n\nSystem 3: vé(j)ni(j)æ.(j) Ma(h)ter(h) spe(j)i,(j) (;) et(h) ma(h)ter(h) grá(j)ti(j)æ,(j) (;) Ma(d)ter(d)\n\nSystem 4: ple(k)na(h.) sanctæ(h) læ(h)tí(h)ti(g)æ,(g.) (;) O(g) Ma(hg)rí(hh)a!(j) ij. (::) Sal(jh)ve(h) ma(h)ter..(hj)\n\n===GABC===\nSystem 3: vé(j)ni(j)æ.(j) Ma(h)ter(h) spe(j)i,(j) (;) et(h) ma(h)ter(h) grá(j)ti(j)æ,(j) (;) Ma(d)ter(d)\nSystem 4: ple(k)na(h.) sanctæ(h) læ(h)tí(h)ti(g)æ,(g.) (;) O(g) Ma(hg)rí(hh)a!(j) ij. (::) Sal(jh)ve(h) ma(h)ter..(hj)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 7,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 14289,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4621,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 853,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02666,
+      "images": 2,
+      "text": "I'll analyze each system carefully using the pixel coordinates provided.\n\n**System 3** (staff lines: y=102=L4, y=149=L3, y=195=L2, y=239=L1):\n\nLooking at the notes visible at the bottom of system 3 image. The notes appear near y=102 (L4) and just above (space above L4 = k).\n\nThe text shows: \"vé-ni-æ. Ma-ter spe-i, et ma-ter grá-ti-æ, Ma-ter\"\n\nNotes at bottom of system 3 (the tail end visible): notes sit around y~102 (j=top line L4) and slightly above.\n\nFor system 3, the notes visible: \"vé\" has a note near top, \"ni\" similar, \"æ.\" then \"Ma-ter spe-i, et ma-ter grá-ti-æ, Ma-ter\" — most notes appear around y~102-110 area (j/k range).\n\n**System 4** (staff lines: y=102=L4, y=149=L3, y=195=L2, y=237=L1):\n\nText: \"ple-na sanctæ læ-tí-ti-æ, O Ma-rí-a! ij. Sal-ve ma-ter..\"\n\nNotes visible across the staff.\n\nSystem 3: vé(j)ni(j)æ.(j) (;) Ma(j)ter(ij) spe(j)i,(j) (,) et(j) ma(j)ter(j) grá(j)ti(j)æ,(j) (;) Ma(j)ter(j)\n\nSystem 4: ple(j)na(ij) sanc(j)tæ(j) læ(j)tí(j)ti(j)æ,(j) (;) O(j) Ma(j)rí(ij)a!(j) (,) ij. (::) Sal(j)ve(j) ma(j)ter..(ij)\n\nSystem 3: vé(j)ni(j)æ.(j) (;) Ma(j)ter(ij) spe(j)i,(j) (,) et(j) ma(j)ter(j) grá(j)ti(j)æ,(j) (;) Ma(j)ter(j)\n\nSystem 4: ple(j)na(ij) sanc(j)tæ(j) læ(j)tí(j)ti(j)æ,(j) (;) O(j) Ma(j)rí(ij)a!(j) (,) ij. (::) Sal(j)ve(j) ma(j)ter..(ij)\n\n===GABC===\nSystem 3: vé(j)ni(j)æ.(j) (;) Ma(j)ter(ij) spe(j)i,(j) (,) et(j) ma(j)ter(j) grá(j)ti(j)æ,(j) (;) Ma(j)ter(j)\nSystem 4: ple(j)na(ij) sanc(j)tæ(j) læ(j)tí(j)ti(j)æ,(j) (;) O(j) Ma(j)rí(ij)a!(j) (,) ij. (::) Sal(j)ve(j) ma(j)ter..(ij)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 8,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 17934,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4621,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1052,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02964,
+      "images": 2,
+      "text": "I'll analyze each system carefully using the pixel coordinates provided.\n\n**System 3** (staff lines at y=102, 149, 195, 239 → LINE4, LINE3, LINE2, LINE1):\n\nLooking at the notes above the lyrics \"vé-ni-æ. Ma-ter spe-i, et ma-ter grá-ti-æ, Ma-ter\":\n\n- \"vé\": note at ~y=102 → LINE4 = j\n- \"ni\": note at ~y=102 → j\n- \"æ.\": note at ~y=102 → j (with dot)\n- \"Ma\": note at ~y=102 → j\n- \"ter\": note at ~y=149 → LINE3 = h... checking: y=149=LINE3=h\n- \"spe\": note at ~y=125 → space between LINE4 and LINE3 = k... wait, above LINE4(y=102) would be k. y=125 is between 102 and 149, so space between LINE4 and LINE3 = i... \n\nRe-mapping: LINE4=j(y=102), space LINE3-LINE4=i, LINE3=h(y=149), space LINE2-LINE3=g, LINE2=f(y=195), space LINE1-LINE2=e, LINE1=d(y=239), space below=c.\n\nSpace between y=102 and y=149 → i (between j and h).\n\nSystem 3: vé(j)ni(j)æ.(j) Ma(j)ter(h) spe(i)i,(h) et(h) ma(h)ter(h) grá(i)ti(h)æ,(h) Ma(h)ter(h)\n\n**System 4** (staff lines at y=102, 149, 195, 237):\n\nLyrics: \"ple-na sanctæ læ-tí-ti-æ, O Ma-rí-a! ij. Sal-ve ma-ter..\"\n\n- \"ple\": note ~y=88 → above LINE4 = k\n- \"na\": ~y=125 → i\n- \"sanc\": ~y=149 → h, with dot\n- \"tæ\": ~y=125 → i; checking clivis shape → ih\n- \"læ\": ~y=149 → h\n- \"tí\": ~y=149 → h (clivis → hg?)\n- \"ti\": ~y=172 → g\n- \"æ,\": ~y=195 → f, with dot\n- \"O\": ~y=172 → g\n- \"Ma\": ~y=149 → h; clivis → hg\n- \"rí\": ~y=149 → h\n- \"a!\": ~y=125 → i\n- \"Sal\": ~y=88 → k; clivis → kj\n- \"ve\": ~y=102 → j\n- \"ma\": ~y=125 → i\n- \"ter..\": ~y=125 → i\n\nSystem 3: vé(j)ni(j)æ.(j) Ma(j)ter(h) spe(i)i,(h) et(h) ma(h)ter(h) grá(i)ti(h)æ,(h) Ma(h)ter(h)\nSystem 4: ple(k)na(i) sanc(h.)tæ(ih) læ(h)tí(hg)ti(g)æ,(f.) (;) O(g) Ma(hg)rí(h)a!(i) (::) Sal(kj)ve(j) ma(i)ter..(i)\n\n===GABC===\nSystem 3: vé(j)ni(j)æ.(j) Ma(j)ter(h) spe(i)i,(h) et(h) ma(h)ter(h) grá(i)ti(h)æ,(h) Ma(h)ter(h)\nSystem 4: ple(k)na(i) sanc(h.)tæ(ih) læ(h)tí(hg)ti(g)æ,(f.) (;) O(g) Ma(hg)rí(h)a!(i) (::) Sal(kj)ve(j) ma(i)ter..(i)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 9,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 5638,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4901,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 232,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01818,
+      "images": 2,
+      "text": "System 5: Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\nSystem 6: (f)go(e) pu(f)ér(e)pe(f)ra:(e) (;) Nam(f) qui(f) se(f)\n\n===GABC===\nSystem 5: Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\nSystem 6: (f)go(e) pu(f)ér(e)pe(f)ra:(e) (;) Nam(f) qui(f) se(f)",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 10,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 8339,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4901,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 403,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02075,
+      "images": 2,
+      "text": "System 5: Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\nSystem 6: 1. Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\n\nWait, System 6 appears to be only lyrics text (verse numbers 1-6) with no musical staff notes visible — it's just the text underlay for multiple verses. Let me re-examine.\n\nSystem 6 shows only text lines (verses 1-6 of the lyrics) with no note heads visible above them — the staff lines are present but the image shows only text. I'll transcribe only what's musically present.\n\nSystem 5: Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\nSystem 6: (no musical notes visible — lyrics only)\n\n===GABC===\nSystem 5: Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\nSystem 6: (no musical notes visible — lyrics only)",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 11,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 4861,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4901,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 282,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01893,
+      "images": 2,
+      "text": "System 5: Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\nSystem 6: 1. Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\n\n===GABC===\nSystem 5: Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)\nSystem 6: 1. Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 12,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 5251,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4733,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 241,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01781,
+      "images": 2,
+      "text": "System 7: E(g)sto,(f) Ma(g)ter,(f) nos(g)trum(g) so(g)la(f)ti(g)um;(f.) (;) No(j)strum(i) e(j)(i)\n\nLet me re-examine and provide a clean single pass.\n\nSystem 7: E(g)sto,(f) Ma(g)ter,(f) nos(g)trum(g) so(g)la(f)ti(g)um;(f.) (;) No(j)strum(i) e(ji)\n\nSystem 8: (no notes visible — text only)\n\n===GABC===\nSystem 7: E(g)sto,(f) Ma(g)ter,(f) nos(g)trum(g) so(g)la(f)ti(g)um;(f.) (;) No(j)strum(i) e(ji)\nSystem 8: (no notes visible — text only)",
+      "batch": [
+        7,
+        8
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 13,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 8536,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4733,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 432,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02068,
+      "images": 2,
+      "text": "I'll analyze each system carefully, comparing note head pixel positions to the staff lines (Line 4=top=y102, Line 3=y149, Line 2=y195, Line 1=bottom=y249 for system 7; same lines for system 8).\n\nSystem 7: E(g)sto,(f) Ma(g)ter,(f) no(g)strum(f) so(g)lá(g)ti(f)um;(f.) (;) No(j)strum(j) e(i)(g)\n\nLet me re-examine system 7 more carefully by reading each syllable's note position against the pixel rows.\n\nSystem 7: E(g)sto,(f) Ma(g)ter,(f) no(g)strum(f) so(g)lá(g)ti(f)um;(f.) (;) No(j)strum(ij) e(ig)\n\nSystem 8: go(f) díg(f)ni(f)or(f) cé(f)te(f)ris,(f) (;) Quæ(f) vír(f)gi(f)nes(f) om(f)nes(f)\n\n===GABC===\nSystem 7: E(g)sto,(f) Ma(g)ter,(f) no(g)strum(f) so(g)lá(g)ti(f)um;(f.) (;) No(j)strum(ij) e(ig)\nSystem 8: go(f) díg(f)ni(f)or(f) cé(f)te(f)ris,(f) (;) Quæ(f) vír(f)gi(f)nes(f) om(f)nes(f)",
+      "batch": [
+        7,
+        8
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 14,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 11530,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4733,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 650,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02395,
+      "images": 2,
+      "text": "Looking at the images carefully, measuring note head positions against the given pixel rows.\n\n**System 7 staff lines:** L4=102, L3=149, L2=195, L1=249\nSpace above L4 (k)≈79, L4=102, gap L4-L3 space(j)≈126, L3=149, gap L3-L2 space(i... wait, let me use the standard mapping:\n\nbottom line(d)=249=L1, space above=e≈222, 2nd line(f)=195=L2, space=g≈172, 3rd line(h)=149=L3, space=i≈126, top line(j)=102=L4, space above=k≈79\n\n**System 8 staff lines:** L4=102, L3=149, L2=195, L1=242\nd=242, e≈219, f=195, g≈172, h=149, i≈126, j=102, k≈79\n\nNow reading the notes syllable by syllable:\n\nSystem 7: E(h)sto,(h) Ma(h)ter,(g) no(h)strum(h) so(h)la(g)ti(h)um;(h) (;) No(j)strum(i) e(h)\n\nSystem 8: (reading the text visible — no staff notes visible, only text lines)\n\nSystem 7: E(h)sto,(h) Ma(h)ter,(g) no(h)strum(h) so(h)la(g)ti(h)um;(h) (;) No(j)strum(i) e(h)\n\nSystem 8: (no notes visible — only lyrics text, no staff notes shown)\n\nSystem 7: E(h)sto,(h) Ma(h)ter,(g) no(h)strum(h) so(h)la(g)ti(h)um;(h) (;) No(j)strum(i) e(h)\n\nSystem 8: (no musical notes visible in image)\n\nSystem 7: E(h)sto,(h) Ma(h)ter,(g) no(h)strum(h) so(h)la(g)ti(h)um;(h) (;) No(j)strum(i) e(h)\n\nSystem 8: (no notes)\n\n===GABC===\nSystem 7: E(h)sto,(h) Ma(h)ter,(g) no(h)strum(h) so(h)la(g)ti(h)um;(h) (;) No(j)strum(i) e(h)\nSystem 8:",
+      "batch": [
+        7,
+        8
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    }
+  ],
+  "console": [
+    "Seite 1: 9 einzeilige(s) Rezitationston-System(e) erkannt (nicht transkribiert): [357,547.5,732.5,767.5,979,1290.5,1583,1804,2281.5]",
+    "GregoBase-Abgleich für Stück 1 (\"Salve mater misericordiae, Mater Dei\") gestartet…",
+    "GregoBase: keine Treffer für \"Salve mater misericordiae, Mater Dei\".",
+    "Clef pixel measurement: {\"ratio\":0.4,\"widthPx\":48,\"heightPx\":120,\"blobCount\":8,\"staffStartX\":342} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: CLEF: Do LINE 4",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.400\",\"pixelSaysDo\":true,\"modelSaysDo\":true}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"Sal(hi)ve,(hg) (;) ma(gh)ter(h) (,) mi(h)se(h)ri(h)cór(ih)di(h)æ,(g.) (;) Ma(h)ter(h) (,) De(hi)i,(h) (,) et(h) ma(gh)ter(h)\"",
+    "System 2: 3 Durchläufe verglichen, Konsens gewählt: \"ve(h)ni(gh)ae,(h) (;) tu(h) spes(h) no(h)stra,(h) (;) tu(gh) re(h)fú(hg)gi(h)um.(gh)\"",
+    "System 3: 3 Durchläufe verglichen, Konsens gewählt: \"vé(j)ni(j)æ.(j) Ma(h)ter(h) spe(j)i,(j) (;) et(h) ma(h)ter(h) grá(j)ti(j)æ,(j) (;) Ma(d)ter(d)\"",
+    "System 4: 3 Durchläufe verglichen, Konsens gewählt: \"ple(j)na(ij) sanc(j)tæ(j) læ(j)tí(j)ti(j)æ,(j) (;) O(j) Ma(j)rí(ij)a!(j) (,) ij. (::) Sal(j)ve(j) ma(j)ter..(ij)\"",
+    "System 6: 3 Durchläufe verglichen, Konsens gewählt: \"(f)go(e) pu(f)ér(e)pe(f)ra:(e) (;) Nam(f) qui(f) se(f)\"",
+    "System 7: 3 Durchläufe verglichen, Konsens gewählt: \"E(g)sto,(f) Ma(g)ter,(f) nos(g)trum(g) so(g)la(f)ti(g)um;(f.) (;) No(j)strum(i) e(ji)\"",
+    "System 8: 2 Durchläufe verglichen, Konsens gewählt: \"go(f) díg(f)ni(f)or(f) cé(f)te(f)ris,(f) (;) Quæ(f) vír(f)gi(f)nes(f) om(f)nes(f)\"",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x215, Template 18x23 (aus 7 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=17, erwartete Gesamt-Notenzahl=23.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":18,\"totalRaw\":20,\"totalExpected\":23,\"anchorRange\":[457,1596],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":13,\"totalRaw\":14,\"totalExpected\":23,\"anchorRange\":[659,1464],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":6,\"totalRaw\":7,\"totalExpected\":23,\"anchorRange\":[720,1043],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":23,\"anchor",
+    "OMR-Korrektur für System 1 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (23)",
+    "OMR-Korrektur für System 2 angewendet: 12/12 Silben-Tonhöhen neu berechnet, davon 11 tatsächlich anders als Vision (Schwelle 0.7, Sicherheitsstufe 0).",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x113, Template 19x20 (aus 1 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=15, erwartete Gesamt-Notenzahl=15.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":15,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":15,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":15,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":15,\"a",
+    "OMR-Korrektur für System 3 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (15)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x198, Template 18x22 (aus 4 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=16, erwartete Gesamt-Notenzahl=19.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":8,\"totalRaw\":9,\"totalExpected\":19,\"anchorRange\":[639,1246],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":8,\"totalRaw\":9,\"totalExpected\":19,\"anchorRange\":[639,1246],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":6,\"totalRaw\":7,\"totalExpected\":19,\"anchorRange\":[835,1246],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":19,\"anchorRang",
+    "OMR-Korrektur für System 4 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (19)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x211, Template 20x22 (aus 4 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=13, erwartete Gesamt-Notenzahl=13.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":10,\"totalRaw\":11,\"totalExpected\":13,\"anchorRange\":[519,1401],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":5,\"totalRaw\":6,\"totalExpected\":13,\"anchorRange\":[600,985],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":13,\"anchorRange\":[985,985],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":13,\"anchorRang",
+    "OMR-Korrektur für System 5 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (13)",
+    "OMR-Diagnose: kein Notenkopf-Template gefunden. Bild 1833x284, Band [0,74,1833,270], Notenlinien-Abstand=47.0, staffLines=[102,149,195,242]",
+    "OMR-Korrektur für System 6 übersprungen: kein Notenkopf-Template gefunden",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x228, Template 17x22 (aus 1 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=13, erwartete Gesamt-Notenzahl=14.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":8,\"totalRaw\":8,\"totalExpected\":14,\"anchorRange\":[710.5,1500.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":8,\"totalRaw\":8,\"totalExpected\":14,\"anchorRange\":[710.5,1500.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":14,\"anchorRange\":[1323.5,1323.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":1",
+    "OMR-Korrektur für System 7 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (14)",
+    "OMR-Diagnose: kein Notenkopf-Template gefunden. Bild 1833x191, Band [0,74,1833,191], Notenlinien-Abstand=47.0, staffLines=[102,149,195,242]",
+    "OMR-Korrektur für System 8 übersprungen: kein Notenkopf-Template gefunden"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "model": "claude-opus-5-5",
+  "effort": "medium",
+  "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+  "case": "salve-mater",
+  "stage": "Endergebnis nach Geometrie",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 7,
+      "clef": "c4",
+      "systems": [
+        "Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)",
+        "vé(j)ni(e)æ,(f.) (;) Ma(e)ter(e) spe(e)i,(f.) et(g) ma(f)ter(g) grá(g)ti(h)æ,(h.) (;) Ma(h)ter(h)",
+        "vé(g)ni(h)æ.(g.) (::) Ma(g)ter(g) spe(h)i,(h) et(h) ma(h)ter(h) grá(h)ti(h)æ,(g.) (;) Ma(g)ter(g)",
+        "ple(h)na(g.) sanc(g)tæ(f) læ(f)tí(g)ti(f)æ,(e.) (::) O(e) Ma(f)rí(ee)a!(d.) ij.(::) Sal(h)ve(h) ma(j)ter..(j)",
+        "1. Sal(d)ve,(f) de(fd)cus(c.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (:) Sal(c)ve,(f) Vir(h)",
+        "go(fg) díg(h)ni(g)or(f) cé(g)te(e)ris,(f.) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 83853,
+    "output_tokens": 26266,
+    "costUsd": 0.8607
+  },
+  "durationMs": 310930
+}

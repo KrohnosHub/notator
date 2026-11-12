@@ -1,0 +1,480 @@
+{
+  "base": {
+    "model": "claude-sonnet-5-5",
+    "effort": "medium",
+    "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+    "case": "surrexit-ad-cenam"
+  },
+  "status": "2 Stück(e) geladen.",
+  "stopped": null,
+  "stepA": [
+    {
+      "index": 1,
+      "mode": "VI",
+      "incipit": "Surréxit Dóminus vere",
+      "pages": [
+        1
+      ],
+      "systems": 4,
+      "hasDropCap": true
+    },
+    {
+      "index": 2,
+      "mode": "VIII",
+      "incipit": "Ad coenam Agni providi",
+      "pages": [
+        1
+      ],
+      "systems": 2,
+      "hasDropCap": true
+    }
+  ],
+  "pieces": [
+    {
+      "clef": "c4",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "Sur(jj)ré(gg)xit(g) Dó(g)mi(gg)nus(e) ve(fe)re,(gh) (,) Al(ghij)le(jkj)lú(ijk)ia,(ihi) al(ig)",
+          "le(hgfe)lú(fe)ia.(g.) (:) Sur(g)ré(g)xit.(ghg) (:) ℣. Et(g) appá(g)ru(g)it(gf) Si(ffg)mó(ghij)ni.(ij.)",
+          "Al(jh)le(hg)lú(gh)ia.(hgf) (::) Allelú(fgh)ia.(h) Gló(h)ri(h)a(h) Pa(ig)tri,(ih) et(hg) Fí(hg)li(fe)o,(ee) et(fg) Spi(fe)rí(fg)",
+          "tu(ji)i(h) San(gf)cto.(ge.) (::) Sur(g)ré(gh)xit.(g) (::)"
+        ],
+        "after": [
+          "Sur(jj)ré(gg)xit(g) Dó(g)mi(gg)nus(e) ve(fe)re,(gh) (,) Al(ghij)le(jkj)lú(ijk)ia,(ihi) al(ig)",
+          "le(hgfe)lú(fe)ia.(g.) (:) Sur(g)ré(g)xit.(ghg) (:) ℣. Et(g) appá(g)ru(g)it(gf) Si(ffg)mó(ghij)ni.(ij.)",
+          "Al(jh)le(hg)lú(gh)ia.(hgf) (::) Allelú(fgh)ia.(h) Gló(h)ri(h)a(h) Pa(ig)tri,(ih) et(hg) Fí(hg)li(fe)o,(ee) et(fg) Spi(fe)rí(fg)",
+          "tu(ji)i(h) San(gf)cto.(ge.) (::) Sur(g)ré(gh)xit.(g) (::)"
+        ],
+        "nItems": 4
+      }
+    },
+    {
+      "clef": "c4",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "A(jh)d(g) cœ(j)nam(h) A(jk)gni(j) pró(j)vi(i)di,(j) Et(i) sto(h)lis(g) al(f)bis(e) cán(d)di(f)(,)",
+          "Et(h) sto(jg)lis(h) al(h)bis(g) cán(jh)di(g)"
+        ],
+        "after": [
+          "A(ki)d(h) cœ(j)nam(h) A(gj)gni(i) pró(j)vi(j)di,(i) Et(h) sto(h)lis(h) al(g)bis(e) cán(g)di(g)(,)",
+          "Et(h) sto(jg)lis(h) al(h)bis(g) cán(jh)di(g)"
+        ],
+        "nItems": 2
+      }
+    }
+  ],
+  "calls": [
+    {
+      "n": 1,
+      "kind": "pieces",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1239,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6465,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 112,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01405,
+      "images": 1,
+      "text": "[{\"index\":1,\"mode\":\"VI\",\"incipit\":\"Surréxit Dóminus vere\",\"pages\":[1],\"systems\":4,\"hasDropCap\":true},{\"index\":2,\"mode\":\"VIII\",\"incipit\":\"Ad coenam Agni providi\",\"pages\":[1],\"systems\":2,\"hasDropCap\":true}]"
+    },
+    {
+      "n": 2,
+      "kind": "clef",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2916,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1662,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 164,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.00496,
+      "images": 4,
+      "text": "The close-up shows a narrow glyph, matching the Do-clef (A), with no extra block on its left.\n\nFor its position, the glyph spans roughly y=35 to y=75 in the full system image, which is the top of the staff. The staff lines are at 55, 80, 105 and 124, so it is centered near y=55–60, which is the top line (line 4). In the close-up, the clef sits at the top line and straddles the line just below it, but it is centered on the top line.\n\nCLEF: Do LINE 4"
+    },
+    {
+      "n": 3,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3482,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6622,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 379,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01703,
+      "images": 2,
+      "text": "System 1: Sur(hj)ré(f)xit(f) Dó(f)mi(fg)nus(ef) ve(fe)re,(ghg) (,) Al(hjk)le(ghij)lú(ijh)ia,(hgh) al(ghg)\nSystem 2: le(hgf)lú(fgf)ia.(fg) (::) Sur(f)ré(g)xit.(gg) (::) Et(f) ap(g)pá(gf)ru(f)it(gf) Si(ghi)mó(ijh)ni.(hg)\n\n===GABC===\nSystem 1: Sur(hj)ré(f)xit(f) Dó(f)mi(fg)nus(ef) ve(fe)re,(ghg) (,) Al(hjk)le(ghij)lú(ijh)ia,(hgh) al(ghg)\nSystem 2: le(hgf)lú(fgf)ia.(fg) (::) Sur(f)ré(g)xit.(gg) (::) Et(f) ap(g)pá(gf)ru(f)it(gf) Si(ghi)mó(ijh)ni.(hg)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 4,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2532,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6622,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 187,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01511,
+      "images": 2,
+      "text": "===GABC===\nSystem 1: Sur(jj)ré(gg)xit(g) Dó(g)mi(gg)nus(e) ve(fe)re,(gh) (,) Al(ghij)le(jkj)lú(ijk)ia,(ihi) al(ig)\n\nSystem 2: le(hgf)lú(ge)ia.(gf.) (::) Sur(g)ré(g)xit.(gg) (::) ℣. Et(g) appá(g)ru(g)it(gf) Si(ef)mó(hij)ni(ijk)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 5,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3592,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6622,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 363,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01687,
+      "images": 2,
+      "text": "System 1: Sur(jj)rré(g)xit(g) Dó(g)mi(g)nus(gg) ve(egd)re,(fe) (,) Al(gh)le(hij)lú(jij)ia,(ig) al(g)\n\nSystem 2: le(hgfe)lú(fe)ia.(g.) (:) Sur(g)ré(g)xit.(ghg) (:) ℣. Et(g) appá(g)ru(g)it(gf) Si(ffg)mó(ghij)ni.(ij.)\n\n===GABC===\nSystem 1: Sur(jj)rré(g)xit(g) Dó(g)mi(g)nus(gg) ve(egd)re,(fe) (,) Al(gh)le(hij)lú(jij)ia,(ig) al(g)\nSystem 2: le(hgfe)lú(fe)ia.(g.) (:) Sur(g)ré(g)xit.(ghg) (:) ℣. Et(g) appá(g)ru(g)it(gf) Si(ffg)mó(ghij)ni.(ij.)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 6,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3145,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6853,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 180,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01551,
+      "images": 2,
+      "text": "===GABC===\nSystem 3: Al(jh)le(hg)lú(gg)ia.(gfe) (::) Al(fg)le(g)lú(g)ia.(g) (;) ℣. Gló(ij)ri(h)a(hi) Pa(ghg)tri,(f) et(g) Fí(ii)li(h)o,(f) et(ee) Spi(dd)rí(d)\nSystem 4: tu(jh)i(g) Sanc(gf)to.(ef) (::) Surré(g)xit(hg)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 7,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3520,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6853,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 210,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01581,
+      "images": 2,
+      "text": "===GABC===\nSystem 3: Al(jh)le(hg)lú(gg)ia.(hgfe) (;) lú(h)ia.(ge.) (::) Al(g)le(g)lú(g)ia.(ij) ℣. Gló(ig)ri(h)a(g) Pa(hg)tri,(g) (,) et(gh) Fí(gf)li(ed)o,(dc) (,) et(e) Spi(ghi)rí(jk)\nSystem 4: tu(ji)i(h) San(gf)cto.(ge.) (::) Sur(g)ré(gh)xit.(g) (::)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 8,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2707,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6853,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 173,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01544,
+      "images": 2,
+      "text": "===GABC===\nSystem 3: Al(jh)le(hg)lú(gh)ia.(hgf) (::) Allelú(fgh)ia.(h) Gló(h)ri(h)a(h) Pa(ig)tri,(ih) et(hg) Fí(hg)li(fe)o,(ee) et(fg) Spi(fe)rí(fg)\nSystem 4: tu(jh)i(hg) Sanc(gf)to.(fg.) (::) Surré(ff)xit(fgf)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 9,
+      "kind": "clef",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1828,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1446,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 124,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.00413,
+      "images": 4,
+      "text": "The close-up shows a clef made of two stacked blocks on the left with a gap between them, and the staff line runs through that gap. It is narrow, so it matches the Do-clef rather than the wider Fa-clef.\n\nIn the close-up, the clef straddles the top staff line, which is at y≈55 in the full image. That is LINE 4.\n\nCLEF: Do LINE 4"
+    },
+    {
+      "n": 10,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1887,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6356,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 104,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01375,
+      "images": 2,
+      "text": "===GABC===\nSystem 1: A(jh)d(g) cœ(j)nam(i) A(ji)gni(jk) pró(ji)vi(h)di,(g) (,) Et(f) sto(hg)lis(gf) al(fe)bis(d) cándi(dc)\n\nSystem 2: (g)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 11,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1764,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6356,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 105,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01376,
+      "images": 2,
+      "text": "===GABC===\nSystem 1: A(jh)d(g) cœ(j)nam(j) A(jh)gni(kj) pró(j)(i)vi(h)di,(g) (,) \nSystem 2: Et(h) sto(jg)lis(h) al(h)bis(g) cán(jh)di(g)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 12,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1790,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6356,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 99,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0137,
+      "images": 2,
+      "text": "===GABC===\nSystem 1: A(jh)d(g) cœ(j)nam(h) A(jk)gni(j) pró(j)vi(i)di,(j) Et(i) sto(h)lis(g) al(f)bis(e) cán(d)di(f)(,)\nSystem 2:",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    }
+  ],
+  "console": [
+    "Seite 1: 12 einzeilige(s) Rezitationston-System(e) erkannt (nicht transkribiert): [81,93.5,290.5,460.5,495.5,1838,2037,2115,2197,2231.5,2267.5,2311]",
+    "GregoBase-Abgleich für Stück 1 (\"Surréxit Dóminus vere\") gestartet…",
+    "GregoBase: keine Treffer für \"Surréxit Dóminus vere\".",
+    "Clef pixel measurement: {\"ratio\":0.12087912087912088,\"widthPx\":11,\"heightPx\":91,\"blobCount\":5,\"staffStartX\":634} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: The close-up shows a narrow glyph, matching the Do-clef (A), with no extra block on its left.\n\nFor its position, the glyph spans roughly y=35 to y=75 in the full system image, which is the top of the staff. The staff lines are at 55, 80, 105 and 124, so it is centered near y=55–60, which is the top line (line 4). In the close-up, the clef sits at the top line and straddles the line just below it, but it is centered on the top line.\n\nCLEF: Do LINE 4",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.121\",\"pixelSaysDo\":true,\"modelSaysDo\":true}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"Sur(jj)ré(gg)xit(g) Dó(g)mi(gg)nus(e) ve(fe)re,(gh) (,) Al(ghij)le(jkj)lú(ijk)ia,(ihi) al(ig)\"",
+    "System 2: 3 Durchläufe verglichen, Konsens gewählt: \"le(hgfe)lú(fe)ia.(g.) (:) Sur(g)ré(g)xit.(ghg) (:) ℣. Et(g) appá(g)ru(g)it(gf) Si(ffg)mó(ghij)ni.(ij.)\"",
+    "System 3: 3 Durchläufe verglichen, Konsens gewählt: \"Al(jh)le(hg)lú(gh)ia.(hgf) (::) Allelú(fgh)ia.(h) Gló(h)ri(h)a(h) Pa(ig)tri,(ih) et(hg) Fí(hg)li(fe)o,(ee) et(fg) Spi(fe)rí(fg)\"",
+    "System 4: 3 Durchläufe verglichen, Konsens gewählt: \"tu(ji)i(h) San(gf)cto.(ge.) (::) Sur(g)ré(gh)xit.(g) (::)\"",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x188, Template 13x15 (aus 4 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=13, erwartete Gesamt-Notenzahl=28.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":13,\"totalRaw\":24,\"totalExpected\":28,\"anchorRange\":[673.5,1286.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":10,\"totalRaw\":20,\"totalExpected\":28,\"anchorRange\":[808.5,1286.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":5,\"totalRaw\":12,\"totalExpected\":28,\"anchorRange\":[808.5,1041.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":2,\"totalExpecte",
+    "OMR-Korrektur für System 1 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (28)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x194, Template 13x15 (aus 7 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=13, erwartete Gesamt-Notenzahl=26.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":13,\"totalRaw\":22,\"totalExpected\":26,\"anchorRange\":[659.5,1306.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":7,\"totalRaw\":9,\"totalExpected\":26,\"anchorRange\":[659.5,1004.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":26,\"anchorRange\":[1004.5,1004.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\"",
+    "OMR-Korrektur für System 2 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (26)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x194, Template 13x16 (aus 7 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=18, erwartete Gesamt-Notenzahl=34.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":9,\"totalRaw\":12,\"totalExpected\":34,\"anchorRange\":[710.5,1142.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":8,\"totalRaw\":11,\"totalExpected\":34,\"anchorRange\":[833.5,1142.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":34,\"anchorRange\":[833.5,833.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":3",
+    "OMR-Korrektur für System 3 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (34)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x345, Template 13x15 (aus 4 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=7, erwartete Gesamt-Notenzahl=11.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":7,\"totalRaw\":10,\"totalExpected\":11,\"anchorRange\":[580.5,895.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":7,\"totalRaw\":10,\"totalExpected\":11,\"anchorRange\":[592.5,895.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":7,\"totalRaw\":10,\"totalExpected\":11,\"anchorRange\":[592.5,895.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":4,\"totalRaw\":5,\"totalExpected\":11,",
+    "OMR-Korrektur für System 4 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (11)",
+    "GregoBase-Abgleich für Stück 2 (\"Ad coenam Agni providi\") gestartet…",
+    "GregoBase: keine Treffer für \"Ad coenam Agni providi\".",
+    "Clef pixel measurement: {\"ratio\":0.18461538461538463,\"widthPx\":12,\"heightPx\":65,\"blobCount\":14,\"staffStartX\":636} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: The close-up shows a clef made of two stacked blocks on the left with a gap between them, and the staff line runs through that gap. It is narrow, so it matches the Do-clef rather than the wider Fa-clef.\n\nIn the close-up, the clef straddles the top staff line, which is at y≈55 in the full image. That is LINE 4.\n\nCLEF: Do LINE 4",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.185\",\"pixelSaysDo\":true,\"modelSaysDo\":true}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"A(jh)d(g) cœ(j)nam(h) A(jk)gni(j) pró(j)vi(i)di,(j) Et(i) sto(h)lis(g) al(f)bis(e) cán(d)di(f)(,)\"",
+    "System 2: 2 Durchläufe verglichen, Konsens gewählt: \"Et(h) sto(jg)lis(h) al(h)bis(g) cán(jh)di(g)\"",
+    "OMR-Korrektur für System 1 angewendet: 16/16 Silben-Tonhöhen neu berechnet, davon 11 tatsächlich anders als Vision (Schwelle 0.75, Sicherheitsstufe 0).",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x118, Template 14x13 (aus 3 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=7, erwartete Gesamt-Notenzahl=9.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":4,\"totalRaw\":7,\"totalExpected\":9,\"anchorRange\":[883,1097],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":4,\"totalRaw\":7,\"totalExpected\":9,\"anchorRange\":[883,1097],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":4,\"totalRaw\":7,\"totalExpected\":9,\"anchorRange\":[883,1097],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":2,\"totalExpected\":9,\"anchorRange\":[88",
+    "OMR-Korrektur für System 2 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (9)"
+  ]
+}

@@ -1,0 +1,478 @@
+{
+  "base": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+    "case": "surrexit-ad-cenam"
+  },
+  "status": "2 Stück(e) geladen.",
+  "stopped": null,
+  "stepA": [
+    {
+      "index": 1,
+      "mode": "VI",
+      "incipit": "Surrexit Dominus vere",
+      "pages": [
+        1
+      ],
+      "systems": 4,
+      "hasDropCap": true
+    },
+    {
+      "index": 2,
+      "mode": "VIII",
+      "incipit": "Ad coenam Agni providi",
+      "pages": [
+        1
+      ],
+      "systems": 2,
+      "hasDropCap": true
+    }
+  ],
+  "pieces": [
+    {
+      "clef": "c4",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih.) (;) Al(i)le(ihg)lú(gh)ia,(g.) (,) al(cd)",
+          "le(fhi)lú(hgf)ia.(ghff.) (::) Sur(f)ré(fg)xit.(f) (::) ℣. Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghih.) (::)",
+          "Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(gf)li(ed)o,(d.) (;) et(d) Spi(g)rí(hj)",
+          "tu(ih)i(gh) San(gf)cto.(f.) (::) Sur(f)ré(fh)xit.(f) (::)"
+        ],
+        "after": [
+          "Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih.) (;) Al(i)le(ihg)lú(gh)ia,(g.) (,) al(cd)",
+          "le(fhi)lú(hgf)ia.(ghff.) (::) Sur(f)ré(fg)xit.(f) (::) ℣. Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghih.) (::)",
+          "Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(gf)li(ed)o,(d.) (;) et(d) Spi(g)rí(hj)",
+          "tu(ih)i(gh) San(gf)cto.(f.) (::) Sur(f)ré(fh)xit.(f) (::)"
+        ],
+        "nItems": 4
+      }
+    },
+    {
+      "clef": "c4",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(g)di(f)",
+          "di,(e) Post(e) trán(e) (,) si(eg)tum(f)"
+        ],
+        "after": [
+          "Ad(k) cœ(i)nam(hj) A(hg)gni(ji) pró(j)vi(j)di,(i) (,) Et(h) sto(hh)lis(ge) al(g)bis(gg) cán(e)di(g)",
+          "di,(j) Post(e) trán(f) (,) si(eg)tum(f)"
+        ],
+        "nItems": 2
+      }
+    }
+  ],
+  "calls": [
+    {
+      "n": 1,
+      "kind": "pieces",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 1643,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6465,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 111,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02808,
+      "images": 1,
+      "text": "[{\"index\":1,\"mode\":\"VI\",\"incipit\":\"Surrexit Dominus vere\",\"pages\":[1],\"systems\":4,\"hasDropCap\":true},{\"index\":2,\"mode\":\"VIII\",\"incipit\":\"Ad coenam Agni providi\",\"pages\":[1],\"systems\":2,\"hasDropCap\":true}]"
+    },
+    {
+      "n": 2,
+      "kind": "clef",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 3889,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1662,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 269,
+        "output_tokens_details": {
+          "thinking_tokens": 255
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01203,
+      "images": 4,
+      "text": "CLEF: Do LINE 4"
+    },
+    {
+      "n": 3,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 31329,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6618,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2857,
+        "output_tokens_details": {
+          "thinking_tokens": 2472
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.08361,
+      "images": 2,
+      "text": "System 1: Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghihg.) (;) Al(i)le(ihg)lú(gh)ia,(g.) al(d)\nSystem 2: le(fhihgf)lú(gh)ia.(f.) (::) Sur(f)ré(fg)xit.(f) (::) ℣. Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghihg.)\n===GABC===\nSystem 1: Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghihg.) (;) Al(i)le(ihg)lú(gh)ia,(g.) al(d)\nSystem 2: le(fhihgf)lú(gh)ia.(f.) (::) Sur(f)ré(fg)xit.(f) (::) ℣. Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghihg.)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 4,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 31370,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6618,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2677,
+        "output_tokens_details": {
+          "thinking_tokens": 2282
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.08001,
+      "images": 2,
+      "text": "System 1: Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fg)re,(dfghih.) (;) Al(i)le(i)lú(ihg)ia,(hig.) (,) al(de)\nSystem 2: le(fhi)lú(hgf)ia.(ghff.) (::) Sur(f)ré(fg)xit.(f) (::) ℣. Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghih.) (::)\n===GABC===\nSystem 1: Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fg)re,(dfghih.) (;) Al(i)le(i)lú(ihg)ia,(hig.) (,) al(de)\nSystem 2: le(fhi)lú(hgf)ia.(ghff.) (::) Sur(f)ré(fg)xit.(f) (::) ℣. Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghih.) (::)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 5,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 42581,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6618,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 3760,
+        "output_tokens_details": {
+          "thinking_tokens": 3361
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.10167,
+      "images": 2,
+      "text": "System 1: Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih.) (;) Al(i)le(ihg)lú(gh)ia,(g.) (,) al(cd)\nSystem 2: le(fihgf)lú(ghf)ia.(f.) (::) Sur(f)ré(fg)xit.(f.) (::) ℣. Et(f) ap(f)pá(g)ru(f) it(gf) Si(ed)mó(ghe)ni.(ghiji.) (::)\n===GABC===\nSystem 1: Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih.) (;) Al(i)le(ihg)lú(gh)ia,(g.) (,) al(cd)\nSystem 2: le(fihgf)lú(ghf)ia.(f.) (::) Sur(f)ré(fg)xit.(f.) (::) ℣. Et(f) ap(f)pá(g)ru(f) it(gf) Si(ed)mó(ghe)ni.(ghiji.) (::)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 6,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 26418,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6850,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2193,
+        "output_tokens_details": {
+          "thinking_tokens": 1864
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.07126,
+      "images": 2,
+      "text": "System 3: Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(gf) (,) et(h) Fí(gf)li(ed)o,(d.) (;) et(e) Spi(g)rí(hj)\nSystem 4: tu(ih)i(gh) San(gf)cto.(f.) (::) Sur(f)ré(fh)xit.(f) (::)\n===GABC===\nSystem 3: Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(gf) (,) et(h) Fí(gf)li(ed)o,(d.) (;) et(e) Spi(g)rí(hj)\nSystem 4: tu(ih)i(gh) San(gf)cto.(f.) (::) Sur(f)ré(fh)xit.(f) (::)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 7,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 25000,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6850,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2167,
+        "output_tokens_details": {
+          "thinking_tokens": 1836
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.07074,
+      "images": 2,
+      "text": "System 3: Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(gf)li(ed)o,(d.) (;) et(d) Spi(g)rí(hj)\nSystem 4: tu(ih)i(hg) Sanc(gf)to.(f.) (::) Sur(f)ré(fg)xit.(f) (::)\n===GABC===\nSystem 3: Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(gf)li(ed)o,(d.) (;) et(d) Spi(g)rí(hj)\nSystem 4: tu(ih)i(hg) Sanc(gf)to.(f.) (::) Sur(f)ré(fg)xit.(f) (::)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 8,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 25849,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6850,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2240,
+        "output_tokens_details": {
+          "thinking_tokens": 1909
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0722,
+      "images": 2,
+      "text": "System 3: Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(gf)li(ed)o,(d.) (;) et(e) Spi(g)rí(hi)\nSystem 4: tu(ih)i(hg) Sanc(gf)to.(f.) (::) Sur(f)ré(fg)xit.(f) (::)\n===GABC===\nSystem 3: Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(gf)li(ed)o,(d.) (;) et(e) Spi(g)rí(hi)\nSystem 4: tu(ih)i(hg) Sanc(gf)to.(f.) (::) Sur(f)ré(fg)xit.(f) (::)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 9,
+      "kind": "clef",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 3049,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1446,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 228,
+        "output_tokens_details": {
+          "thinking_tokens": 214
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01034,
+      "images": 4,
+      "text": "CLEF: Do LINE 4"
+    },
+    {
+      "n": 10,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 32946,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6355,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2797,
+        "output_tokens_details": {
+          "thinking_tokens": 2513
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.08136,
+      "images": 2,
+      "text": "System 1: Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(g)di(f)\nSystem 2: di,(e) Post(e) trán(e) (,) si(eg)tum(f)\n===GABC===\nSystem 1: Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(g)di(f)\nSystem 2: di,(e) Post(e) trán(e) (,) si(eg)tum(f)\nSystem 2 lyrics are not visible in the image; its syllables and pitches are a low-confidence guess.",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 3
+    },
+    {
+      "n": 11,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 19373,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6355,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1668,
+        "output_tokens_details": {
+          "thinking_tokens": 1475
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.05878,
+      "images": 2,
+      "text": "System 1: Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(fg) al(g)bis(fg) cán(g)di(f)\nSystem 2:\n===GABC===\nSystem 1: Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(fg) al(g)bis(fg) cán(g)di(f)\nSystem 2:",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 12,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 28393,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6355,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2539,
+        "output_tokens_details": {
+          "thinking_tokens": 2346
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0762,
+      "images": 2,
+      "text": "System 1: Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(g)di(f)\nSystem 2:\n===GABC===\nSystem 1: Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(g)di(f)\nSystem 2:",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    }
+  ],
+  "console": [
+    "Seite 1: 12 einzeilige(s) Rezitationston-System(e) erkannt (nicht transkribiert): [81,93.5,290.5,460.5,495.5,1838,2037,2115,2197,2231.5,2267.5,2311]",
+    "GregoBase-Abgleich für Stück 1 (\"Surrexit Dominus vere\") gestartet…",
+    "GregoBase: keine Treffer für \"Surrexit Dominus vere\".",
+    "Clef pixel measurement: {\"ratio\":0.12087912087912088,\"widthPx\":11,\"heightPx\":91,\"blobCount\":5,\"staffStartX\":634} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: CLEF: Do LINE 4",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.121\",\"pixelSaysDo\":true,\"modelSaysDo\":true}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih.) (;) Al(i)le(ihg)lú(gh)ia,(g.) (,) al(cd)\"",
+    "System 2: 3 Durchläufe verglichen, Konsens gewählt: \"le(fhi)lú(hgf)ia.(ghff.) (::) Sur(f)ré(fg)xit.(f) (::) ℣. Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghih.) (::)\"",
+    "System 3: 3 Durchläufe verglichen, Konsens gewählt: \"Al(i)le(ihg)lú(gh)ia.(f.) (::) ℣. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(gf)li(ed)o,(d.) (;) et(d) Spi(g)rí(hj)\"",
+    "System 4: 3 Durchläufe verglichen, Konsens gewählt: \"tu(ih)i(gh) San(gf)cto.(f.) (::) Sur(f)ré(fh)xit.(f) (::)\"",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x188, Template 13x15 (aus 4 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=13, erwartete Gesamt-Notenzahl=26.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":13,\"totalRaw\":24,\"totalExpected\":26,\"anchorRange\":[673.5,1286.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":10,\"totalRaw\":20,\"totalExpected\":26,\"anchorRange\":[808.5,1286.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":5,\"totalRaw\":12,\"totalExpected\":26,\"anchorRange\":[808.5,1041.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":2,\"totalExpecte",
+    "OMR-Korrektur für System 1 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (26)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x194, Template 13x15 (aus 7 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=14, erwartete Gesamt-Notenzahl=30.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":13,\"totalRaw\":22,\"totalExpected\":30,\"anchorRange\":[659.5,1306.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":7,\"totalRaw\":9,\"totalExpected\":30,\"anchorRange\":[659.5,1004.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":30,\"anchorRange\":[1004.5,1004.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\"",
+    "OMR-Korrektur für System 2 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (30)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x194, Template 13x16 (aus 7 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=16, erwartete Gesamt-Notenzahl=23.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":9,\"totalRaw\":12,\"totalExpected\":23,\"anchorRange\":[710.5,1142.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":8,\"totalRaw\":11,\"totalExpected\":23,\"anchorRange\":[833.5,1142.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":23,\"anchorRange\":[833.5,833.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":2",
+    "OMR-Korrektur für System 3 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (23)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x345, Template 13x15 (aus 4 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=7, erwartete Gesamt-Notenzahl=11.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":7,\"totalRaw\":10,\"totalExpected\":11,\"anchorRange\":[580.5,895.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":7,\"totalRaw\":10,\"totalExpected\":11,\"anchorRange\":[592.5,895.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":7,\"totalRaw\":10,\"totalExpected\":11,\"anchorRange\":[592.5,895.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":4,\"totalRaw\":5,\"totalExpected\":11,",
+    "OMR-Korrektur für System 4 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (11)",
+    "GregoBase-Abgleich für Stück 2 (\"Ad coenam Agni providi\") gestartet…",
+    "GregoBase: keine Treffer für \"Ad coenam Agni providi\".",
+    "Clef pixel measurement: {\"ratio\":0.18461538461538463,\"widthPx\":12,\"heightPx\":65,\"blobCount\":14,\"staffStartX\":636} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: CLEF: Do LINE 4",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.185\",\"pixelSaysDo\":true,\"modelSaysDo\":true}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"Ad(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(g)di(f)\"",
+    "OMR-Korrektur für System 1 angewendet: 15/15 Silben-Tonhöhen neu berechnet, davon 12 tatsächlich anders als Vision (Schwelle 0.7, Sicherheitsstufe 0).",
+    "OMR-Korrektur für System 2 angewendet: 5/5 Silben-Tonhöhen neu berechnet, davon 2 tatsächlich anders als Vision (Schwelle 0.7, Sicherheitsstufe 2)."
+  ]
+}

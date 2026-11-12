@@ -1,0 +1,22 @@
+{
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+  "case": "ave-maria-1",
+  "stage": "Einzeldurchlauf 2",
+  "pieces": [
+    {
+      "incipit": "Ave Maria, gratia plena",
+      "mode": "1",
+      "hasDropCap": true,
+      "systemsDetected": 4,
+      "clef": "c4",
+      "systems": [
+        "A(hg)ve(f) Ma(hi)rí(jh)a,(g) (,) grá(hg)ti(g)a(f) plé(fg)na,(g) Dó(hg)mi(i)nus(hg) té(f)cum,(f)",
+        "A(g)ve(g) Ma(h)rí(g)a,(g) grá(g)ti(g)a(g) plé(f)na,(g) Dó(hg)mi(f)nus(f) té(f)cum,(f)",
+        "tris(j) tú(g)i,(f) Jé(ghg)sus.(f) (::) Sánc(g)ta(h) Ma(i)rí(k)a,(jk) Má(ihi)ter(h) Dé(g)i,(h) (,) ó(i)ra(h) pro(g)",
+        "nó(gh)bis(e) pec(g)ca(gf)tó(fe)ri(f)bus,(e) nunc(f) et(f) in(gh) hó(gh)ra(g) mór(ih)tis(i) nós(hi)trae.(gf) A(f)men.(f.)"
+      ]
+    }
+  ]
+}

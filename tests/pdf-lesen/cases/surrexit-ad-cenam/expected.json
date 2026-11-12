@@ -1,0 +1,47 @@
+{
+  "id": "surrexit-ad-cenam",
+  "scan": "scan.pdf",
+  "source": {
+    "book": "Antiphonale Monasticum 1934, S. 458 (Dominica Resurrectionis, ad Vesperas)",
+    "reference": "Surrexit Dominus vere.notator, Abschnitt 2 (GregoBase 9212)",
+    "rights": "ungeklärt – Scan nicht im Repo"
+  },
+  "tags": [
+    "do-schluessel",
+    "initiale",
+    "b-vorzeichen",
+    "mehrere-stuecke",
+    "fliesstext-auf-der-seite",
+    "abkuerzungen",
+    "1-seite"
+  ],
+  "checkedBy": "",
+  "checkedOn": "",
+  "notes": "Soll aus der Notator-Datei des Nutzers (GregoBase-Fassung) abgeleitet, von Claude anhand des Scans auf die gedruckten Systeme verteilt und stichprobenweise geprüft. Noch nicht Note für Note vom Nutzer bestätigt. Stück 2 (Hymnus «Ad cœnam Agni providi», 2 Systeme) hat noch kein Soll-GABC; geprüft wird nur die Systemzahl.",
+  "pieces": [
+    {
+      "incipit": "Surrexit Dominus vere",
+      "mode": "6",
+      "clef": "c4",
+      "hasDropCap": true,
+      "pages": [
+        1
+      ],
+      "systems": [
+        "Sur(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fixghih.) (;) Al(ixi)le(ihg)lú(gh)ia,(f.) (,) al(dc)",
+        "le(fg.hihgf)lú(ghf)ia.(f.) (::) Sur(f)ré(fg)xit.(f) (::) Et(f) ap(f)pá(g)ru(f)it(fe) Si(dc)mó(fgd)ni.(fixghih.) (::)",
+        "Al(ixi)le(ihg)lú(gh)ia.(f.) (::) Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(fe)li(dc)o,(c) (,) et(dc) Spi(f)rí(ixghi)",
+        "tu(ih)i(gh) San(gf)cto.(f.) (::) Sur(f)ré(fg)xit.(f) (::)"
+      ]
+    },
+    {
+      "incipit": "Ad coenam Agni providi",
+      "mode": "8",
+      "hasDropCap": true,
+      "pages": [
+        1
+      ],
+      "systemCount": 2
+    }
+  ]
+}

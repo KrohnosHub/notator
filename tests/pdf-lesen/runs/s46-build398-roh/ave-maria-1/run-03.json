@@ -1,0 +1,22 @@
+{
+  "model": "claude-sonnet-4-6",
+  "effort": null,
+  "pipeline": "index.html unverändert",
+  "case": "ave-maria-1",
+  "stage": "Einzeldurchlauf 3",
+  "pieces": [
+    {
+      "incipit": "Ave Maria, gratia plena, Dominus tecum",
+      "mode": "1",
+      "hasDropCap": true,
+      "systemsDetected": 4,
+      "clef": "f3",
+      "systems": [
+        "A(hi)ve(h) Ma(hi)rí(hg)a,(h) (;) grá(hi)ti(h)a(g) plé(hg)na,(h) Dó(h)mi(h)nus(hg) té(h)cum,(g.)",
+        "be(gh)ne(h)díc(h)ta(g) tu(h) (;) in(h) mu(h)li(h)é(hg)ri(h)bus,(g) (;) et(h) be(h)ne(h)díc(h)tus(h) frúc(h)tus(hg) vén(h)",
+        "tris(fh) tú-(h)i,(gh) Jé-(fe)sus.(f) (;) Sánc-(fg)ta(h) Ma-(h)rí-(ih)a,(h) Má-(h)ter(gh) Dé-(h)i,(hg) (;) ó-(g)ra(h) pro(gh)",
+        "nó-(gh)bis(h) pec-(h)ca-(gh)tó-(h)ri-(h)bus,(gh) (;) nunc(f) et(gh) (,) in(h) hó-(h)ra(gh) mór-(h)tis(h) nós-(gh)trae.(h) (;) A-(hg)men.(f.)"
+      ]
+    }
+  ]
+}

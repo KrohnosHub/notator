@@ -1,0 +1,317 @@
+{
+  "base": {
+    "model": "claude-sonnet-5-5",
+    "effort": "medium",
+    "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+    "case": "ave-maria-1"
+  },
+  "status": "GABC importiert: 71 Einträge — bitte mit dem Original vergleichen und korrigieren",
+  "stopped": null,
+  "stepA": [
+    {
+      "index": 1,
+      "mode": "1",
+      "incipit": "Ave Maria, gratia plena",
+      "pages": [
+        1
+      ],
+      "systems": 4,
+      "hasDropCap": true
+    }
+  ],
+  "pieces": [
+    {
+      "clef": "c4",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "A(hg)ve(f) Ma(hij)rí(i)a,(ghg) (,) grá(i)ti(hg)a(h) pléna,(ihg) (;) Dó(ig)mi(i)nus(hg) té(fg)cum,(f)",
+          "A(hg)ve(g) Ma(g)rí(g)a,(g) (,) grá(hg)ti(g)a(h) pléna,(hg) (;) Dó(ih)mi(g)nus(h) té(g)cum,(f)",
+          "tris(h) tú(f)i,(gf) Jé(g)sus.(hg) (::) Sánc(i)ta(g) Ma(h)rí(i)a,(jh) Má(ih)ter(i) Dé(ig)i,(h) (,) ó(i)ra(h) pro(g)",
+          "nó(gh)bis(e) pec(g)ca(gf)tó(fe)ri(f)bus,(e) nunc(f) et(f) in(gh) hó(gh)ra(g) mór(ih)tis(i) nós(hi)trae.(gf) A(f)men.(f.)"
+        ],
+        "after": [
+          "A(hg)ve(f) Ma(hij)rí(i)a,(ghg) (,) grá(i)ti(hg)a(h) pléna,(ihg) (;) Dó(ig)mi(i)nus(hg) té(fg)cum,(f)",
+          "A(hg)ve(g) Ma(g)rí(g)a,(g) (,) grá(hg)ti(g)a(h) pléna,(hg) (;) Dó(ih)mi(g)nus(h) té(g)cum,(f)",
+          "tris(h) tú(f)i,(gf) Jé(g)sus.(hg) (::) Sánc(i)ta(g) Ma(h)rí(i)a,(jh) Má(ih)ter(i) Dé(ig)i,(h) (,) ó(i)ra(h) pro(g)",
+          "nó(gh)bis(e) pec(g)ca(gf)tó(fe)ri(f)bus,(e) nunc(f) et(f) in(gh) hó(gh)ra(g) mór(ih)tis(i) nós(hi)trae.(gf) A(f)men.(f.)"
+        ],
+        "nItems": 4
+      }
+    }
+  ],
+  "calls": [
+    {
+      "n": 1,
+      "kind": "pieces",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1201,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6465,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 57,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0135,
+      "images": 1,
+      "text": "[{\"index\":1,\"mode\":\"1\",\"incipit\":\"Ave Maria, gratia plena\",\"pages\":[1],\"systems\":4,\"hasDropCap\":true}]"
+    },
+    {
+      "n": 2,
+      "kind": "clef",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3303,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1892,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 308,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.00686,
+      "images": 4,
+      "text": "The close-up shows two small blocks at the left, one above and one below the staff line at about y=94 (the 3rd line from the bottom is y=124, 2nd from top is y=94). The two blocks are stacked vertically, which is the typical Do-clef appearance in small print. A Fa-clef would show a wider shape with a side block, and the two stacked blocks here look like the Do-clef's two parts split around the line.\n\nIn the full system, the clef sits at x≈485, with blocks at y≈50 and y≈80, and the line it straddles is the top line (y=65). In the close-up, the blocks sit above and below the line at about y=195, which is the second line from the top in the close-up. The close-up shows lines at about 195, 280, 370 and 460, so four lines. The clef blocks straddle the top line (195). The top line is LINE 4.\n\nThe clef is narrow, so it matches the Do-clef.\n\nCLEF: Do LINE 4"
+    },
+    {
+      "n": 3,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3145,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6697,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 367,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01706,
+      "images": 2,
+      "text": "System 1: A(hg)ve(f) Ma(hij)rí(i)a,(ghg) (,) grá(i)ti(hg)a(h) pléna,(ihg) (;) Dó(ig)mi(i)nus(hg) té(fg)cum,(f)\n\nSystem 2: A(hg)ve(g) Ma(g)rí(g)a,(g) (,) grá(hg)ti(g)a(h) pléna,(hg) (;) Dó(ih)mi(g)nus(h) té(g)cum,(f)\n\n===GABC===\nSystem 1: A(hg)ve(f) Ma(hij)rí(i)a,(ghg) (,) grá(i)ti(hg)a(h) pléna,(ihg) (;) Dó(ig)mi(i)nus(hg) té(fg)cum,(f)\nSystem 2: A(hg)ve(g) Ma(g)rí(g)a,(g) (,) grá(hg)ti(g)a(h) pléna,(hg) (;) Dó(ih)mi(g)nus(h) té(g)cum,(f)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 4,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2926,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6697,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 349,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01688,
+      "images": 2,
+      "text": "System 1: A(hg)ve(f) Ma(hi)rí(jh)a,(g) (,) grá(hg)ti(g)a(f) plé(fg)na,(g) Dó(hg)mi(i)nus(hg) té(f)cum,(f)\nSystem 2: A(g)ve(g) Ma(h)rí(g)a,(g) grá(g)ti(g)a(g) plé(f)na,(g) Dó(hg)mi(f)nus(f) té(f)cum,(f)\n\n===GABC===\nSystem 1: A(hg)ve(f) Ma(hi)rí(jh)a,(g) (,) grá(hg)ti(g)a(f) plé(fg)na,(g) Dó(hg)mi(i)nus(hg) té(f)cum,(f)\nSystem 2: A(g)ve(g) Ma(h)rí(g)a,(g) grá(g)ti(g)a(g) plé(f)na,(g) Dó(hg)mi(f)nus(f) té(f)cum,(f)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 5,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3534,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6697,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 421,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0176,
+      "images": 2,
+      "text": "System 1: A(hg)ve(f) Ma(jhi)ri(hg)a,(ghg) (,) grá(hij)ti(h)a(g) plé(gh)na,(ghg) (;) Dó(hgh)mi(g)nus(f) té(e)cum,(d)\nSystem 2: be(hg)ne(hg)díc(gh)ta(g) tu(fg) in(f) mu(gh)li(g)é(fgh)ri(g)bus,(hg) (;) et(h) be(hg)ne(fg)díc(h)tus(g) frúc(h)tus(g) vén(h)\n\n===GABC===\nSystem 1: A(hg)ve(f) Ma(jhi)ri(hg)a,(ghg) (,) grá(hij)ti(h)a(g) plé(gh)na,(ghg) (;) Dó(hgh)mi(g)nus(f) té(e)cum,(d)\nSystem 2: be(hg)ne(hg)díc(gh)ta(g) tu(fg) in(f) mu(gh)li(g)é(fgh)ri(g)bus,(hg) (;) et(h) be(hg)ne(fg)díc(h)tus(g) frúc(h)tus(g) vén(h)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 6,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3673,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6598,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 429,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01749,
+      "images": 2,
+      "text": "System 3: tris(h) tú(f)i,(gf) Jé(g)sus.(hg) (::) Sánc(i)ta(g) Ma(h)rí(i)a,(jh) Má(ih)ter(i) Dé(ig)i,(h) (,) ó(i)ra(h) pro(g)\nSystem 4: nó(fe)bis(f) pec(f)ca(fg)tó(fe)ri(e)bus,(d) nunc(d) et(d) in(fg) hó(gf)ra(g) mór(gh)tis(g) nós(h)trae.(gf) A(ge)men.(fd)\n\n===GABC===\nSystem 3: tris(h) tú(f)i,(gf) Jé(g)sus.(hg) (::) Sánc(i)ta(g) Ma(h)rí(i)a,(jh) Má(ih)ter(i) Dé(ig)i,(h) (,) ó(i)ra(h) pro(g)\nSystem 4: nó(fe)bis(f) pec(f)ca(fg)tó(fe)ri(e)bus,(d) nunc(d) et(d) in(fg) hó(gf)ra(g) mór(gh)tis(g) nós(h)trae.(gf) A(ge)men.(fd)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 7,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3777,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6598,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 429,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01749,
+      "images": 2,
+      "text": "System 3: tris(j) tú(g)i,(f) Jé(ghg)sus.(f) (::) Sánc(g)ta(h) Ma(i)rí(k)a,(jk) Má(ihi)ter(h) Dé(g)i,(h) (,) ó(i)ra(h) pro(g)\nSystem 4: nó(gh)bis(e) pec(g)ca(gf)tó(fe)ri(f)bus,(e) nunc(f) et(f) in(gh) hó(gh)ra(g) mór(ih)tis(i) nós(hi)trae.(gf) A(f)men.(f.)\n\n===GABC===\nSystem 3: tris(j) tú(g)i,(f) Jé(ghg)sus.(f) (::) Sánc(g)ta(h) Ma(i)rí(k)a,(jk) Má(ihi)ter(h) Dé(g)i,(h) (,) ó(i)ra(h) pro(g)\nSystem 4: nó(gh)bis(e) pec(g)ca(gf)tó(fe)ri(f)bus,(e) nunc(f) et(f) in(gh) hó(gh)ra(g) mór(ih)tis(i) nós(hi)trae.(gf) A(f)men.(f.)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 8,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3549,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6598,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 419,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01739,
+      "images": 2,
+      "text": "System 3: tris(h) tú(f)i,(ef) Jé(gh)sus.(hg) (::) Sánc(g)ta Ma(h)rí(i)a,(ji) Má(hg)ter(gf) Dé(g)i,(h) (,) ó(g)ra(h) pro(g)\nSystem 4: nó(fg)bis(f) pec(g)ca(f)tó(ef)ri(e)bus,(f) nunc(e) et(g) in(g) hó(fg)ra(h) mór(h)tis(h) nós(h)trae.(gf) A(fg)men.(ed)\n\n===GABC===\nSystem 3: tris(h) tú(f)i,(ef) Jé(gh)sus.(hg) (::) Sánc(g)ta Ma(h)rí(i)a,(ji) Má(hg)ter(gf) Dé(g)i,(h) (,) ó(g)ra(h) pro(g)\nSystem 4: nó(fg)bis(f) pec(g)ca(f)tó(ef)ri(e)bus,(f) nunc(e) et(g) in(g) hó(fg)ra(h) mór(h)tis(h) nós(h)trae.(gf) A(fg)men.(ed)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    }
+  ],
+  "console": [
+    "GregoBase-Abgleich für Stück 1 (\"Ave Maria, gratia plena\") gestartet…",
+    "GregoBase: keine Treffer für \"Ave Maria, gratia plena\".",
+    "Clef pixel measurement: {\"ratio\":0.10714285714285714,\"widthPx\":12,\"heightPx\":112,\"blobCount\":5,\"staffStartX\":478} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: The close-up shows two small blocks at the left, one above and one below the staff line at about y=94 (the 3rd line from the bottom is y=124, 2nd from top is y=94). The two blocks are stacked vertically, which is the typical Do-clef appearance in small print. A Fa-clef would show a wider shape with a side block, and the two stacked blocks here look like the Do-clef's two parts split around the line.\n\nIn the full system, the clef sits at x≈485, with blocks at y≈50 and y≈80, and the line it straddles is the top line (y=65). In the close-up, the blocks sit above and b",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.107\",\"pixelSaysDo\":true,\"modelSaysDo\":true}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"A(hg)ve(f) Ma(hij)rí(i)a,(ghg) (,) grá(i)ti(hg)a(h) pléna,(ihg) (;) Dó(ig)mi(i)nus(hg) té(fg)cum,(f)\"",
+    "System 2: 3 Durchläufe verglichen, Konsens gewählt: \"A(hg)ve(g) Ma(g)rí(g)a,(g) (,) grá(hg)ti(g)a(h) pléna,(hg) (;) Dó(ih)mi(g)nus(h) té(g)cum,(f)\"",
+    "System 3: 3 Durchläufe verglichen, Konsens gewählt: \"tris(h) tú(f)i,(gf) Jé(g)sus.(hg) (::) Sánc(i)ta(g) Ma(h)rí(i)a,(jh) Má(ih)ter(i) Dé(ig)i,(h) (,) ó(i)ra(h) pro(g)\"",
+    "System 4: 3 Durchläufe verglichen, Konsens gewählt: \"nó(gh)bis(e) pec(g)ca(gf)tó(fe)ri(f)bus,(e) nunc(f) et(f) in(gh) hó(gh)ra(g) mór(ih)tis(i) nós(hi)trae.(gf) A(f)men.(f.)\"",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x232, Template 15x18 (aus 6 Kandidaten), Notenlinien-Abstand=29.0, Silben-Tokens=14, erwartete Gesamt-Notenzahl=25.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":25,\"anchorRange\":[1381.5,1381.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":25,\"anchorRange\":[1381.5,1381.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":25,\"anchorRange\":[1381.5,1381.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\"",
+    "OMR-Korrektur für System 1 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (25)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x251, Template 13x19 (aus 10 Kandidaten), Notenlinien-Abstand=29.0, Silben-Tokens=14, erwartete Gesamt-Notenzahl=18.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":18,\"anchorRange\":[754.5,754.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":18,\"anchorRange\":[754.5,754.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":18,\"anchorRange\":[754.5,754.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":18,\"",
+    "OMR-Korrektur für System 2 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (18)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x221, Template 14x20 (aus 6 Kandidaten), Notenlinien-Abstand=29.0, Silben-Tokens=17, erwartete Gesamt-Notenzahl=22.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":22,\"anchorRange\":[1063,1063],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":22,\"anchorRange\":[1063,1063],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":22,\"anchorRange\":[1063,1063],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":22,\"anchorR",
+    "OMR-Korrektur für System 3 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (22)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x287, Template 15x19 (aus 4 Kandidaten), Notenlinien-Abstand=29.0, Silben-Tokens=18, erwartete Gesamt-Notenzahl=26.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":26,\"anchorRange\":[1147.5,1147.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":26,\"anchorRange\":[1147.5,1147.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":26,\"anchorRange\":[1147.5,1147.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\"",
+    "OMR-Korrektur für System 4 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (26)"
+  ]
+}

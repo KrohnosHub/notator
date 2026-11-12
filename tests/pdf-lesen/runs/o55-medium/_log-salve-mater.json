@@ -1,0 +1,525 @@
+{
+  "base": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+    "case": "salve-mater"
+  },
+  "status": "GABC importiert: 100 Einträge — bitte mit dem Original vergleichen und korrigieren",
+  "stopped": null,
+  "stepA": [
+    {
+      "index": 1,
+      "mode": "5",
+      "incipit": "Salve mater misericordiae",
+      "pages": [
+        1
+      ],
+      "systems": 7,
+      "hasDropCap": true
+    }
+  ],
+  "pieces": [
+    {
+      "clef": "c4",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)",
+          "vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g.) et(f) ma(g)ter(g) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)",
+          "vé(g)ni(h)æ.(g.) (::) Ma(g)ter(g) spe(h)i,(h) et(h) ma(h)ter(h) grá(h)ti(h)æ,(g.) (;) Ma(g)ter(g)",
+          "ple(h)na(g.) sanc(g)tæ(f) læ(f)tí(g)ti(f)æ,(e.) (::) O(e) Ma(f)rí(ee)a!(d.) ij.(::) Sal(h)ve(h) ma(j)ter..(j)",
+          "1. Sal(d)ve,(f) de(fd)cus(c.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (:) Sal(c)ve,(f) Vir(h)",
+          "go(fg) díg(h)ni(g)or(f) cé(g)te(e)ris,(f.) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)"
+        ],
+        "after": [
+          "Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)",
+          "vé(j)ni(e)æ,(f.) (;) Ma(e)ter(e) spe(e)i,(f.) et(g) ma(f)ter(g) grá(g)ti(h)æ,(h.) (;) Ma(h)ter(h)",
+          "vé(g)ni(h)æ.(g.) (::) Ma(g)ter(g) spe(h)i,(h) et(h) ma(h)ter(h) grá(h)ti(h)æ,(g.) (;) Ma(g)ter(g)",
+          "ple(h)na(g.) sanc(g)tæ(f) læ(f)tí(g)ti(f)æ,(e.) (::) O(e) Ma(f)rí(ee)a!(d.) ij.(::) Sal(h)ve(h) ma(j)ter..(j)",
+          "1. Sal(d)ve,(f) de(fd)cus(c.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (:) Sal(c)ve,(f) Vir(h)",
+          "go(fg) díg(h)ni(g)or(f) cé(g)te(e)ris,(f.) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)"
+        ],
+        "nItems": 6
+      }
+    }
+  ],
+  "calls": [
+    {
+      "n": 1,
+      "kind": "pieces",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 1252,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6465,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 55,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02696,
+      "images": 1,
+      "text": "[{\"index\":1,\"mode\":\"5\",\"incipit\":\"Salve mater misericordiae\",\"pages\":[1],\"systems\":7,\"hasDropCap\":true}]"
+    },
+    {
+      "n": 2,
+      "kind": "clef",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 5714,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1980,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 407,
+        "output_tokens_details": {
+          "thinking_tokens": 393
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01606,
+      "images": 4,
+      "text": "CLEF: Do LINE 4"
+    },
+    {
+      "n": 3,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 26635,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6625,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2381,
+        "output_tokens_details": {
+          "thinking_tokens": 1996
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.07412,
+      "images": 2,
+      "text": "System 1: Sal(h)ve,(h) ma(j)ter(jk) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(ih.) et(h) ma(g)ter(g)\nSystem 2: vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g.) et(f) ma(g)ter(g) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)\n===GABC===\nSystem 1: Sal(h)ve,(h) ma(j)ter(jk) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(ih.) et(h) ma(g)ter(g)\nSystem 2: vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g.) et(f) ma(g)ter(g) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 4,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 26670,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6625,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2400,
+        "output_tokens_details": {
+          "thinking_tokens": 2023
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0745,
+      "images": 2,
+      "text": "System 1: Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)\nSystem 2: vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g) et(f) ma(g)ter(h) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)\n===GABC===\nSystem 1: Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)\nSystem 2: vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g) et(f) ma(g)ter(h) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 5,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 28531,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6625,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2658,
+        "output_tokens_details": {
+          "thinking_tokens": 2281
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.07966,
+      "images": 2,
+      "text": "System 1: Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)\nSystem 2: vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g) et(f) ma(g)ter(g) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)\n===GABC===\nSystem 1: Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)\nSystem 2: vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g) et(f) ma(g)ter(g) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 6,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 43471,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6198,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 3790,
+        "output_tokens_details": {
+          "thinking_tokens": 3397
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.10059,
+      "images": 2,
+      "text": "System 3: vé(g)ni(h)æ.(g.) (::) Ma(g)ter(g) spe(h)i,(h) et(h) ma(h)ter(h) grá(h)ti(h)æ,(g.) (;) Ma(g)ter(g)\nSystem 4: ple(h)na(g.) sanc(g)tæ(f) læ(f)tí(g)ti(f)æ,(e.) (::) O(e) Ma(f)rí(ee)a!(d.) ij.(::) Sal(h)ve(h) ma(j)ter..(j)\n===GABC===\nSystem 3: vé(g)ni(h)æ.(g.) (::) Ma(g)ter(g) spe(h)i,(h) et(h) ma(h)ter(h) grá(h)ti(h)æ,(g.) (;) Ma(g)ter(g)\nSystem 4: ple(h)na(g.) sanc(g)tæ(f) læ(f)tí(g)ti(f)æ,(e.) (::) O(e) Ma(f)rí(ee)a!(d.) ij.(::) Sal(h)ve(h) ma(j)ter..(j)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 7,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 20504,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6198,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1882,
+        "output_tokens_details": {
+          "thinking_tokens": 1505
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.06243,
+      "images": 2,
+      "text": "System 3: vé(c)ni(d)æ.(c.) Ma(c)ter(c) spe(d)i,(d) et(d) ma(d)ter(e) grá(e)ti(d)æ,(d) Ma(e)ter(f)\nSystem 4: ple(h)na(g) sanc(g)tæ(f) læ(f)tí(h)ti(f)æ,(f.) (::) O(e) Ma(f)rí(ee)a!(d.) ij. (::) Sal(i)ve(i) ma(l)ter..(l)\n===GABC===\nSystem 3: vé(c)ni(d)æ.(c.) Ma(c)ter(c) spe(d)i,(d) et(d) ma(d)ter(e) grá(e)ti(d)æ,(d) Ma(e)ter(f)\nSystem 4: ple(h)na(g) sanc(g)tæ(f) læ(f)tí(h)ti(f)æ,(f.) (::) O(e) Ma(f)rí(ee)a!(d.) ij. (::) Sal(i)ve(i) ma(l)ter..(l)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 8,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 21394,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6198,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1905,
+        "output_tokens_details": {
+          "thinking_tokens": 1526
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.06289,
+      "images": 2,
+      "text": "System 3: vé(c)ni(d)æ.(c.) Ma(c)ter(d) spe(c)i,(d) et(d) ma(d)ter(d) grá(d)ti(d)æ,(d) Ma(d)ter(d)\nSystem 4: ple(g)na(f.) sanc(f)tæ(e) læ(e)tí(f)ti(e)æ,(d.) (::) O(d) Ma(e)rí(dd)a!(c.) ij.(::) Sal(g)ve(g) ma(j)ter..(j)\n===GABC===\nSystem 3: vé(c)ni(d)æ.(c.) Ma(c)ter(d) spe(c)i,(d) et(d) ma(d)ter(d) grá(d)ti(d)æ,(d) Ma(d)ter(d)\nSystem 4: ple(g)na(f.) sanc(f)tæ(e) læ(e)tí(f)ti(e)æ,(d.) (::) O(d) Ma(e)rí(dd)a!(c.) ij.(::) Sal(g)ve(g) ma(j)ter..(j)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 9,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 18812,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6594,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1585,
+        "output_tokens_details": {
+          "thinking_tokens": 1402
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.05808,
+      "images": 2,
+      "text": "System 5: 1. Sal(d)ve,(f) de(fd)cus(c.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (:) Sal(c)ve,(f) Vir(h)\nSystem 6:\n===GABC===\nSystem 5: 1. Sal(d)ve,(f) de(fd)cus(c.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (:) Sal(c)ve,(f) Vir(h)\nSystem 6:",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 10,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 16433,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6594,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1447,
+        "output_tokens_details": {
+          "thinking_tokens": 1266
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.05532,
+      "images": 2,
+      "text": "System 5: 1. Sal(e)ve,(g) de(fe)cus(d.) hu(g)má(f)ni(e) gé(e)ne(d)ris,(e) (;) Sal(d)ve,(g) Vir(h)\nSystem 6:\n===GABC===\nSystem 5: 1. Sal(e)ve,(g) de(fe)cus(d.) hu(g)má(f)ni(e) gé(e)ne(d)ris,(e) (;) Sal(d)ve,(g) Vir(h)\nSystem 6:",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 11,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 19552,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6594,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1623,
+        "output_tokens_details": {
+          "thinking_tokens": 1446
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.05884,
+      "images": 2,
+      "text": "System 5: Sal(d)ve,(f) de(fe)cus(d.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (;) Sal(c)ve,(e) Vir(g)\nSystem 6:\n===GABC===\nSystem 5: Sal(d)ve,(f) de(fe)cus(d.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (;) Sal(c)ve,(e) Vir(g)\nSystem 6:",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 12,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 28231,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 5719,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2391,
+        "output_tokens_details": {
+          "thinking_tokens": 2234
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0707,
+      "images": 1,
+      "text": "System 7: go(fg) díg(h)ni(g)or(f) cé(g)te(e)ris,(f.) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)\n===GABC===\nSystem 7: go(fg) díg(h)ni(g)or(f) cé(g)te(e)ris,(f.) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)",
+      "batch": [
+        7,
+        7
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 13,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 23713,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 5719,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2019,
+        "output_tokens_details": {
+          "thinking_tokens": 1862
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.06326,
+      "images": 1,
+      "text": "System 7: go(gh) díg(j)ni(h)or(f) cé(g)te(e)ris,(f.) (:) Quæ(j) vír(j)gi(f)nes(gh) om(f)nes(f)\n===GABC===\nSystem 7: go(gh) díg(j)ni(h)or(f) cé(g)te(e)ris,(f.) (:) Quæ(j) vír(j)gi(f)nes(gh) om(f)nes(f)",
+      "batch": [
+        7,
+        7
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 14,
+      "kind": "gabc",
+      "model": "claude-opus-5-5",
+      "status": 200,
+      "ms": 19599,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 5719,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1723,
+        "output_tokens_details": {
+          "thinking_tokens": 1566
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.05734,
+      "images": 1,
+      "text": "System 7: go(gh) díg(j)ni(h)or(f) cé(h)te(e)ris,(g.) (;) Quæ(j) vír(j)gi(f)nes(hi) om(g)nes(g)\n===GABC===\nSystem 7: go(gh) díg(j)ni(h)or(f) cé(h)te(e)ris,(g.) (;) Quæ(j) vír(j)gi(f)nes(hi) om(g)nes(g)",
+      "batch": [
+        7,
+        7
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    }
+  ],
+  "console": [
+    "Seite 1: 9 einzeilige(s) Rezitationston-System(e) erkannt (nicht transkribiert): [357,547.5,732.5,767.5,979,1290.5,1583,1804,2281.5]",
+    "GregoBase-Abgleich für Stück 1 (\"Salve mater misericordiae\") gestartet…",
+    "GregoBase: keine Treffer für \"Salve mater misericordiae\".",
+    "Clef pixel measurement: {\"ratio\":0.4,\"widthPx\":48,\"heightPx\":120,\"blobCount\":8,\"staffStartX\":342} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: CLEF: Do LINE 4",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.400\",\"pixelSaysDo\":true,\"modelSaysDo\":true}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)\"",
+    "System 2: 3 Durchläufe verglichen, Konsens gewählt: \"vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g.) et(f) ma(g)ter(g) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)\"",
+    "System 3: 3 Durchläufe verglichen, Konsens gewählt: \"vé(g)ni(h)æ.(g.) (::) Ma(g)ter(g) spe(h)i,(h) et(h) ma(h)ter(h) grá(h)ti(h)æ,(g.) (;) Ma(g)ter(g)\"",
+    "System 4: 3 Durchläufe verglichen, Konsens gewählt: \"ple(h)na(g.) sanc(g)tæ(f) læ(f)tí(g)ti(f)æ,(e.) (::) O(e) Ma(f)rí(ee)a!(d.) ij.(::) Sal(h)ve(h) ma(j)ter..(j)\"",
+    "System 5: 3 Durchläufe verglichen, Konsens gewählt: \"1. Sal(d)ve,(f) de(fd)cus(c.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (:) Sal(c)ve,(f) Vir(h)\"",
+    "System 7: 3 Durchläufe verglichen, Konsens gewählt: \"go(fg) díg(h)ni(g)or(f) cé(g)te(e)ris,(f.) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)\"",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x215, Template 18x23 (aus 7 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=17, erwartete Gesamt-Notenzahl=17.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":18,\"totalRaw\":20,\"totalExpected\":17,\"anchorRange\":[457,1596],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":13,\"totalRaw\":14,\"totalExpected\":17,\"anchorRange\":[659,1464],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":6,\"totalRaw\":7,\"totalExpected\":17,\"anchorRange\":[720,1043],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":17,\"anchor",
+    "OMR-Korrektur für System 1 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (17)",
+    "OMR-Korrektur für System 2 angewendet: 15/15 Silben-Tonhöhen neu berechnet, davon 8 tatsächlich anders als Vision (Schwelle 0.7, Sicherheitsstufe 2).",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x113, Template 19x20 (aus 1 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=15, erwartete Gesamt-Notenzahl=15.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":15,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":15,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":15,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":15,\"a",
+    "OMR-Korrektur für System 3 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (15)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x198, Template 18x22 (aus 4 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=17, erwartete Gesamt-Notenzahl=17.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":8,\"totalRaw\":9,\"totalExpected\":17,\"anchorRange\":[639,1246],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":8,\"totalRaw\":9,\"totalExpected\":17,\"anchorRange\":[639,1246],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":6,\"totalRaw\":7,\"totalExpected\":17,\"anchorRange\":[835,1246],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":17,\"anchorRang",
+    "OMR-Korrektur für System 4 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (17)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x211, Template 20x22 (aus 4 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=13, erwartete Gesamt-Notenzahl=14.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":10,\"totalRaw\":11,\"totalExpected\":14,\"anchorRange\":[519,1401],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":5,\"totalRaw\":6,\"totalExpected\":14,\"anchorRange\":[600,985],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":14,\"anchorRange\":[985,985],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":14,\"anchorRang",
+    "OMR-Korrektur für System 5 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (14)",
+    "OMR-Diagnose: kein Notenkopf-Template gefunden. Bild 1833x284, Band [0,74,1833,270], Notenlinien-Abstand=47.0, staffLines=[102,149,195,242]",
+    "OMR-Korrektur für System 6 übersprungen: kein Notenkopf-Template gefunden"
+  ]
+}

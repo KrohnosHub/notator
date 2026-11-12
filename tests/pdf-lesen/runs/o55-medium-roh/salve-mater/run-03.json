@@ -1,0 +1,25 @@
+{
+  "model": "claude-opus-5-5",
+  "effort": "medium",
+  "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+  "case": "salve-mater",
+  "stage": "Einzeldurchlauf 3",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 7,
+      "clef": "c4",
+      "systems": [
+        "Sal(h)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h.) (;) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)",
+        "vé(e)ni(f)æ,(e.) (;) Ma(e)ter(e) spe(f)i,(g) et(f) ma(g)ter(g) grá(h)ti(h)æ,(h.) (;) Ma(h)ter(h)",
+        "vé(c)ni(d)æ.(c.) Ma(c)ter(d) spe(c)i,(d) et(d) ma(d)ter(d) grá(d)ti(d)æ,(d) Ma(d)ter(d)",
+        "ple(g)na(f.) sanc(f)tæ(e) læ(e)tí(f)ti(e)æ,(d.) (::) O(d) Ma(e)rí(dd)a!(c.) ij.(::) Sal(g)ve(g) ma(j)ter..(j)",
+        "Sal(d)ve,(f) de(fe)cus(d.) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (;) Sal(c)ve,(e) Vir(g)",
+        "",
+        "go(gh) díg(j)ni(h)or(f) cé(h)te(e)ris,(g.) (;) Quæ(j) vír(j)gi(f)nes(hi) om(g)nes(g)"
+      ]
+    }
+  ]
+}

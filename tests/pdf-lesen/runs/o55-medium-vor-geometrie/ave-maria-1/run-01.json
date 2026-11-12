@@ -1,0 +1,22 @@
+{
+  "model": "claude-opus-5-5",
+  "effort": "medium",
+  "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+  "case": "ave-maria-1",
+  "stage": "Konsens vor Geometrie",
+  "pieces": [
+    {
+      "incipit": "Ave Maria gratia plena",
+      "mode": "1",
+      "hasDropCap": true,
+      "systemsDetected": 4,
+      "clef": "c4",
+      "systems": [
+        "A(fc)ve(d) Ma(d)rí(dhi)a,(h.) (,) grá(h)ti(g)a(f) plé(gh)na,(h.) (,) Dó(h)mi(g)nus(f) té(g)cum,(d.) (;)",
+        "be(g)ne(g)dí(h)cta(g) tu(f.) (,) in(ef) mu(g)li(fe)é(d)ri(cd)bus,(d.) (;) et(e) be(c)ne(d)dí(f)ctus(f) frú(e)ctus(f) vén(g)",
+        "tris(e) tú(g)i,(fe) Jé(dc)sus,(df.) (::) Sánc(h)ta(g) Ma(h)rí(ji)a,(g.) Má(g)ter(f) Dé(gh)i,(h.) (;) ó(h)ra(g) pro(f)",
+        "nó(gf)bis(d) pec(f)ca(fe)tó(de)ri(d)bus,(c.) (;) nunc(d) et(c) in(df) hó(fg)ra(f) mór(de)tis(f) nós(gh)trae.(fe) A(d.)men.(d.) (::)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "model": "claude-sonnet-4-6",
+  "effort": null,
+  "pipeline": "index.html unverändert",
+  "case": "salve-mater",
+  "stage": "Endergebnis nach Geometrie",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae, Mater Dei",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 8,
+      "clef": "c4",
+      "systems": [
+        "Sal(hi)ve,(hg) (;) ma(gh)ter(h) (,) mi(h)se(h)ri(h)cór(ih)di(h)æ,(g.) (;) Ma(h)ter(h) (,) De(hi)i,(h) (,) et(h) ma(gh)ter(h)",
+        "ve(j)ni(ie)ae,(f) (;) tu(e) spes(e) no(e)stra,(f) (;) tu(gf) re(g)fú(gh)gi(h)um.(hh)",
+        "vé(j)ni(j)æ.(j) Ma(h)ter(h) spe(j)i,(j) (;) et(h) ma(h)ter(h) grá(j)ti(j)æ,(j) (;) Ma(d)ter(d)",
+        "ple(j)na(ij) sanc(j)tæ(j) læ(j)tí(j)ti(j)æ,(j) (;) O(j) Ma(j)rí(ij)a!(j) (,) ij. (::) Sal(j)ve(j) ma(j)ter..(ij)",
+        "Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)",
+        "(f)go(e) pu(f)ér(e)pe(f)ra:(e) (;) Nam(f) qui(f) se(f)",
+        "E(g)sto,(f) Ma(g)ter,(f) nos(g)trum(g) so(g)la(f)ti(g)um;(f.) (;) No(j)strum(i) e(ji)",
+        "go(f) díg(f)ni(f)or(f) cé(f)te(f)ris,(f) (;) Quæ(f) vír(f)gi(f)nes(f) om(f)nes(f)"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 62083,
+    "output_tokens": 7317,
+    "costUsd": 0.296
+  },
+  "durationMs": 142412
+}

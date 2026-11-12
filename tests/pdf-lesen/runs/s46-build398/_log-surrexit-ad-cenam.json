@@ -1,0 +1,537 @@
+{
+  "base": {
+    "model": "claude-sonnet-4-6",
+    "effort": null,
+    "pipeline": "index.html unverändert",
+    "case": "surrexit-ad-cenam"
+  },
+  "status": "2 Stück(e) geladen.",
+  "stopped": null,
+  "stepA": [
+    {
+      "index": 1,
+      "mode": "VI",
+      "incipit": "Surréxit Dóminus vere, Allelúia",
+      "pages": [
+        1
+      ],
+      "systems": 4,
+      "hasDropCap": true
+    },
+    {
+      "index": 2,
+      "mode": "VIII",
+      "incipit": "Ad coenam Agni próvidi, Et stolis",
+      "pages": [
+        1
+      ],
+      "systems": 3,
+      "hasDropCap": true
+    }
+  ],
+  "pieces": [
+    {
+      "clef": "f3",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "Sur(hi)ré(hg)xit(fg) Dó(f)mi(f)nus(ef) ve(f)re, (;) *(,) Al(ghi)le(ig)lú(hi)ia,(h) al(ji)",
+          "le(ih)lú(hg)ia.(f.) (::) Sur(f)ré(f)xit.(f.) (;) ℣.(,) Et(f) ap(f)pá(f)ru(f)it(f) Si(f)mó(fe)ni.(fd)",
+          "*(;) Al(hg)le(g)lú(g)ia.(gh.) (;) ℣. Gló(h)ri(h)a(h) Pa(h)tri,(h) et(h) Fí(h)li(g)o,(gh) et(h) Spi(h)rí(ij)",
+          "tu(gh)i(h) San(hg)cto.(g.) Sur(h)ré(hi)xit.(h.) (::)"
+        ],
+        "after": [
+          "Sur(ff)ré(gf)xit(ff) Dó(e)mi(e)nus(fg) ve(d)re, (;) *(,) Al(fhi)le(ii)lú(ig)ia,(h) al(ig)",
+          "le(gh)lú(ff)ia.(f.) (::) Sur(f)ré(f)xit.(f.) (;) ℣.(,) Et(g) ap(g)pá(g)ru(f)it(e) Si(d)mó(he)ni.(gj)",
+          "*(;) Al(hg)le(g)lú(g)ia.(gh.) (;) ℣. Gló(h)ri(h)a(h) Pa(h)tri,(h) et(h) Fí(h)li(g)o,(gh) et(h) Spi(h)rí(ij)",
+          "tu(ih)i(h) San(gh)cto.(f.) Sur(f)ré(fg)xit.(f.) (::)"
+        ],
+        "nItems": 4
+      }
+    },
+    {
+      "clef": "f3",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(hg)vi(h)di,(g) (;) Et(h) sto(ih)lis(h) al(gh)bis(h) cán(hg)di(h)",
+          "-(g)dis(h) (;) post(gh) tran(h)si(h)tum(h) Ma(hi)ris(h) (;) Chri(h)sto(h) ca(h)na(h)mus(gh) Pín(h)ci(gh)pi(h) (::)",
+          "di,(f) Post(h)trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(hi)mus(h) Prín(h)ci(h)-pi.(h.) (::)"
+        ],
+        "after": [
+          "A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(hg)vi(h)di,(g) (;) Et(h) sto(ih)lis(h) al(gh)bis(h) cán(hg)di(h)",
+          "-(g)dis(h) (;) post(gh) tran(h)si(h)tum(h) Ma(hi)ris(h) (;) Chri(h)sto(h) ca(h)na(h)mus(gh) Pín(h)ci(gh)pi(h) (::)",
+          "di,(f) Post(h)trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(hi)mus(h) Prín(h)ci(h)-pi.(h.) (::)"
+        ],
+        "nItems": 3
+      }
+    }
+  ],
+  "calls": [
+    {
+      "n": 1,
+      "kind": "pieces",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 2638,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 2867,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 97,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01006,
+      "images": 1,
+      "text": "[{\"index\":1,\"mode\":\"VI\",\"incipit\":\"Surréxit Dóminus vere, Allelúia\",\"pages\":[1],\"systems\":4,\"hasDropCap\":true},{\"index\":2,\"mode\":\"VIII\",\"incipit\":\"Ad coenam Agni próvidi, Et stolis\",\"pages\":[1],\"systems\":3,\"hasDropCap\":true}]"
+    },
+    {
+      "n": 2,
+      "kind": "clef",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 855,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1371,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 12,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.00429,
+      "images": 4,
+      "text": "CLEF: Fa LINE 3"
+    },
+    {
+      "n": 3,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 13949,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4964,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 679,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02508,
+      "images": 2,
+      "text": "I'll analyze each system carefully, comparing note head pixel positions to the staff lines (Line 4=y55, Line 3=y80, Line 2=y105, Line 1=y124 for system 1; same values with Line 1=y126 for system 2).\n\nStaff position mapping:\n- above Line 4 (y<55): k\n- Line 4 (y≈55): j\n- space 3-4 (y≈67): i\n- Line 3 (y≈80): h\n- space 2-3 (y≈92): g\n- Line 2 (y≈105): f\n- space 1-2 (y≈115): e\n- Line 1 (y≈124): d\n- below Line 1: c\n\nSystem 1: The drop cap \"S\" is visible, text begins \"Urré-xit Dó-mi-nus ve- re, * Al-le- lú-ia, al-\"\nThe known incipit is \"Surréxit Dóminus vere, Allelúia\" — the \"S\" is the drop cap, so first syllable is \"Sur\" prepended to \"ré\".\n\nSystem 2: Text reads \"le- lú- ia. Surré-xit. ℣. Et appá-ru- it Simó- ni.\"\nThis continues the same piece. The \"Surréxit.\" here is part of the response repeat, and \"℣. Et appáruit Simóni.\" is the versicle — expect reciting tone.\n\nSystem 1: Sur(hi)ré(hg)xit(fg) Dó(f)mi(f)nus(ef) ve(f)re, (;) *(,) Al(ghi)le(ig)lú(hi)ia,(h) al(ji)\n\nSystem 2: le(ih)lú(hg)ia.(f.) (::) Sur(f)ré(f)xit.(f.) (;) ℣.(,) Et(f) ap(f)pá(f)ru(f)it(f) Si(f)mó(fe)ni.(fd)\n\n===GABC===\nSystem 1: Sur(hi)ré(hg)xit(fg) Dó(f)mi(f)nus(ef) ve(f)re, (;) *(,) Al(ghi)le(ig)lú(hi)ia,(h) al(ji)\nSystem 2: le(ih)lú(hg)ia.(f.) (::) Sur(f)ré(f)xit.(f.) (;) ℣.(,) Et(f) ap(f)pá(f)ru(f)it(f) Si(f)mó(fe)ni.(fd)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 4,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 13834,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4964,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 747,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0261,
+      "images": 2,
+      "text": "I'll analyze each system carefully using the pixel coordinates provided.\n\n**Staff reference:**\n- Line 4 (top): y=55\n- Line 3: y=80\n- Line 2: y=105\n- Line 1 (bottom): y=124/126\n\nSpace positions: above Line 4 = k (y~42), Line4/Line3 gap = i (y~67), Line3/Line2 gap = g (y~92), Line2/Line1 gap = e (y~114/115), below Line1 = c (y~135+)\n\nLines: Line4=j(y=55), Line3=h(y=80), Line2=f(y=105), Line1=d(y=124)\n\n**System 1:**\nThe drop cap \"S\" is visible, text starts \"Urré-xit Dó-mi-nus ve- re, * Alle- lú-ia, al-\"\nThe known incipit is \"Surréxit\" so first syllable is \"Sur\" prepended to \"ré\".\n\nReading notes carefully across system 1:\n\nSur(hi)ré(i)xit(ih) Dó(h)mi(h)nus(h) ve(gh)re,(h) (;) *(,) Al(hg)le(h)lú(ij)ia,(i) al(ih)\n\n**System 2:**\nText: \"le- lú-ia. Surré-xit. ℣. Et appá-ru- it Simó-ni.\"\n\nle(g)lú(h)ia.(g) (;) Sur(h)ré(h)xit.(h) (::) ℣. Et(h) ap(h)pá(h)ru(h)it(h) Si(h)mó(hg)ni.(h)\n\nSystem 1: Sur(hi)ré(i)xit(ih) Dó(h)mi(h)nus(h) ve(gh)re,(h) (;) *(,) Al(hg)le(h)lú(ij)ia,(i) al(ih)\nSystem 2: le(g)lú(h)ia.(g) (;) Sur(h)ré(h)xit.(h) (::) ℣. Et(h) ap(h)pá(h)ru(h)it(h) Si(h)mó(hg)ni.(h)\n\n===GABC===\nSystem 1: Sur(hi)ré(i)xit(ih) Dó(h)mi(h)nus(h) ve(gh)re,(h) (;) *(,) Al(hg)le(h)lú(ij)ia,(i) al(ih)\nSystem 2: le(g)lú(h)ia.(g) (;) Sur(h)ré(h)xit.(h) (::) ℣. Et(h) ap(h)pá(h)ru(h)it(h) Si(h)mó(hg)ni.(h)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 5,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 16002,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4964,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1019,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.03018,
+      "images": 2,
+      "text": "I'll analyze each system carefully using the pixel coordinates provided.\n\n**System 1 analysis:**\nStaff lines: y=55 (L4/j), y=80 (L3/h), y=105 (L2/f), y=124 (L1/d)\nSpaces: above L4 = k, L4-L3 = i, L3-L2 = g, L2-L1 = e, below L1 = c\n\nThe drop cap \"S\" is visible, so \"Ur-ré-xit\" becomes \"Sur-ré-xit\" for the first word.\n\nReading notes syllable by syllable with text \"Surréxit Dóminus vere, * Alleluia, al-\":\n\n- \"Sur\" - note around y≈80 = h\n- \"ré\" - notes around y≈80,55 = hi (podatus)\n- \"xit\" - y≈80 = h\n- \"Dó\" - y≈105 = f, y≈80 = h (podatus fh)\n- \"mi\" - y≈80 = h\n- \"nus\" - y≈80,55 = hi\n- \"ve\" - y≈80 = h, y≈55 = j (podatus hj)\n- \"re,\" - y≈80 = h, y≈55 = i\n- \"*\" separator\n- \"Al\" - y≈55,80 = ji (clivis)\n- \"le\" - y≈55,80 = ji\n- \"lú\" - y≈55,80,55 = jij\n- \"ia,\" - y≈80 = i, y≈55 = j\n- \"al\" - y≈80 = h\n\n**System 2 analysis:**\nStaff lines: y=55 (L4/j), y=80 (L3/h), y=105 (L2/f), y=126 (L1/d)\n\nText: \"le- lú- ia. Surréxit. ℣. Et appáru- it Simó- ni.\"\n\n- \"le\" - y≈105,80 = gh\n- \"lú\" - y≈80,55 = hi\n- \"ia.\" - y≈80 = h, y≈105 = g\n- \"Sur\" - y≈80 = h\n- \"ré\" - y≈80 = h\n- \"xit.\" - y≈80 = h\n- \"℣.\" marker\n- \"Et\" - y≈80 = h\n- \"ap\" - y≈80 = h\n- \"pá\" - y≈80 = h\n- \"ru\" - y≈80 = h\n- \"it\" - y≈80 = h\n- \"Si\" - y≈80 = h\n- \"mó\" - y≈80,55 = hi\n- \"ni.\" - y≈105,80 = gh\n\nSystem 1: Sur(h)ré(hi)xit(h) Dó(fh)mi(h)nus(hi) ve(hj)re,(ih) * Al(ji)le(ji)lú(jij)ia,(ij) al(h)\nSystem 2: le(gh)lú(hi)ia.(hg) (;) Sur(h)ré(h)xit.(h) (::) ℣. Et(h) ap(h)pá(h)ru(h)it(h) Si(h)mó(hi)ni.(gh)\n\n===GABC===\nSystem 1: Sur(h)ré(hi)xit(h) Dó(fh)mi(h)nus(hi) ve(hj)re,(ih) * Al(ji)le(ji)lú(jij)ia,(ij) al(h)\nSystem 2: le(gh)lú(hi)ia.(hg) (;) Sur(h)ré(h)xit.(h) (::) ℣. Et(h) ap(h)pá(h)ru(h)it(h) Si(h)mó(hi)ni.(gh)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 6,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 16901,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 5108,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 943,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02947,
+      "images": 2,
+      "text": "I'll analyze each system carefully using the pixel coordinates provided.\n\n**System 3** (staff lines: y=55 [L4], y=80 [L3], y=105 [L2], y=127 [L1])\n\nText: \"* Alle- lú- ia. ℣. Gló-ri- a Patri, et Fí- li- o, et Spi- rí-\"\n\nReading notes against staff lines:\n- Space between L4(55) and top = k; L4=j; gap L4-L3=i; L3=h; gap L3-L2=g; L2=f; gap L2-L1=e; L1=d; below L1=c\n\nWorking through each syllable's note heads by pixel row:\n\n\"*\" = asterisk marker\n\"Al-\" notes around y≈80 (h) and y≈93 (g) → clivis hg\n\"le-\" y≈93 (g)\n\"lú-\" y≈93 (g)\n\"ia.\" y≈93 (g), then y≈80 (h) → podatus gh, with dot\n\n\"℣.\" versicle marker\n\"Gló-\" y≈80 (h)\n\"ri-\" y≈80 (h)\n\"a\" y≈80 (h)\n\"Pa-\" y≈80 (h)\n\"tri,\" y≈80 (h)\n\"et\" y≈80 (h)\n\"Fí-\" y≈80 (h)\n\"li-\" y≈93 (g)\n\"o,\" y≈93 (g), y≈80 (h) podatus gh\n\"et\" y≈80 (h)\n\"Spi-\" y≈80 (h), y≈67 (i) clivis ji... let me re-examine end notes: y≈67=i, y≈55=j\n\"rí-\" podatus ij\n\n**System 4** (staff lines: y=55 [L4], y=80 [L3], y=105 [L2], y=126 [L1])\n\nText: \"tu- i Sancto. Surré-xit.\"\n\n\"tu-\" notes: y≈93(g), y≈80(h) → podatus gh\n\"i\" y≈80(h)\n\"San-\" y≈80(h), y≈93(g) clivis hg\n\"cto.\" y≈93(g) with dot\n\"Sur-\" y≈80(h)\n\"ré-\" y≈80(h), y≈67(i) → podatus hi\n\"xit.\" y≈80(h) with dot, double bar\n\nSystem 3: *(;) Al(hg)le(g)lú(g)ia.(gh.) (;) ℣. Gló(h)ri(h)a(h) Pa(h)tri,(h) et(h) Fí(h)li(g)o,(gh) et(h) Spi(h)rí(ij)\nSystem 4: tu(gh)i(h) San(hg)cto.(g.) Sur(h)ré(hi)xit.(h.) (::)\n\n===GABC===\nSystem 3: *(;) Al(hg)le(g)lú(g)ia.(gh.) (;) ℣. Gló(h)ri(h)a(h) Pa(h)tri,(h) et(h) Fí(h)li(g)o,(gh) et(h) Spi(h)rí(ij)\nSystem 4: tu(gh)i(h) San(hg)cto.(g.) Sur(h)ré(hi)xit.(h.) (::)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 7,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 16359,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 5108,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 876,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02846,
+      "images": 2,
+      "text": "I'll analyze each system carefully using the pixel coordinates provided.\n\n**System 3** (staff lines: y=55 [L4], y=80 [L3], y=105 [L2], y=127 [L1])\n\nText: \"* Alle- lú- ia. ℣. Gló-ri- a Patri, et Fí- li- o, et Spi- rí-\"\n\nReading notes by pixel position:\n- Space above L4 (y~42) = k; on L4 (y=55) = j; space L4-L3 (y~67) = i; on L3 (y=80) = h; space L3-L2 (y~92) = g; on L2 (y=105) = f; space L2-L1 (y~116) = e; on L1 (y=127) = d\n\nWorking through the notes syllable by syllable:\n\n\"*\" = asterisk marker\n\"Al-\" notes: podatus at ~y=105,80 → fh; then \"le-\" ~y=80 → h; \"lú-\" ~y=80,105 → hf (clivis); \"ia.\" ~y=105,80 → fh (podatus)\n\n℣. reciting tone section - mostly on h (L3, y=80):\n\"Gló-\" h; \"ri-\" h; \"a\" h; \"Pa-\" h; \"tri,\" h; \"et\" h; \"Fí-\" h; \"li-\" h; \"o,\" hg; \"et\" h; \"Spi-\" h; \"rí-\" hg then notes going up to i,j area\n\nSystem 3: *(,) Al(fh)le(h)lú(hf)ia.(fh) (;) ℣. Gló(h)ri(h)a(h) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(hg) et(h) Spi(h)rí(ij)\n\n**System 4** (staff lines: y=55 [L4], y=80 [L3], y=105 [L2], y=126 [L1])\n\nText: \"tu- i Sancto. Surré-xit.\"\n\nThis continues \"Spirí-tu-i Sancto. Surréxit.\"\n\n\"tu-\" ~y=80 → h; \"i\" ~y=80 → h; \"San-\" ~y=80,105 → hf (clivis); \"cto.\" ~y=105,80 → fh; \"Sur-\" ~y=80,105 → hf; \"ré-\" ~y=105 → f; \"xit.\" ~y=105,80 → fh\n\nSystem 4: tu(h)i(h) San(hf)cto.(fh) (;) Sur(hf)ré(f)xit.(fh) (::)\n\n===GABC===\nSystem 3: *(,) Al(fh)le(h)lú(hf)ia.(fh) (;) ℣. Gló(h)ri(h)a(h) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(hg) et(h) Spi(h)rí(ij)\nSystem 4: tu(h)i(h) San(hf)cto.(fh) (;) Sur(hf)ré(f)xit.(fh) (::)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 8,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 5582,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 5108,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 268,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01934,
+      "images": 2,
+      "text": "System 3: Al(gh)le(g)(;)lú(g)ia.(f.) (;) ℣.(g) Gló(g)ri(g)a(g) Pa(g)tri,(g) et(g) Fí(g)li(g)o,(g) et(g) Spi(g)rí(gh)\n\nSystem 4: tu(g)i(f) San(g)cto.(g) (;) Sur(gh)ré(g)xit.(f) (::)\n\n===GABC===\nSystem 3: Al(gh)le(g)(;)lú(g)ia.(f.) (;) ℣.(g) Gló(g)ri(g)a(g) Pa(g)tri,(g) et(g) Fí(g)li(g)o,(g) et(g) Spi(g)rí(gh)\nSystem 4: tu(g)i(f) San(g)cto.(g) (;) Sur(gh)ré(g)xit.(f) (::)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 9,
+      "kind": "clef",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 852,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1175,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 12,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0037,
+      "images": 4,
+      "text": "CLEF: Fa LINE 3"
+    },
+    {
+      "n": 10,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 5244,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4734,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 301,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01872,
+      "images": 2,
+      "text": "System 1: A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(hg)vi(h)di,(g) (;) Et(h) sto(ih)lis(h) al(gh)bis(h) cán(hg)di(h)\n\nSystem 2: (continued from system 1 — system 2 appears to continue the same piece)\n\nLet me re-examine and provide clean output:\n\nSystem 1: A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(hg)vi(h)di,(g) (;) Et(h) sto(ih)lis(h) al(gh)bis(h) cán(hg)di(h)\n\nSystem 2: di(h)\n\n===GABC===\nSystem 1: A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(hg)vi(h)di,(g) (;) Et(h) sto(ih)lis(h) al(gh)bis(h) cán(hg)di(h)\nSystem 2: di(h)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 11,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 6381,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4734,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 346,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01939,
+      "images": 2,
+      "text": "System 1: A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(h)vi(gh)di,(g) (;) Et(h) sto(hg)lis(h) al(h)bis(gh) cán(h)di(gh)-(g)\nSystem 2: -(g)dis(h) (;) post(gh) tran(h)si(h)tum(h) Ma(hi)ris(h) (;) Chri(h)sto(h) ca(h)na(h)mus(gh) Pín(h)ci(gh)pi(h) (::)\n\n===GABC===\nSystem 1: A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(h)vi(gh)di,(g) (;) Et(h) sto(hg)lis(h) al(h)bis(gh) cán(h)di(gh)-(g)\nSystem 2: -(g)dis(h) (;) post(gh) tran(h)si(h)tum(h) Ma(hi)ris(h) (;) Chri(h)sto(h) ca(h)na(h)mus(gh) Pín(h)ci(gh)pi(h) (::)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 12,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 14553,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4734,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 799,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.02619,
+      "images": 2,
+      "text": "System 1: A(hi)d(h) coe(hi)nam(h) Ag(hg)ni(h) pró(ih)vi(h)di,(g) (;) Et(h) sto(hg)lis(h) al(ih)bis(h) cán(hg)di(h)\nSystem 2: (hi)\n\nWait, I need to re-examine carefully.\n\nLooking at system 1: The drop cap \"A\" is missing, so the first visible syllable starts with \"d\" of \"Ad\". The known incipit is \"Ad coenam Agni próvidi, Et stolis albis cándi-\"\n\nLet me re-read the pixel positions: LINE 4 (top) = y=55, LINE 3 = y=80, LINE 2 = y=105, LINE 1 (bottom) = y=124.\nSpace above LINE 4 = k, LINE 4 = j, space j-i = i (between lines 3-4), LINE 3 = h, space h-g = g (between lines 2-3), LINE 2 = f, space f-e = e (between lines 1-2), LINE 1 = d, below = c.\n\nSystem 1: A(hi)d(h) coe(hi)nam(h) Ag(hg)ni(h) pró(ih)vi(h)di,(g) (;) Et(h) sto(hg)lis(h) al(ih)bis(h) cán(hg)di(h)\n\nSystem 2 appears to continue with \"-dis\" or similar, but looking at system 2 image, it shows \"D coenam Agni pró-vi-di, Et sto-lis albis cándi-\" as text below — this is the text label for the piece, not a new system of the same piece. The notes at the bottom of system 2 image appear to be the continuation.\n\nSystem 1: A(hi)d(h) coe(hi)nam(h) Ag(hg)ni(h) pró(ih)vi(h)di,(g) (;) Et(h) sto(hg)lis(h) al(ih)bis(h) cán(hg)di(h)\nSystem 2: dis(hg) can(h)dó(ih)re(h) ful(hg)gen(h)tes,(g) (;) Post(h) tran(hg)si(h)tum(h) Ma(ih)ris(h) Ru(hg)bri,(h)\n\n===GABC===\nSystem 1: A(hi)d(h) coe(hi)nam(h) Ag(hg)ni(h) pró(ih)vi(h)di,(g) (;) Et(h) sto(hg)lis(h) al(ih)bis(h) cán(hg)di(h)\nSystem 2: dis(hg) can(h)dó(ih)re(h) ful(hg)gen(h)tes,(g) (;) Post(h) tran(hg)si(h)tum(h) Ma(ih)ris(h) Ru(hg)bri,(h)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 13,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 4112,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4274,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 190,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01567,
+      "images": 1,
+      "text": "System 3: di,(f) Post(h)trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(hi)mus(h) Prín(h)ci(h)-pi.(h.) (::)\n\n===GABC===\nSystem 3: di,(f) Post(h)trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(hi)mus(h) Prín(h)ci(h)-pi.(h.) (::)",
+      "batch": [
+        3,
+        3
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 14,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 4187,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4274,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 190,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01567,
+      "images": 1,
+      "text": "System 3: di,(f) Post(h)trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(hi)mus(h) Prín(h)ci(h)-pi.(h) (::)\n\n===GABC===\nSystem 3: di,(f) Post(h)trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(hi)mus(h) Prín(h)ci(h)-pi.(h) (::)",
+      "batch": [
+        3,
+        3
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 15,
+      "kind": "gabc",
+      "model": "claude-sonnet-4-6",
+      "status": 200,
+      "ms": 4022,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 4274,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 192,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0157,
+      "images": 1,
+      "text": "System 3: di,(f) Post(h) trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(ij)mus(i) Prín(h)ci(h)-pi.(h) (::)\n\n===GABC===\nSystem 3: di,(f) Post(h) trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(ij)mus(i) Prín(h)ci(h)-pi.(h) (::)",
+      "batch": [
+        3,
+        3
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    }
+  ],
+  "console": [
+    "Seite 1: 12 einzeilige(s) Rezitationston-System(e) erkannt (nicht transkribiert): [81,93.5,290.5,460.5,495.5,1838,2037,2115,2197,2231.5,2267.5,2311]",
+    "GregoBase-Abgleich für Stück 1 (\"Surréxit Dóminus vere, Allelúia\") gestartet…",
+    "GregoBase: keine Treffer für \"Surréxit Dóminus vere, Allelúia\".",
+    "Clef pixel measurement: {\"ratio\":0.12087912087912088,\"widthPx\":11,\"heightPx\":91,\"blobCount\":5,\"staffStartX\":634} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: CLEF: Fa LINE 3",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.121\",\"pixelSaysDo\":true,\"modelSaysDo\":false}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"Sur(hi)ré(hg)xit(fg) Dó(f)mi(f)nus(ef) ve(f)re, (;) *(,) Al(ghi)le(ig)lú(hi)ia,(h) al(ji)\"",
+    "System 2: 3 Durchläufe verglichen, Konsens gewählt: \"le(ih)lú(hg)ia.(f.) (::) Sur(f)ré(f)xit.(f.) (;) ℣.(,) Et(f) ap(f)pá(f)ru(f)it(f) Si(f)mó(fe)ni.(fd)\"",
+    "System 3: 3 Durchläufe verglichen, Konsens gewählt: \"*(;) Al(hg)le(g)lú(g)ia.(gh.) (;) ℣. Gló(h)ri(h)a(h) Pa(h)tri,(h) et(h) Fí(h)li(g)o,(gh) et(h) Spi(h)rí(ij)\"",
+    "System 4: 3 Durchläufe verglichen, Konsens gewählt: \"tu(gh)i(h) San(hg)cto.(g.) Sur(h)ré(hi)xit.(h.) (::)\"",
+    "OMR-Korrektur für System 1 angewendet: 12/13 Silben-Tonhöhen neu berechnet, davon 11 tatsächlich anders als Vision (Schwelle 0.7, Sicherheitsstufe 1).",
+    "OMR-Korrektur für System 2 angewendet: 14/15 Silben-Tonhöhen neu berechnet, davon 9 tatsächlich anders als Vision (Schwelle 0.7, Sicherheitsstufe 2).",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x194, Template 13x16 (aus 7 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=17, erwartete Gesamt-Notenzahl=20.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":9,\"totalRaw\":12,\"totalExpected\":20,\"anchorRange\":[710.5,1142.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":8,\"totalRaw\":11,\"totalExpected\":20,\"anchorRange\":[833.5,1142.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":20,\"anchorRange\":[833.5,833.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":2",
+    "OMR-Korrektur für System 3 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (20)",
+    "OMR-Korrektur für System 4 angewendet: 7/7 Silben-Tonhöhen neu berechnet, davon 6 tatsächlich anders als Vision (Schwelle 0.7, Sicherheitsstufe 0).",
+    "GregoBase-Abgleich für Stück 2 (\"Ad coenam Agni próvidi, Et stolis\") gestartet…",
+    "GregoBase: keine Treffer für \"Ad coenam Agni próvidi, Et stolis\".",
+    "Clef pixel measurement: {\"ratio\":0.18461538461538463,\"widthPx\":12,\"heightPx\":65,\"blobCount\":14,\"staffStartX\":636} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: CLEF: Fa LINE 3",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.185\",\"pixelSaysDo\":true,\"modelSaysDo\":false}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"A(hi)d(h) coe(hi)nam(h) Ag(gh)ni(h) pró(hg)vi(h)di,(g) (;) Et(h) sto(ih)lis(h) al(gh)bis(h) cán(hg)di(h)\"",
+    "System 2: 3 Durchläufe verglichen, Konsens gewählt: \"-(g)dis(h) (;) post(gh) tran(h)si(h)tum(h) Ma(hi)ris(h) (;) Chri(h)sto(h) ca(h)na(h)mus(gh) Pín(h)ci(gh)pi(h) (::)\"",
+    "System 3: 3 Durchläufe verglichen, Konsens gewählt: \"di,(f) Post(h)trán(h)si(h)-tum(h) ma(h)-ris(h) Ru(h)bri,(h) (;) Chri(h)sto(h) ca(h)-ná(hi)mus(h) Prín(h)ci(h)-pi.(h.) (::)\"",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x125, Template 13x15 (aus 8 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=16, erwartete Gesamt-Notenzahl=23.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":15,\"totalRaw\":21,\"totalExpected\":23,\"anchorRange\":[641.5,1315.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":13,\"totalRaw\":18,\"totalExpected\":23,\"anchorRange\":[641.5,1217.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":9,\"totalRaw\":12,\"totalExpected\":23,\"anchorRange\":[641.5,1007.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpecte",
+    "OMR-Korrektur für System 1 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (23)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x118, Template 14x13 (aus 3 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=16, erwartete Gesamt-Notenzahl=20.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":4,\"totalRaw\":7,\"totalExpected\":20,\"anchorRange\":[883,1097],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":4,\"totalRaw\":7,\"totalExpected\":20,\"anchorRange\":[883,1097],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":4,\"totalRaw\":7,\"totalExpected\":20,\"anchorRange\":[883,1097],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":2,\"totalExpected\":20,\"anchorRang",
+    "OMR-Korrektur für System 2 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (20)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x153, Template 13x14 (aus 5 Kandidaten), Notenlinien-Abstand=25.0, Silben-Tokens=17, erwartete Gesamt-Notenzahl=18.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":1,\"totalRaw\":2,\"totalExpected\":18,\"anchorRange\":[621.5,621.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":1,\"totalRaw\":2,\"totalExpected\":18,\"anchorRange\":[621.5,621.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":2,\"totalExpected\":18,\"anchorRange\":[621.5,621.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":2,\"totalExpected\":18,\"a",
+    "OMR-Korrektur für System 3 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (18)"
+  ]
+}

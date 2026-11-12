@@ -1,0 +1,421 @@
+{
+  "base": {
+    "model": "claude-sonnet-5-5",
+    "effort": "medium",
+    "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+    "case": "salve-mater"
+  },
+  "status": "GABC importiert: 78 Einträge ⚠️ Möglicherweise wurde ein Teil doppelt erkannt — bitte mit der Quelle vergleichen! — bitte mit dem Original vergleichen und korrigieren",
+  "stopped": null,
+  "stepA": [
+    {
+      "index": 1,
+      "mode": "5",
+      "incipit": "Salve mater misericordiae",
+      "pages": [
+        1
+      ],
+      "systems": 6,
+      "hasDropCap": true
+    }
+  ],
+  "pieces": [
+    {
+      "clef": "c4",
+      "clefParsed": true,
+      "omr": {
+        "before": [
+          "Sal(hf)ve,(f) ma(h)ter(h) mi(h)se(i)ri(h)cór(g)di(f)æ,(g) (,) Ma(e)ter(e) De(g)i,(h) et(g) ma(f)ter(e)",
+          "gra(d)ti(h)æ(d) (;) Ma(d)ter(d) mi(d)se(e)ri(g)cór(e)di(f)æ,(g.) (;) Ma(h)ter(h)",
+          "vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)",
+          "ple(j)na(i) sanc(ih.)tæ(i) læ(h)tí(g)ti(h)æ,(g) (:) O Ma(f)rí(g)a!(ff) (:) ij. Sal(l)ve(l) ma(j)ter..(j)",
+          "(c) Sal(d)ve,(e) de(e)cus(ed) hu(g)má(f)ni(e) gé(d)ne(d)ris,(d) (:) Sal(d)ve,(e) Vir(f)"
+        ],
+        "after": [
+          "Sal(jh)ve,(h) ma(j)ter(j) mi(j)se(i)ri(i)cór(h)di(i)æ,(h) (,) Ma(g)ter(g) De(i)i,(i) et(h) ma(g)ter(g)",
+          "gra(d)ti(h)æ(d) (;) Ma(d)ter(d) mi(d)se(e)ri(g)cór(e)di(f)æ,(g.) (;) Ma(h)ter(h)",
+          "vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)",
+          "ple(j)na(i) sanc(ih.)tæ(i) læ(h)tí(g)ti(h)æ,(g) (:) O Ma(f)rí(g)a!(ff) (:) ij. Sal(l)ve(l) ma(j)ter..(j)",
+          "(c) Sal(d)ve,(e) de(e)cus(ed) hu(g)má(f)ni(e) gé(d)ne(d)ris,(d) (:) Sal(d)ve,(e) Vir(f)"
+        ],
+        "nItems": 5
+      }
+    }
+  ],
+  "calls": [
+    {
+      "n": 1,
+      "kind": "pieces",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1250,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6465,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 55,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01348,
+      "images": 1,
+      "text": "[{\"index\":1,\"mode\":\"5\",\"incipit\":\"Salve mater misericordiae\",\"pages\":[1],\"systems\":6,\"hasDropCap\":true}]"
+    },
+    {
+      "n": 2,
+      "kind": "clef",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1562,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 1980,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 14,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.0041,
+      "images": 4,
+      "text": "CLEF: Do LINE 4"
+    },
+    {
+      "n": 3,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2741,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6625,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 383,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01708,
+      "images": 2,
+      "text": "System 1: Sal(hf)ve,(f) ma(h)ter(h) mi(h)se(i)ri(h)cór(g)di(f)æ,(g) (,) Ma(e)ter(e) De(g)i,(h) et(g) ma(f)ter(e)\nSystem 2: al(e)ve,(e) ma(e)ter(f) mi(g)se(f)ri(g)có(h)r(i)di(i)æ,(i) (:) Ma(e)ter(f) De(i)i,(i) et(i) ma(i)ter(i)\n\n===GABC===\nSystem 1: Sal(hf)ve,(f) ma(h)ter(h) mi(h)se(i)ri(h)cór(g)di(f)æ,(g) (,) Ma(e)ter(e) De(g)i,(h) et(g) ma(f)ter(e)\nSystem 2: al(e)ve,(e) ma(e)ter(f) mi(g)se(f)ri(g)có(h)r(i)di(i)æ,(i) (:) Ma(e)ter(f) De(i)i,(i) et(i) ma(i)ter(i)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 4,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2608,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6625,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 347,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01672,
+      "images": 2,
+      "text": "System 1: Sal(hf)ve,(f) ma(j)ter(j) mi(j)se(j)ri(i)có(h)r(g)di(f)æ,(g.) (:) Ma(e)ter(f) De(h)i,(h) et(h) ma(g)ter(f)\n\nSystem 2: al(f)ve,(f) ma(f)ter(e) mi(e)se(e)ri(g)có(g)r(h)di(i)æ,(i.) (:) Ma(i)ter(i)\n\n===GABC===\nSystem 1: Sal(hf)ve,(f) ma(j)ter(j) mi(j)se(j)ri(i)có(h)r(g)di(f)æ,(g.) (:) Ma(e)ter(f) De(h)i,(h) et(h) ma(g)ter(f)\nSystem 2: al(f)ve,(f) ma(f)ter(e) mi(e)se(e)ri(g)có(g)r(h)di(i)æ,(i.) (:) Ma(i)ter(i)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 5,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2559,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6625,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 351,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01676,
+      "images": 2,
+      "text": "System 1: Sal(hf)ve,(f) ma(j)ter(j) mi(j)se(i)ri(h)cór(g)di(e)æ,(f) (;) Ma(d)ter(e) De(g)i,(h) et(h) ma(g)ter(f)\n\nSystem 2: gra(d)ti(h)æ(d) (;) Ma(d)ter(d) mi(d)se(e)ri(g)cór(e)di(f)æ,(g.) (;) Ma(h)ter(h)\n\n===GABC===\nSystem 1: Sal(hf)ve,(f) ma(j)ter(j) mi(j)se(i)ri(h)cór(g)di(e)æ,(f) (;) Ma(d)ter(e) De(g)i,(h) et(h) ma(g)ter(f)\nSystem 2: gra(d)ti(h)æ(d) (;) Ma(d)ter(d) mi(d)se(e)ri(g)cór(e)di(f)æ,(g.) (;) Ma(h)ter(h)",
+      "batch": [
+        1,
+        2
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 6,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 3075,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6198,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 335,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01575,
+      "images": 2,
+      "text": "System 3: vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)\nSystem 4: ple(i)na(h) sanctæ(hgh) læ(g)tí(g)ti(h)æ,(gg.) (::) O Ma(f)rí(g)a!(f) ij. Sal(i)ve ma(i)ter..(i)\n\n===GABC===\nSystem 3: vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)\nSystem 4: ple(i)na(h) sanctæ(hgh) læ(g)tí(g)ti(h)æ,(gg.) (::) O Ma(f)rí(g)a!(f) ij. Sal(i)ve ma(i)ter..(i)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 7,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2874,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6198,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 375,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01615,
+      "images": 2,
+      "text": "System 3: vé(k)ni(k)æ.(k.) Ma(k)ter(k) spe(k)i,(k) et(k) ma(k)ter(k) grá(k)ti(k)æ,(k) Ma(k)ter(k)\n\nSystem 4: ple(i)na(h) sanctæ(hgh) læ(g)tí(g)ti(h)æ,(g) (::) O(f) Ma(f)rí(e)a!(ee) ij.(c) (::) Sal(i)ve(i) ma(k)ter..(k)\n\n===GABC===\nSystem 3: vé(k)ni(k)æ.(k.) Ma(k)ter(k) spe(k)i,(k) et(k) ma(k)ter(k) grá(k)ti(k)æ,(k) Ma(k)ter(k)\nSystem 4: ple(i)na(h) sanctæ(hgh) læ(g)tí(g)ti(h)æ,(g) (::) O(f) Ma(f)rí(e)a!(ee) ij.(c) (::) Sal(i)ve(i) ma(k)ter..(k)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 8,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2983,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6198,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 353,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01593,
+      "images": 2,
+      "text": "System 3: vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)\nSystem 4: ple(j)na(i) sanc(ih.)tæ(i) læ(h)tí(g)ti(h)æ,(g) (:) O Ma(f)rí(g)a!(ff) (:) ij. Sal(l)ve(l) ma(j)ter..(j)\n\n===GABC===\nSystem 3: vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)\nSystem 4: ple(j)na(i) sanc(ih.)tæ(i) læ(h)tí(g)ti(h)æ,(g) (:) O Ma(f)rí(g)a!(ff) (:) ij. Sal(l)ve(l) ma(j)ter..(j)",
+      "batch": [
+        3,
+        4
+      ],
+      "hadMarker": true,
+      "nLines": 2
+    },
+    {
+      "n": 9,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2160,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6594,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 182,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01501,
+      "images": 2,
+      "text": "System 5: (j) Sal(d)ve,(f) de(e)cus(fd) hu(ge)má(g)ni(f) gé(e)ne(e)ris,(d) (:) Sal(c)ve,(g) Vir(h)\n\nSystem 6: \n\n===GABC===\nSystem 5: (j) Sal(d)ve,(f) de(e)cus(fd) hu(ge)má(g)ni(f) gé(e)ne(e)ris,(d) (:) Sal(c)ve,(g) Vir(h)\nSystem 6:",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 10,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 1965,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6594,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 175,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01494,
+      "images": 2,
+      "text": "System 5: (c) Sal(d)ve,(e) de(e)cus(ed) hu(g)má(f)ni(e) gé(d)ne(d)ris,(d) (,) Sal(d)ve,(e) Vir(f)\nSystem 6: \n\n===GABC===\nSystem 5: (c) Sal(d)ve,(e) de(e)cus(ed) hu(g)má(f)ni(e) gé(d)ne(d)ris,(d) (:) Sal(d)ve,(e) Vir(f)",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    },
+    {
+      "n": 11,
+      "kind": "gabc",
+      "model": "claude-sonnet-5-5",
+      "status": 200,
+      "ms": 2078,
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 6594,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 175,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard"
+      },
+      "usd": 0.01494,
+      "images": 2,
+      "text": "System 5: (j) Sal(d)ve,(f) de(e)cus(ed) hu(g)má(h)ni(g) gé(f)ne(e)ris,(d) (:) Sal(e)ve,(h) Vir(i)\nSystem 6: \n\n===GABC===\nSystem 5: (j) Sal(d)ve,(f) de(e)cus(ed) hu(g)má(h)ni(g) gé(f)ne(e)ris,(d) (:) Sal(e)ve,(h) Vir(i)",
+      "batch": [
+        5,
+        6
+      ],
+      "hadMarker": true,
+      "nLines": 1
+    }
+  ],
+  "console": [
+    "Seite 1: 9 einzeilige(s) Rezitationston-System(e) erkannt (nicht transkribiert): [357,547.5,732.5,767.5,979,1290.5,1583,1804,2281.5]",
+    "GregoBase-Abgleich für Stück 1 (\"Salve mater misericordiae\") gestartet…",
+    "GregoBase: keine Treffer für \"Salve mater misericordiae\".",
+    "Clef pixel measurement: {\"ratio\":0.4,\"widthPx\":48,\"heightPx\":120,\"blobCount\":8,\"staffStartX\":342} — reference ratios: Do≈0.302, Fa≈0.581",
+    "Clef reference images rendered: {\"doRefB64\":true,\"faRefB64\":true,\"clefCloseupB64\":true}",
+    "Clef detection raw response: CLEF: Do LINE 4",
+    "Clef pixel vs model (diagnostic only, no longer overrides): {\"pixelRatio\":\"0.400\",\"pixelSaysDo\":true,\"modelSaysDo\":true}",
+    "System 1: 3 Durchläufe verglichen, Konsens gewählt: \"Sal(hf)ve,(f) ma(h)ter(h) mi(h)se(i)ri(h)cór(g)di(f)æ,(g) (,) Ma(e)ter(e) De(g)i,(h) et(g) ma(f)ter(e)\"",
+    "System 2: 3 Durchläufe verglichen, Konsens gewählt: \"gra(d)ti(h)æ(d) (;) Ma(d)ter(d) mi(d)se(e)ri(g)cór(e)di(f)æ,(g.) (;) Ma(h)ter(h)\"",
+    "System 3: 3 Durchläufe verglichen, Konsens gewählt: \"vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)\"",
+    "System 4: 3 Durchläufe verglichen, Konsens gewählt: \"ple(j)na(i) sanc(ih.)tæ(i) læ(h)tí(g)ti(h)æ,(g) (:) O Ma(f)rí(g)a!(ff) (:) ij. Sal(l)ve(l) ma(j)ter..(j)\"",
+    "System 5: 3 Durchläufe verglichen, Konsens gewählt: \"(c) Sal(d)ve,(e) de(e)cus(ed) hu(g)má(f)ni(e) gé(d)ne(d)ris,(d) (:) Sal(d)ve,(e) Vir(f)\"",
+    "OMR-Korrektur für System 1 angewendet: 17/17 Silben-Tonhöhen neu berechnet, davon 16 tatsächlich anders als Vision (Schwelle 0.7, Sicherheitsstufe 2).",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x228, Template 18x22 (aus 5 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=13, erwartete Gesamt-Notenzahl=13.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":15,\"totalRaw\":16,\"totalExpected\":13,\"anchorRange\":[346,1519],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":15,\"totalRaw\":16,\"totalExpected\":13,\"anchorRange\":[346,1519],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":11,\"totalRaw\":12,\"totalExpected\":13,\"anchorRange\":[346,1169],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":13,\"anch",
+    "OMR-Korrektur für System 2 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (13)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x113, Template 19x20 (aus 1 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=12, erwartete Gesamt-Notenzahl=12.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":12,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":12,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":12,\"anchorRange\":[348.5,348.5],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":12,\"a",
+    "OMR-Korrektur für System 3 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (12)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x198, Template 18x22 (aus 4 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=15, erwartete Gesamt-Notenzahl=17.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":8,\"totalRaw\":9,\"totalExpected\":17,\"anchorRange\":[639,1246],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":8,\"totalRaw\":9,\"totalExpected\":17,\"anchorRange\":[639,1246],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":6,\"totalRaw\":7,\"totalExpected\":17,\"anchorRange\":[835,1246],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":17,\"anchorRang",
+    "OMR-Korrektur für System 4 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (17)",
+    "OMR-Diagnose (System nicht korrigiert): Bild 1833x211, Template 20x22 (aus 4 Kandidaten), Notenlinien-Abstand=47.0, Silben-Tokens=13, erwartete Gesamt-Notenzahl=14.\nJe Schwelle: [{\"anchorThreshold\":0.7,\"nClusters\":10,\"totalRaw\":11,\"totalExpected\":14,\"anchorRange\":[519,1401],\"confidence\":null},{\"anchorThreshold\":0.75,\"nClusters\":5,\"totalRaw\":6,\"totalExpected\":14,\"anchorRange\":[600,985],\"confidence\":null},{\"anchorThreshold\":0.8,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":14,\"anchorRange\":[985,985],\"confidence\":null},{\"anchorThreshold\":0.85,\"nClusters\":1,\"totalRaw\":1,\"totalExpected\":14,\"anchorRang",
+    "OMR-Korrektur für System 5 übersprungen: Keine Anker-Schwelle ergab die erwartete Gesamt-Notenzahl (14)"
+  ]
+}

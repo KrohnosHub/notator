@@ -1,0 +1,26 @@
+{
+  "model": "claude-sonnet-4-6",
+  "effort": null,
+  "pipeline": "index.html unverändert",
+  "case": "salve-mater",
+  "stage": "Einzeldurchlauf 3",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae, Mater Dei",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 8,
+      "clef": "c4",
+      "systems": [
+        "Sal(hi)ve,(hg) (;) ma(gh)ter(h) (,) mi(h)se(h)ri(h)cór(ih)di(h)æ,(g.) (;) Ma(h)ter(h) (,) De(hi)i,(h) (,) et(h) ma(gh)ter(h)",
+        "(;) ma(f)ter(f) (,) mi(fg)se(g)ri(g)cór(g)di(g)æ,(g.) (;) Ma(g)ter(g) (,) De(gh)i,(g) (,) et(g) ma(fg)ter(g)",
+        "vé(j)ni(j)æ.(j) Ma(j)ter(h) spe(i)i,(h) et(h) ma(h)ter(h) grá(i)ti(h)æ,(h) Ma(h)ter(h)",
+        "ple(k)na(i) sanc(h.)tæ(ih) læ(h)tí(hg)ti(g)æ,(f.) (;) O(g) Ma(hg)rí(h)a!(i) (::) Sal(kj)ve(j) ma(i)ter..(i)",
+        "Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)",
+        "1. Sal(f)ve,(e) de(f)cus(e) hu(f)má(f)ni(e) gé(f)ne(e)ris,(d) (;) Sal(f)ve,(e) Vir(f)",
+        "E(h)sto,(h) Ma(h)ter,(g) no(h)strum(h) so(h)la(g)ti(h)um;(h) (;) No(j)strum(i) e(h)",
+        ""
+      ]
+    }
+  ]
+}

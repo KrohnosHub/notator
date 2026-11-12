@@ -1,0 +1,24 @@
+{
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "pipeline": "index.html unverändert, Aufrufe umgeschrieben (Modell, ohne temperature, max_tokens 16000, effort medium)",
+  "case": "salve-mater",
+  "stage": "Einzeldurchlauf 3",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae",
+      "mode": "5",
+      "hasDropCap": true,
+      "systemsDetected": 6,
+      "clef": "c4",
+      "systems": [
+        "Sal(hf)ve,(f) ma(j)ter(j) mi(j)se(i)ri(h)cór(g)di(e)æ,(f) (;) Ma(d)ter(e) De(g)i,(h) et(h) ma(g)ter(f)",
+        "gra(d)ti(h)æ(d) (;) Ma(d)ter(d) mi(d)se(e)ri(g)cór(e)di(f)æ,(g.) (;) Ma(h)ter(h)",
+        "vé(k)ni(k)æ.(k.) Ma(k)ter spe(k)i,(k) et ma(k)ter grá(k)ti(k)æ,(k) Ma(k)ter(k)",
+        "ple(j)na(i) sanc(ih.)tæ(i) læ(h)tí(g)ti(h)æ,(g) (:) O Ma(f)rí(g)a!(ff) (:) ij. Sal(l)ve(l) ma(j)ter..(j)",
+        "(j) Sal(d)ve,(f) de(e)cus(ed) hu(g)má(h)ni(g) gé(f)ne(e)ris,(d) (:) Sal(e)ve,(h) Vir(i)",
+        ""
+      ]
+    }
+  ]
+}

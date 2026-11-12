@@ -1,0 +1,36 @@
+{
+  "id": "ave-maria-1",
+  "scan": "scan.pdf",
+  "source": {
+    "book": "«Ave Maria 1 (SR 483)», Scan aus dem Drive des Nutzers",
+    "reference": "Ave Maria gratia plena.notator (GregoBase 1860)",
+    "rights": "ungeklärt – Scan nicht im Repo"
+  },
+  "tags": [
+    "do-schluessel",
+    "initiale",
+    "b-vorzeichen",
+    "schwacher-druck",
+    "1-seite"
+  ],
+  "checkedBy": "",
+  "checkedOn": "",
+  "notes": "Soll aus der Notator-Datei des Nutzers (GregoBase-Fassung) abgeleitet, von Claude anhand des Scans auf die gedruckten Systeme verteilt und stichprobenweise geprüft. Noch nicht Note für Note vom Nutzer bestätigt. Silbentrennung in ungetrennten Wörtern (benedícta, frúctus) ist im Druck nicht sichtbar.",
+  "pieces": [
+    {
+      "incipit": "Ave Maria, gratia plena",
+      "mode": "1",
+      "clef": "c4",
+      "hasDropCap": true,
+      "pages": [
+        1
+      ],
+      "systems": [
+        "A(f)ve(c) Ma(d)rí(dhixi)a,(h.) (,) grá(h)ti(g)a(f) plé(gh)na,(h.) (,) Dó(h)mi(g)nus(f) té(g)cum,(d.) (;)",
+        "be(g)ne(g)díc(h)ta(g) tu(f.) (,) in(ef) mu(g)li(fe)é(d)ri(cd)bus,(d.) (;) et(e) be(c)ne(d)díc(f)tus(f) frúc(e)tus(f) vén(g)",
+        "tris(e) tú(g)i,(fe) Jé(cd)sus.(df.) (::) Sánc(h)ta(g) Ma(h)rí(ji)a,(g.) Má(g)ter(f) Dé(gh)i,(h.) (;) ó(h)ra(g) pro(f)",
+        "nó(gf)bis(d) pec(f)ca(fe)tó(de)ri(d)bus,(c.) (;) nunc(d) et(c) in(df) hó(ffg)ra(f) mór(e)tis(f) nós(gh)trae.(fe) A(d.)men.(d.) (::)"
+      ]
+    }
+  ]
+}
