@@ -34,15 +34,28 @@ jobs:
         run: |
           npm install --no-save playwright@1
           npx playwright install --with-deps chromium
-      # Referenzbilder wurden in einer anderen Umgebung erzeugt; Schriften/Kantenglättung können abweichen.
-      # Deshalb vorerst nur als Hinweis (nicht blockierend); Bericht unter «Artifacts».
-      - name: Bildvergleich (Hinweis, nicht blockierend)
+      # Bildvergleich gegen den Ziel-Branch, auf derselben Maschine gerendert (gleiche Schriften/Kantenglättung):
+      # meldet nur Änderungen am Notenbild, die dieser PR verursacht. Gewollte Änderungen sind erlaubt,
+      # deshalb nur als Hinweis (nicht blockierend); Bericht unter «Artifacts» und in der Zusammenfassung.
+      - name: Bildvergleich gegen den Ziel-Branch (Hinweis, nicht blockierend)
         id: visual
+        if: github.event_name == 'pull_request'
         continue-on-error: true
-        run: node tests/visual/run.js
+        run: |
+          set -o pipefail
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          git worktree add "$RUNNER_TEMP/ziel" FETCH_HEAD
+          VISUAL_ROOT="$RUNNER_TEMP/ziel" VISUAL_BASELINE="$RUNNER_TEMP/referenz" node tests/visual/run.js --update
+          VISUAL_BASELINE="$RUNNER_TEMP/referenz" node tests/visual/run.js | tee "$RUNNER_TEMP/visual.txt"
+      - name: Bildvergleich-Zusammenfassung
+        if: always() && steps.visual.outcome != 'skipped'
+        run: |
+          { echo '### Bildvergleich gegen den Ziel-Branch'; echo '```'; cat "$RUNNER_TEMP/visual.txt" 2>/dev/null || echo '(kein Ergebnis)'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Bildvergleich-Bericht hochladen
         if: steps.visual.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: bildvergleich
-          path: tests/visual/diff/
+          path: |
+            tests/visual/diff/
+            ${{ runner.temp }}/referenz/

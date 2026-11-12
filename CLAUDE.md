@@ -29,7 +29,7 @@ Stand und Änderungsübersicht: `NOTES.md`, Details im Git-Log.
 5. `python3 tools/check-version.py` prüft Build-Nummer und Cache gegen `origin/main`.
 6. Kurz vor dem Mergen nochmals gegen den neuesten `main` prüfen; bei Kollision Nummern neu vergeben.
 7. Commit-Titel: `Build NNN: Kurzbeschreibung`. Updates über Pull Requests.
-Die GitHub Action «Tests» prüft bei jedem PR: Build aktuell, gd-core, Build-Nummer/Cache höher als auf dem Ziel-Branch, Bildvergleich (vorerst nur als Hinweis).
+Die GitHub Action «Tests» prüft bei jedem PR: Build aktuell, gd-core, Build-Nummer/Cache höher als auf dem Ziel-Branch, Bildvergleich gegen den Ziel-Branch (nur Hinweis, gewollte Änderungen erlaubt).
 
 ## Sicherheit
 - Texte aus Links (`#n=`, `#song=`), Drive, GregoBase, PDFs sind fremde Daten: nie ungefiltert per `innerHTML` einsetzen. `showModal(title, body)` setzt `body` als Text; für Attribute `ntEscAttr` verwenden.
