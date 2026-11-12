@@ -1,0 +1,26 @@
+{
+  "id": "ordnername-des-falls",
+  "scan": "scan.pdf",
+  "source": {
+    "book": "z. B. Liber Usualis 1961",
+    "page": "S. 000",
+    "rights": "gemeinfrei / eigene Aufnahme / …",
+    "gregobaseId": null
+  },
+  "tags": ["do-schluessel", "initiale"],
+  "checkedBy": "",
+  "checkedOn": "",
+  "notes": "Besonderheiten: Schlüsselwechsel, schwacher Druck, Übersetzungsspalte …",
+  "pieces": [
+    {
+      "incipit": "Erste Worte des Stücks",
+      "mode": "",
+      "clef": "c4",
+      "hasDropCap": true,
+      "pages": [1],
+      "systems": [
+        "Eine(f) GABC(gh)zei(h)le(g.) (,) je(f) No(e)ten(d)sys(f)tem(f.) (::)"
+      ]
+    }
+  ]
+}
