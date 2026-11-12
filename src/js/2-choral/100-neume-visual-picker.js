@@ -317,7 +317,7 @@ function gregSetAccidental(acc) {
   // GABC native: 'x'=flat(b♭), '#'=sharp(♯), 'y'=natural(♮)
   const labels = {'x':'b\u266D','#':'\u266F','y':'\u266E'};
   ['x','#','y'].forEach(a => {
-    document.querySelectorAll(`button[onclick="gregSetAccidental('${a}')"]`).forEach(btn => { btn.style.background = (_gregAccidental===a) ? '#5a3a20' : ''; btn.style.color = (_gregAccidental===a) ? '#fff' : ''; });
+    document.querySelectorAll(`button[data-onclick="gregSetAccidental('${a}')"]`).forEach(btn => { btn.style.background = (_gregAccidental===a) ? '#5a3a20' : ''; btn.style.color = (_gregAccidental===a) ? '#fff' : ''; });
   });
   gregGst(_gregAccidental ? 'Vorzeichen ' + labels[_gregAccidental] + ' — gilt für nächste Note' : 'Vorzeichen entfernt');
 }

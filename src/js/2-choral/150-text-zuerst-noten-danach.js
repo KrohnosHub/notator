@@ -78,9 +78,11 @@ function gregTextQueueUi() {
     box.style.display = 'inline-flex';
     const c = q.syls[q.pos] || {}, nx = q.syls.slice(q.pos + 1, q.pos + 4).map(x => x.t + (x.we ? ' ' : '-')).join('');
     box.innerHTML = '<span title="Nächste Silbe aus dem Text">📝 <b style="font-size:15px;color:#f0e0a0">' + ntEscAttr(c.t || '') + (c.we ? '' : '-') + '</b> <span style="opacity:.6">' + ntEscAttr(nx) + '</span> (' + (q.pos + 1) + '/' + q.syls.length + ')</span>' +
-      '<button class="b" onclick="gregTextQueueStep(-1)" title="Eine Silbe zurück">◀</button><button class="b" onclick="gregTextQueueStep(1)" title="Silbe überspringen">▶</button>' +
-      '<button class="b" onclick="gregTextNoSyl()" title="Nächste Neume ohne Silbe setzen (Melisma) – auch mit Shift+Klick"' + (window._gregNoSylOnce ? ' style="background:#5a3a20;color:#fff"' : '') + '>ohne Silbe</button>' +
-      '<button class="b" onclick="gregTextQueueEnd()" title="Text-Modus beenden">✕</button>';
+      '<button class="b" data-tq="-1" title="Eine Silbe zurück">◀</button><button class="b" data-tq="1" title="Silbe überspringen">▶</button>' +
+      '<button class="b" data-tq="nosyl" title="Nächste Neume ohne Silbe setzen (Melisma) – auch mit Shift+Klick"' + (window._gregNoSylOnce ? ' style="background:#5a3a20;color:#fff"' : '') + '>ohne Silbe</button>' +
+      '<button class="b" data-tq="end" title="Text-Modus beenden">✕</button>';
+    // keine Inline-Handler (CSP): Knöpfe nach dem Einsetzen verbinden
+    box.querySelectorAll('[data-tq]').forEach(b => { const k = b.dataset.tq; b.onclick = () => { if (k === 'end') gregTextQueueEnd(); else if (k === 'nosyl') gregTextNoSyl(); else gregTextQueueStep(+k); }; });
   });
 }
 // Nach dem Setzen: war es die erwartete Silbe -> weiter zur nächsten
