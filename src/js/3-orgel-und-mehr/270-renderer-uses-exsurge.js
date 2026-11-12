@@ -87,7 +87,7 @@ function gregToggleSizing() {
   if (!p) return;
   const open = p.style.display === 'none' || p.style.display === '';
   p.style.display = open ? 'grid' : 'none';
-  const hdr = document.querySelector('[onclick="gregToggleSizing()"]');
+  const hdr = document.querySelector('[data-onclick="gregToggleSizing()"]');
   if (hdr) hdr.textContent = (open ? '▾ ' : '▸ ') + 'Schriftgrössen & Abstände';
 }
 

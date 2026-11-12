@@ -19,6 +19,8 @@ jobs:
       - name: index.html passt zu src/?
         run: |
           python3 build.py --check || { echo "::error::index.html passt nicht zu src/ – Änderungen in src/ machen und python3 build.py ausführen. Wurde index.html direkt bearbeitet, dann python3 tools/split.py"; exit 1; }
+      - name: Keine Inline-Handler, Handler-Datei aktuell? (Content-Security-Policy)
+        run: python3 tools/handlers.py --check
       - name: gd-core aktuell?
         run: python3 tools/gd-core-sync.py --check
       - name: gd-core-Tests

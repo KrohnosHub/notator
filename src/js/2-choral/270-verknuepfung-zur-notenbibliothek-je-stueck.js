@@ -249,11 +249,11 @@ function gregSideRestructure() {
   const back = by(e => e.classList.contains('greg-details-back'));
   const undoRow = by(e => e.querySelector && e.querySelector('#greg-pdf-read-btn'));
   const pdfRow = document.getElementById('greg-pdf-read-row');
-  const secRow = by(e => e.querySelector && e.querySelector('button[onclick="gregAddSection()"]'));
+  const secRow = by(e => e.querySelector && e.querySelector('button[data-onclick="gregAddSection()"]'));
   const kopf = document.getElementById('greg-kopf-hdr').parentElement;
   const sizing = document.getElementById('greg-sizing-panel').parentElement;
   const neu = document.getElementById('greg-neume-sel').closest('#greg-input-panel > div');
-  const divRow = by(e => e.querySelector && e.querySelector('button[onclick="gregAddDiv(\',\')"]'));
+  const divRow = by(e => e.querySelector && e.querySelector('button[data-onclick="gregAddDiv(\',\')"]'));
   const modRow = by(e => e.querySelector && e.querySelector('#greg-liquescent'));
   const entries = document.getElementById('greg-entries-wrap');
   const gabcOut = document.getElementById('greg-gabc-out').parentElement;

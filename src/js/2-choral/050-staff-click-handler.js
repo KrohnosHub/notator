@@ -157,7 +157,7 @@ function gregInputConsumed() {
     const c = document.getElementById(id); if (c && c.checked) { c.checked = false; c.dispatchEvent(new Event('change', { bubbles: true })); }
   });
   const ap = document.getElementById('greg-acc-pos'); if (ap) { ap.value = ''; ap.style.display = 'none'; }
-  ['x','#','y'].forEach(a => { document.querySelectorAll(`button[onclick="gregSetAccidental('${a}')"]`).forEach(btn => { btn.style.background = ''; btn.style.color = ''; }); });
+  ['x','#','y'].forEach(a => { document.querySelectorAll(`button[data-onclick="gregSetAccidental('${a}')"]`).forEach(btn => { btn.style.background = ''; btn.style.color = ''; }); });
   gregQuickbarSync();
 }
 

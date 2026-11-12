@@ -96,7 +96,8 @@ def init():
 
 
 def update():
-    html = rd(os.path.join(ROOT, 'index.html'))
+    real = rd(os.path.join(ROOT, 'index.html'))
+    html = build.normalize(real)  # eingesetzte CSP-Hashes wieder als Platzhalter
     shell = rd(os.path.join(SRC, 'shell.html'))
     pieces = INC.split(shell)  # literal, ziel, literal, ziel, …, literal
     pos = 0
@@ -132,11 +133,15 @@ def update():
     backup = {f: rd(f) for f in changed}
     for f in changed:
         wr(f, out[f])
-    if build.assemble() != html:
+    new = build.assemble()
+    if build.normalize(new) != html:
         for f, c in backup.items():
             wr(f, c)
         sys.exit('Rückübertragung ergibt nicht dieselbe index.html – nichts geändert')
     print('%d Datei(en) in src/ aktualisiert' % len(changed) + (':\n  ' + '\n  '.join(os.path.relpath(f, ROOT) for f in changed) if changed else ''))
+    if new != real:  # nur die CSP-Hashes passten nicht (Skript direkt geändert): index.html mit richtigen Hashes neu schreiben
+        wr(os.path.join(ROOT, 'index.html'), new)
+        print('CSP-Hashes in index.html aktualisiert')
 
 
 if __name__ == '__main__':

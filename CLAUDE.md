@@ -24,7 +24,7 @@ Stand und Änderungsübersicht: `NOTES.md`, Details im Git-Log.
 ## Jede Änderung = neuer Build (Vorsicht, main wird parallel weiterentwickelt)
 1. **Vorher `git fetch origin main`** und auf dem neuesten Stand aufsetzen.
 2. `NOTATOR_BUILD_ID` erhöhen (`src/js/2-choral/190-autosave.js`) **und** `CACHE` in `sw.js` (`notator-vNNN`) – beide höher als auf `origin/main`, nie doppelt.
-3. `python3 build.py`
+3. `python3 build.py` (bei geänderten `data-on…`-Attributen vorher `python3 tools/handlers.py`)
 4. Tests: `node tests/gd-core.test.js`, `node tests/visual/run.js` (Bildvergleich des Notenbilds; nach gewollter Darstellungsänderung `--update`).
 5. `python3 tools/check-version.py` prüft Build-Nummer und Cache gegen `origin/main`.
 6. Kurz vor dem Mergen nochmals gegen den neuesten `main` prüfen; bei Kollision Nummern neu vergeben.
@@ -35,4 +35,6 @@ Die GitHub Action «Tests» prüft bei jedem PR: Build aktuell, gd-core, Build-N
 - Texte aus Links (`#n=`, `#song=`), Drive, GregoBase, PDFs sind fremde Daten: nie ungefiltert per `innerHTML` einsetzen. `showModal(title, body)` setzt `body` als Text; für Attribute `ntEscAttr` verwenden.
 - Das Google-Token hat Vollzugriff auf Drive (`auth/drive`, nötig für das Konzept) und liegt im localStorage von `krohnoshub.github.io`, gemeinsam mit Schola-Planer und Gesangs-App: Script-Injection in einer dieser Apps gefährdet das ganze Drive.
 - PDF.js nur mit `isEvalSupported: false` verwenden.
-- Neue externe Hosts (Skripte, APIs) bewusst ergänzen; bei aktiver Content-Security-Policy dort eintragen.
+- **Content-Security-Policy** (Meta-Tag in `src/shell.html`): Inline-Skripte nur per Hash – `build.py` setzt die Hashes automatisch. Neue externe Hosts (Skripte, APIs, Bilder) bewusst in der passenden Direktive ergänzen, sonst blockiert der Browser sie (Konsole: «Refused to …»).
+- **Keine Inline-Handler** (`onclick="…"`): In `src/body.html` stattdessen `data-onclick="…"` (bzw. `data-oninput` …) schreiben und `python3 tools/handlers.py` ausführen – das erzeugt `src/js/1-start/005-handler.js` (nicht von Hand ändern). In HTML-Strings im JS: Element nach dem Einsetzen per `el.onclick = …`/`addEventListener` verbinden.
+- Kein `eval`, kein `new Function`, keine Strings in `setTimeout` (CSP).
