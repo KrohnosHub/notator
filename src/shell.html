@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
+     Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
+     Internet, Chrome "Auto-Dark") die Seite selbständig um: Noten erscheinen
+     weiss auf grau, und sogar das per Canvas erzeugte PDF übernimmt das. -->
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
+<!-- Als App installierbar (PWA) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#121c0e">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Notator">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Notator</title>
+<style>
+@@include css/1-stil.css@@
+</style>
+<style>
+@@include css/2-stil.css@@
+</style>
+</head>
+<body>
+@@include body.html@@
+<script>
+@@include js/1-start@@
+</script>
+<script>
+@@include js/2-choral@@
+</script>
+
+</body></html>
+<script id="exsurge-lib">
+@@include vendor/exsurge.js@@
+</script>
+<script>
+@@include js/3-orgel-und-mehr@@
+</script>
+</body></html>
