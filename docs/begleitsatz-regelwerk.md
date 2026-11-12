@@ -126,3 +126,11 @@ Aus dem Gedächtnis genannt, **nicht nachgeschlagen**; Verfügbarkeit und Rechts
 5. Schluss in Modus III/IV: e-Moll, leere Quinte oder E-Dur.
 6. Schlussakkord bei Psalmton-Differenzen.
 7. Griffweite ohne Pedal: Oktave oder Dezime.
+
+### Entscheide vom 12.11.2026 (Matthias)
+
+- Zu 2: Septakkorde (und damit auch Vorhalte) sind erlaubt.
+- Zu 4: Nach Atemzeichen/Divisio grundsätzlich immer ein Akkordwechsel (Klarheit für die Sänger, wann es weitergeht). Gilt auch bei Rezitation; 3.2/3.3 sind entsprechend anzupassen.
+- Zu 5 und 6: «was gebräuchlich ist» – noch nicht belegt; am Referenzmaterial auszuzählen.
+- Zu 7: ohne Pedal Oktave als Regel, Dezime in Ausnahmefällen (mit Kosten).
+- Offen: 1 (Tradition) und 3 (Referenzsätze).
