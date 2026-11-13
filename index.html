@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-qBp5fmCfqEJEMRWZgAfv2vgDaZrKzMVSjJe/l3BtGi0=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-9qC9w0+arF+XqRDyfKCmO/RmPCdP1KVjCCBPINTLRxM='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-qBp5fmCfqEJEMRWZgAfv2vgDaZrKzMVSjJe/l3BtGi0=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-SSwFFDMBJ5Wr/sM/VOEetp1OJXDuLWMnYMlLjdrwwQA='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -21773,7 +21773,7 @@ function clMigrateOverrides(r) {
 
 // ── Akkord per Klick ändern ──────────────────────────────────────
 function clChordClick(absChar, ev, absEnd) {
-  if (!clLast) return;
+  if (!clLast) { clClearNoteSel(); return; }
   // abcjs zählt vorangehende Leerzeichen/Bogenklammern "(" teils zur Note:
   // daher Überlappung des ganzen Noten-Textbereichs prüfen, nicht nur den Anfang.
   const end = Math.max(absEnd || 0, absChar + 1);
@@ -21781,8 +21781,8 @@ function clChordClick(absChar, ev, absEnd) {
   const lr = findR(clLast.sylRanges); // Silbe der Oberstimme (Zeilenumbruch)
   const r0 = clState.accomp ? findR(clLast.segRanges) : null;
   const inf0 = r0 && clLast.segInfo ? clLast.segInfo[r0.key] : null;
-  if (!inf0 && !lr) return;
-  clCloseChordMenu();
+  if (!inf0 && !lr) { clClearNoteSel(); return; }
+  clCloseChordMenu(true); // neue Markierung behalten
   if (!inf0) { clLineBreakMenu(lr, ev); return; }
   const r = r0, inf = inf0;
   const m = document.createElement('div');
@@ -21919,7 +21919,16 @@ function ntPlacePopup(m, x, y) {
   m.style.left = Math.max(ox + 8, left) + 'px'; m.style.top = Math.max(oy + 8, top) + 'px';
 }
 function clMenuOutside(e) { const m = document.getElementById('cl-chord-menu'); if (m && !m.contains(e.target)) clCloseChordMenu(); }
-function clCloseChordMenu() {
+// Rote Klick-Markierung von abcjs wieder aufheben, sobald das Menü zu ist
+function clClearNoteSel() {
+  (window._clTuneObjs || []).forEach(t => {
+    const g = t && t.engraver; if (!g || !g.selected) return;
+    g.selected.forEach(s => { try { s.unhighlight(undefined, '#000000'); } catch (e) {} });
+    g.selected = [];
+  });
+}
+function clCloseChordMenu(keepSel) {
+  if (!keepSel) clClearNoteSel();
   const m = document.getElementById('cl-chord-menu'); if (m) m.remove();
   document.removeEventListener('mousedown', clMenuOutside);
 }

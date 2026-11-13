@@ -1,6 +1,6 @@
 // ── Akkord per Klick ändern ──────────────────────────────────────
 function clChordClick(absChar, ev, absEnd) {
-  if (!clLast) return;
+  if (!clLast) { clClearNoteSel(); return; }
   // abcjs zählt vorangehende Leerzeichen/Bogenklammern "(" teils zur Note:
   // daher Überlappung des ganzen Noten-Textbereichs prüfen, nicht nur den Anfang.
   const end = Math.max(absEnd || 0, absChar + 1);
@@ -8,8 +8,8 @@ function clChordClick(absChar, ev, absEnd) {
   const lr = findR(clLast.sylRanges); // Silbe der Oberstimme (Zeilenumbruch)
   const r0 = clState.accomp ? findR(clLast.segRanges) : null;
   const inf0 = r0 && clLast.segInfo ? clLast.segInfo[r0.key] : null;
-  if (!inf0 && !lr) return;
-  clCloseChordMenu();
+  if (!inf0 && !lr) { clClearNoteSel(); return; }
+  clCloseChordMenu(true); // neue Markierung behalten
   if (!inf0) { clLineBreakMenu(lr, ev); return; }
   const r = r0, inf = inf0;
   const m = document.createElement('div');
@@ -146,7 +146,16 @@ function ntPlacePopup(m, x, y) {
   m.style.left = Math.max(ox + 8, left) + 'px'; m.style.top = Math.max(oy + 8, top) + 'px';
 }
 function clMenuOutside(e) { const m = document.getElementById('cl-chord-menu'); if (m && !m.contains(e.target)) clCloseChordMenu(); }
-function clCloseChordMenu() {
+// Rote Klick-Markierung von abcjs wieder aufheben, sobald das Menü zu ist
+function clClearNoteSel() {
+  (window._clTuneObjs || []).forEach(t => {
+    const g = t && t.engraver; if (!g || !g.selected) return;
+    g.selected.forEach(s => { try { s.unhighlight(undefined, '#000000'); } catch (e) {} });
+    g.selected = [];
+  });
+}
+function clCloseChordMenu(keepSel) {
+  if (!keepSel) clClearNoteSel();
   const m = document.getElementById('cl-chord-menu'); if (m) m.remove();
   document.removeEventListener('mousedown', clMenuOutside);
 }
