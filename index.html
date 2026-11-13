@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-qBp5fmCfqEJEMRWZgAfv2vgDaZrKzMVSjJe/l3BtGi0=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-pwq1aoOgr8sQeVIf6/ZpvyaO3bWZsYihd8Lmv2HIYgs='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-qBp5fmCfqEJEMRWZgAfv2vgDaZrKzMVSjJe/l3BtGi0=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-9qC9w0+arF+XqRDyfKCmO/RmPCdP1KVjCCBPINTLRxM='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -19625,11 +19625,12 @@ function ntDriveFolderBrowser(ctx, chain) {
 
 // ── Gottesdienst-Mappe: mehrere Stücke -> ein PDF ───────────────────
 // Eine Mappe = {title, subtitle, cover, newPage, items:[{ref:{src:'drive'|'local', id}, title, version}]}
-// version: 'greg' (Choral) | 'cl' (Orgel) | 'clacc' (Orgel mit Begleitsatz)
+// version: 'greg' (Choral) | 'cl' (Orgel mit Begleitsatz, Standard) | 'clacc' (mit Pedalsystem) | 'clmel' (nur Melodie)
 // Erzeugung: jedes Stück wird kurz in den Editor geladen und mit den
 // normalen PDF-Exporten gesetzt (Ergebnis wird nur eingesammelt), danach
 // wird das ursprünglich offene Stück wiederhergestellt.
-const NT_MAPPE_VERSIONS = { greg: 'Choral', cl: 'Orgel', clacc: 'Orgel + Begleitsatz' };
+// cl = Orgel mit Begleitsatz, Pedal im Bass-System (Standard); clacc = mit eigenem Pedalsystem; clmel = nur Melodie
+const NT_MAPPE_VERSIONS = { greg: 'Choral', cl: 'Orgel (Begleitsatz)', clacc: 'Orgel + Pedal', clmel: 'Orgel – nur Melodie' };
 const NT_MAPPE_EXT = '.notatormappe';
 function ntMappeCur() {
   let m = null; try { m = JSON.parse(localStorage.getItem('notatorMappeCur') || 'null'); } catch (e) {}
@@ -19737,7 +19738,7 @@ function ntMappeShow(opts) {
           };
           return x;
         };
-        ctl.appendChild(add('greg', 'Choral')); ctl.appendChild(add('cl', 'Orgel')); ctl.appendChild(add('clacc', 'Begl.'));
+        ctl.appendChild(add('greg', 'Choral')); ctl.appendChild(add('cl', 'Orgel')); ctl.appendChild(add('clacc', 'Orgel+Ped.'));
         r.appendChild(t); r.appendChild(ctl);
         lib.appendChild(r);
       });
@@ -19904,7 +19905,8 @@ function ntMappeBuild() {
         window._gregForcedCanvasWidth = 900;
         setTimeout(() => { window._ntCollect = collect; try { gregExportPDF(); } catch (e) { window._ntCollect = null; reject(e); } }, 250);
       } else {
-        clState.accomp = it.version === 'clacc';
+        clState.accomp = it.version !== 'clmel';
+        clState.pedal = it.version === 'clacc';
         switchTab('editor');
         clEnsureAbcjs(() => setTimeout(() => {
           try { window._ntCollect = collect; ntViewScale._override = true; clState.width = clState.width || 740; clRender(); clExportPDF(); }

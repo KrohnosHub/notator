@@ -1,10 +1,11 @@
 // ── Gottesdienst-Mappe: mehrere Stücke -> ein PDF ───────────────────
 // Eine Mappe = {title, subtitle, cover, newPage, items:[{ref:{src:'drive'|'local', id}, title, version}]}
-// version: 'greg' (Choral) | 'cl' (Orgel) | 'clacc' (Orgel mit Begleitsatz)
+// version: 'greg' (Choral) | 'cl' (Orgel mit Begleitsatz, Standard) | 'clacc' (mit Pedalsystem) | 'clmel' (nur Melodie)
 // Erzeugung: jedes Stück wird kurz in den Editor geladen und mit den
 // normalen PDF-Exporten gesetzt (Ergebnis wird nur eingesammelt), danach
 // wird das ursprünglich offene Stück wiederhergestellt.
-const NT_MAPPE_VERSIONS = { greg: 'Choral', cl: 'Orgel', clacc: 'Orgel + Begleitsatz' };
+// cl = Orgel mit Begleitsatz, Pedal im Bass-System (Standard); clacc = mit eigenem Pedalsystem; clmel = nur Melodie
+const NT_MAPPE_VERSIONS = { greg: 'Choral', cl: 'Orgel (Begleitsatz)', clacc: 'Orgel + Pedal', clmel: 'Orgel – nur Melodie' };
 const NT_MAPPE_EXT = '.notatormappe';
 function ntMappeCur() {
   let m = null; try { m = JSON.parse(localStorage.getItem('notatorMappeCur') || 'null'); } catch (e) {}
@@ -112,7 +113,7 @@ function ntMappeShow(opts) {
           };
           return x;
         };
-        ctl.appendChild(add('greg', 'Choral')); ctl.appendChild(add('cl', 'Orgel')); ctl.appendChild(add('clacc', 'Begl.'));
+        ctl.appendChild(add('greg', 'Choral')); ctl.appendChild(add('cl', 'Orgel')); ctl.appendChild(add('clacc', 'Orgel+Ped.'));
         r.appendChild(t); r.appendChild(ctl);
         lib.appendChild(r);
       });
@@ -279,7 +280,8 @@ function ntMappeBuild() {
         window._gregForcedCanvasWidth = 900;
         setTimeout(() => { window._ntCollect = collect; try { gregExportPDF(); } catch (e) { window._ntCollect = null; reject(e); } }, 250);
       } else {
-        clState.accomp = it.version === 'clacc';
+        clState.accomp = it.version !== 'clmel';
+        clState.pedal = it.version === 'clacc';
         switchTab('editor');
         clEnsureAbcjs(() => setTimeout(() => {
           try { window._ntCollect = collect; ntViewScale._override = true; clState.width = clState.width || 740; clRender(); clExportPDF(); }
