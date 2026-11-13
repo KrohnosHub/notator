@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-UvnQS+MesbWZ6Llz1wa1SpAMcj3gp/so5Icnm/0tWYw=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-BrPvBVNGIYLQVsHfN2RMmE0IzN50BTr9EVpkAAc+QZA='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-qBp5fmCfqEJEMRWZgAfv2vgDaZrKzMVSjJe/l3BtGi0=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-SSwFFDMBJ5Wr/sM/VOEetp1OJXDuLWMnYMlLjdrwwQA='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -9002,7 +9002,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '400';
+const NOTATOR_BUILD_ID = '401';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -19211,7 +19211,7 @@ function ntDestKeys(ctx) { const n = ctx && ctx.kind === 'notator'; return { n, 
 function ntPdfSave(kind) {
   window._ntPdfDeliver = null;
   const base = kind === 'cl' ? clFileBase() + '_Orgel'
-    : kind === 'mappe' ? (ntMappeCur().title || 'Mappe')
+    : kind === 'mappe' ? (ntMappeCur().title || 'Mappe') + (window._ntMappeFilter === 'greg' ? '_Choral' : window._ntMappeFilter === 'cl' ? '_Orgel' : '')
     : ntFileBaseName() + '_Choral';
   ntLoadLocalDir().then(() => ntPdfDialog({ kind, name: ntSanitizeName(base), dest: ntPdfPrefs().dest }));
 }
@@ -19625,11 +19625,12 @@ function ntDriveFolderBrowser(ctx, chain) {
 
 // ── Gottesdienst-Mappe: mehrere Stücke -> ein PDF ───────────────────
 // Eine Mappe = {title, subtitle, cover, newPage, items:[{ref:{src:'drive'|'local', id}, title, version}]}
-// version: 'greg' (Choral) | 'cl' (Orgel) | 'clacc' (Orgel mit Begleitsatz)
+// version: 'greg' (Choral) | 'cl' (Orgel mit Begleitsatz, Standard) | 'clacc' (mit Pedalsystem) | 'clmel' (nur Melodie)
 // Erzeugung: jedes Stück wird kurz in den Editor geladen und mit den
 // normalen PDF-Exporten gesetzt (Ergebnis wird nur eingesammelt), danach
 // wird das ursprünglich offene Stück wiederhergestellt.
-const NT_MAPPE_VERSIONS = { greg: 'Choral', cl: 'Orgel', clacc: 'Orgel + Begleitsatz' };
+// cl = Orgel mit Begleitsatz, Pedal im Bass-System (Standard); clacc = mit eigenem Pedalsystem; clmel = nur Melodie
+const NT_MAPPE_VERSIONS = { greg: 'Choral', cl: 'Orgel (Begleitsatz)', clacc: 'Orgel + Pedal', clmel: 'Orgel – nur Melodie' };
 const NT_MAPPE_EXT = '.notatormappe';
 function ntMappeCur() {
   let m = null; try { m = JSON.parse(localStorage.getItem('notatorMappeCur') || 'null'); } catch (e) {}
@@ -19638,7 +19639,8 @@ function ntMappeCur() {
 function ntMappeSetCur(m) { try { localStorage.setItem('notatorMappeCur', JSON.stringify(m)); } catch (e) {} }
 function ntMappeLocalAll() { try { return JSON.parse(localStorage.getItem('notatorMappenLocal') || '{}') || {}; } catch (e) { return {}; } }
 
-function ntMappeShow() {
+function ntMappeShow(opts) {
+  opts = opts || {};
   const m = ntMappeCur();
   showModal('📑 Gottesdienst-Mappe', '', []);
   const body = document.getElementById('modal-body'), bEl = document.getElementById('modal-btns');
@@ -19651,38 +19653,105 @@ function ntMappeShow() {
     '<div style="font-size:12px;margin:6px 0;display:flex;gap:12px;flex-wrap:wrap">' +
     '<label><input type="checkbox" id="nt-mp-cover"' + (m.cover ? ' checked' : '') + '> Deckblatt mit Inhalt</label>' +
     '<label><input type="checkbox" id="nt-mp-newpage"' + (m.newPage ? ' checked' : '') + '> Jedes Stück auf neuer Seite</label></div>' +
-    '<div id="nt-mp-list" style="max-height:40vh;overflow-y:auto;border:1px solid var(--parch3);border-radius:4px;padding:2px"></div>';
+    '<div id="nt-mp-list" style="border:1px solid var(--parch3);border-radius:4px;padding:2px"></div>' +
+    '<div id="nt-mp-add" style="margin-top:10px;border:1px solid var(--parch3);border-radius:4px;padding:4px">' +
+    '<div style="font-size:12px;font-weight:bold;padding:2px 2px 4px;border-bottom:2px solid #3d6b35;margin-bottom:4px">➕ Stücke hinzufügen <span style="font-weight:normal;color:var(--ink2);font-size:11px">– grün = in der Mappe, nochmals tippen = entfernen</span></div>' +
+    '<div id="nt-mp-add-body" style="font-size:11px;color:var(--ink2)">Lade Bibliothek …</div></div>';
   const bind = (id, key, prop) => { const el = document.getElementById(id); el.addEventListener(prop === 'checked' ? 'change' : 'input', () => { m[key] = el[prop]; save(); }); };
   bind('nt-mp-title', 'title', 'value'); bind('nt-mp-sub', 'subtitle', 'value');
   bind('nt-mp-cover', 'cover', 'checked'); bind('nt-mp-newpage', 'newPage', 'checked');
   const list = document.getElementById('nt-mp-list');
+  // Gruppen: Choral | Orgel (inkl. Begleitsatz) – Reihenfolge je Gruppe, eigenes PDF je Gruppe
+  const grpOf = it => it.version === 'greg' ? 'greg' : 'cl';
   const renderList = () => {
     list.innerHTML = '';
-    if (!m.items.length) { list.innerHTML = '<div style="font-size:11px;color:var(--ink2);padding:6px">Noch keine Stücke – mit «+ Stück hinzufügen» aus der Bibliothek wählen.</div>'; return; }
-    m.items.forEach((it, i) => {
-      const r = document.createElement('div');
-      r.style.cssText = 'display:flex;gap:3px;align-items:center;padding:2px;border-bottom:1px solid var(--parch3)';
-      const b = (t, fn, ttl, dis) => { const x = document.createElement('button'); x.className = 'b'; x.textContent = t; x.title = ttl || ''; x.disabled = !!dis; x.style.cssText = 'font-size:11px;padding:1px 5px'; x.onclick = fn; return x; };
-      r.appendChild(b('↑', () => { m.items.splice(i - 1, 0, m.items.splice(i, 1)[0]); save(); renderList(); }, 'nach oben', i === 0));
-      r.appendChild(b('↓', () => { m.items.splice(i + 1, 0, m.items.splice(i, 1)[0]); save(); renderList(); }, 'nach unten', i === m.items.length - 1));
-      const t = document.createElement('span'); t.textContent = (i + 1) + '. ' + it.title + (it.ref.src === 'local' ? ' (nur lokal)' : '');
-      t.style.cssText = 'flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0';
-      r.appendChild(t);
-      const sel = document.createElement('select'); sel.className = 'b'; sel.style.cssText = 'font-size:11px';
-      sel.innerHTML = Object.keys(NT_MAPPE_VERSIONS).map(k => '<option value="' + k + '"' + (k === it.version ? ' selected' : '') + '>' + NT_MAPPE_VERSIONS[k] + '</option>').join('');
-      sel.onchange = () => { it.version = sel.value; save(); };
-      r.appendChild(sel);
-      r.appendChild(b('✕', () => { m.items.splice(i, 1); save(); renderList(); }, 'aus der Mappe entfernen'));
-      list.appendChild(r);
+    if (!m.items.length) { list.innerHTML = '<div style="font-size:11px;color:var(--ink2);padding:6px">Noch keine Stücke – unten unter «Stücke hinzufügen» wählen.</div>'; return; }
+    [['greg', '📜 Choral'], ['cl', '🎹 Orgel']].forEach(([g, label]) => {
+      const idxs = m.items.map((it, i) => i).filter(i => grpOf(m.items[i]) === g);
+      const h = document.createElement('div');
+      h.style.cssText = 'display:flex;align-items:center;gap:6px;padding:4px 4px 2px;font-size:12px;font-weight:bold;border-bottom:2px solid #3d6b35;margin-top:4px';
+      const ht = document.createElement('span'); ht.style.flex = '1'; ht.textContent = label + ' (' + idxs.length + ')'; h.appendChild(ht);
+      if (idxs.length) {
+        const pb = document.createElement('button'); pb.className = 'b'; pb.textContent = '↓ PDF ' + (g === 'greg' ? 'Choral' : 'Orgel');
+        pb.style.cssText = 'font-size:11px;padding:1px 7px;background:#3d6b35;color:#fff;border-color:#3d6b35';
+        pb.onclick = () => { window._ntMappeFilter = g; ntPdfSave('mappe'); };
+        h.appendChild(pb);
+      }
+      list.appendChild(h);
+      if (!idxs.length) { const e = document.createElement('div'); e.style.cssText = 'font-size:11px;color:var(--ink2);padding:3px 6px'; e.textContent = '(keine)'; list.appendChild(e); return; }
+      idxs.forEach((i, k) => {
+        const it = m.items[i];
+        const r = document.createElement('div');
+        r.style.cssText = 'display:flex;flex-wrap:wrap;gap:3px;align-items:center;padding:3px 2px;border-bottom:1px solid var(--parch3)';
+        const b = (t, fn, ttl, dis) => { const x = document.createElement('button'); x.className = 'b'; x.textContent = t; x.title = ttl || ''; x.disabled = !!dis; x.style.cssText = 'font-size:11px;padding:1px 5px'; x.onclick = fn; return x; };
+        const swap = j => { const t = m.items[i]; m.items[i] = m.items[j]; m.items[j] = t; save(); renderList(); };
+        // Titel vollständig (Umbruch); Bedienelemente rücken bei wenig Platz in eine zweite Zeile
+        const t = document.createElement('span'); t.textContent = (k + 1) + '. ' + it.title + (it.ref.src === 'local' ? ' (nur lokal)' : '');
+        t.style.cssText = 'flex:1 1 200px;font-size:12px;white-space:normal;overflow-wrap:anywhere;min-width:0';
+        r.appendChild(t);
+        const ctl = document.createElement('span'); ctl.style.cssText = 'display:flex;gap:3px;align-items:center;margin-left:auto';
+        r.appendChild(ctl);
+        ctl.appendChild(b('↑', () => swap(idxs[k - 1]), 'nach oben', k === 0));
+        ctl.appendChild(b('↓', () => swap(idxs[k + 1]), 'nach unten', k === idxs.length - 1));
+        const sel = document.createElement('select'); sel.className = 'b'; sel.style.cssText = 'font-size:11px';
+        sel.innerHTML = Object.keys(NT_MAPPE_VERSIONS).map(v => '<option value="' + v + '"' + (v === it.version ? ' selected' : '') + '>' + NT_MAPPE_VERSIONS[v] + '</option>').join('');
+        sel.onchange = () => { it.version = sel.value; save(); renderList(); if (renderAdd) renderAdd(); };
+        ctl.appendChild(sel);
+        ctl.appendChild(b('✕', () => { m.items.splice(i, 1); save(); renderList(); if (renderAdd) renderAdd(); }, 'aus der Mappe entfernen'));
+        list.appendChild(r);
+      });
     });
   };
+  let renderAdd = null;
   renderList();
+  // Stücke hinzufügen – im selben Fenster unter der Übersicht
+  const addBody = document.getElementById('nt-mp-add-body');
+  gregLibCollect(true).catch(() => gregLibCollect(false)).then(data => {
+    if (!addBody.isConnected) return;
+    addBody.innerHTML = ''; addBody.style.color = '';
+    const fw = document.createElement('div'); addBody.appendChild(fw);
+    const info = document.createElement('div'); info.style.cssText = 'font-size:11px;color:var(--ink2);margin:2px 0'; addBody.appendChild(info);
+    const lib = document.createElement('div'); lib.style.cssText = 'max-height:50vh;overflow-y:auto'; addBody.appendChild(lib);
+    const render = rebuild => {
+      if (rebuild) { fw.innerHTML = ''; ntLibFilterBar(fw, data, render); }
+      lib.innerHTML = '';
+      info.textContent = data.mode !== 'drive' && data.driveOn ? 'Nicht mit Drive verbunden – nur lokale Stücke' : '';
+      data.items.filter(it => ntLibMatches(it, _libFilter)).forEach(it => {
+        const ref = it.kind === 'drive' ? { src: 'drive', id: it.file.id } : { src: 'local', id: it.id };
+        const n = m.items.filter(x => x.ref.src === ref.src && x.ref.id === ref.id).length;
+        const r = document.createElement('div'); r.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:3px 0;border-bottom:1px solid var(--parch3)';
+        const t = document.createElement('span'); t.style.cssText = 'flex:1 1 200px;font-size:12px;min-width:0;white-space:normal;overflow-wrap:anywhere';
+        t.textContent = it.title + ([it.meta.genre, it.meta.season].filter(Boolean).length ? '  · ' + [it.meta.genre, it.meta.season].filter(Boolean).join(' · ') : '');
+        if (n) { t.style.fontWeight = 'bold'; t.style.color = '#2a4a22'; }
+        const ctl = document.createElement('span'); ctl.style.cssText = 'display:flex;gap:4px;margin-left:auto';
+        // Knopf grün = diese Fassung ist in der Mappe; nochmals tippen = wieder entfernen
+        const add = (v, label) => {
+          const has = m.items.findIndex(x => x.ref.src === ref.src && x.ref.id === ref.id && x.version === v);
+          const x = document.createElement('button'); x.className = 'b';
+          x.textContent = (has >= 0 ? '✓ ' : '+ ') + label;
+          x.title = has >= 0 ? NT_MAPPE_VERSIONS[v] + ' ist in der Mappe – tippen zum Entfernen' : 'Als ' + NT_MAPPE_VERSIONS[v] + ' hinzufügen';
+          x.style.cssText = 'font-size:11px;padding:2px 6px' + (has >= 0 ? ';background:#3d6b35;color:#fff;border-color:#3d6b35;font-weight:bold' : '');
+          x.onclick = () => {
+            if (has >= 0) { m.items.splice(has, 1); gregGst('Entfernt: ' + it.title + ' (' + NT_MAPPE_VERSIONS[v] + ')'); }
+            else { m.items.push({ ref, title: it.title, version: v }); gregGst('Zur Mappe hinzugefügt: ' + it.title + ' (' + NT_MAPPE_VERSIONS[v] + ')'); }
+            save(); renderList(); render();
+          };
+          return x;
+        };
+        ctl.appendChild(add('greg', 'Choral')); ctl.appendChild(add('cl', 'Orgel')); ctl.appendChild(add('clacc', 'Orgel+Ped.'));
+        r.appendChild(t); r.appendChild(ctl);
+        lib.appendChild(r);
+      });
+    };
+    renderAdd = () => render(false);
+    render(true);
+    if (opts.focusAdd) document.getElementById('nt-mp-add').scrollIntoView({ block: 'start' });
+  }).catch(err => { addBody.textContent = 'Bibliothek nicht ladbar: ' + err.message; });
   const mk = (t, fn, css, ttl) => { const x = document.createElement('button'); x.className = 'b'; x.textContent = t; if (css) x.style.cssText = css; if (ttl) x.title = ttl; x.onclick = fn; bEl.appendChild(x); return x; };
-  mk('+ Stück hinzufügen', () => ntMappePicker());
-  mk('↓ PDF erstellen', () => {
+  mk('↓ PDF alle', () => {
     if (!m.items.length) { gregGst('Die Mappe ist leer.'); return; }
-    ntPdfSave('mappe');
-  }, 'background:#3d6b35;color:#fff;border-color:#3d6b35');
+    window._ntMappeFilter = null; ntPdfSave('mappe');
+  }, '', 'Ein PDF mit allen Stücken (Choral und Orgel) in der Reihenfolge der Mappe');
   mk('💾 Mappe speichern', () => ntMappeSaveAs());
   mk('📂 Mappen', () => ntMappeOpenList(), '', 'Gespeicherte Mappen öffnen');
   mk('Neu', () => { if (m.items.length && !confirm('Aktuelle Mappe leeren?')) return; ntMappeSetCur({ title: '', subtitle: '', cover: true, newPage: true, items: [] }); ntMappeShow(); });
@@ -19690,38 +19759,8 @@ function ntMappeShow() {
   mk('Schliessen', () => closeModal());
 }
 
-function ntMappePicker() {
-  const m = ntMappeCur();
-  showModal('📑 Stück zur Mappe hinzufügen', '', []);
-  const body = document.getElementById('modal-body'), bEl = document.getElementById('modal-btns');
-  body.innerHTML = '<div style="font-size:11px;color:var(--ink2)">Lade Bibliothek …</div>';
-  const fin = document.createElement('button'); fin.className = 'b'; fin.textContent = '✓ Fertig'; fin.onclick = () => ntMappeShow();
-  fin.style.cssText = 'background:#3d6b35;color:#fff;border-color:#3d6b35';
-  bEl.appendChild(fin);
-  gregLibCollect(true).catch(() => gregLibCollect(false)).then(data => {
-    body.innerHTML = '';
-    const fw = document.createElement('div'); body.appendChild(fw);
-    const info = document.createElement('div'); info.style.cssText = 'font-size:11px;color:var(--ink2);margin-bottom:3px'; body.appendChild(info);
-    const list = document.createElement('div'); list.style.cssText = 'max-height:46vh;overflow-y:auto'; body.appendChild(list);
-    const render = rebuild => {
-      if (rebuild) { fw.innerHTML = ''; ntLibFilterBar(fw, data, render); }
-      list.innerHTML = '';
-      info.textContent = m.items.length + ' Stück(e) in der Mappe' + (data.mode !== 'drive' && data.driveOn ? ' · nicht mit Drive verbunden – nur lokale Stücke' : '');
-      data.items.filter(it => ntLibMatches(it, _libFilter)).forEach(it => {
-        const ref = it.kind === 'drive' ? { src: 'drive', id: it.file.id } : { src: 'local', id: it.id };
-        const n = m.items.filter(x => x.ref.src === ref.src && x.ref.id === ref.id).length;
-        const r = document.createElement('div'); r.style.cssText = 'display:flex;gap:4px;align-items:center;margin:2px 0';
-        const t = document.createElement('span'); t.style.cssText = 'flex:1;font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-        t.textContent = it.title + ([it.meta.genre, it.meta.season].filter(Boolean).length ? '  · ' + [it.meta.genre, it.meta.season].filter(Boolean).join(' · ') : '') + (n ? '  ✓' + (n > 1 ? n : '') : '');
-        const add = (v, label) => { const x = document.createElement('button'); x.className = 'b'; x.textContent = label; x.title = 'Als ' + NT_MAPPE_VERSIONS[v] + ' hinzufügen'; x.style.cssText = 'font-size:10px;padding:1px 5px';
-          x.onclick = () => { m.items.push({ ref, title: it.title, version: v }); ntMappeSetCur(m); render(); }; return x; };
-        r.appendChild(t); r.appendChild(add('greg', '+ Choral')); r.appendChild(add('cl', '+ Orgel')); r.appendChild(add('clacc', '+ Begl.'));
-        list.appendChild(r);
-      });
-    };
-    render(true);
-  });
-}
+// Früher eigenes Fenster; jetzt im Mappen-Fenster integriert
+function ntMappePicker() { ntMappeShow({ focusAdd: true }); }
 
 // Speichern: lokal immer, zusätzlich in Drive (Notator › Mappen), wenn angemeldet
 function ntMappeSaveAs() {
@@ -19820,7 +19859,10 @@ function ntMappeLoadState(ref) {
 
 // Setzt alle Stücke und übergibt das fertige PDF an window._ntPdfDeliver
 function ntMappeBuild() {
-  const m = ntMappeCur();
+  const m0 = ntMappeCur(), flt = window._ntMappeFilter || null; window._ntMappeFilter = null;
+  // Teil-Mappe: nur Choral bzw. nur Orgel (inkl. Begleitsatz); Titel bekommt den Zusatz
+  const m = flt ? Object.assign({}, m0, { items: m0.items.filter(it => flt === 'greg' ? it.version === 'greg' : it.version !== 'greg'),
+    subtitle: [m0.subtitle, flt === 'greg' ? 'Choral' : 'Orgel'].filter(Boolean).join(' · ') }) : m0;
   const deliver = window._ntPdfDeliver; window._ntPdfDeliver = null;
   const snapshot = gregBuildStateObject();
   const savedLibId = gregLibCurrentId, savedTab = window._ntTab || 'greg';
@@ -19844,7 +19886,7 @@ function ntMappeBuild() {
       restore(); closeModal();
       if (allPairs.length <= (m.cover ? 1 : 0)) { gregGst('Mappe: keine Stücke setzbar.'); return; }
       window._ntPdfDeliver = deliver;
-      gregAssemblePdf(allPairs, (m.title || 'Mappe') + '.pdf');
+      gregAssemblePdf(allPairs, (m.title || 'Mappe') + (flt === 'greg' ? '_Choral' : flt === 'cl' ? '_Orgel' : '') + '.pdf');
       return;
     }
     const it = m.items[i];
@@ -19863,7 +19905,8 @@ function ntMappeBuild() {
         window._gregForcedCanvasWidth = 900;
         setTimeout(() => { window._ntCollect = collect; try { gregExportPDF(); } catch (e) { window._ntCollect = null; reject(e); } }, 250);
       } else {
-        clState.accomp = it.version === 'clacc';
+        clState.accomp = it.version !== 'clmel';
+        clState.pedal = it.version === 'clacc';
         switchTab('editor');
         clEnsureAbcjs(() => setTimeout(() => {
           try { window._ntCollect = collect; ntViewScale._override = true; clState.width = clState.width || 740; clRender(); clExportPDF(); }
@@ -21730,7 +21773,7 @@ function clMigrateOverrides(r) {
 
 // ── Akkord per Klick ändern ──────────────────────────────────────
 function clChordClick(absChar, ev, absEnd) {
-  if (!clLast) return;
+  if (!clLast) { clClearNoteSel(); return; }
   // abcjs zählt vorangehende Leerzeichen/Bogenklammern "(" teils zur Note:
   // daher Überlappung des ganzen Noten-Textbereichs prüfen, nicht nur den Anfang.
   const end = Math.max(absEnd || 0, absChar + 1);
@@ -21738,8 +21781,8 @@ function clChordClick(absChar, ev, absEnd) {
   const lr = findR(clLast.sylRanges); // Silbe der Oberstimme (Zeilenumbruch)
   const r0 = clState.accomp ? findR(clLast.segRanges) : null;
   const inf0 = r0 && clLast.segInfo ? clLast.segInfo[r0.key] : null;
-  if (!inf0 && !lr) return;
-  clCloseChordMenu();
+  if (!inf0 && !lr) { clClearNoteSel(); return; }
+  clCloseChordMenu(true); // neue Markierung behalten
   if (!inf0) { clLineBreakMenu(lr, ev); return; }
   const r = r0, inf = inf0;
   const m = document.createElement('div');
@@ -21876,7 +21919,16 @@ function ntPlacePopup(m, x, y) {
   m.style.left = Math.max(ox + 8, left) + 'px'; m.style.top = Math.max(oy + 8, top) + 'px';
 }
 function clMenuOutside(e) { const m = document.getElementById('cl-chord-menu'); if (m && !m.contains(e.target)) clCloseChordMenu(); }
-function clCloseChordMenu() {
+// Rote Klick-Markierung von abcjs wieder aufheben, sobald das Menü zu ist
+function clClearNoteSel() {
+  (window._clTuneObjs || []).forEach(t => {
+    const g = t && t.engraver; if (!g || !g.selected) return;
+    g.selected.forEach(s => { try { s.unhighlight(undefined, '#000000'); } catch (e) {} });
+    g.selected = [];
+  });
+}
+function clCloseChordMenu(keepSel) {
+  if (!keepSel) clClearNoteSel();
   const m = document.getElementById('cl-chord-menu'); if (m) m.remove();
   document.removeEventListener('mousedown', clMenuOutside);
 }
