@@ -1,10 +1,10 @@
 # Tests
 
 ```
-node tests/run.js            # prüfen (Exit 1 bei Fehler)
-node tests/run.js --verbose  # Akkordfolge und jeden Befund zeigen
-node tests/run.js --update   # Schnappschuss tests/golden.json neu schreiben
-node tests/run.js --strict   # auch Befunde zählen als Fehler
+node tests/begleitsatz.test.js            # prüfen (Exit 1 bei Fehler)
+node tests/begleitsatz.test.js --verbose  # Akkordfolge und jeden Befund zeigen
+node tests/begleitsatz.test.js --update   # Schnappschuss tests/begleitsatz-golden.json neu schreiben
+node tests/begleitsatz.test.js --strict   # auch Befunde zählen als Fehler
 ```
 
 Keine Abhängigkeiten (nur Node). Der Begleitsatz-Code wird unverändert aus
@@ -18,7 +18,7 @@ Keine Abhängigkeiten (nur Node). Der Begleitsatz-Code wird unverändert aus
   Sprünge). Die Anzahl je Stück steht im Schnappschuss; mehr als dort = Fehler.
 
 Nach einer **gewollten** Änderung am Harmonisierer: `--verbose` ansehen, dann
-`--update` und `golden.json` mit committen.
+`--update` und `begleitsatz-golden.json` mit committen.
 
-`fixtures.js` enthält vorerst nur selbst geschriebene Übungsmelodien, keine
+`begleitsatz-fixtures.js` enthält vorerst nur selbst geschriebene Übungsmelodien, keine
 echten Gesänge. Regelwerk und offene Entscheide: `docs/begleitsatz-regelwerk.md`.

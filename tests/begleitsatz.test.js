@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Notator – Tests für den Orgel-Begleitsatz. Aufruf: node tests/run.js
+// Notator – Tests für den Orgel-Begleitsatz. Aufruf: node tests/begleitsatz.test.js
 // Ohne Abhängigkeiten. Lädt die Harmonisierungsfunktionen unverändert aus
 // index.html (Abschnitt «const CL_LETTERS» bis vor «4. Rendern mit abcjs»)
 // in eine vm-Sandbox und prüft das Ergebnis von clHarmonize.
 //
-//   node tests/run.js            Prüfen (Exit 1 bei Fehler)
-//   node tests/run.js --update   Schnappschuss tests/golden.json neu schreiben
-//   node tests/run.js --verbose  jeden Befund einzeln ausgeben
-//   node tests/run.js --strict   auch Befunde (Regelverstösse) zählen als Fehler
+//   node tests/begleitsatz.test.js            Prüfen (Exit 1 bei Fehler)
+//   node tests/begleitsatz.test.js --update   Schnappschuss tests/begleitsatz-golden.json neu schreiben
+//   node tests/begleitsatz.test.js --verbose  jeden Befund einzeln ausgeben
+//   node tests/begleitsatz.test.js --strict   auch Befunde (Regelverstösse) zählen als Fehler
 //
 // Drei Stufen:
 //   FEHLER   Invarianten, die der heutige Code garantiert (Aufbau der Akkorde,
@@ -22,7 +22,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-const GOLDEN = path.join(__dirname, 'golden.json');
+const GOLDEN = path.join(__dirname, 'begleitsatz-golden.json');
 const args = process.argv.slice(2);
 const UPDATE = args.includes('--update'), VERBOSE = args.includes('--verbose'), STRICT = args.includes('--strict');
 
@@ -206,7 +206,7 @@ function unitTests(env) {
 // ── Lauf ────────────────────────────────────────────────────────
 function main() {
   const env = loadHarmonizer();
-  const fixtures = require('./fixtures.js');
+  const fixtures = require('./begleitsatz-fixtures.js');
   const golden = fs.existsSync(GOLDEN) ? JSON.parse(fs.readFileSync(GOLDEN, 'utf8')) : null;
   const next = { build: env.build, pieces: {} };
   let fails = 0, nFind = 0;
@@ -225,7 +225,7 @@ function main() {
     const msgs = [];
     r.errors.forEach(e => msgs.push('FEHLER ' + e.rule + ' @' + e.seg + ': ' + e.msg));
     if (!UPDATE) {
-      if (!g) msgs.push('FEHLER kein Schnappschuss (node tests/run.js --update)');
+      if (!g) msgs.push('FEHLER kein Schnappschuss (node tests/begleitsatz.test.js --update)');
       else {
         if (JSON.stringify(g.snap) !== JSON.stringify(r.snap)) {
           const k = r.snap.findIndex((x, i) => x !== g.snap[i]);
@@ -246,7 +246,7 @@ function main() {
   });
 
   console.log('\nBefunde gesamt: ' + nFind + (nFind ? '  (' + Object.keys(total).sort().map(k => k + '×' + total[k]).join(', ') + ')' : ''));
-  if (UPDATE) { fs.writeFileSync(GOLDEN, JSON.stringify(next, null, 1) + '\n'); console.log('Schnappschuss geschrieben: tests/golden.json'); }
+  if (UPDATE) { fs.writeFileSync(GOLDEN, JSON.stringify(next, null, 1) + '\n'); console.log('Schnappschuss geschrieben: tests/begleitsatz-golden.json'); }
   console.log(fails ? '\n' + fails + ' FEHLER' : '\nAlles ok.');
   process.exit(fails ? 1 : 0);
 }

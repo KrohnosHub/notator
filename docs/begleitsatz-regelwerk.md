@@ -134,3 +134,25 @@ Aus dem Gedächtnis genannt, **nicht nachgeschlagen**; Verfügbarkeit und Rechts
 - Zu 5 und 6: «was gebräuchlich ist» – noch nicht belegt; am Referenzmaterial auszuzählen.
 - Zu 7: ohne Pedal Oktave als Regel, Dezime in Ausnahmefällen (mit Kosten).
 - Offen: 1 (Tradition) und 3 (Referenzsätze).
+
+## 7. Pilot NOH: «Tu es Petrus» (Communio VI, NOH 1163)
+
+Aus dem Scan gelesen (14.11.2026), **Aussenstimmen und Kadenzen sicher, Mittelstimmen stellenweise unsicher; von Matthias gegenzuprüfen**. Vorzeichnung 1 ♯, Finalis G (Modus VI einen Ton höher).
+
+| Stelle | Akkord (Bass) | Beobachtung |
+|---|---|---|
+| ædi-**fi**- | D-Dur | |
+| -**cá-bo** | e-Moll | Tenor und Bass im Einklang; Alt liegt |
+| Viertelstrich vor «Ecclésiam» | e-Moll bleibt, Bass übergebunden | **kein Wechsel am Strich**, Wechsel erst auf «-clé-» |
+| Ec-**clé**- | G-Dur als Sextakkord (H im Bass) | |
+| -si-**am** | C-Dur | |
+| **me**- | G-Dur Sextakkord → Grundstellung | Finalis im Tenor liegt die ganze Schlussphrase |
+| -**am.** | G-Dur, Quartvorhalt c → h im Alt, ohne Quinte | Schluss: I⁶ – IV – I⁶ – I mit Vorhalt 4–3 |
+
+Erste Zeile (unsicherer gelesen): Beginn mit Sextakkord, «Petrus» schliesst auf D-Dur (Halbschluss), danach lange e-Moll-Fläche; Septakkorde (a-Moll mit G) kommen vor.
+
+Folgerungen (ein Stück, **keine Statistik**):
+- Akkorde wechseln langsam (meist Halbe), Mittelstimmen gehen stufenweise, viele Überbindungen.
+- Sextakkorde, Septakkorde und Vorhalte sind normal – deckt sich mit Entscheid 2.
+- Am Viertelstrich bleibt der Akkord hier liegen – **widerspricht Entscheid 4** (immer Wechsel). Der Entscheid geht vor; beim Vergleich mit NOH sind solche Stellen auszunehmen.
+- Schlussakkord ohne Quinte, Terz im Alt; die plagale Wendung IV – I ist hier die Kadenz.
