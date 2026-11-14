@@ -193,3 +193,24 @@ Gelesen sind nur **Schlüsse** (Stück-, Vers- und Amen-Schlüsse), keine Binnen
 - `0912` Dico autem vobis: Modusangabe und gelesener Schluss widersprechen sich.
 - `1171a` Agnus Dei I: Bass (d-Moll) sicher, Oberstimme unscharf.
 - Nicht gelesen: Versschlüsse in 0728 und 1112, 1145 (Gaudens gaudebo) ganz, alle Binnenkadenzen (Divisio maior/minor). Die Binnenkadenzen wären der nächste Schritt für Entscheid 4 und die Halbschluss-Regel.
+
+## 9. Umsetzung Build 401 (14.11.2026)
+
+Von Matthias bestätigt: Schlussformel aus Abschnitt 8 (auch der Quart-Akkord in Modus III/IV); «Dico autem vobis» ist Modus III und endet auf G mit G-Dur (Lesung korrekt).
+
+Umgesetzt in `src/js/3-orgel-und-mehr/030-begleitsatz-…js`:
+
+- Schlussakkord: Finalis-Akkord; phrygisch (Halbton über der Finalis) Moll-Akkord eine Quarte höher.
+- Quartvorhalt (Grundton–Quarte–Quinte) im Abschnitt direkt vor dem Schluss, Moll-Septakkord der 5. Stufe in den zwei Abschnitten davor – jeweils nur, wenn der tragende Melodieton passt, keine Vorgabe gesetzt ist und kein Trennstrich dazwischen liegt. Die Dissonanz liegt nie in der Melodie, wird nicht verdoppelt und löst sich liegend oder stufenweise abwärts auf.
+- Schlussabschnitt wird vom **letzten** Ton getragen (Schluss «a g» = Vorhalt über dem Schlussakkord statt Akkord auf a).
+- Ohne Pedal: linke Hand höchstens Dezime, über Oktave mit Kosten; rechte Hand über Oktave mit Kosten. Mit Pedal wie bisher.
+- Querstand (b gegen h in verschiedenen Stimmen) kostet 4.
+- Vorgaben: unverändert. Eine Stufen-Vorgabe wählt weiterhin den reinen Dreiklang – so lässt sich ein Vorhalt/Septakkord auch abwählen.
+
+Noch offen für «die ganze Begleitung» (Reihenfolge = Vorschlag):
+
+1. Binnenkadenzen (Divisio maior/minor) nach NOH – Auswertung siehe Abschnitt 10, sobald gelesen.
+2. Modus V/VI ohne b in der Melodie: Harmonie mit b bevorzugen (NOH notiert «Tu es Petrus» mit C-Dur, der Harmonisierer wählt sonst die lydische Leiter mit A-Dur).
+3. Septakkorde und Vorhalte auch im Phrasen-Innern, Durchgänge in Mittelstimmen.
+4. Rezitation/Psalmtöne (liegender Akkord), Modusprofile mit Tenor, Anfangsakkord.
+5. Referenzvergleich: ganze NOH-Sätze als Testfälle (braucht die Melodien als GABC).

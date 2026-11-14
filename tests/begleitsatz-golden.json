@@ -1,5 +1,5 @@
 {
- "build": "398",
+ "build": "401",
  "pieces": {
   "modus1": {
    "snap": [
@@ -10,59 +10,58 @@
     "a-Moll C4/E3/A2",
     "d-Moll A3/D3/D2",
     "d-Moll A3/D3/D2",
-    "d-Moll A3/F3/D2",
-    "a-Moll A3/C3/A2",
-    "d-Moll A3/F3/D3",
-    "d-Moll A3/F3/D3",
+    "G-Dur H3/D3/G2",
+    "e-Moll6 H3/E3/G2",
+    "G-Dur H3/G3/G2",
+    "D (Quartvorhalt) A3/G3/D3",
     "d-Moll A3/F3/D3"
    ],
-   "counts": {
-    "griff-links-ohne-pedal": 1,
-    "stimmueberschneidung": 1
-   }
+   "counts": {}
   },
   "modus2": {
    "snap": [
     "d-Moll6 A4/D4/F3",
     "F-Dur A4/C4/F3",
     "d-Moll A4/D4/D3",
-    "d-Moll A4/F4/D3",
-    "a-Moll A4/E4/A3",
-    "e-Moll G4/E4/E3",
-    "d-Moll A4/F4/D3",
-    "d-Moll A4/D4/D3",
-    "d-Moll A4/F4/D3",
-    "d-Moll A4/F4/D3"
+    "d-Moll F4/A3/D3",
+    "a-Moll E4/A3/A2",
+    "e-Moll E4/G3/E3",
+    "d-Moll F4/A3/D3",
+    "d-Moll F4/A3/D3",
+    "D (Quartvorhalt) G4/A3/D3",
+    "d-Moll F4/A3/D3"
    ],
    "counts": {
-    "griff-links-ohne-pedal": 4
+    "terzverdopplung": 1
    }
   },
   "modus3": {
    "snap": [
     "e-Moll H3/G3/E3",
     "C-Dur E4/G3/C3",
-    "F-Dur F4/A3/F3",
-    "a-Moll E4/C4/A3",
-    "e-Moll E4/H3/E3",
-    "e-Moll E4/H3/E3",
-    "e-Moll E4/H3/E3",
-    "e-Moll H3/G3/E3"
+    "a-Moll E4/A3/A2",
+    "d-Moll F4/A3/D3",
+    "G-Dur D4/H3/G3",
+    "e-Moll⁷ D4/H3/E3",
+    "e-Moll⁷ D4/H3/E3",
+    "a-Moll C4/A3/A2"
    ],
-   "counts": {}
+   "counts": {
+    "binnenschluss-nicht-finalis": 1
+   }
   },
   "modus4": {
    "snap": [
-    "e-Moll H3/G3/E2",
-    "e-Moll H3/E3/E2",
+    "e-Moll H3/G3/E3",
+    "C-Dur C4/E3/C3",
     "G-Dur H3/D3/G2",
     "d-Moll A3/D3/D2",
-    "e-Moll G3/H2/E2",
-    "G-Dur G3/H2/G2",
-    "e-Moll G3/H2/E2"
+    "a-Moll A3/C3/A2",
+    "d-Moll A3/F3/D3",
+    "a-Moll A3/C3/A2"
    ],
    "counts": {
-    "griff-links-ohne-pedal": 1
+    "stimmueberschneidung": 2
    }
   },
   "modus5": {
@@ -71,20 +70,20 @@
     "F-Dur F4/A3/F3",
     "d-Moll F4/A3/D3",
     "d-Moll F4/A3/D3",
-    "B-Dur F4/D4/B2",
-    "F-Dur F4/C4/F3",
-    "F-Dur F4/C4/F3",
-    "C-Dur E4/C4/C3",
+    "g-Moll D4/G3/G2",
+    "d-Moll D4/F3/D3",
+    "a-Moll C4/E3/A2",
+    "C-Dur C4/E3/C3",
     "F-Dur C4/A3/F3"
    ],
    "counts": {
-    "griff-links-ohne-pedal": 1,
-    "binnenschluss-nicht-finalis": 1
+    "binnenschluss-nicht-finalis": 1,
+    "stimmueberschneidung": 1
    }
   },
   "modus6": {
    "snap": [
-    "F-Dur C4/A3/F2",
+    "F-Dur6 C4/F3/A2",
     "a-Moll C4/E3/A2",
     "C-Dur C4/E3/C3",
     "F-Dur C4/A3/F3",
@@ -93,7 +92,6 @@
     "F-Dur C4/A3/F3"
    ],
    "counts": {
-    "griff-links-ohne-pedal": 1,
     "stimmueberschneidung": 1
    }
   },
@@ -117,19 +115,18 @@
     "C-Dur E4/G3/C3",
     "C-Dur E4/G3/C3",
     "a-Moll E4/A3/A2",
-    "F-Dur F4/A3/F2",
-    "a-Moll E4/A3/A2",
-    "e-Moll E4/H3/E3",
+    "C-Dur E4/G3/C3",
+    "F-Dur F4/A3/F3",
+    "G (Quartvorhalt) D4/C4/G3",
     "G-Dur D4/H3/G3"
    ],
    "counts": {
-    "griff-links-ohne-pedal": 1,
     "binnenschluss-nicht-finalis": 1
    }
   },
   "rezitation8": {
    "snap": [
-    "G-Dur D4/H3/G2",
+    "C-Dur E4/G3/C3",
     "C-Dur E4/G3/C3",
     "C-Dur E4/G3/C3",
     "C-Dur E4/G3/C3",
@@ -138,31 +135,30 @@
     "C-Dur E4/G3/C3",
     "e-Moll E4/G3/E3",
     "C-Dur E4/G3/C3",
-    "G-Dur D4/H3/G2"
+    "G-Dur D4/H3/G3"
    ],
    "counts": {
-    "griff-links-ohne-pedal": 2,
     "binnenschluss-nicht-finalis": 1
    }
   },
   "melisma1": {
    "snap": [
-    "d-Moll A3/F3/D2",
-    "d-Moll A3/D3/D2",
-    "d-Moll A3/F3/D2",
-    "d-Moll A3/D3/D2",
-    "d-Moll A3/F3/D2"
+    "d-Moll A3/F3/D3",
+    "F-Dur6 C4/F3/A2",
+    "a-Moll⁷ C4/G3/A2",
+    "F-Dur6 C4/F3/A2",
+    "d-Moll A3/F3/D3"
    ],
    "counts": {
-    "griff-links-ohne-pedal": 3
+    "quinte-fehlt": 1
    }
   },
   "bh1": {
    "snap": [
     "d-Moll A3/F3/D3",
-    "B-Dur D4/F3/B2",
-    "e-Moll H3/E3/E2",
-    "a-Moll C4/E3/A2",
+    "g-Moll D4/G3/G2",
+    "C-Dur E4/G3/C3",
+    "d-Moll D4/F3/D3",
     "G-Dur D4/G3/G2",
     "d-Moll D4/A3/D3",
     "a-Moll C4/A3/A2",
@@ -171,8 +167,7 @@
     "d-Moll A3/F3/D3"
    ],
    "counts": {
-    "querstand": 1,
-    "bass-tritonus": 1,
+    "antiquintparallele": 1,
     "wechsel-auf-einzelachtel": 1
    }
   },
@@ -185,15 +180,41 @@
     "d-Moll F4/A3/D3",
     "g-Moll D4/G3/G2",
     "g-Moll D4/G3/G2",
-    "g-Moll D4/B3/G2",
-    "d-Moll D4/F3/D3",
-    "g-Moll D4/B3/G3",
-    "g-Moll D4/B3/G3",
+    "C-Dur E4/G3/C3",
+    "a-Moll6 E4/A3/C3",
+    "C-Dur E4/C4/C3",
+    "G (Quartvorhalt) D4/C4/G3",
     "g-Moll D4/B3/G3"
    ],
+   "counts": {}
+  },
+  "tu_es_petrus_schluss": {
+   "snap": [
+    "G-Dur D4/H3/G3",
+    "e-Moll E4/G3/E3",
+    "C-Dur E4/G3/C3",
+    "C-Dur C4/G3/C3",
+    "e-Moll H3/G3/E3",
+    "e-Moll E4/H3/E3",
+    "a-Moll E4/C4/A3",
+    "e-Moll E4/H3/E3",
+    "G (Quartvorhalt) D4/C4/G3",
+    "G-Dur D4/H3/G3"
+   ],
+   "counts": {}
+  },
+  "modus8_pedal": {
+   "snap": [
+    "C-Dur E4/G3/C3",
+    "C-Dur E4/G3/C3",
+    "a-Moll E4/A3/A2",
+    "F-Dur F4/A3/F2",
+    "F-Dur F4/A3/F2",
+    "G (Quartvorhalt) D4/C4/G2",
+    "G-Dur D4/H3/G2"
+   ],
    "counts": {
-    "griff-links-ohne-pedal": 1,
-    "stimmueberschneidung": 1
+    "binnenschluss-nicht-finalis": 1
    }
   }
  }

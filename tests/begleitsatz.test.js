@@ -34,7 +34,7 @@ function loadHarmonizer() {
   if (a < 0 || b < 0 || b < a) throw new Error('Begleitsatz-Code in index.html nicht gefunden (Marken geändert?)');
   // const/let der obersten Ebene sind in vm nicht am Kontextobjekt sichtbar ->
   // die gebrauchten Namen am Ende ausdrücklich exportieren.
-  const names = ['clGabcToAbc', 'clHarmonize', 'clParseGabc', 'clSemi', 'clPcOf', 'clMod', 'clChordName', 'clGermanNote', 'clTransCost', 'clSegChords', 'clVoicings', 'clOvParse', 'clOvLookup', 'clMakeChord'];
+  const names = ['clCadenceChord', 'clGabcToAbc', 'clHarmonize', 'clParseGabc', 'clSemi', 'clPcOf', 'clMod', 'clChordName', 'clGermanNote', 'clTransCost', 'clSegChords', 'clVoicings', 'clOvParse', 'clOvLookup', 'clMakeChord'];
   const src = html.slice(a, b) + '\n;globalThis.__cl = {' + names.join(',') + '};';
   const ctx = vm.createContext({ console });
   vm.runInContext(src, ctx, { filename: 'index.html#begleitsatz' });
@@ -76,15 +76,30 @@ function analyse(env, fx) {
   segs.forEach((sg, i) => {
     const v = sg.voicing, ch = sg.chord, m = mel(sg);
     if (!ch || !v || !v.A) { fnd('pause-statt-akkord', i, 'kein spielbarer Akkord (Notlösung Pausen)'); return; }
-    const S0 = m[0], A = v.A.s, T = v.T.s, B = v.B.s;
+    const anc = sg.anc || 0;
+    const S0 = m[anc], A = v.A.s, T = v.T.s, B = v.B.s;
     // Akkordaufbau
     const third = cl.clMod(ch.pcs[1] - ch.pcs[0], 12), fifth = cl.clMod(ch.pcs[2] - ch.pcs[0], 12);
-    if (fifth !== 7 || (third !== 3 && third !== 4)) err('dreiklang', i, 'kein Dur-/Molldreiklang: ' + ch.pcs.join(','));
-    if (!ch.pcs.includes(pc(sg.notes[0]))) err('melodieton-im-akkord', i, 'erster Melodieton nicht im Akkord ' + cl.clChordName(ch));
+    const ivs = ch.pcs.map(x => cl.clMod(x - ch.pcs[0], 12)).join();
+    if (ch.kind === 'sus') { if (ivs !== '0,5,7') err('vorhaltakkord', i, ivs); }
+    else if (ch.kind === '7') { if (ivs !== '0,3,7,10') err('septakkord', i, ivs); }
+    else if (fifth !== 7 || (third !== 3 && third !== 4)) err('dreiklang', i, 'kein Dur-/Molldreiklang: ' + ch.pcs.join(','));
+    if (ch.kind) {
+      if (sg.inv) err('zusatzakkord-lage', i, 'Vorhalt-/Septakkord nicht in Grundstellung');
+      const dpc = ch.pcs[ch.dis];
+      if (pc(sg.notes[anc]) === dpc) err('dissonanz-in-melodie', i, cl.clChordName(ch));
+      if ([A, T, B].filter(x => cl.clMod(x, 12) === dpc).length !== 1) err('dissonanz-verdoppelt-oder-fehlt', i, cl.clChordName(ch));
+      const nx = segs[i + 1];
+      if (!nx || !nx.chord) err('dissonanz-ohne-aufloesung', i, 'kein Folgeakkord');
+      else ['A', 'T', 'B'].forEach(k => { if (cl.clMod(v[k].s, 12) !== dpc) return; const d = nx.voicing[k].s - v[k].s; if (!(d === 0 || d === -1 || d === -2)) err('dissonanz-aufloesung', i, k + ' ' + semiName(v[k].s) + ' → ' + semiName(nx.voicing[k].s)); });
+      if (ch.kind === 'sus' && i !== segs.length - 2) err('vorhalt-ort', i, 'Quartvorhalt nicht direkt vor dem Schluss');
+    }
+    if ((sg.anc || 0) !== (i === segs.length - 1 ? sg.notes.length - 1 : 0)) err('tragender-ton', i, 'anc=' + sg.anc);
+    if (!ch.pcs.includes(pc(sg.notes[anc]))) err('melodieton-im-akkord', i, 'tragender Melodieton nicht im Akkord ' + cl.clChordName(ch));
     [A, T, B].forEach((s, k) => { if (!ch.pcs.includes(cl.clMod(s, 12))) err('akkordfremd', i, 'ATB'[k] + ' ' + semiName(s) + ' nicht in ' + cl.clChordName(ch)); });
     const pcs4 = [S0, A, T, B].map(s => cl.clMod(s, 12));
     if (!pcs4.includes(ch.pcs[0])) err('grundton-fehlt', i, cl.clChordName(ch));
-    if (!pcs4.includes(ch.pcs[1])) err('terz-fehlt', i, cl.clChordName(ch));
+    if (!pcs4.includes(ch.pcs[1])) err(ch.kind === 'sus' ? 'quarte-fehlt' : 'terz-fehlt', i, cl.clChordName(ch));
     if (cl.clMod(B, 12) !== ch.pcs[sg.inv ? 1 : 0]) err('bass-lage', i, 'Bass passt nicht zur Lage inv=' + sg.inv);
     if (sg.inv !== 0 && sg.inv !== 1) err('lage', i, 'unerwartete Lage ' + sg.inv);
     // Stimmkreuzung / Abstände / Ambitus
@@ -100,17 +115,23 @@ function analyse(env, fx) {
     if (phraseEnd && sg.inv) err('schluss-sextakkord', i, 'Sextakkord am Phrasenschluss');
     // Schlussakkord
     if (isLast) {
-      if (ch.root !== hctx.finalisStep) err('schlussakkord', i, 'Schlussakkord ' + cl.clChordName(ch) + ' nicht auf der Finalis');
-      if (cl.clMod(B, 12) !== hctx.finalisPc) err('schlussakkord-bass', i, 'Bass am Schluss nicht Finalis');
+      // phrygisch (Modus III/IV): Moll-Akkord eine Quarte über der Finalis, sonst Finalis-Akkord
+      if (ch.kind) err('schlussakkord', i, 'Schluss auf ' + cl.clChordName(ch));
+      if (ch.root !== hctx.finalRoot) err('schlussakkord', i, 'Schlussakkord ' + cl.clChordName(ch) + ' nicht auf der erwarteten Stufe');
+      if (fx.finalChord && cl.clChordName(ch) !== fx.finalChord) err('schlussakkord', i, 'ist ' + cl.clChordName(ch) + ', erwartet ' + fx.finalChord);
+      if (!ch.pcs.includes(hctx.finalisPc)) err('schlussakkord', i, 'Finalis nicht im Schlussakkord');
+      if (cl.clMod(B, 12) !== ch.pcs[0]) err('schlussakkord-bass', i, 'Bass am Schluss nicht Grundton');
     }
     // BEFUNDE innerhalb des Abschnitts
     const rh = Math.max(...m) - A; // rechte Hand: Melodie + Alt
     if (rh > HAND_MAX) fnd('griff-rechts', i, 'rechte Hand ' + rh + ' Halbtöne (Alt ' + semiName(A) + ', Spitze ' + semiName(Math.max(...m)) + ')');
-    if (T - B > HAND_MAX) fnd('griff-links-ohne-pedal', i, 'linke Hand T–B ' + (T - B) + ' Halbtöne (nur mit Pedal spielbar)');
+    const ped = !!(fx.opts && fx.opts.pedal);
+    if (!ped && T - B > 16) fnd('griff-links-ueber-dezime', i, (T - B) + ' Halbtöne');
+    if (!ped && T - B > HAND_MAX) fnd('griff-links-ohne-pedal', i, 'linke Hand T–B ' + (T - B) + ' Halbtöne (nur mit Pedal spielbar)');
     if (!pcs4.includes(ch.pcs[2])) fnd('quinte-fehlt', i, cl.clChordName(ch));
-    if (pcs4.filter(x => x === ch.pcs[1]).length > 1) fnd('terzverdopplung', i, cl.clChordName(ch));
-    sg.notes.slice(1).forEach(n => { if (n.dur >= 2 && !ch.pcs.includes(pc(n))) fnd('langer-ton-akkordfremd', i, cl.clGermanNote(cl.clMod(n.pitch.D, 7), n.pitch.alt) + ' gegen ' + cl.clChordName(ch)); });
-    if (phraseEnd && !isLast && sg.endBar !== 'minor' && ch.root !== hctx.finalisStep) fnd('binnenschluss-nicht-finalis', i, 'Divisio ' + sg.endBar + ' auf ' + cl.clChordName(ch));
+    if (ch.kind !== 'sus' && pcs4.filter(x => x === ch.pcs[1]).length > 1) fnd('terzverdopplung', i, cl.clChordName(ch));
+    sg.notes.forEach((n, ni) => { if (ni !== anc && n.dur >= 2 && !ch.pcs.includes(pc(n))) fnd('langer-ton-akkordfremd', i, cl.clGermanNote(cl.clMod(n.pitch.D, 7), n.pitch.alt) + ' gegen ' + cl.clChordName(ch)); });
+    if (phraseEnd && !isLast && sg.endBar !== 'minor' && ch.root !== hctx.finalRoot) fnd('binnenschluss-nicht-finalis', i, 'Divisio ' + sg.endBar + ' auf ' + cl.clChordName(ch));
   });
 
   // Übergänge
@@ -152,6 +173,8 @@ function analyse(env, fx) {
   info.abschnitte = segs.length; info.pulse = pulses; info.wechsel = changes; info.liegen = held;
   info.pulseJeAkkord = +(pulses / (changes + 1)).toFixed(2);
   info.sextakkorde = segs.filter(s => s.inv).length;
+  info.vorhalt = segs.some(s => s.chord && s.chord.kind === 'sus');
+  info.sept = segs.filter(s => s.chord && s.chord.kind === '7').length;
 
   // Schnappschuss (heutiges Verhalten): Akkord, Lage, Stimmen je Abschnitt
   const snap = segs.map(sg => !sg.chord || !sg.voicing.A ? '–' :
@@ -240,7 +263,7 @@ function main() {
     nFind += r.findings.length;
     Object.keys(r.counts).forEach(k => { total[k] = (total[k] || 0) + r.counts[k]; });
     const cs = Object.keys(r.counts).sort().map(k => k + '×' + r.counts[k]).join(', ');
-    console.log('  ' + (bad ? 'FEHLER' : 'ok    ') + ' ' + fx.id.padEnd(15) + ' ' + String(r.info.abschnitte).padStart(3) + ' Abschn., ' + r.info.wechsel + ' Wechsel/' + r.info.liegen + ' liegen, ' + r.info.pulseJeAkkord + ' Pulse/Akkord' + (cs ? '  | Befunde: ' + cs : ''));
+    console.log('  ' + (bad ? 'FEHLER' : 'ok    ') + ' ' + fx.id.padEnd(15) + ' ' + String(r.info.abschnitte).padStart(3) + ' Abschn., ' + r.info.wechsel + ' Wechsel/' + r.info.liegen + ' liegen, ' + r.info.pulseJeAkkord + ' Pulse/Akkord' + (r.info.vorhalt ? ', Vorhalt' : '') + (r.info.sept ? ', Sept×' + r.info.sept : '') + (cs ? '  | Befunde: ' + cs : ''));
     msgs.forEach(m => console.log('         ' + m));
     if (VERBOSE) { console.log('         ' + r.snap.join(' | ')); r.findings.forEach(f => console.log('         Befund ' + f.rule + ' @' + f.seg + ': ' + f.msg)); }
   });

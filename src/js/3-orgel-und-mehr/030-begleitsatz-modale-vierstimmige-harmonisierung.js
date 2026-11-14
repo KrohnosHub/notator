@@ -11,6 +11,14 @@
 //  - Stimmführung: kleinste Bewegung, keine Stimmkreuzung, Alt immer unter
 //    der Melodie, Abstände S–A/A–T höchstens Oktave, keine Quint-/
 //    Oktavparallelen; liegende Töne werden übergebunden
+//  - Schlussformel nach Nova Organi Harmonia (Build 401, Auswertung in
+//    docs/begleitsatz-regelwerk.md, Abschnitt 8): vor dem Schlussakkord
+//    Quartvorhalt 4–3 in einer Mittelstimme, davor bevorzugt der Moll-
+//    Septakkord der 5. Stufe (Septime bleibt als Vorhalt liegen); nie
+//    Leittonalteration. Phrygische Schlüsse (Modus III/IV): Moll-Akkord eine
+//    Quarte über der Finalis (Finalis = Quinte)
+//  - Spielbarkeit: ohne Pedal linke Hand höchstens Dezime (über Oktave nur
+//    ausnahmsweise), rechte Hand möglichst Oktave; kein Querstand
 // Optimierung per dynamischer Programmierung über alle Abschnitte.
 const CL_DE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'H'];
 function clSemi(D, alt) { return Math.floor(D / 7) * 12 + CL_NAT_PC[clMod(D, 7)] + alt; }
@@ -24,7 +32,8 @@ function clGermanNote(step, alt) {
 }
 function clChordName(ch) {
   const n = clGermanNote(ch.root, ch.alts[0]);
-  return ch.minor ? n.toLowerCase() + '-Moll' : n + '-Dur';
+  if (ch.kind === 'sus') return n + ' (Quartvorhalt)';
+  return (ch.minor ? n.toLowerCase() + '-Moll' : n + '-Dur') + (ch.kind === '7' ? '⁷' : '');
 }
 
 // Akkordkandidaten eines Abschnitts (Dreiklang auf jeder Stufe der lokalen Leiter)
@@ -32,8 +41,10 @@ function clSegChords(seg, keyAlt, onlyFirst) {
   // Lokale Leiter: Vorzeichnung + Alterationen der Melodie in diesem Abschnitt;
   // der erste (tragende) Melodieton hat Vorrang (z.B. H und B im selben Abschnitt).
   const scale = keyAlt.slice();
-  if (!onlyFirst) seg.notes.slice(1).forEach(n => { scale[clMod(n.pitch.D, 7)] = n.pitch.alt; });
-  const s0 = seg.notes[0].pitch;
+  if (!onlyFirst) seg.notes.forEach(n => { scale[clMod(n.pitch.D, 7)] = n.pitch.alt; });
+  // tragender Ton: sonst der erste, im Schlussabschnitt der letzte (seg.anc) –
+  // ein Schluss wie «a g» wird als Vorhalt über dem Schlussakkord begleitet
+  const s0 = seg.notes[seg.anc || 0].pitch;
   scale[clMod(s0.D, 7)] = s0.alt;
   const out = [];
   for (let r = 0; r < 7; r++) {
@@ -49,13 +60,35 @@ function clSegChords(seg, keyAlt, onlyFirst) {
   return out;
 }
 
-function clVoicings(seg, ch, inv) {
+// Zusatzakkorde der Schlussformel (leitereigen, nur Grundstellung):
+//  'sus' = Grundton–Quarte–Quinte (Quartvorhalt vor dem Schlussakkord),
+//  '7'   = Moll-Septakkord. need = Pflichttöne, dis = dissonanter Ton (wird
+//  nicht verdoppelt, liegt nie in der Melodie und löst sich abwärts auf).
+function clCadenceChord(seg, keyAlt, root, kind) {
+  const scale = keyAlt.slice();
+  seg.notes.forEach(n => { scale[clMod(n.pitch.D, 7)] = n.pitch.alt; });
+  const steps = (kind === 'sus' ? [0, 3, 4] : [0, 2, 4, 6]).map(x => clMod(root + x, 7));
+  const alts = steps.map(st => scale[st]);
+  const pcs = steps.map((st, i) => clPcOf(st, alts[i]));
+  const iv = pcs.map(x => clMod(x - pcs[0], 12)).join();
+  if (iv !== (kind === 'sus' ? '0,5,7' : '0,3,7,10')) return null;
+  const dis = kind === 'sus' ? 1 : 3;
+  const s0 = seg.notes[0].pitch, s0pc = clPcOf(clMod(s0.D, 7), s0.alt);
+  if (!pcs.includes(s0pc) || s0pc === pcs[dis]) return null;
+  return { root: steps[0], steps, alts, pcs, minor: kind === '7', kind, dis, need: kind === 'sus' ? [0, 1] : [0, 1, 3] };
+}
+
+// opt.pedal: Bass im Pedal -> Tenor darf bis zur Duodezime über dem Bass liegen
+function clVoicings(seg, ch, inv, opt, relaxed) {
+  const pedal = !!(opt && opt.pedal);
   const melS = seg.notes.map(n => clSemi(n.pitch.D, n.pitch.alt));
-  const s0 = melS[0], minMel = Math.min(...melS);
+  const anc = seg.notes[seg.anc || 0].pitch;
+  const s0 = melS[seg.anc || 0], minMel = Math.min(...melS), maxMel = Math.max(...melS);
+  const need = ch.need || [0, 1];
   const tone = D => { const st = clMod(D, 7); const i = ch.steps.indexOf(st); return i < 0 ? null : { D, alt: ch.alts[i], i, s: clSemi(D, ch.alts[i]) }; };
   const bassStep = ch.steps[inv];
   const res = [];
-  const sIdx = ch.pcs.indexOf(clPcOf(clMod(seg.notes[0].pitch.D, 7), seg.notes[0].pitch.alt));
+  const sIdx = ch.pcs.indexOf(clPcOf(clMod(anc.D, 7), anc.alt));
   for (let bD = 14; bD <= 29; bD++) {
     if (clMod(bD, 7) !== bassStep) continue;
     const B = tone(bD); if (!B) continue;
@@ -65,16 +98,24 @@ function clVoicings(seg, ch, inv) {
         const A = tone(aD); if (!A || A.s <= T.s || A.s - T.s > 12) continue;
         if (A.s >= minMel || s0 - A.s > 12) continue;
         const idx = [sIdx, A.i, T.i, B.i];
-        if (!idx.includes(0) || !idx.includes(1)) continue;
+        if (need.some(x => !idx.includes(x))) continue;
+        if (ch.dis != null && idx.filter(x => x === ch.dis).length > 1) continue;
         let c = 0;
-        if (!idx.includes(2)) c += 0.8;
-        if (idx.filter(x => x === 1).length > 1) c += 1.5;
+        if (!ch.kind && !idx.includes(2)) c += 0.8;
+        if (ch.kind !== 'sus' && idx.filter(x => x === 1).length > 1) c += 1.5;
+        // Griffweite: linke Hand (ohne Pedal) Oktave, Dezime nur ausnahmsweise;
+        // rechte Hand: höchster Melodieton des Abschnitts über dem Alt
+        const lh = T.s - B.s;
+        if (!pedal) { if (lh > 16 && !relaxed) continue; if (lh > 12) c += 1 + 0.15 * (lh - 12); }
+        if (maxMel - A.s > 12) c += 0.25 * (maxMel - A.s - 12);
         c += 0.04 * Math.abs(s0 - A.s - 5);
         c += 0.02 * Math.abs(T.s - (A.s + B.s) / 2);
         res.push({ A, T, B, c });
       }
     }
   }
+  // ohne Pedal keine spielbare Lage -> Griffweite ausnahmsweise freigeben
+  if (!res.length && !pedal && !relaxed) return clVoicings(seg, ch, inv, opt, true);
   res.sort((a, b) => a.c - b.c);
   // mehr Kandidaten, damit die Stimmführung (Übergangskosten) wählen kann
   return res.slice(0, 24);
@@ -112,7 +153,14 @@ function clMakeChord(rootStep, rootPc, minor) {
 }
 function clHarmonize(segs, ctx) {
   if (!segs.length) return;
+  // Schlussakkord: Finalis-Akkord; phrygisch (Halbton über der Finalis, Modus
+  // III/IV): Moll-Akkord eine Quarte höher, die Finalis ist dessen Quinte.
+  const fS = ctx.finalisStep, nLast = segs.length - 1;
+  const phryg = clMod(clPcOf(clMod(fS + 1, 7), ctx.keyAlt[clMod(fS + 1, 7)]) - clPcOf(fS, ctx.keyAlt[fS]), 12) === 1;
+  const finalRoot = phryg ? clMod(fS + 3, 7) : fS;
+  ctx.finalRoot = finalRoot;
   const states = segs.map((seg, si) => {
+    seg.anc = si === nLast ? seg.notes.length - 1 : 0;
     let chords = clSegChords(seg, ctx.keyAlt);
     // Kommt die b/h-Stufe in der Melodie dieses Abschnitts nicht vor, sind
     // auch Akkorde mit der anderen Form möglich (z.B. B-Dur/g-Moll in D-dorisch)
@@ -132,28 +180,36 @@ function clHarmonize(segs, ctx) {
       if (f.length) chords = f;
     }
     const forcedInv = ov && ov.i != null ? ov.i : null;
+    // Schlussformel (nur ohne Vorgabe, innerhalb der Schlussphrase): Quartvorhalt
+    // direkt vor dem Schlussakkord, Moll-Septakkord der 5. Stufe davor
+    if (!ov && !seg.endBar && nLast >= 1 && (si === nLast - 1 || (si === nLast - 2 && !segs[nLast - 1].endBar))) {
+      const add = (c, bonus) => { if (c) { c.bonus = bonus; chords = chords.concat([c]); } };
+      if (si === nLast - 1) add(clCadenceChord(seg, ctx.keyAlt, finalRoot, 'sus'), 1.2);
+      add(clCadenceChord(seg, ctx.keyAlt, clMod(finalRoot + 4, 7), '7'), si === nLast - 1 ? 0.8 : 0.6);
+    }
     const isLast = si === segs.length - 1;
     const phraseEnd = isLast || seg.endBar === 'maior' || seg.endBar === 'finalis' || seg.endBar === 'minor';
     const st = [];
     chords.forEach(ch => {
       let hc = 0;
       const chordPcs = ch.pcs;
-      seg.notes.slice(1).forEach(n => { if (!chordPcs.includes(clPcOf(clMod(n.pitch.D, 7), n.pitch.alt))) hc += n.dur >= 2 ? 6 : 0.6; });
+      seg.notes.forEach((n, ni) => { if (ni !== seg.anc && !chordPcs.includes(clPcOf(clMod(n.pitch.D, 7), n.pitch.alt))) hc += n.dur >= 2 ? 6 : 0.6; });
       if (ch.alt2) hc += 2.5; // andere b/h-Form: nur Vorschlag, automatisch selten
-      if (isLast && ch.root !== ctx.finalisStep) hc += 20;
+      if (ch.kind) hc -= ch.bonus;
+      if (isLast && ch.root !== finalRoot) hc += 20;
       if (si === 0 && ch.root !== ctx.finalisStep) hc += 1;
       // Phrasenschluss an Doppel-/Schlussstrich: Finalis-Akkord deutlich bevorzugt
-      if (phraseEnd && !isLast && ch.root !== ctx.finalisStep) hc += (seg.endBar === 'minor' ? 0.6 : 2.5);
-      const invs = forcedInv != null ? [forcedInv] : [0, 1];
+      if (phraseEnd && !isLast && ch.root !== finalRoot) hc += (seg.endBar === 'minor' ? 0.6 : 2.5);
+      const invs = ch.kind ? [0] : forcedInv != null ? [forcedInv] : [0, 1];
       invs.forEach(inv => {
         if (inv && phraseEnd && forcedInv == null) return;
-        let vs = clVoicings(seg, ch, inv);
+        let vs = clVoicings(seg, ch, inv, ctx);
         vs.forEach(v => st.push({ ch, inv, v, cost: hc + v.c + (inv && forcedInv == null ? 1.2 : 0) }));
       });
     });
     if (!st.length && forcedInv != null) {
       // gewünschte Lage hier nicht spielbar -> automatisch
-      chords.forEach(ch => [0, 1].forEach(inv => clVoicings(seg, ch, inv).forEach(v => st.push({ ch, inv, v, cost: v.c + 5 }))));
+      chords.forEach(ch => [0, 1].forEach(inv => clVoicings(seg, ch, inv, ctx).forEach(v => st.push({ ch, inv, v, cost: v.c + 5 }))));
     }
     if (!st.length) {
       // Notlösung (z.B. Melodie ausserhalb der Stimmlagen): Pausen statt Akkord,
@@ -174,7 +230,7 @@ function clHarmonize(segs, ctx) {
       states[k - 1].forEach((p, j) => {
         const pc = best[k - 1][j].cost;
         if (pc === Infinity) return;
-        let t = pc + clTransCost(p, s, spPrev, sCur, cSeg);
+        let t = pc + clTransCost(p, s, spPrev, sCur, cSeg, pSeg);
         // nach Atemzeichen/Viertelstrich hält die Orgel durch -> danach ein
         // hörbar anderer Akkord, damit klar ist, dass es weitergeht
         if ((pSeg.endBar === 'minima' || pSeg.endBar === 'minor') && p.ch && s.ch && p.ch.root === s.ch.root) t += (p.inv === s.inv ? 3 : 1.2);
@@ -193,7 +249,7 @@ function clHarmonize(segs, ctx) {
   }
 }
 
-function clTransCost(p, s, spPrev, sCur, cSeg) {
+function clTransCost(p, s, spPrev, sCur, cSeg, pSeg) {
   // Ziel (2026-10-12, «klingt holprig»): ruhigere Begleitung – Akkord eher
   // liegen lassen, Wechsel bevorzugt im Quint-/Quartabstand, kleine Schritte
   // in Alt/Tenor, keine grossen Bass-Sprünge, kein Wechsel auf kurzer Einzelnote.
@@ -221,6 +277,25 @@ function clTransCost(p, s, spPrev, sCur, cSeg) {
     const d1 = clMod(P[i] - P[j], 12), d2 = clMod(C[i] - C[j], 12);
     const mi = C[i] - P[i], mj = C[j] - P[j];
     if (d1 === d2 && (d1 === 0 || d1 === 7) && mi !== 0 && mj !== 0 && Math.sign(mi) === Math.sign(mj)) c += 10;
+  }
+  // Dissonanz (Quarte des Vorhalts, Septime): bleibt liegen oder löst sich
+  // stufenweise abwärts auf; sie wird nicht angesprungen.
+  const VO = ['A', 'T', 'B'];
+  if (p.ch.dis != null) VO.forEach(v => {
+    if (clMod(pv[v].s, 12) !== p.ch.pcs[p.ch.dis]) return;
+    const d = cv[v].s - pv[v].s;
+    if (!(d === 0 || d === -1 || d === -2)) c += 8;
+  });
+  if (s.ch.dis != null) VO.forEach(v => {
+    if (clMod(cv[v].s, 12) === s.ch.pcs[s.ch.dis] && Math.abs(cv[v].s - pv[v].s) > 2) c += 0.5;
+  });
+  // Querstand: dieselbe Stufe in verschiedenen Stimmen mit anderem Vorzeichen (b gegen h)
+  if (pSeg && cSeg) {
+    const pm = pSeg.notes[pSeg.notes.length - 1].pitch, cm = cSeg.notes[0].pitch;
+    const PT = [pm, pv.A, pv.T, pv.B], CT = [cm, cv.A, cv.T, cv.B];
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+      if (i !== j && clMod(PT[i].D, 7) === clMod(CT[j].D, 7) && PT[i].alt !== CT[j].alt) c += 4;
+    }
   }
   return c;
 }
@@ -484,7 +559,7 @@ function clGabcToAbc(gabcList, opts) {
         });
       });
       const finalisPc = clPcOf(tgt.step, keyAlt[clMod(tgt.step, 7)]);
-      clHarmonize(segs, { keyAlt, finalisStep: tgt.step, finalisPc, bVar, overrides: opts.chordOverrides || {} });
+      clHarmonize(segs, { keyAlt, finalisStep: tgt.step, finalisPc, bVar, pedal: !!opts.pedal, overrides: opts.chordOverrides || {} });
       segs.forEach((sg, i) => {
         const nx = segs[i + 1];
         sg.tieNext = !!(nx && !sg.endBar && nx.line === sg.line);
