@@ -156,3 +156,40 @@ Folgerungen (ein Stück, **keine Statistik**):
 - Sextakkorde, Septakkorde und Vorhalte sind normal – deckt sich mit Entscheid 2.
 - Am Viertelstrich bleibt der Akkord hier liegen – **widerspricht Entscheid 4** (immer Wechsel). Der Entscheid geht vor; beim Vergleich mit NOH sind solche Stellen auszunehmen.
 - Schlussakkord ohne Quinte, Terz im Alt; die plagale Wendung IV – I ist hier die Kadenz.
+
+## 8. Auswertung NOH: 23 Schlusskadenzen (14.11.2026)
+
+Quelle: die 19 hochgeladenen PDFs (`tests/korpus/noh/`), Daten in `tests/korpus/noh-kadenzen.json`.
+Gelesen sind nur **Schlüsse** (Stück-, Vers- und Amen-Schlüsse), keine Binnenkadenzen. Schlussakkord und Bass sind gut lesbar; der vorletzte Klang und die Mittelstimmen sind weniger sicher. 21 von 23 gelten als sicher, 2 sind ausgenommen (siehe unten). Stichprobe klein und ungleich verteilt (Modus VIII: 6, I: 5, IV: 3, VII: 2, II/V/VI: je 1–2, III: 0) – **Tendenz, kein Beweis**.
+
+### Befunde
+
+| Merkmal | Anzahl (von 21) |
+|---|---|
+| Schlussakkord in Grundstellung | 21 |
+| Schlussakkord vollständig (mit Quinte) | 16; ohne Quinte 2; Finalis als Quinte 3 |
+| **Quartvorhalt 4–3** vor dem Schlussakkord (meist im Tenor) | 15 |
+| Vorletzter Klang: **Moll-Septakkord auf der 5. Stufe** (z. B. c-Moll⁷ → F-Dur, a-Moll⁷ → d-Moll); seine Septime wird zum Vorhalt | 8–9 |
+| Vorletzter Klang: Dur-Akkord einen Ganzton unter der Finalis (F → G, C → D), oft als Sextakkord | 2 |
+| Vorletzter Klang: 4. Stufe (plagal) | 3 |
+| Vorletzter Klang: 6. Stufe (B → d, Es → g) | 2 |
+| Leittonalteration (Dur-Dominante) | 0 |
+
+### Antworten auf die offenen Entscheide
+
+- **Entscheid 5 (Schluss Modus III/IV):** In allen drei Sätzen im Modus IV (Gloria, Sanctus, Agnus der Messe I) steht am Schluss **weder e-Moll noch E-Dur, sondern der Moll-Akkord eine Quarte über der Finalis** – die Finalis ist Quinte des Schlussakkords (untransponiert: Melodie endet auf E, Akkord a-Moll). Ein weiterer Satz mit phrygischem Schluss (Introitus S. 324, Modus nicht bezeichnet) macht es gleich. Für **Modus III fehlt ein Beleg**: der einzige Kandidat (Communio «Dico autem vobis», Überschrift «III») endet in meiner Lesung melodisch auf G mit G-Dur, was nicht zu Modus III passt – ungeklärt, bitte am Original prüfen.
+- **Entscheid 6 (Psalmton-Schlüsse):** Vier Gloria-Patri-Schlüsse gelesen. Drei enden auf der Finalis → Finalis-Akkord. Einer (Gaudeamus, Modus I) endet melodisch auf F → trotzdem d-Moll, F ist Terz. Regel-Vorschlag: Schlusston der Differenz als Akkordton des Finalis-Akkords nehmen, wenn er dazu passt. Für Differenzen, deren Schlusston **nicht** in den Finalis-Akkord passt (z. B. Ton I auf G oder A), gibt es **keinen Beleg**.
+- **Entscheid 2 (Septakkorde/Vorhalte):** durch das Material klar gestützt.
+
+### Vorschlag für die Schlussformel (ersetzt 3.2, Zeile «Divisio finalis»)
+
+1. Schlussakkord: Finalis im Bass, Grundstellung, vollständig. Modus IV (und vorläufig III): Moll-Akkord eine Quarte über der Finalis, Finalis als Quinte.
+2. Davor Quartvorhalt 4–3 in einer Mittelstimme, wenn die Melodie am Schluss mindestens zwei Pulse auf der Finalis oder einem Akkordton liegt; sonst ohne Vorhalt.
+3. Vorletzter Klang nach Priorität: Moll-Septakkord auf der 5. Stufe (Septime wird liegend zum Vorhalt) → Dur-Akkord unter der Finalis → 4. Stufe. Massgebend ist, welcher zu den Melodietönen passt.
+4. Nie Leittonalteration.
+
+### Ausgenommen / offen
+
+- `0912` Dico autem vobis: Modusangabe und gelesener Schluss widersprechen sich.
+- `1171a` Agnus Dei I: Bass (d-Moll) sicher, Oberstimme unscharf.
+- Nicht gelesen: Versschlüsse in 0728 und 1112, 1145 (Gaudens gaudebo) ganz, alle Binnenkadenzen (Divisio maior/minor). Die Binnenkadenzen wären der nächste Schritt für Entscheid 4 und die Halbschluss-Regel.

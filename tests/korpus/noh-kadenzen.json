@@ -1,0 +1,29 @@
+{
+ "hinweis": "Schlusskadenzen aus Nova Organi Harmonia, von Claude aus den Scans in tests/korpus/noh/ gelesen (14.11.2026). Schlussakkord und Bass: gut lesbar. Vorletzter Klang und Mittelstimmen: weniger sicher. 'sicher': false = nicht für Auswertungen verwenden. Tonnamen deutsch (H, B), Akkorde: Grossbuchstabe = Dur, Kleinbuchstabe = Moll, 6 = Sextakkord, 7 = Septakkord.",
+ "kadenzen": [
+  {"id":"0016","stueck":"Tollite portas (Graduale), Versschluss","modus":2,"vorz":"3#","finalis":"Fis","vorletzter":"Orgelpunkt Fis","vorhalt":"h-a","schluss":"fis","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"0029","stueck":"Rorate (Introitus), Gloria Patri – Amen","modus":1,"vorz":"-","finalis":"D","vorletzter":"F6, a7","vorhalt":null,"schluss":"d","lage":"Grundstellung, fünfstimmig, Bass in Oktaven","sicher":true},
+  {"id":"0032","stueck":"Ave Maria (Offertorium)","modus":8,"vorz":"-","finalis":"G","vorletzter":"F6","vorhalt":"c-h","schluss":"G","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"0033","stueck":"Ecce virgo (Communio)","modus":1,"vorz":"-","finalis":"D","vorletzter":"F6, a7","vorhalt":null,"schluss":"d","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"0041","stueck":"Alleluia Dominus dixit","modus":8,"vorz":"2b","finalis":"F","vorletzter":"c7","vorhalt":"b-a","schluss":"F","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"0696","stueck":"Tu es Petrus (Communio), Fassung S. 248","modus":6,"vorz":"2#","finalis":"G","vorletzter":"C, a6","vorhalt":null,"schluss":"G","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"1163","stueck":"Tu es Petrus (Communio), Fassung S. 391","modus":6,"vorz":"1#","finalis":"G","vorletzter":"G6, C, G6","vorhalt":"c-h","schluss":"G","lage":"Grundstellung, ohne Quinte","sicher":true},
+  {"id":"0728a","stueck":"Gaudeamus (Introitus), Antiphonschluss","modus":1,"vorz":"-","finalis":"D","vorletzter":"B","vorhalt":"g-f","schluss":"d","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"0728b","stueck":"Gaudeamus, Gloria Patri – Amen (Melodie endet auf F)","modus":1,"vorz":"-","finalis":"D","melodieschluss":"F","vorletzter":null,"vorhalt":null,"schluss":"d","lage":"Grundstellung, Terz in der Oberstimme","sicher":true},
+  {"id":"0756a","stueck":"S. 328, Schluss «ejus.» (Stück/Modus auf den Seiten nicht bezeichnet)","modus":null,"vorz":"1#","finalis":"D","vorletzter":"C","vorhalt":"g-fis","schluss":"D","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"0756b","stueck":"Alleluia (S. 328)","modus":5,"vorz":"2#","finalis":"D","vorletzter":"G6","vorhalt":"g-fis","schluss":"D","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"0912","stueck":"Dico autem vobis (Communio, Überschrift «III», Melodie endet aber auf G)","modus":3,"vorz":"-","finalis":"?","melodieschluss":"G","vorletzter":null,"vorhalt":"c-h","schluss":"G","lage":"Grundstellung, vollständig","sicher":false},
+  {"id":"1062","stueck":"Alleluia Ecce concipiet, Versschluss «Christum.»","modus":1,"vorz":"2#","finalis":"E","vorletzter":"h7 (unsicher)","vorhalt":"a-g","schluss":"e","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"1112","stueck":"Introitus S. 324, Antiphonschluss «tibi.» (Modus auf den Seiten nicht bezeichnet)","modus":null,"vorz":"2b","finalis":"D","vorletzter":"Es","vorhalt":"c-b","schluss":"g","lage":"Finalis ist Quinte des Schlussakkords","sicher":true},
+  {"id":"1164","stueck":"Asperges me, Gloria Patri – Amen","modus":7,"vorz":"1#","finalis":"D","vorletzter":"a7","vorhalt":"g-fis","schluss":"D","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"1165a","stueck":"Vidi aquam, Antiphonschluss","modus":8,"vorz":"2b","finalis":"F","vorletzter":"c7","vorhalt":"b-a","schluss":"F","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"1165b","stueck":"Vidi aquam, Gloria Patri – Amen","modus":8,"vorz":"2b","finalis":"F","vorletzter":"c","vorhalt":"b-a","schluss":"F","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"1167","stueck":"Kyrie I (Lux et origo)","modus":8,"vorz":"2b","finalis":"F","vorletzter":"c7","vorhalt":"b-a","schluss":"F","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"1168","stueck":"Gloria I, Amen","modus":4,"vorz":"2b","finalis":"A","vorletzter":"B, g7","vorhalt":null,"schluss":"d","lage":"Finalis ist Quinte des Schlussakkords","sicher":true},
+  {"id":"1169","stueck":"Sanctus I, Hosanna","modus":4,"vorz":"2b","finalis":"A","vorletzter":null,"vorhalt":null,"schluss":"d","lage":"Finalis ist Quinte des Schlussakkords","sicher":true},
+  {"id":"1171a","stueck":"Agnus Dei I","modus":4,"vorz":"2b","finalis":"A","vorletzter":null,"vorhalt":null,"schluss":"d","lage":"Bass sicher, Oberstimme unsicher gelesen","sicher":false},
+  {"id":"1171b","stueck":"Ite missa est (VIII)","modus":8,"vorz":"-","finalis":"G","vorletzter":"d7","vorhalt":"c-h","schluss":"G","lage":"Grundstellung, vollständig","sicher":true},
+  {"id":"1171c","stueck":"Ite missa est (VII)","modus":7,"vorz":"2b","finalis":"F","vorletzter":"c7","vorhalt":"b-a (im Alt)","schluss":"F","lage":"Grundstellung, ohne Quinte, Tenor und Bass im Einklang","sicher":true}
+ ],
+ "nicht_gelesen": ["0728 Versschluss «regi.»", "1112 Versschluss und Amen", "1145 Gaudens gaudebo (Versschluss, Amen)", "Binnenkadenzen aller Stücke"]
+}
