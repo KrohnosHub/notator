@@ -1,0 +1,25 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Ave Maria, gratia plena",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "Ave(fc) Ma(d)rí(dhi)a,(h) (,) sgrá(h)ti(g)a(f) pi()é(gh)na.(h) Dó(j)mi(h)nus(gf) té(g)cum.(d) (;)",
+    "be()ne(g)di(g)cta(hg) tu,(f) in(ef) mu(g)H(fe)é(d)ri(cd)bus,(d) et(e) be()ne(c)di(d)ctus(ff) Í()ró(e)ctus(f) vér.(g)",
+    "ris(e) fü(g)i(fe) lé(cd)sus.(df) (::) Sán(h)cta(g) Ma(h)ri(ji)a.(g) Má(g)ter(f) Dé,(gh) i(h) (;) á(h)ra(g) o()ro(f)",
+    "nó(gf)his(d) nec(f)ca(fe)tó(de)ri(d)bus,(c) (;) nunc(d) et(c) in(df) hó(ffg)ra(f) mór(e)tis(f) nó(gh)strae.(fe) Á(d)men.(d) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 3579
+}

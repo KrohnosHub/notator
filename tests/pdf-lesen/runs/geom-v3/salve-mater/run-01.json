@@ -1,0 +1,28 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Salve mater misericordiae",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "Sal(g)ve(g)ma(j)ter(jk) mi(j)se(i)ri(h)e()Or(g)di(h)æ(g)Ma(e)ter(e) De(g)i,(gg) et(f) ma(e)ter(d)",
+    "vé(c)mi,(d) m.(c) (:) Ma(c)ter(c) sne(d)i,(e) et(d) ma(e)tev(f) se(g)rá()ti(g):.(g) (;) Ma(g)ter(g)",
+    "nple(h)na(g) sa(g)net:z(f) iz(f)ti(g)tfi(f)æ(e) (::) O(d) Ma(e)ri(dd)a!(c) (::) Sal(g)ve(g) ma(j)ter()",
+    "Sal(e)ve,(g) de,(fe) e(d)na(e) hn(f)má(e)mni(d) o()ó(c)me(d)Ti(e)a() (;) Qo(c)al()vo() Viv.(g)",
+    "A() p»n(hi) di(j)wvni(i)av(g) oe(h)é(f)te()ris(g) (:) O()nes(j) vir(j)gi(g)nes(h) om(g)nes(g)",
+    "A() te()a(f)na()gwre(e)ó()do(d)ris,(e) o() Ht(e) zdl(c)fi(e)us(g) se(e)des(f) in(g) sü(h)mne(i)ris.(j) (,)",
+    "Ma() mvi(kk)a.(j) Ben)() (::) Sal(g)we..(g)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 5173
+}

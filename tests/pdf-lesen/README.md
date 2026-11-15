@@ -31,17 +31,19 @@ node tests/pdf-lesen/evaluate.js --selftest   # prüft die Metriken selbst
 ## Geometrischer Weg (kostenlos, nur Tonhöhen)
 
 ```
-python3 tests/pdf-lesen/geometrie/geom.py [--series geom-v2] [--debug --work /pfad]
+python3 tests/pdf-lesen/geometrie/geom.py [--series geom-v3] [--debug --work /pfad]
+GEOM_OCR=0 python3 tests/pdf-lesen/geometrie/geom.py --series geom-v2   # ohne Texterkennung
 GEOM_FULL=0 python3 tests/pdf-lesen/geometrie/geom.py --series geom-v1   # nur Tonhöhen
 python3 tests/pdf-lesen/geometrie/diff.py geom-v2     # Soll/Ist je System nebeneinander
 ```
 
 Misst Notenköpfe im Scan und leitet die Tonbuchstaben aus der Lage zu den vier
 Linien ab; dazu Schlüssel, Trennstriche und ein Silbenraster (Wortgrenzen) aus
-der Textzeile. Keine API-Aufrufe, kein Lesen des Texts: Silben sind Platzhalter
-(`x`). Die Aufteilung der Systeme auf Stücke übernimmt das Skript aus
+der Textzeile. Den Text liest Tesseract (`tesseract` mit Sprachpaket `lat`
+muss installiert sein, z. B. `apt-get install tesseract-ocr tesseract-ocr-lat`);
+fehlt es, sind die Silben Platzhalter (`x`). Keine API-Aufrufe. Die Aufteilung der Systeme auf Stücke übernimmt das Skript aus
 `expected.json`. `--debug` schreibt je System ein Bild mit den Funden.
-Ergebnisse: `docs/pdf-lesen-plan.md`, Abschnitte 7 bis 7.2.
+Ergebnisse: `docs/pdf-lesen-plan.md`, Abschnitte 7 bis 7.3.
 
 ## Messlauf (kostenpflichtig)
 

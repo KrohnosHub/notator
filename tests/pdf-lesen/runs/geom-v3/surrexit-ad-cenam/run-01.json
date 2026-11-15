@@ -1,0 +1,35 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Surrexit Dominus vere",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "SUr(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih) (;) All(iihg)lá(gh)i()a,(f) (,) al(d)",
+    "le(fghihgf)lá(gh)i()a.(f) (::) Sur(f)ré(fg)xit.(f) Y.() (::) Et(f) ap(f)pá(g)ru(f)it.(fe) Si(dc)mó(fgd)ni.(fghih) (:) (,)",
+    "Al(ij)le(ihg)lü(gh)i()a.(f) Y.() (::) Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(fe)li(dc)o,(c) (;) et(d) Spi(f)ri(ghi) (,)",
+    "tu(ih) ij(gh) San(g)cto(f) (::) Sur(f)ré(fg)xit.(f) (::)"
+   ]
+  },
+  {
+   "incipit": "Ad coenam Agni providi",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "D(h) coe(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(f)di(e)",
+    "di,(d) (;) Post(e) trán(e)si(dc)tum(g) ma(gh) (,) ris(j) Ru(j)bri,(ih) (,) Chri(jk)sto(j) ca(hg)ná(i)mus(hi) Prín(h)ci(h)pi.(g) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 3864
+}

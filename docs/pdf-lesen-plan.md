@@ -449,6 +449,63 @@ darüber. Vorschlag: entweder Tesseract mit lateinischem Sprachpaket freigeben
 (0 USD) oder ein KI-Aufruf je Seite nur für die Textzeilen (geschätzt unter
 0.02 USD pro Seite, nicht gemessen). [Annahme]
 
+### 7.3 Text mit Tesseract (15.11.2026)
+
+Serie `runs/geom-v3`: wie `geom-v2`, dazu liest Tesseract 5.3 (Sprachpaket
+`lat`, lokal, 0 USD) die erste Textzeile unter jedem System
+(`geometrie/ocr.py`). Ablauf: Textzeile suchen und ausschneiden, lesen,
+Wörter an den gedruckten Trennstrichen und mit einer einfachen lateinischen
+Silbentrennung in Silben teilen, Initiale separat lesen, dann die
+Notengruppen per dynamischer Programmierung den Silben zuordnen (Lage unter
+der Silbe, Strafe für Silben ohne Note). Dauer rund 5 s pro Seite.
+
+| Messgrösse | geom-v2 | geom-v3 | zum Vergleich: KI-Lesetest (Abschnitt 6) |
+| --- | --- | --- | --- |
+| Silben (mit Akzenten) | 0 % | **58 %** | 78–87 % |
+| Silben ohne Akzente und Satzzeichen | 0 % | 68 % | – |
+| Wortgrenzen | 73 % | **85 %** | – |
+| Neumen-Gruppierung | 81 % | 74 % | – |
+| Tonhöhen je Stück, Trennstriche, Schlüssel | unverändert: 96 %, 76 %, 5 von 5 | | |
+
+Je Fall (Silben mit / ohne Akzente): Gaudeamus 77 / 81 %, Surrexit 70 / 78 %,
+Ave Maria 51 / 64 %, Salve Regina 50 / 69 %, Salve mater 42 / 50 %.
+
+Nebenbei verbessert: Der Schlüssel wird jetzt über die Lücke zwischen den
+beiden Blöcken des Do-Schlüssels bestimmt. Vorher lag der Schätzwert bei
+einigen Systemen genau zwischen zwei Linien, und das Ergebnis hing vom Zufall
+ab (beim «Surrexit» c3 oder c4).
+
+Befund:
+
+- **Tesseract reicht für den Text nicht.** 58 % der Silben stimmen,
+  deutlich weniger als die KI im Lesetest (78–87 %). Typische Fehler:
+  verwechselte Buchstaben in alten Schriften («Ccor» statt «cór», «Í rá-ctus»
+  statt «frúc-tus»), fehlende oder falsche Akzente, Punkt statt Komma,
+  Trennstrich als Punkt gelesen. Am schlechtesten beim «Salve mater»
+  (Druck von 1906).
+- **Wortgrenzen** profitieren trotzdem (85 %), weil Tesseract die
+  Wortabstände zuverlässig findet.
+- **Neumen-Gruppierung sinkt** von 81 auf 74 %: falsch gelesene oder
+  zusätzliche Silben ziehen Noten zu sich. Ohne guten Text ist die reine
+  Abstandsgruppierung besser.
+- **Initialen:** Das «A» (Ave) und «S» (Salve) werden erkannt, das grosse
+  Zier-«G» (Gaudeamus) nicht; dann fehlt der Buchstabe.
+- **Silbentrennung:** Wörter ohne gedruckten Trennstrich («benedicta») teilt
+  eine Regel. Die Soll-Dateien folgen nicht einheitlich einer Konvention
+  («díc-ta» im Ave, «San-ctó» im Gaudeamus); das kostet einige Punkte, die
+  kein Lesefehler sind.
+- Versucht und ohne nennenswerte Wirkung: 1-, 2- oder 3-fache Vergrösserung,
+  Binarisieren vor dem Lesen (±2 Punkte). Das genauere Modell
+  `tessdata_best` liess sich nicht laden (Netzwerk gesperrt); ob es spürbar
+  besser wäre, ist offen.
+
+Folgerung: Die geometrische Seite (Tonhöhen, Schlüssel, Trennstriche,
+Silbenraster) ist gut genug für den Einbau. Für den Text ist Tesseract die
+schwächere Wahl. Vorschlag: ein KI-Aufruf je Seite, der nur die Textzeilen
+liest. Geometrie und Notengruppen dienen dabei als Vorgabe, und die
+Zuordnung aus diesem Prototyp wird wiederverwendet. Dafür braucht es einen
+API-Key; Kosten geschätzt unter 0.02 USD pro Seite. [Annahme, nicht gemessen]
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

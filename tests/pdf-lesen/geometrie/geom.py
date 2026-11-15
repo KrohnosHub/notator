@@ -7,17 +7,20 @@ Notenkoepfe als Tintenflecken -> Hoehe relativ zu den vier Linien -> GABC-Buchst
 (unterste Linie d, dann f, h, oberste j; Zwischenraeume e, g, i).
 
 Aufruf:
-  python3 tests/pdf-lesen/geometrie/geom.py [--series geom-v2] [--work DIR] [--debug]
+  python3 tests/pdf-lesen/geometrie/geom.py [--series geom-v3] [--work DIR] [--debug]
 
-Braucht: Python 3, numpy, Pillow, pdftoppm (poppler). Keine API-Aufrufe.
+Braucht: Python 3, numpy, Pillow, pdftoppm (poppler), optional tesseract mit Sprachpaket lat. Keine API-Aufrufe.
 Liest cases/<fall>/scan.pdf, schreibt runs/<serie>/<fall>/run-01.json.
 Zusaetzlich (GEOM_FULL=1, Standard): Schluessel, Trennstriche und Silbenraster aus dem Bild.
-Nicht Teil dieses Prototyps: Lesen des Texts, Mora-Punkte, Vorzeichen, Stueckgrenzen.
+Text: geometrie/ocr.py mit Tesseract (GEOM_OCR=1, Standard, falls installiert).
+Nicht Teil dieses Prototyps: Mora-Punkte, Vorzeichen, Stueckgrenzen.
 Die Aufteilung der Systeme auf Stuecke wird aus expected.json uebernommen.
 """
 import argparse, json, os, subprocess, sys, tempfile, time
 import numpy as np
 from PIL import Image, ImageDraw
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ocr
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -28,6 +31,7 @@ THR_NOTE = int(os.environ.get('GEOM_THR', 0))   # Schwelle fuer Notenkoepfe; 0 =
 CLEF = float(os.environ.get('GEOM_CLEF', 1.2))   # Breite der Schluesselzone ab Linienanfang, in Linienabstaenden
 WMIN = float(os.environ.get('GEOM_WMIN', 0.6))   # Mindestbreite eines Notenkopfs, Anteil der typischen Breite
 FULL = os.environ.get('GEOM_FULL', '1') == '1'   # 1 = auch Schluessel, Trennstriche und Silbenraster; 0 = nur Tonhoehen (Stand geom-v1)
+OCR = os.environ.get('GEOM_OCR', '1') == '1' and ocr.AVAILABLE     # 1 = Text mit Tesseract lesen (falls installiert)
 CLOSE = 0                      # Loecher schliessen (px); 0 = aus. Versuch mit 0.1 Linienabstand war deutlich schlechter (71 %)
 
 
@@ -281,12 +285,25 @@ def find_clef(st):
     Fa-Schluessel ist mangels Testfall ungeprueft."""
     c = st['_ctx']; gl = c['gl']; q = st['lines']; x0 = st['x0']
     bl = [b for b in c['blobs'] if b['x0'] < x0 + 0.6 * gl and b['x1'] > x0 - 0.2 * gl
-          and b['y0'] > q[0] - 0.8 * gl and b['y1'] < q[3] + 0.8 * gl and b['area'] > 0.3 * c['wref'] ** 2]
+          and b['y0'] > q[0] - 1.4 * gl and b['y1'] < q[3] + 1.4 * gl and b['area'] > 0.3 * c['wref'] ** 2]
     if not bl: return ''
     ya = min(b['y0'] for b in bl); yb = max(b['y1'] for b in bl)
     xa = min(b['x0'] for b in bl); xb = max(b['x1'] for b in bl)
-    p = c['step_of']((xa + xb) / 2, (ya + yb) / 2)
-    line = int(round(p / 2.0)) + 1
+    # Schwerpunkt der Tinte (nach dem Entfernen der Linien), nicht Mitte der Umrandung: robuster gegen angehaengte Reste
+    sub = c['op'][ya - c['top']:yb - c['top'] + 1, xa - c['xa']:xb - c['xa'] + 1]
+    rows = sub.sum(axis=1).astype(float)
+    ym = ya + float((rows * np.arange(len(rows))).sum() / max(1.0, rows.sum()))
+    # Do-Schluessel: zwei Bloecke, die Linie laeuft durch die Luecke dazwischen. Gibt es eine Luecke, gilt sie.
+    on = rows > 0.15 * max(1.0, rows.max())
+    d = np.diff(np.concatenate(([0], on.astype(np.int8), [0])))
+    rs = list(zip(np.where(d == 1)[0], np.where(d == -1)[0] - 1))
+    rs = [r for r in rs if r[1] - r[0] + 1 >= 0.2 * gl]
+    if len(rs) >= 2:
+        big = sorted(sorted(rs, key=lambda r: -(r[1] - r[0]))[:2])
+        ym = ya + (big[0][1] + big[1][0]) / 2.0
+    p = c['step_of']((xa + xb) / 2, ym)
+    if os.environ.get('GEOM_TRACE'): print('    clef p=%.2f' % p, file=sys.stderr)
+    line = int(np.floor(p / 2.0 + 0.5)) + 1
     if line < 1 or line > 4: return ''
     return ('f' if (xb - xa) > 1.9 * c['wref'] else 'c') + str(line)
 
@@ -496,7 +513,13 @@ def run_case(case, work, debug):
         notes, gl = analyse_staff(dark, st, g, d, ref)
         if FULL:
             bars = find_bars(st); chunks = find_chunks(dark, st)
-            lines.append(to_gabc_full(notes, bars, chunks, gl)); clefs.append(find_clef(st))
+            line = None
+            if OCR:
+                syls = ocr.read_line(im, dark, st, gl)
+                if k == 0: syls = ocr.attach_dropcap(syls, ocr.find_dropcap(im, dark, st, gl, components))
+                line = ocr.to_gabc_text(notes, bars, syls, gl)
+            lines.append(line if line is not None else to_gabc_full(notes, bars, chunks, gl)); clefs.append(find_clef(st))
+            if os.environ.get('GEOM_TRACE'): print('  ', case, k + 1, clefs[-1], file=sys.stderr)
             if debug: d[0]['bars'] = bars; d[0]['chunks'] = chunks
         else:
             lines.append(to_gabc(notes, gl)); clefs.append('')
@@ -530,7 +553,7 @@ def run_case(case, work, debug):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--series', default='geom-v2')
+    ap.add_argument('--series', default='geom-v3')
     ap.add_argument('--work', default=None)
     ap.add_argument('--debug', action='store_true')
     ap.add_argument('--case', action='append')

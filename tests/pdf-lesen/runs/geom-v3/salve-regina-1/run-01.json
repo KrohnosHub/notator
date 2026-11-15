@@ -1,0 +1,30 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Salve Regina",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "SAl(hh)ve.(ghd) (,) Re(hg)vri,(fefgf) na,(ed) (;) má(c)ter(d) mi(dc)Se(d) (;)",
+    "ri(ef)cór(g)di(dec)æ(d) (::) Vi,(hhgh) ta,(d) (,) dul(hg)cé(fefgf)do,(ed) (;) et(c) spes(d)",
+    "nó(ef)stra,(g) (,) sál(dec)ve.(d) (::) Ad(df) te(h) cla(g)má(g)mus,,(fhe) éx(g)su(f)",
+    "les(edg) (,) fih.:(cde) Hévm.(dgfed) (::) Ad(df) te(h) su(j)sni(g)rà(g)mus.(fgh) (;)",
+    "ro(d)mén(f)tes(g) e()tí(d)flén(fed)tes(c) (;) in(d) hac(dcf) la(gh)cri(g)má(fe)rum(g) val(f)le(dcd) (::) E,(ffg) i()a(f) er(g)ro.(h) (,)",
+    "A(j)dvo(g)cá,(hgf) ta(d) nó(g)stra(h) (;) íl(k)los(k) tü(jijk)os(h) (,) mi()se(k)ri(j)cór(hg) (,) des(fhg) á(de)cu(f)los(edc) (;) ad(cd)",
+    "nos(f) con(g)vér(d)te(cdd) (::) Ft(d) lé(a)sum,(cd) (,) be(d)ne(de)di(edd)ctum(c) frü(g)ctum(f)vén(e)tris(g)",
+    "tü,(fe) i(dcd) (;) nó(jdhi).bis(h) (,) nost(hgf) hoc(g) ex(d)si(f)li(fe)um(dc) (,) o(efe)stén(d)de.(d) (::) O(hhghij) clé(ihg)mens:(h) (::)",
+    "O(ghijji) n(hg):(gh) (::) o(hdfedcd) (,) dü(defg)i(g)cis(gh) Vi()re(d)o(c) Ma(d)ri,(dgff) a.(ed) (;)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 5506
+}
