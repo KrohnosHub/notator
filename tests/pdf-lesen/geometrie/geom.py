@@ -21,6 +21,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ocr
+import text_ki
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -31,6 +32,8 @@ THR_NOTE = int(os.environ.get('GEOM_THR', 0))   # Schwelle fuer Notenkoepfe; 0 =
 CLEF = float(os.environ.get('GEOM_CLEF', 1.2))   # Breite der Schluesselzone ab Linienanfang, in Linienabstaenden
 WMIN = float(os.environ.get('GEOM_WMIN', 0.6))   # Mindestbreite eines Notenkopfs, Anteil der typischen Breite
 FULL = os.environ.get('GEOM_FULL', '1') == '1'   # 1 = auch Schluessel, Trennstriche und Silbenraster; 0 = nur Tonhoehen (Stand geom-v1)
+KI_POS = os.environ.get('GEOM_KI_POS', 'chunks')   # Lage der KI-Silben: chunks = Tintengruppen, tess = Tesseract-Woerter
+TEXT = os.environ.get('GEOM_TEXT', 'ocr')          # ocr = Tesseract liest; ki/dry/mock siehe text_ki.py
 OCR = os.environ.get('GEOM_OCR', '1') == '1' and ocr.AVAILABLE     # 1 = Text mit Tesseract lesen (falls installiert)
 CLOSE = 0                      # Loecher schliessen (px); 0 = aus. Versuch mit 0.1 Linienabstand war deutlich schlechter (71 %)
 
@@ -508,13 +511,36 @@ def run_case(case, work, debug):
     lines = []; dbg = []; clefs = []
     sizes = [sz for st in sts for sz in analyse_staff(dark, st, g)[0]]
     ref = (float(np.median([a for a, _ in sizes])), float(np.median([w for _, w in sizes]))) if sizes else (0.2 * g * g, 0.45 * g)
+    ki_lines = None; usage = {'input_tokens': 0, 'output_tokens': 0, 'costUsd': 0}
+    if FULL and TEXT in ('ki', 'mock', 'dry'):
+        kimg, _ = text_ki.page_strips(im, dark, sts, components)
+        kimg.save(os.path.join(work, 'ki-%s.png' % case))
+        tin, tout = text_ki.estimate_tokens(kimg, len(sts))
+        pin, pout = text_ki.PRICES.get(text_ki.MODEL, (0, 0))
+        print('  %s: KI-Bild %dx%d, geschaetzt %d/%d Token, %.4f USD mit %s' % (case, kimg.width, kimg.height, tin, tout,
+              (tin * pin + tout * pout) / 1e6, text_ki.MODEL), file=sys.stderr)
+        has_dc = ocr.dropcap_box(dark, sts[0], (sts[0]['lines'][3] - sts[0]['lines'][0]) / 3.0, components) is not None
+        if TEXT == 'mock': ki_lines = text_ki.mock_lines(exp, len(sts))
+        elif TEXT == 'ki':
+            ki_lines, u = text_ki.call(kimg, len(sts))
+            usage = {'input_tokens': u['input_tokens'], 'output_tokens': u['output_tokens'], 'costUsd': u['costUsd']}
+            json.dump({'model': u['model'], 'lines': ki_lines, 'usage': u}, open(os.path.join(work, 'ki-%s.json' % case), 'w'),
+                      ensure_ascii=False, indent=1)
     for k, st in enumerate(sts):
         d = [] if debug else None
         notes, gl = analyse_staff(dark, st, g, d, ref)
         if FULL:
             bars = find_bars(st); chunks = find_chunks(dark, st)
             line = None
-            if OCR:
+            if TEXT in ('ki', 'mock') and ki_lines is not None:
+                syls = None
+                if KI_POS == 'chunks':
+                    syls = text_ki.syllables_from_chunks(ki_lines[k], text_ki.text_chunks(dark, st, gl), gl, dropcap=(k == 0 and has_dc))
+                if syls is None:
+                    tw, lx0, lx1 = ocr.line_words(im, dark, st, gl)
+                    syls = text_ki.syllables_from_text(ki_lines[k], tw, lx0, lx1)
+                line = ocr.to_gabc_text(notes, bars, syls, gl)
+            elif OCR:
                 syls = ocr.read_line(im, dark, st, gl)
                 if k == 0: syls = ocr.attach_dropcap(syls, ocr.find_dropcap(im, dark, st, gl, components))
                 line = ocr.to_gabc_text(notes, bars, syls, gl)
@@ -548,7 +574,7 @@ def run_case(case, work, debug):
         pieces.append({'incipit': ep.get('incipit', ''), 'mode': '', 'clef': clef, 'hasDropCap': None, 'systems': lines[i:i + n]})
         i += n
     if i < len(lines) and pieces: pieces[-1]['systems'].extend(lines[i:])
-    return {'pieces': pieces, 'staves': len(sts), 'skew': ang, 'gap': g, 'thr': thr}
+    return {'pieces': pieces, 'staves': len(sts), 'skew': ang, 'gap': g, 'thr': thr, 'usage': usage}
 
 
 def main():
@@ -567,10 +593,12 @@ def main():
         if r is None:
             print('%s: scan.pdf fehlt, uebersprungen' % case); continue
         out = {
-            'model': 'keines (geometrisch)', 'effort': '',
-            'pipeline': 'geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json',
+            'model': text_ki.MODEL if TEXT == 'ki' else 'keines (geometrisch)', 'effort': text_ki.EFFORT if TEXT == 'ki' else '',
+            'pipeline': 'geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: %s; Stueckaufteilung aus expected.json'
+                        % {'ocr': 'Tesseract' if OCR else 'Platzhalter', 'ki': 'KI je Seite, Lage aus Tesseract',
+                           'mock': 'Soll-Text (Probelauf ohne KI)', 'dry': 'Tesseract (Trockenlauf)'}.get(TEXT, TEXT),
             'pieces': r['pieces'],
-            'usage': {'input_tokens': 0, 'output_tokens': 0, 'costUsd': 0},
+            'usage': r['usage'],
             'durationMs': int((time.time() - t0) * 1000),
         }
         d = os.path.join(ROOT, 'runs', a.series, case); os.makedirs(d, exist_ok=True)

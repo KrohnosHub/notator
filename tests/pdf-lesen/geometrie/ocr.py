@@ -10,6 +10,8 @@ from PIL import Image
 AVAILABLE = shutil.which('tesseract') is not None
 SCALE = int(os.environ.get('GEOM_OCR_SCALE', 2))   # Textzeile vor dem Lesen vergroessern
 BIN = os.environ.get('GEOM_OCR_BIN', '') != ''
+UNIT_GAP = float(os.environ.get('GEOM_UNIT_GAP', 0.8))   # Noten mit kleinerem Abstand bilden eine feste Gruppe
+SPLIT = float(os.environ.get('GEOM_SPLIT', 0.0))         # Strafe fuer eine Silbengrenze zwischen eng stehenden Noten
 MINCONF = float(os.environ.get('GEOM_OCR_CONF', 0))
 
 VOW = set('aeiouyáéíóúýàèìòùæœǽäëïöüAEIOUYÁÉÍÓÚÝÆŒǼ')
@@ -171,6 +173,37 @@ def read_line(im, dark, st, gl):
     return syls
 
 
+def dropcap_box(dark, st, gl, components):
+    """Umrandung der Initiale (Seitenkoordinaten, mit Rand) oder None."""
+    q = st['lines']
+    yt = text_top(dark, st, gl) or int(q[3] + 2 * gl)
+    xa = max(0, int(st['x0'] - 9 * gl)); xb = int(st['x0'] - 0.1 * gl)
+    ya = max(0, int(q[0] - 3.5 * gl)); yb = int(min(dark.shape[0], yt + 2.5 * gl))
+    if xb - xa < gl: return None
+    best = None
+    for runs in components(dark[ya:yb, xa:xb]):
+        y0 = min(r[0] for r in runs); y1 = max(r[0] for r in runs)
+        x0 = min(r[1] for r in runs); x1 = max(r[2] for r in runs)
+        if y1 - y0 >= 2.5 * gl and (best is None or y1 - y0 > best[3] - best[1]): best = [x0, y0, x1, y1]
+    if best is None: return None
+    pad = int(0.3 * gl)
+    return (xa + best[0] - pad, ya + best[1] - pad, xa + best[2] + pad, ya + best[3] + pad)
+
+
+def line_words(im, dark, st, gl):
+    """Tesseract-Woerter der Textzeile in Seitenkoordinaten (nur fuer die Lage). Gibt (Woerter, x0, x1)."""
+    yt = text_top(dark, st, gl)
+    x0 = int(st['x0'] - 0.5 * gl); x1 = int(st['x1'] + 0.5 * gl)
+    if yt is None or not AVAILABLE: return [], x0, x1
+    crop = im.crop((x0, int(yt - 0.35 * gl), x1, int(yt + 1.25 * gl)))
+    crop = crop.resize((crop.width * SCALE, crop.height * SCALE), Image.LANCZOS)
+    out = []
+    for w in _tesseract_words(crop):
+        t = clean_token(w['text'])
+        if _letters(t): out.append({'text': t, 'x0': x0 + w['x0'] / SCALE, 'x1': x0 + w['x1'] / SCALE})
+    return out, x0, x1
+
+
 def find_dropcap(im, dark, st, gl, components):
     """Initiale links vom ersten System: hoechster Tintenfleck links der Linien (ueber 2.5 Linienabstaende).
     Gibt den Buchstaben oder ''."""
@@ -213,7 +246,7 @@ def to_gabc_text(notes, bars, syls, gl):
         return None
     units = []
     for n in notes:
-        if units and n['x'] - units[-1][-1]['x'] <= 0.8 * gl: units[-1].append(n)
+        if units and n['x'] - units[-1][-1]['x'] <= UNIT_GAP * gl: units[-1].append(n)
         else: units.append([n])
     S = len(syls); U = len(units)
     a = [s['x'] - 0.4 * gl for s in syls]
@@ -229,10 +262,12 @@ def to_gabc_text(notes, bars, syls, gl):
         f = [[INF] * S for _ in range(U)]; bk = [[-1] * S for _ in range(U)]
         for i in range(S): f[0][i] = cost(0, i) + P * i
         for j in range(1, U):
+            dx = units[j][0]['x'] - units[j - 1][-1]['x']
+            split = SPLIT * max(0.0, 1.0 - dx / (0.9 * gl))   # eng stehende Noten gehoeren eher zur selben Silbe
             M = INF; Mk = -1                            # min ueber k < i von f[j-1][k] - P*k
             for i in range(S):
                 cand, ci = f[j - 1][i], i               # gleiche Silbe wie die vorige Gruppe
-                if Mk >= 0 and M + P * (i - 1) < cand: cand, ci = M + P * (i - 1), Mk
+                if Mk >= 0 and M + P * (i - 1) + split < cand: cand, ci = M + P * (i - 1) + split, Mk
                 f[j][i] = cand + cost(j, i); bk[j][i] = ci
                 if f[j - 1][i] - P * i < M: M, Mk = f[j - 1][i] - P * i, i
         end = min(range(S), key=lambda i: f[U - 1][i] + P * (S - 1 - i))
