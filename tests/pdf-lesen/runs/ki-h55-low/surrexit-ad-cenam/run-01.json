@@ -1,0 +1,35 @@
+{
+ "model": "claude-haiku-5-5",
+ "effort": "low",
+ "pipeline": "geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: KI je Seite, Lage aus Tesseract; Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Surrexit Dominus vere",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "S()urré(f)xit(fgf) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih) (;) Alle(iihg)lú(gh)ia,(f) (,) al(d)",
+    "le(fghihgf) lú(gh) ia.(f) (::) Surré(ffg)xit.(f) (::) Et(f) appá(fg)ru(f)it(fe) Simó(dcfgd)ni.(fghih) (:) (,)",
+    "Alle(ijihg) lú(gh) ia.(f) Glóri() (::) a() Patri,(ff) et(f) Fí()li(gh)o,(f) (,) et(g) Spi(fe)rí(dc)tu(c) (;) i(d) Sancto.(f) Surré()xit.(ghi) (,)",
+    "tu(ih) i(gh) Sancto.(gf) (::) Surré(ffg)xit.(f) (::)"
+   ]
+  },
+  {
+   "incipit": "Ad coenam Agni providi",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "D(h) coenam(jhg) Agni(jijk) prό(j)vi(i)di,(h) (,) Et(h) stolis(hgef) albis(geg) cándi(fe)",
+    "di,(d) (;) Post(e) tránsi(edc)tum(g) ma(gh) (,) ris(j) Rubri,(jih) (,) Christo(jkj) ca(hg)námus(ihi) Prínci(hh)pi.(g) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 1857,
+  "output_tokens": 274,
+  "costUsd": 0.00032270000000000004
+ },
+ "durationMs": 3628
+}

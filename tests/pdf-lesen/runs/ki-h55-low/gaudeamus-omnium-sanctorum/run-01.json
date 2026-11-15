@@ -1,0 +1,39 @@
+{
+ "model": "claude-haiku-5-5",
+ "effort": "low",
+ "pipeline": "geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: KI je Seite, Lage aus Tesseract; Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Gaudeamus omnes in Domino",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "AUDE(d)AMUS(dhih) (,) omnes(hhg) in(fg) Dó(gjh)mi(hghihi)",
+    "no,(ih) (;) di(h)em(f) festum(ggff) ce(dg)le(gff)brántes(dggff) (,)",
+    "sub(f) honó(gghjh)re(ghg) Sanctó(fh)rum(gjj) ómni(hhih)um:(h) (:) de(fg) quo(fg)rum(f) sol(f)e(g)",
+    "mni(g)tá(ghjh)te(ghg) (,) gaudent(fgf) An(fgh)ge(ghgfefgffh)li,(gf) (;) et(f) colláu(gghjhg)dant(hg) (,)",
+    "Fi(fge)li(f)um(fghfgfe) De(defef)i.(ed) (::) Exsultá(fghh)te(h) justi(hjh) in(h) Dómi(hhg)",
+    "no:(gh) re() (:) ctos(gfgh) de(h)cet(h) col(hjh)laudá(gf)ti(fff)o.(d) (:)",
+    "Ló(f)ri(gh)a(h) Patri,(hh) et(h) Fi(h)li(h)o,(h) (,) et(h) Spi(h)rí(hj)tu(h)i(h) Sancto.(hgh) (:)",
+    "Sic(gf)ut(gh) e(h)rat(h) in(h) princí(hh)pi(h)o,(h) (,) et(h) nunc,(hj) et(h) semper,(hgh) (:) et(gf) in(gh)"
+   ]
+  },
+  {
+   "incipit": "saecula saeculorum Amen",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "saécu(hh)la(h) saecu(hhjh)ló(g)rum.(f) A(fff)men.(d) vel() (::) E(h) u(hjh) o(g) u(f) a(fg) e.(h) (::)",
+    "vel() E(h) u(hjh) o(g) u(f) a(fff) e.(dcdf) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2495,
+  "output_tokens": 370,
+  "costUsd": 0.0004345
+ },
+ "durationMs": 4561
+}

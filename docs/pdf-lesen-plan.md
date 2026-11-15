@@ -568,6 +568,32 @@ Befund:
 
 Scans dafür: aus dem Drive geholt, nur lokal (nicht im Repo).
 
+### 7.6 Vergleich mit Haiku 5.5 (15.11.2026)
+
+Serie `runs/ki-h55-low`: gleicher Ablauf und gleiche Bilder wie 7.5, Modell
+`claude-haiku-5-5`.
+
+| Messgrösse | Tesseract | Haiku 5.5 | Sonnet 5.5 |
+| --- | --- | --- | --- |
+| Silben (mit Akzenten) | 58 % | 48 % | **76 %** |
+| Silben ohne Akzente | 68 % | 53 % | **86 %** |
+| Wortgrenzen | 85 % | 73 % | **90 %** |
+| Neumen-Gruppierung | 74 % | 56 % | 72 % |
+| Kosten (5 Seiten) | 0 | 0.002 USD | 0.037 USD |
+
+Je Fall (Silben mit / ohne Akzente): Salve mater 78 / 90 %, Surrexit 52 / 52 %,
+Gaudeamus 50 / 51 %, Salve Regina 31 / 39 %, Ave Maria 26 / 27 %.
+
+Befund: **Haiku ist schlechter als Tesseract.** Typische Fehler aus den
+Antworten:
+- Text rutscht in andere Streifen: beim Ave Maria steht der Rest des Stücks
+  im 3. Streifen, der 4. bleibt leer. Damit sitzen ganze Systeme falsch.
+- Silbentrennung fehlt oft («Dóminus», «Máter», «Alle-lú-ia»).
+- Initiale und Wortanfang falsch zusammengesetzt («-ve», «D coenam»).
+
+Folgerung: Für den Text Sonnet 5.5 nehmen. Bei rund 0.007 USD pro Seite
+lohnt sich die Ersparnis mit Haiku nicht.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

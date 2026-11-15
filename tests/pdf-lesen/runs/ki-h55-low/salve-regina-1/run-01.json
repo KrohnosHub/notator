@@ -1,0 +1,30 @@
+{
+ "model": "claude-haiku-5-5",
+ "effort": "low",
+ "pipeline": "geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: KI je Seite, Lage aus Tesseract; Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Salve Regina",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "Al()ve.(hh) Re(gh)gí()na.(d) máter() (,) mi()se()ricórdi(hg)æ:(fefgf) Ví()ta,(ed) (;) dulcé(c)do,(d) et(dc) spes(d) (;)",
+    "ricórdi(efgdec)æ:(d) (::) Ví(hhgh)ta,(d) (,) dulcé(hgfefgf)do,(ed) (;) et(c) spes(d)",
+    "nóstra.(efg) (,) sál(dec)ve.(d) (::) Ad(df) te(h) clamá(gg)mus,(fhe) éxsu(g)les.(f)",
+    "les.(edg) (,) fí(c)li(d)i(e) Hévæ.(dgfed) (::) Ad(df) te(h) suspirá(jgg)mus,(fgh) (;)",
+    "geméntes(dfg) et(d) flén(fed)tes(c) (;) in(d) hac(dcf) lacrimá(ghgfe)rum(g) válle.(fdcd) (::) E(ffg)ia(f) ergo.(gh) (,)",
+    "Advocá(jghgf)ta(d) nóstra.(gh) (;) íllos(kk) tú(jijk)os(h) (,) mi(k)se(j)ricór(hg) (,) des(fhg) óculos(defedc) (;) ad(cd)",
+    "nos(f) convér(gdcd)te.(d) (::) Et(d) Iésum.(acd) (,) bene(dde)dí(edd)ctum(c) frúctum(gf) véntris(eg)",
+    "tú(fe)i.(dcd) (;) nó(j)bis(dhih) (,) post(hgf) hoc(g) exsí(df)li(fe)um(dc) (,) o(efe)ténde.(dd) (::) O(hhghij) clémens:(ihgh) (::)",
+    "O(ghijji) pí(hg)a:(gh) (::) O(hdfedcddefg) (,) dúlcis(ggh) Vírgo(dc) Ma(d)rí(dgff)a.(ed) (;)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2263,
+  "output_tokens": 397,
+  "costUsd": 0.0004248
+ },
+ "durationMs": 5261
+}
