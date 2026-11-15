@@ -629,6 +629,38 @@ Kosten bleiben in beiden Fällen klein (unter 0.02 USD pro Seite). Die Wahl
 hängt davon ab, wie wichtig richtige Akzente sind; Buchstaben und
 Silbentrennung liest Sonnet gleich gut.
 
+### 7.8 Salve Regina: Akzente und Satzzeichen geprüft (15.11.2026)
+
+Scan bei 300 dpi gegen Soll und KI-Antworten verglichen.
+
+- **Das Soll ist bei den Akzenten falsch.** Der Druck setzt Akzente auch bei
+  zweisilbigen Wörtern (máter, nóstra, sálve, Hévæ, flén-tes, válle, íllos,
+  tú-os, Jésum, frúctum, véntris, tú-i, nó-bis, clémens, pí-a, dúlcis,
+  Vírgo) und druckt «æ» (ricórdiæ, Hévæ). Das Soll (GregoBase) lässt diese
+  Akzente weg und schreibt «ae». Beide Modelle lesen die Akzente richtig
+  und werden dafür gleich bestraft.
+- **Der Abstand Opus – Sonnet kommt nicht von den Akzenten.** Mit einem an
+  den Druck angepassten Soll (nur im Arbeitsordner, nicht im Repo): Sonnet
+  72 / 74 / 73 %, Opus 83 % (Silben mit Akzenten).
+- Ursachen des Abstands:
+  - **Kommas:** Der Druck hat Kommas («Al-ve, *Re-gí- na, máter»). Sonnet
+    liest sie in allen 3 Läufen als Punkte, Opus als Kommas. Im KI-Bild sind
+    die Textzeilen auf 64 px Höhe verkleinert (`LINE_H`); dabei geht der
+    Kommaschwanz fast verloren. Ob Opus das Komma sieht oder aus dem
+    bekannten Text ergänzt, ist offen.
+  - **Initiale:** Sonnet gibt «S-Al-ve» zurück (Initiale als eigene Silbe),
+    Opus richtig «SAl-ve». Das verschiebt beim Sonnet die Silben im ersten
+    System.
+  - Sonnet trennt «éxsu», «válle» nicht; Opus schon.
+  - Opus lässt dafür zwei Akzente weg, die gedruckt sind («Vi-ta», «pi-a»);
+    Sonnet hat sie richtig.
+
+Folgerung: Der Vorsprung von Opus ist echt, kommt aber von Satzzeichen,
+Initiale und Silbentrennung, nicht von den Akzenten. Zwei Ansätze für
+Sonnet, nicht getestet: grössere Textstreifen (`LINE_H` höher) gegen die
+verlorenen Kommas, und im Prompt klarer sagen, dass die Initiale ohne
+Trennstrich vor das erste Wort gehört.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).
