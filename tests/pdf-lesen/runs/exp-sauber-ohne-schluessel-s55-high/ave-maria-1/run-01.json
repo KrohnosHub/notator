@@ -1,0 +1,26 @@
+{
+  "model": "claude-sonnet-5-5",
+  "effort": "high",
+  "pipeline": "Lesetest ausserhalb von Notator: sauber geschnittene Systeme, 1 Aufruf je System, strukturierte Ausgabe, Schluessel ausgeblendet, Bild unveraendert. Schluessel, Modus, Incipit und Stueckgrenzen aus dem Soll uebernommen (hier nicht gemessen).",
+  "case": "ave-maria-1",
+  "pieces": [
+    {
+      "incipit": "Ave Maria, gratia plena",
+      "mode": "1",
+      "clef": "c4",
+      "hasDropCap": true,
+      "systems": [
+        "A(f)ve(cd) Ma(dixhi)rí(k)a,(i) * grá(h)ti(g)a(f) plé(hih)na,(f) Dó(hi)mi(h)nus(g) té(f)cum,(d:)",
+        "Be(i)ne(i)dí(h)cta(i) tu(h.) (ix) in(fh) mu(g) li(hfe) é(d) ri(d) bus,(d.) (;) et(e) be(d) ne(d) dí(gg) ctus(g) frú(f) ctus(gf) vén(h)",
+        "tris(c) tú(f)i,(gf) Jé(g)sus.(hgd) (::) Sánc(i)ta(g) Ma(i)rí(k)a,(lk) Má(i)ter(h) Dé(g)i,(i) (,) ó(i)ra(g) pro(f)",
+        "nó(hg)bis(e) pec(g)ca(h)tó(hgf)ri(fe)bus,(e) (,) nunc(e) et(f) in(h) hó(hij)ra(ghf) mór(g)tis(h) nós(f)trae.(k) A(hg)men.(ff::)"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 4444,
+    "output_tokens": 2953,
+    "costUsd": 0.0384
+  },
+  "durationMs": 32528
+}

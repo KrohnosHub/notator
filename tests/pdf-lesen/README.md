@@ -7,6 +7,7 @@ Abschnitt 5.
 ```
 tests/pdf-lesen/
   evaluate.js              Vergleich + Streuung (Node ≥ 18, keine Abhängigkeiten)
+  lesetest/                Lesetest ausserhalb von Notator (Schnitt, Lineale, Aufruf je System)
   run-playwright.js        Messlauf: steuert das unveränderte Notator, ruft die API auf
   cases/<fall>/scan.pdf    der Scan – liegt nur lokal, nicht im Repo (.gitignore)
   cases/<fall>/expected.json   erwartetes Ergebnis, von Hand geprüft

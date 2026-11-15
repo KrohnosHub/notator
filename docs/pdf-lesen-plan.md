@@ -280,6 +280,45 @@ Grenzen dieser Messung:
   1833 px breit. Für Sonnet 4.6 werden sie auf 1568 px verkleinert
   (Faktor 0.86); die im Prompt genannten Pixelzeilen stimmen dort also nicht.
 
+## 6. Lesetest ausserhalb von Notator (14./15.11.2026)
+
+Frage: Erreicht Sonnet 5.5 mit sauber geschnittenen Systemen über 80 %
+Tonhöhen bei höchstens 0.15 USD pro Seite? Dieselben 15 Systeme, ein Aufruf
+je System, kurzer Prompt, strukturierte Ausgabe. Kosten gesamt 0.96 USD.
+Skripte: `tests/pdf-lesen/lesetest/`.
+
+| Variante | Tonhöhen je Stück | Silben | Trennstriche | Kosten pro Seite |
+| --- | --- | --- | --- | --- |
+| Sauberer Ausschnitt, `medium` | 41 % | 81 % | 50 % | 0.02 USD |
+| Mit Linealen, `medium` | 61 % | 80 % | 43 % | 0.02 USD |
+| Sauberer Ausschnitt, `high` | 67 % | 87 % | 64 % | 0.05 USD |
+| Mit Linealen, `high` | 74 % | 84 % | 42 % | 0.07 USD |
+| Mit Linealen, Schlüssel ausgeblendet, `high` | 74 % | 78 % | 42 % | 0.06 USD |
+| Mit Linealen, Schlüssel ausgeblendet, Opus 5.5 `low` | 71 % | 80 % | 64 % | 0.05 USD |
+
+«Lineale»: Ausschnitt vergrössert, gelbe Spalten mit den Tonbuchstaben a–m
+zwischen den Notengruppen, feine Hilfslinien in den Zwischenräumen.
+
+Je Stück (Tonhöhen, beste Sonnet-Variante): Salve mater 92 %, Ave Maria 70 %,
+Surrexit 63 %.
+
+Befund:
+
+- **Kosten sind kein Problem mehr**: 0.02–0.07 USD pro Seite statt 0.15–0.69.
+- **Die 80 % werden im Schnitt knapp verfehlt** (74–77 %) und hängen stark
+  vom Druck ab: einfacher syllabischer Satz in klarem Druck über 90 %,
+  zusammengesetzte Neumen, Vorzeichen oder schwacher Druck 60–70 %.
+- Sauberer Schnitt und `high` bringen am meisten (29 % → 67 %), Lineale
+  zusätzlich rund 7 Punkte. Das Ausblenden des Schlüssels bringt nichts.
+- Die Notenzahl stimmt nur in 7–27 % der Systeme exakt: fast jedes System
+  enthält mindestens eine zusätzliche oder fehlende Note.
+- Einzelläufe schwanken: dieselbe Variante lag beim «Ave Maria» einmal bei
+  67 %, einmal bei 40 %.
+
+Nach der vereinbarten Regel (über 80 % bei höchstens 0.15 USD) ist das Ziel
+nicht erreicht. Offen bleibt der rein geometrische Weg für die Tonhöhen
+(Abschnitt 4), der keine API-Kosten hat, aber eigene Entwicklungsarbeit ist.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

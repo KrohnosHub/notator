@@ -1,0 +1,90 @@
+[
+  {
+    "system": 1,
+    "stop_reason": "end_turn",
+    "usage": {
+      "input_tokens": 2305,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1743,
+      "output_tokens_details": {
+        "thinking_tokens": 1650
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+    },
+    "ms": 18196,
+    "usd": 0.02204
+  },
+  {
+    "system": 2,
+    "stop_reason": "end_turn",
+    "usage": {
+      "input_tokens": 2121,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 121,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+    },
+    "ms": 2538,
+    "usd": 0.00545
+  },
+  {
+    "system": 3,
+    "stop_reason": "end_turn",
+    "usage": {
+      "input_tokens": 2029,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 2321,
+      "output_tokens_details": {
+        "thinking_tokens": 2214
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+    },
+    "ms": 23681,
+    "usd": 0.02727
+  },
+  {
+    "system": 4,
+    "stop_reason": "end_turn",
+    "usage": {
+      "input_tokens": 2121,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 121,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard"
+    },
+    "ms": 2840,
+    "usd": 0.00545
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "model": "claude-opus-5-5",
+  "effort": "low",
+  "pipeline": "Lesetest ausserhalb von Notator: sauber geschnittene Systeme, 1 Aufruf je System, strukturierte Ausgabe, Schluessel ausgeblendet, vergroessert mit Linealen und Hilfslinien. Schluessel, Modus, Incipit und Stueckgrenzen aus dem Soll uebernommen (hier nicht gemessen).",
+  "case": "ave-maria-1",
+  "pieces": [
+    {
+      "incipit": "Ave Maria, gratia plena",
+      "mode": "1",
+      "clef": "c4",
+      "hasDropCap": true,
+      "systems": [
+        "{",
+        "{",
+        "tris(e) tú(g)i,(fe) Jé(dcfe.)sus.(d.) (::) Sánc(h)ta(g) Ma(hji)rí(g.)a,(g) Má(f)ter(gh) Dé(hi.)i,(f) ó(h)ra(g) pro(f)",
+        "nó(gf)bis(d) pec(f)ca(fe)tó(de)ri(d)bus,(c.) (:) nunc(d) et(c) in(df) hó(fgf)ra(f) mór(cd)tis(f) nós(gh)trae.(fe) A(d.)men.(d.) (::)"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 8736,
+    "output_tokens": 464,
+    "costUsd": 0.0442
+  },
+  "durationMs": 13477
+}

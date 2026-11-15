@@ -1,0 +1,29 @@
+{
+  "model": "claude-opus-5-5",
+  "effort": "low",
+  "pipeline": "Lesetest ausserhalb von Notator: sauber geschnittene Systeme, 1 Aufruf je System, strukturierte Ausgabe, Schluessel ausgeblendet, vergroessert mit Linealen und Hilfslinien. Schluessel, Modus, Incipit und Stueckgrenzen aus dem Soll uebernommen (hier nicht gemessen).",
+  "case": "salve-mater",
+  "pieces": [
+    {
+      "incipit": "Salve mater misericordiae",
+      "mode": "5",
+      "clef": "c4",
+      "hasDropCap": true,
+      "systems": [
+        "Sal(g)ve,(g) ma(j)ter(j) mi(j)se(i)ri(h)cór(g)di(h)æ,(g.) (;) Ma(e)ter(e) De(g)i,(g) (,) et(f) ma(e)ter(d)",
+        "vé(c)ni(d)æ.(c.) (:) Ma(c)ter(c) spe(d)i,(ed) et(d) ma(d)ter(e) grá(g)ti(g)æ,(g.) (:) Ma(g)ter(g)",
+        "ple(h)na(g.) sanc(g)tæ(f) læ(f)tí(g)ti(f)æ,(e.) (::) O(d) Ma(e)rí(dd)a!(c.) ij.(::) Sal(g)ve(g) ma(j)ter..(j)",
+        "1. Sal(e) ve,(g) de(fe) cus(dd) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (:) Sal(c)ve,(e) Vir(g)",
+        "1. go(hi) díg(j)ni(i)or(g) cé(h)te(f)ris,(g.) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)",
+        "trans(f)gré(e)de(d)ris,(e.) (:) Et(e) ál(c)ti(e)us(g) (g) se(e)des(f) in(g) sú(h)po(i)ris,(j) (::)",
+        "1.-6. O(j) Ma(g)rí(kk)a.(j) (::) (Rep.) Sal(g)ve...(g)"
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 13747,
+    "output_tokens": 625,
+    "costUsd": 0.0675
+  },
+  "durationMs": 16531
+}

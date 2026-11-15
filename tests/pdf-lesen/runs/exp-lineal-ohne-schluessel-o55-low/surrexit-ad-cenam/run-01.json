@@ -1,0 +1,34 @@
+{
+  "model": "claude-opus-5-5",
+  "effort": "low",
+  "pipeline": "Lesetest ausserhalb von Notator: sauber geschnittene Systeme, 1 Aufruf je System, strukturierte Ausgabe, Schluessel ausgeblendet, vergroessert mit Linealen und Hilfslinien. Schluessel, Modus, Incipit und Stueckgrenzen aus dem Soll uebernommen (hier nicht gemessen).",
+  "case": "surrexit-ad-cenam",
+  "pieces": [
+    {
+      "incipit": "Surrexit Dominus vere",
+      "mode": "6",
+      "clef": "c4",
+      "hasDropCap": true,
+      "systems": [
+        "Sur(f)ré(fh)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghihg.) (;) *(:) Al(ixi)le(i)lú(ihg)ia,(fh) (,) al(f.dc)",
+        "le(hf'eghiGF'Eg.f.)lú(ghg)ia.(fg)(::) Sur(f)ré(fh)xit.(fe) (::) <sp>V/</sp>. Et(f) ap(f)pá(he)ru(f)it(fe) Si(dc)mó(fghd)ni.(fgihigi) (::)",
+        "Al(i)le(ihg)lú(ghi)ia.(f.) (::) <sp>V/</sp>. Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(h) Fí(fe)li(dcc)o,(c) (;) et(d) Spi(f)rí(ixihi)",
+        "tu(ijh) i(hg) Sancto.(gfhf.) (::) Sur(f)ré(fg)xit.(f) (::)"
+      ]
+    },
+    {
+      "incipit": "Ad coenam Agni providi",
+      "mode": "8",
+      "systems": [
+        "",
+        ""
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 7431,
+    "output_tokens": 417,
+    "costUsd": 0.0381
+  },
+  "durationMs": 10884
+}
