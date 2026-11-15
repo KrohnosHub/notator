@@ -59,7 +59,7 @@ function ntDestKeys(ctx) { const n = ctx && ctx.kind === 'notator'; return { n, 
 function ntPdfSave(kind) {
   window._ntPdfDeliver = null;
   const base = kind === 'cl' ? clFileBase() + '_Orgel'
-    : kind === 'mappe' ? (ntMappeCur().title || 'Mappe')
+    : kind === 'mappe' ? (ntMappeCur().title || 'Mappe') + (window._ntMappeFilter === 'greg' ? '_Choral' : window._ntMappeFilter === 'cl' ? '_Orgel' : '')
     : ntFileBaseName() + '_Choral';
   ntLoadLocalDir().then(() => ntPdfDialog({ kind, name: ntSanitizeName(base), dest: ntPdfPrefs().dest }));
 }
