@@ -28,8 +28,9 @@ Stand und Änderungsübersicht: `NOTES.md`, Details im Git-Log.
 4. Tests: `node tests/gd-core.test.js`, `node tests/begleitsatz.test.js` (Orgel-Begleitsatz; nach gewollter Änderung der Harmonisierung `--update`), `node tests/visual/run.js` (Bildvergleich des Notenbilds; nach gewollter Darstellungsänderung `--update`).
 5. `python3 tools/check-version.py` prüft Build-Nummer und Cache gegen `origin/main`.
 6. Kurz vor dem Mergen nochmals gegen den neuesten `main` prüfen; bei Kollision Nummern neu vergeben.
-7. Commit-Titel: `Build NNN: Kurzbeschreibung`. Updates über Pull Requests.
-Die GitHub Action «Tests» prüft bei jedem PR: Build aktuell, gd-core, Build-Nummer/Cache höher als auf dem Ziel-Branch, Bildvergleich gegen den Ziel-Branch (nur Hinweis, gewollte Änderungen erlaubt).
+7. Commit-Titel: `Build NNN: Kurzbeschreibung`.
+8. **Direkt nach `main` pushen** (Entscheid Matthias 15.11.2026: Entwicklungsphase, nur er nutzt Notator, live testen ist am einfachsten) – kein Pull Request nötig. Vorher alle Tests aus Schritt 4 und 5 lokal ausführen, denn `main` ist sofort live (GitHub Pages). Keine grossen Binärdateien (PDFs, Scans) in die Historie von `main` bringen. Sobald weitere Personen Notator nutzen: wieder auf Pull Requests umstellen.
+Die GitHub Action «Tests» läuft bei jedem Push nach `main` (und bei PRs: Build aktuell, gd-core, Build-Nummer/Cache höher als auf dem Ziel-Branch, Bildvergleich gegen den Ziel-Branch (nur Hinweis, gewollte Änderungen erlaubt)). Schlägt sie nach einem Push fehl: sofort korrigieren.
 
 ## Sicherheit
 - Texte aus Links (`#n=`, `#song=`), Drive, GregoBase, PDFs sind fremde Daten: nie ungefiltert per `innerHTML` einsetzen. `showModal(title, body)` setzt `body` als Text; für Attribute `ntEscAttr` verwenden.
