@@ -7,11 +7,12 @@ Notenkoepfe als Tintenflecken -> Hoehe relativ zu den vier Linien -> GABC-Buchst
 (unterste Linie d, dann f, h, oberste j; Zwischenraeume e, g, i).
 
 Aufruf:
-  python3 tests/pdf-lesen/geometrie/geom.py [--series geom-v1] [--work DIR] [--debug]
+  python3 tests/pdf-lesen/geometrie/geom.py [--series geom-v2] [--work DIR] [--debug]
 
 Braucht: Python 3, numpy, Pillow, pdftoppm (poppler). Keine API-Aufrufe.
 Liest cases/<fall>/scan.pdf, schreibt runs/<serie>/<fall>/run-01.json.
-Nicht Teil dieses Prototyps: Text, Schluessel, Trennstriche, Stueckgrenzen.
+Zusaetzlich (GEOM_FULL=1, Standard): Schluessel, Trennstriche und Silbenraster aus dem Bild.
+Nicht Teil dieses Prototyps: Lesen des Texts, Mora-Punkte, Vorzeichen, Stueckgrenzen.
 Die Aufteilung der Systeme auf Stuecke wird aus expected.json uebernommen.
 """
 import argparse, json, os, subprocess, sys, tempfile, time
@@ -26,6 +27,7 @@ THR = 140                      # Grauwert-Schwelle «Tinte» fuer die Liniensuch
 THR_NOTE = int(os.environ.get('GEOM_THR', 0))   # Schwelle fuer Notenkoepfe; 0 = je Seite automatisch (siehe run_case)
 CLEF = float(os.environ.get('GEOM_CLEF', 1.2))   # Breite der Schluesselzone ab Linienanfang, in Linienabstaenden
 WMIN = float(os.environ.get('GEOM_WMIN', 0.6))   # Mindestbreite eines Notenkopfs, Anteil der typischen Breite
+FULL = os.environ.get('GEOM_FULL', '1') == '1'   # 1 = auch Schluessel, Trennstriche und Silbenraster; 0 = nur Tonhoehen (Stand geom-v1)
 CLOSE = 0                      # Loecher schliessen (px); 0 = aus. Versuch mit 0.1 Linienabstand war deutlich schlechter (71 %)
 
 
@@ -268,7 +270,128 @@ def analyse_staff(dark, st, g, debug=None, ref=None):
         n['letter'] = LET[p + 3]; out.append(n)
     if debug is not None:
         debug.append({'top': top, 'bot': bot, 'xa': xa, 'xb': xb, 'op': op, 'off': off, 'q': q})
+    st['_ctx'] = {'top': top, 'bot': bot, 'xa': xa, 'xb': xb, 'op': op, 'reg': reg, 'step_of': step_of, 'ylo': ylo,
+                  'blobs': blobs, 'gl': gl, 'wref': wref}
     return out, gl
+
+
+# ── Schluessel, Trennstriche, Silbenraster (ohne Texterkennung) ─────────
+def find_clef(st):
+    """Schluessel aus den Tintenflecken am Zeilenanfang: Hoehe der Fleckengruppe -> Linie, Breite -> Do oder Fa.
+    Fa-Schluessel ist mangels Testfall ungeprueft."""
+    c = st['_ctx']; gl = c['gl']; q = st['lines']; x0 = st['x0']
+    bl = [b for b in c['blobs'] if b['x0'] < x0 + 0.6 * gl and b['x1'] > x0 - 0.2 * gl
+          and b['y0'] > q[0] - 0.8 * gl and b['y1'] < q[3] + 0.8 * gl and b['area'] > 0.3 * c['wref'] ** 2]
+    if not bl: return ''
+    ya = min(b['y0'] for b in bl); yb = max(b['y1'] for b in bl)
+    xa = min(b['x0'] for b in bl); xb = max(b['x1'] for b in bl)
+    p = c['step_of']((xa + xb) / 2, (ya + yb) / 2)
+    line = int(round(p / 2.0)) + 1
+    if line < 1 or line > 4: return ''
+    return ('f' if (xb - xa) > 1.9 * c['wref'] else 'c') + str(line)
+
+
+def find_bars(st):
+    """Trennstriche: senkrechte duenne Striche, die an keinem Notenkopf haengen. Typ aus der Laenge."""
+    c = st['_ctx']; gl = c['gl']; q = st['lines']; x0, x1 = st['x0'], st['x1']
+    top, xa = c['top'], c['xa']
+    ra = max(0, int(q[0] - 0.9 * gl) - top); rb = int(q[3] + 0.9 * gl) - top
+    reg = c['reg'][ra:rb]
+    k = max(5, int(round(0.55 * gl)))
+    v = _dilate1(_erode1(reg, k, 0), k, 0)                     # nur senkrechte Laeufe >= 0.55 Linienabstand
+    near = _dilate1(_dilate1(c['op'][ra:rb], 2 * int(0.3 * gl) + 1, 1), 2 * int(0.15 * gl) + 1, 0)
+    bars = []
+    for runs in components(v):
+        ys = [r[0] for r in runs]; bx0 = min(r[1] for r in runs); bx1 = max(r[2] for r in runs)
+        by0, by1 = min(ys), max(ys)
+        if bx1 - bx0 + 1 > 0.35 * gl: continue                 # zu breit: Initiale, Notenstapel
+        cx = (bx0 + bx1) / 2 + xa
+        if cx < x0 + CLEF * gl: continue
+        tot = sum(r[2] - r[1] + 1 for r in runs); hit = sum(int(near[r[0], r[1]:r[2] + 1].sum()) for r in runs)
+        if hit > 0.25 * tot: continue                          # haengt an einem Notenkopf: Hals
+        # einseitige Tinte neben dem Strich (Bauch eines b-Vorzeichens, Custos): kein Trennstrich. Notenlinien sind beidseitig.
+        m = int(0.3 * gl); g2 = 2
+        lft = reg[by0:by1 + 1, max(0, bx0 - m):max(0, bx0 - g2)].any(axis=1)
+        rgt = reg[by0:by1 + 1, bx1 + g2 + 1:bx1 + m + 1].any(axis=1)
+        if (by1 - by0 + 1) < 1.4 * gl and (lft ^ rgt).mean() > float(os.environ.get("GEOM_ASYM", 0.4)): continue
+        L = (by1 - by0 + 1) / gl
+        pm = c['step_of'](cx, (by0 + by1) / 2 + ra + top)
+        if L >= 2.5: t = ':'
+        elif L >= 1.4 and 0.5 < pm < 5.5: t = ';'
+        elif 0.5 <= L < 1.4 and pm >= 4.5: t = ','
+        else: continue
+        bars.append({'x': cx, 'type': t})
+    bars.sort(key=lambda b: b['x'])
+    out = []
+    for b in bars:
+        if out and b['x'] - out[-1]['x'] < 0.8 * gl:
+            if b['type'] == ':' and out[-1]['type'] in (':', '::'): out[-1]['type'] = '::'
+            continue
+        out.append(b)
+    return out
+
+
+def find_chunks(dark, st):
+    """Silbenraster: Tintengruppen in der ersten Textzeile unter dem System, mit «endet auf Trennstrich».
+    Kein Lesen des Texts. Silben ohne Luecke im Druck (fe-stum als «festum») bleiben eine Gruppe."""
+    c = st['_ctx']; gl = c['gl']; x0, x1 = st['x0'], st['x1']
+    ylo = c['ylo']
+    if ylo >= c['bot']: return []
+    xa = max(0, int(x0 - 0.5 * gl)); xb = min(dark.shape[1], int(x1 + 0.5 * gl))
+    band = dark[ylo:min(dark.shape[0], int(ylo + 1.5 * gl)), xa:xb]
+    dens = band.mean(axis=1)
+    yb = len(dens)
+    for y in range(int(0.4 * gl), len(dens)):
+        if dens[y] < 0.01: yb = y; break                       # Ende der ersten Textzeile
+    band = band[:yb]; dens = dens[:yb]
+    body = np.where(dens > 0.5 * dens.max())[0] if dens.size and dens.max() > 0 else np.array([0])
+    bt, bb = int(body[0]), int(body[-1])                       # Mittelband der Kleinbuchstaben
+    cols = band.any(axis=0)
+    d = np.diff(np.concatenate(([0], cols.view(np.int8), [0])))
+    runs = list(zip(np.where(d == 1)[0], np.where(d == -1)[0] - 1))
+    chunks = []
+    for a, b in runs:
+        if chunks and a - chunks[-1][-1][1] < 0.2 * gl: chunks[-1].append((a, b))
+        else: chunks.append([(a, b)])
+    out = []
+    for ch in chunks:
+        a, b = ch[-1]                                          # letztes Zeichen der Gruppe
+        rows = np.where(band[:, a:b + 1].any(axis=1))[0]
+        hyph = False
+        if len(rows):
+            h = rows[-1] - rows[0] + 1; mid = (rows[0] + rows[-1]) / 2.0
+            hyph = h < 0.22 * gl and bt + 0.15 * (bb - bt) < mid < bb - 0.15 * (bb - bt)
+        if len(ch) == 1 and hyph and out: out[-1]['hyphen'] = True; continue   # allein stehender Trennstrich
+        out.append({'x0': ch[0][0] + xa, 'x1': ch[-1][1] + xa, 'hyphen': bool(hyph)})
+    return out
+
+
+def to_gabc_full(notes, bars, chunks, gl):
+    """GABC-Zeile mit Platzhaltertext. Silbengrenze: Luecke zwischen Noten oder neue Textgruppe darunter.
+    Wortgrenze: neue Textgruppe, deren Vorgaengerin nicht auf Trennstrich endet."""
+    def chunk_of(x):
+        k = -1
+        for i, ch in enumerate(chunks):
+            if ch['x0'] - 0.3 * gl <= x: k = i
+            else: break
+        return k
+    groups = []         # [x, noten, wortanfang, textgruppe]
+    for i, n in enumerate(notes):
+        k = chunk_of(n['x'])
+        if groups and k == groups[-1][3] and n['x'] - notes[i - 1]['x'] <= 0.9 * gl:
+            groups[-1][1].append(n); continue
+        newchunk = not groups or k != groups[-1][3]
+        word = newchunk and not (k > 0 and chunks[k - 1]['hyphen'])
+        groups.append([n['x'], [n], word, k])
+    toks = []; xmax = -1e9
+    for g in groups:
+        xmax = max(xmax, g[0]); toks.append((xmax, len(toks), 'x(' + ''.join(n['letter'] for n in g[1]) + ')', g[2]))
+    toks += [(b['x'], 1e6, '(' + b['type'] + ')', True) for b in bars]
+    toks.sort(key=lambda t: (t[0], t[1]))
+    s = ''
+    for i, (x, _, t, word) in enumerate(toks):
+        s += (' ' if i and (word or t[0] == '(' or toks[i - 1][2][0] == '(') else '') + t
+    return s
 
 
 def split_blob(b, gl, hs, step_of):
@@ -365,13 +488,18 @@ def run_case(case, work, debug):
     # damit lueckenhaft gedruckte Notenkoepfe geschlossen bleiben; die Liniendicke wird ohnehin gemessen.
     thr = THR_NOTE or int((otsu(arr) + float(np.median(arr))) / 2)
     dark = np.array(im) < thr
-    lines = []; dbg = []
+    lines = []; dbg = []; clefs = []
     sizes = [sz for st in sts for sz in analyse_staff(dark, st, g)[0]]
     ref = (float(np.median([a for a, _ in sizes])), float(np.median([w for _, w in sizes]))) if sizes else (0.2 * g * g, 0.45 * g)
     for k, st in enumerate(sts):
         d = [] if debug else None
         notes, gl = analyse_staff(dark, st, g, d, ref)
-        lines.append(to_gabc(notes, gl))
+        if FULL:
+            bars = find_bars(st); chunks = find_chunks(dark, st)
+            lines.append(to_gabc_full(notes, bars, chunks, gl)); clefs.append(find_clef(st))
+            if debug: d[0]['bars'] = bars; d[0]['chunks'] = chunks
+        else:
+            lines.append(to_gabc(notes, gl)); clefs.append('')
         if debug: dbg.append((st, notes, d[0]))
     if debug:
         for k, (st, notes, d) in enumerate(dbg):
@@ -382,12 +510,19 @@ def run_case(case, work, debug):
                 x = n['x'] - d['xa']; y = n['y'] - d['top']
                 dr.line((x - 5, y, x + 5, y), fill=(0, 0, 255), width=2)
                 dr.text((x - 3, 2 if int(x / 12) % 2 else 14), n['letter'], fill=(0, 0, 255))
+            for b in d.get('bars', []):
+                x = b['x'] - d['xa']; dr.line((x, 30, x, crop.height - 30), fill=(0, 160, 0), width=2); dr.text((x + 3, 30), b['type'], fill=(0, 130, 0))
+            for ch in d.get('chunks', []):
+                yy = crop.height - 4
+                dr.line((ch['x0'] - d['xa'], yy, ch['x1'] - d['xa'], yy), fill=(255, 0, 255) if ch['hyphen'] else (0, 160, 0), width=3)
             crop.save(os.path.join(work, 'dbg-%s-%d.png' % (case, k + 1)))
     # Systeme auf Stuecke verteilen: Systemzahlen aus expected.json (Stueckgrenzen sind nicht Teil des Prototyps)
     pieces = []; i = 0
     for ep in exp['pieces']:
         n = len(ep['systems']) if 'systems' in ep else ep.get('systemCount', 0)
-        pieces.append({'incipit': ep.get('incipit', ''), 'mode': '', 'clef': '', 'hasDropCap': None, 'systems': lines[i:i + n]})
+        cl = [c for c in clefs[i:i + n] if c]             # Mehrheit ueber die Systeme des Stuecks (Schluesselwechsel: nicht unterstuetzt)
+        clef = max(set(cl), key=cl.count) if cl else ''
+        pieces.append({'incipit': ep.get('incipit', ''), 'mode': '', 'clef': clef, 'hasDropCap': None, 'systems': lines[i:i + n]})
         i += n
     if i < len(lines) and pieces: pieces[-1]['systems'].extend(lines[i:])
     return {'pieces': pieces, 'staves': len(sts), 'skew': ang, 'gap': g, 'thr': thr}
@@ -395,7 +530,7 @@ def run_case(case, work, debug):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--series', default='geom-v1')
+    ap.add_argument('--series', default='geom-v2')
     ap.add_argument('--work', default=None)
     ap.add_argument('--debug', action='store_true')
     ap.add_argument('--case', action='append')

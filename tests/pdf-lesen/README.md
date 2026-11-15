@@ -1,7 +1,7 @@
 # Testset «PDF lesen»
 
-Misst, wie gut Notator Quadratnoten-Scans in GABC umsetzt. Stand 12.11.2026:
-3 Fälle mit 15 Systemen, 3 Messserien. Ergebnisse: `docs/pdf-lesen-plan.md`,
+Misst, wie gut Notator Quadratnoten-Scans in GABC umsetzt. Stand 15.11.2026:
+5 Fälle mit 28 Systemen. Ergebnisse: `docs/pdf-lesen-plan.md`,
 Abschnitt 5.
 
 ```
@@ -31,16 +31,17 @@ node tests/pdf-lesen/evaluate.js --selftest   # prüft die Metriken selbst
 ## Geometrischer Weg (kostenlos, nur Tonhöhen)
 
 ```
-python3 tests/pdf-lesen/geometrie/geom.py --series geom-v1 [--debug --work /pfad]
-python3 tests/pdf-lesen/geometrie/diff.py geom-v1     # Soll/Ist je System nebeneinander
+python3 tests/pdf-lesen/geometrie/geom.py [--series geom-v2] [--debug --work /pfad]
+GEOM_FULL=0 python3 tests/pdf-lesen/geometrie/geom.py --series geom-v1   # nur Tonhöhen
+python3 tests/pdf-lesen/geometrie/diff.py geom-v2     # Soll/Ist je System nebeneinander
 ```
 
 Misst Notenköpfe im Scan und leitet die Tonbuchstaben aus der Lage zu den vier
-Linien ab. Keine API-Aufrufe. Text ist Platzhalter (`x`), Schlüssel und
-Trennstriche fehlen; aussagekräftig sind nur «Tonhöhen je Stück», «Tonhöhen
-ausgerichtet», «Notenzahl je System». Die Aufteilung der Systeme auf Stücke
-übernimmt das Skript aus `expected.json`. `--debug` schreibt je System ein Bild
-mit den gefundenen Notenköpfen. Ergebnisse: `docs/pdf-lesen-plan.md`, Abschnitt 7.
+Linien ab; dazu Schlüssel, Trennstriche und ein Silbenraster (Wortgrenzen) aus
+der Textzeile. Keine API-Aufrufe, kein Lesen des Texts: Silben sind Platzhalter
+(`x`). Die Aufteilung der Systeme auf Stücke übernimmt das Skript aus
+`expected.json`. `--debug` schreibt je System ein Bild mit den Funden.
+Ergebnisse: `docs/pdf-lesen-plan.md`, Abschnitte 7 bis 7.2.
 
 ## Messlauf (kostenpflichtig)
 

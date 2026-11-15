@@ -360,7 +360,8 @@ Einschätzung:
 
 - **Über 80 % scheinen erreichbar**, bei 0 USD für die Tonhöhen. Das ist der
   erste Weg, der das Ziel klar erfüllt.
-- **Die 95 % sind zu günstig gemessen.** Die Stellgrössen (Tintenschwelle,
+- **Die 95 % sind zu günstig gemessen** (Nachtrag: die Gegenprobe in 7.1
+  bestätigt den Wert). Die Stellgrössen (Tintenschwelle,
   Mindestgrösse, Breite der Schlüsselzone) wurden an denselben 15 Systemen
   eingestellt, an denen gemessen wird. Auf neuen Scans ist weniger zu
   erwarten; wie viel weniger, ist nicht gemessen.
@@ -385,6 +386,68 @@ am Prototyp zu drehen (darunter ein melismatisches Stück und ein
 Fa-Schlüssel). Hält der Wert über 85 %, die Tonhöhen geometrisch bestimmen
 und die KI nur noch Text, Schlüssel und Trennstriche lesen lassen, mit der
 gemessenen Notenfolge als Vorgabe im Prompt.
+
+### 7.1 Gegenprobe auf neuen Scans (15.11.2026)
+
+Zwei weitere Scans aus dem Drive, gemessen mit dem **unveränderten** Prototyp
+(Stand Abschnitt 7, keine Stellgrösse angefasst). Beide sind anspruchsvoller
+als die ersten drei: Quilisma, Liqueszenzen, Climacus, längere Melismen.
+
+| | Systeme | Noten | Tonhöhen je Stück | Fehler |
+| --- | --- | --- | --- | --- |
+| Gaudeamus omnes (Introitus Allerheiligen) | 8 | 190 | 96 % | 9 |
+| Salve Regina 1 (SR 480, feierlich) | 9 | 231 | 97 % | 7 |
+| alle fünf Fälle | 28 | 699 | **96 %** | 30 |
+
+Damit ist der wichtigste Vorbehalt aus Abschnitt 7 entkräftet: der Wert hält
+auf Scans, an denen nichts eingestellt wurde. Die Fehler sind dieselben wie
+zuvor (einzelne fehlende oder zusätzliche Noten, keine falschen Höhen in
+Folge). «Notenzahl je System exakt richtig» bleibt bei 47 %: im Schnitt eine
+Korrektur je System.
+
+Einschränkungen: Das Soll stammt aus Ihren Notator-Dateien (GregoBase), die
+Systemgrenzen habe ich nach den Textanfängen im Scan gesetzt, nichts davon
+ist Note für Note geprüft. Beim «Gaudeamus» weichen die letzten zwei Systeme
+(Schluss des Gloria Patri, zwei «E u o u a e») von der Vorlage ab und sind
+nicht gewertet. Vier weitere geholte Scans blieben aussen vor: zwei sind
+Orgelsatz in moderner Notation («Jesu dulcis memoria», «Regina caeli SR 479»),
+zu zweien («Adoremus in aeternum», «Pueri Hebraeorum») fand ich keine
+Notator-Datei als Soll. Weiterhin fehlen Fa-Schlüssel, Schlüsselwechsel und
+Mehrseiter.
+
+### 7.2 Schlüssel, Trennstriche, Silbenraster (15.11.2026)
+
+Serie `runs/geom-v2`, weiterhin ohne API. Die Tonhöhen sind gegenüber
+`geom-v1` unverändert. Anders als 7.1 wurden diese Teile an allen fünf Fällen
+entwickelt; es gibt dafür keine Gegenprobe.
+
+| Messgrösse | geom-v1 | geom-v2 | Wie |
+| --- | --- | --- | --- |
+| Schlüssel | – | 5 von 5 | Lage der Tintenflecken am Zeilenanfang, Mehrheit über die Systeme |
+| Trennstriche | – | 76 % (Strichfolge exakt in 18 von 32 Systemen) | senkrechte dünne Striche, die an keinem Notenkopf hängen; Typ aus der Länge |
+| Wortgrenzen | 49 % | 73 % | Tintengruppen der ersten Textzeile; Trennstrich am Gruppenende = Wort geht weiter |
+| Neumen-Gruppierung | 81 % | 81 % | Lücke zwischen Noten oder neue Textgruppe darunter |
+
+- **Schlüssel:** alle fünf Fälle sind Do-Schlüssel auf der vierten Linie. Die
+  Unterscheidung Do/Fa (über die Breite) ist eingebaut, aber ungetestet.
+  Schlüsselwechsel und b im Schlüssel werden nicht erkannt.
+- **Trennstriche:** Hauptfehler sind verwechselte Typen (ganzer Strich als
+  halber gelesen, Doppelstrich als einfacher) und einzelne übersehene oder
+  zusätzliche Viertelstriche. «Salve mater» zieht den Schnitt (43 %); dort
+  ist auch das Soll unsicher.
+- **Silbenraster:** Silben, die im Druck ohne Lücke stehen («festum»), lassen
+  sich aus dem Bild allein nicht trennen. Dafür braucht es den gelesenen Text.
+- **Nicht umgesetzt:** Mora-Punkte, Vorzeichen als solche (sie werden nur
+  ausgefiltert), Episeme, Neumenformen, Stückgrenzen.
+
+**Text:** bleibt offen. Ohne Texterkennung geht es nicht, und beide Wege
+waren in dieser Sitzung gesperrt: Die lokale Installation von Tesseract (OCR,
+kostenlos) wurde von der Umgebung abgelehnt, ein API-Key liegt nicht vor.
+Der geometrische Teil liefert aber bereits, was ein Textleser braucht: die
+Textzeile je System als schmalen Ausschnitt und die Zahl der Notengruppen
+darüber. Vorschlag: entweder Tesseract mit lateinischem Sprachpaket freigeben
+(0 USD) oder ein KI-Aufruf je Seite nur für die Textzeilen (geschätzt unter
+0.02 USD pro Seite, nicht gemessen). [Annahme]
 
 ## Offene Fragen
 

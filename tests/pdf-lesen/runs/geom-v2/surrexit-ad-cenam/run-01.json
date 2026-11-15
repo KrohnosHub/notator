@@ -1,0 +1,35 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Surrexit Dominus vere",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "x(f)x(fg)x(f) x(f)x(fe) x(dc) x(fgd) x(fghih) (;) x(i)x(ihg) x(gh)x(f) (,) x(d)",
+    "x(fghihgf) x(gh) x(f) (::) x(f)x(fg)x(f) (::) x(f) x(f)x(g)x(f)x(fe) x(dc)x(fgd) x(fghih) (:) (,)",
+    "x(ij)x(ihg) x(gh) x(f) (::) x(f)x(f) x(f) x(gh)x(f) (,) x(g) x(fe) x(dc)x(c) (;) x(d) x(f) x(ghi) (,)",
+    "x(ih) x(gh) x(g)x(f) (::) x(f)x(fg)x(f) (::)"
+   ]
+  },
+  {
+   "incipit": "Ad coenam Agni providi",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "x(h) x(j)x(hg) x(ji)x(jk) x(j)x(i)x(h) (,) x(h) x(hg) x(ef) x(g)x(eg) x(f)x(e)",
+    "x(d) (;) x(e) x(e)x(dc)x(g) x(gh) (,) x(j) x(j)x(ih) (,) x(jk)x(j) x(hg)x(i)x(hi) x(h)x(h) x(g) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 2901
+}

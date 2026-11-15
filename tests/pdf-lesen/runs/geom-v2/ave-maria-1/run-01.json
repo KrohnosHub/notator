@@ -1,0 +1,25 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Ave Maria, gratia plena",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "x(f)x(c)x(d)x(dhi)x(h) (,) x(h)x(g)x(f)x(gh)x(h)x(j)x(h)x(g)x(f)x(g)x(d) (;)",
+    "x(g)x(g)x(h)x(g)x(f)x(ef)x(g)x(fe)x(d)x(cd)x(d)x(e)x(c)x(d)x(f)x(f)x(e)x(f)x(g)",
+    "x(e) x(g) x(fe) x(cd)x(df) (::) x(h)x(g) x(h)x(ji) x(g) x(g)x(f) x(gh) x(h) (;) x(h)x(g) x(f)",
+    "x(gf)x(d) x(f)x(fe)x(de)x(d)x(c) (;) x(d) x(c) x(df) x(ffg) x(f) x(e)x(f) x(gh)x(fe) x(d)x(d) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 2357
+}
