@@ -716,6 +716,40 @@ Befund:
   «A» (Surrexit, 2. Stück) erkennt das Skript nicht; dann fehlt der
   Buchstabe.
 
+### 7.10 Trennkonvention festgelegt (15.11.2026)
+
+Geprüft an den Scans, wo der Druck Konsonantengruppen mit Trennstrich zeigt:
+
+- Gaudeamus (Graduale): «re-ctos», «sol-e-mni-tá-te»; Salve Regina (Liber
+  Usualis): «bene-dí-ctum», «o-sténde». Die Gruppe geht ganz zur nächsten
+  Silbe: **Solesmes-Konvention «be-ne-dí-cta», «San-ctus», «ó-mni-um»,
+  «no-stra».**
+- Salve mater (Cantus Mariales 1906) trennt dagegen klassisch: «díg-ni-or»,
+  «om-nes». Dort folgt das Soll dem Druck.
+
+Regel für Soll und Prompt: **ein gedruckter Trennstrich gilt immer; wo
+keiner gedruckt ist, gilt die Solesmes-Konvention.**
+
+Geändert: Ave Maria (dí-cta, dí-ctus, frú-ctus, Sán-cta, nó-strae; im Druck
+ohne Trennstrich), Salve Regina («o-stén-de» nach dem Druck), Prompt in
+`text_ki.py` (gedruckter Trennstrich hat Vorrang, Solesmes-Regel mit
+Beispielen). Gaudeamus und Surrexit hatten keine Abweichungen.
+
+| Serie (gegen das neue Soll) | Silben | ohne Akzente | Wortgrenzen | Gruppierung |
+| --- | --- | --- | --- | --- |
+| `ki-s55-low-v3` | 87 % | 88 % | 90 % | 73 % |
+| **`ki-s55-low-v4`** (Prompt mit Vorrang-Regel, 3 Läufe) | **88 %** | **89 %** | **90 %** | 74 % |
+
+Je Fall in v4 (Silben, 3 Läufe): Ave Maria 98/97/100, Surrexit 100/100/100,
+Salve mater 89/89/89 («díg-ni-or», «om-nes» bleiben wie gedruckt),
+Salve Regina 85/81/86, Gaudeamus 80/77/78. Kosten 0.043 USD für 5 Seiten.
+
+Nebenbefund: Notator selbst (`ntPtSyllabify` in
+`src/js/3-orgel-und-mehr/160-psalmton-assistent.js`, genutzt von
+Psalmton-Assistent, Strophen und «Text zuerst») trennt «díc-ta»,
+«Sanc-tus», weil ct, mn, pt, ps dort nicht als Gruppe gelten. Das weicht
+von der Solesmes-Konvention ab; nicht geändert.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

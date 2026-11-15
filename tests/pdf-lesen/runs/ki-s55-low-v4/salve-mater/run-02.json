@@ -1,0 +1,28 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "low",
+ "pipeline": "geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: KI je Seite, Lage aus Tesseract; Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Salve mater misericordiae",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "Sal(g)ve,(g) ma(j)ter(jk) mi(j)se(i)ri(h)cór(gh)di(g)æ,() Ma(e)ter(e) De(g)i,(gg) et(f) ma(e)ter(d)",
+    "vé(c)ni(d)æ.(c) (:) Ma(c)ter(c) spe(d)i,() et(e) ma(d)ter(ef) grá(g)ti(g)æ,(g) (;) Ma(g)ter(g)",
+    "ple(h)na(g) sanctæ(gf) læ(f)tí(g)ti(f)æ,(e) (::) O(d) Ma(e)rí(dd)a!(c) ij.() (::) Sal(g)ve(g) ma(j)ter..()",
+    "Sal(e)ve,(g) de(fe)cus(de) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e) (;) Sal(c)ve,() Vir(g)",
+    "go(hi) díg(j)ni(i)or(g) cé(h)te(f)ris,(g) (:) Quæ(j) vír(j)gi(g)nes(h) om(g)nes(g)",
+    "trans(f)gré(e)de(d)ris,(e) Et(e) ál(c)ti(e)us(g) se(e)des(f) in(g) sú(h)pe(i)ris,(j) (,)",
+    "Ma()rí(kk)a.(j) (Rep.)() (::) Sal()ve..(gg)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3273,
+  "output_tokens": 351,
+  "costUsd": 0.010056
+ },
+ "durationMs": 6857
+}

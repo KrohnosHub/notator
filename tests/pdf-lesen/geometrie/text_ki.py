@@ -36,8 +36,12 @@ where notes separate the syllables; add the missing ones yourself with the usual
 Latin. Examples: printed "Surré-xit" -> "Sur-ré-xit", "appá-ru-it" -> "ap-pá-ru-it", "omnes" -> "o-mnes", \
 "benedícta" -> "be-ne-dí-cta", "GAUDEAMUS" -> "GAU-DE-A-MUS". Do not copy the spacing of the print: no space \
 after a hyphen inside a word ("Gló-ri- a" -> "Gló-ri-a").
-- Chant books divide before the consonant groups ct, gn, mn, pt, ps, x+consonant stays: "San-ctus", "a-gnus", \
-"ó-mni-um", "re-ctos", "ex-sul-tá-te". In "alleluia" the final "ia" is one syllable: "Al-le-lú-ia".
+- A hyphen printed inside a word always counts, even where it differs from the rules below (some older books \
+print "díg-ni-or", "om-nes"; keep that).
+- Where nothing is printed, use the division of the Solesmes chant books: consonant groups ct, gn, mn, pt, ps, st, sc \
+and consonant + l/r go together to the next syllable ("San-ctus", "be-ne-dí-cta", "a-gnus", "ó-mni-um", "no-stra", \
+"Pa-tri"); x stays with the syllable before ("ex-sul-tá-te"). In "alleluia" the final "ia" is one syllable: \
+"Al-le-lú-ia".
 - Keep accents (á é í ó ú ý ǽ) and the ligatures æ œ exactly as printed. Keep punctuation (, . ; : ! ?) at the end of \
 its word; look closely to tell a comma (with a small tail below the line) from a full stop.
 - Leave out the asterisk *, crosses, verse numbers, and the signs ℣ ℟ and "Ps.".

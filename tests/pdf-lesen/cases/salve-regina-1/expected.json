@@ -18,7 +18,7 @@
   ],
   "checkedBy": "",
   "checkedOn": "",
-  "notes": "Soll aus der Notator-Datei des Nutzers (GregoBase-Fassung) abgeleitet; Systemgrenzen von Claude anhand der Textanfänge im Scan gesetzt. Nicht Note für Note geprüft; die GregoBase-Fassung kann vom Druck abweichen. «*» und «Ps.» sind weggelassen. Akzente und «æ» am 15.11.2026 nach dem Druck korrigiert (der Druck akzentuiert auch Zweisilber, GregoBase nicht).",
+  "notes": "Soll aus der Notator-Datei des Nutzers (GregoBase-Fassung) abgeleitet; Systemgrenzen von Claude anhand der Textanfänge im Scan gesetzt. Nicht Note für Note geprüft; die GregoBase-Fassung kann vom Druck abweichen. «*» und «Ps.» sind weggelassen. Akzente und «æ» am 15.11.2026 nach dem Druck korrigiert (der Druck akzentuiert auch Zweisilber, GregoBase nicht). Trennung «o-stén-de» nach dem Druck (15.11.2026).",
   "pieces": [
     {
       "incipit": "Salve Regina",
@@ -36,7 +36,7 @@
         "ge(d)mén(fg~)tes(g') et(d) flén(fved)tes(c..) (;) in(d) hac(dcf) la(gh)cri(g)má(fe)rum(g) vál(fe~)le.(dcd..) (::) E(f)(fg) {ia}(f) er(gh~)go,(h'_) (,)",
         "Ad(j)vo(g)cá(hvgf)ta(d') nó(g)stra,(h..) (;) íl(k)los(k) tú(ji)(jk) os(h'_) (,) mi(k)se(j')ri(h)cór(gfh')des(g) ó(de)cu(f)los(evdc..) (;) ad(cd)",
         "nos(f) con(gf~)vér(dcd)te.(d..) (::) Et(d) Jé(a)sum,(c_[ll:1]d) (,) be(d)ne(de)dí(e[ll:1]d)(d) ctum(c') frú(g)ctum(f) vén(e[ll:1]d~)tris(g)",
-        "tú(fe)i,(dcd..) (;) nó(ixdh')(iv) bis(h..) (,) post(hvgf) hoc(g') ex(d)sí(f)li(fe)um(dc__) (,) os(efe)tén(d..)de.(d..) (::) O(h) (hg) (h) (iwj) clé(ivhg)mens :(h..) (::)",
+        "tú(fe)i,(dcd..) (;) nó(ixdh')(iv) bis(h..) (,) post(hvgf) hoc(g') ex(d)sí(f)li(fe)um(dc__) (,) o(efe)stén(d..)de.(d..) (::) O(h) (hg) (h) (iwj) clé(ivhg)mens :(h..) (::)",
         "O(g..h) (iwj) (ji) pí(hg)a :(g.h.) (::) O(hd__) (fvedc') (d) (,) (de) (fg) dúl(gf~)cis(g_[uh:l]h) Vír(d)go(c') Ma(d)rí(dgf)(f) a.(e.d.) (::)"
       ]
     }

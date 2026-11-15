@@ -1,0 +1,25 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "low",
+ "pipeline": "geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: KI je Seite, Lage aus Tesseract; Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Ave Maria, gratia plena",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "AVE(fc)ve(d) Ma(dhi)rí(h)a,() (,) grá(h)ti(g)a(f) plé(gh)na,(h) Dó(j)mi(h)nus(gf) té(g)cum,(d) (;)",
+    "be()ne(g)dí(g)cta(hg) tu(f) in(ef) mu(g)li(fe)é(d)ri(cd)bus,(d) et(e) be()ne(c)dí(d)ctus(ff) frú(e)ctus(f) vén(g)",
+    "tris(e) tú(g)i,(fe) Jé(cd)sus.(df) (::) Sán(h)cta(g) Ma(h)rí(ji)a,(g) Má(g)ter(f) Dé()i,(gh) ó(h) (;) ra(hg) pro(f)",
+    "nó(gf)bis(d) pec(f)ca(fe)tó(de)ri(d)bus,(c) (;) nunc(d) et(c) in(df) hó(ffg)ra(f) mór(e)tis(f) nó(gh)strae.(fe) A(d)men.(d) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2055,
+  "output_tokens": 237,
+  "costUsd": 0.00648
+ },
+ "durationMs": 7885
+}
