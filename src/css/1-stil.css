@@ -1,0 +1,196 @@
+:root{
+  --ink:#1a1209;--ink2:#3d3420;--ink3:#6b5e3e;
+  --parch:#faf6e8;--parch2:#f2ecd6;--parch3:#e0d4b0;
+  --acc1:#7a3b1e;--acc2:#3d6b35;--acc3:#2d4a7a;
+  --lc:#8b7355;--fu:system-ui,sans-serif;
+  --fh:'Palatino Linotype',Palatino,Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+:root{color-scheme:light only}
+/* Eigene Regel für den Dunkelmodus: Browser, die eine Seite nur dann NICHT
+   zwangsweise abdunkeln, wenn sie selbst prefers-color-scheme behandelt
+   (Samsung Internet), sehen hier, dass Notator das tut -- Notenflächen
+   bleiben bewusst weiss mit schwarzer Schrift. */
+@media (prefers-color-scheme: dark) {
+  #greg-canvas-wrap, #cl-score-wrap { background:#ffffff !important; color:#000000 !important; }
+}
+.nt-pseudo-fs{position:fixed !important;inset:0 !important;z-index:9999 !important;width:auto !important;height:auto !important;background:#fff !important;overflow:auto !important}
+#nt-fs-exit{position:fixed;top:8px;right:8px;z-index:10001;font-size:13px;padding:5px 10px;background:#1a2414;color:#e0d4b0;border:1px solid #5a8a40;border-radius:3px;opacity:.85}
+/* Choral: Anzeigeansicht am PC = Eingabespalte ausblenden */
+#greg-panel.greg-view #greg-input-panel, #greg-panel.greg-view #greg-drag-handle{display:none !important}
+/* Orgel: Menü einklappen / Anzeigeansicht */
+#classic-panel.cl-menu-collapsed #cl-toolbar, #classic-panel.cl-menu-collapsed #cl-headrow, #classic-panel.cl-menu-collapsed #cl-info, #classic-panel.cl-view #cl-src-panel{display:none !important}
+/* Menü «kompakt»: nur Rückgängig, Grundton/Oktave, Begleitsatz, Breite */
+#classic-panel.cl-menu-compact #cl-toolbar > :not(.cl-ess), #classic-panel.cl-menu-compact #cl-headrow, #classic-panel.cl-menu-compact #cl-info{display:none !important}
+#classic-panel.cl-view text.cl-text{pointer-events:none}
+#greg-svg-wrap .greg-blocksel, #greg-svg-wrap .greg-blocksel *{fill:#1565c0 !important}
+#cl-toolbar .cl-grp{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;min-width:0;max-width:100%}
+#cl-toolbar .cl-grp-w{flex:1 1 280px;max-width:420px}
+@media (max-width:700px){#cl-toolbar > span[style^="color:#3a4a30"]{display:none}}
+.nt-playing, .nt-playing path, .nt-playing text{fill:#c0392b !important;stroke:#c0392b}
+body{font-family:var(--fu);background:#2a2318;color:var(--ink)}
+#shell{display:flex;flex-direction:column;height:100vh;height:var(--nt-vh,100dvh)}
+@media (min-width:701px){ #greg-pdf-panel .nt-mob-only{display:none !important} }
+/* Handy: Original-PDF als Blatt unten (Kopfzeile ziehen = Höhe, ▾ = minimieren), Noten bleiben voll breit */
+@media (max-width:700px){
+  #greg-pdf-drag-handle{display:none !important}
+  #greg-pdf-panel{position:fixed !important;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom));width:auto !important;min-width:0 !important;height:var(--pdf-h,38vh);z-index:1500;border-left:none !important;border-top:2px solid #5a8a40;box-shadow:0 -4px 14px rgba(0,0,0,.45)}
+  #greg-pdf-panel.pdf-min{height:auto !important}
+  #greg-pdf-panel.pdf-min > div:last-child{display:none}
+  #greg-pdf-head{touch-action:none;cursor:ns-resize}
+  #greg-pdf-panel .nt-desk-only{display:none !important}
+  body.pdf-sheet-open #greg-canvas-wrap{padding-bottom:calc(var(--pdf-h,38vh) + 30px) !important}
+  body.pdf-sheet-min #greg-canvas-wrap{padding-bottom:90px !important}
+}
+/* Handy: letzte Notenzeile nicht unter Browser-/Systemleiste verstecken */
+@media (max-width:700px){ #greg-canvas-wrap, #cl-score-wrap{padding-bottom:calc(40px + env(safe-area-inset-bottom)) !important} }
+#hdr{background:#1a1209;padding:6px 12px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #3d3420}
+#hdr-left{display:flex;align-items:center;min-width:0;overflow:hidden;white-space:nowrap}
+#hdr-right{display:flex;justify-content:flex-end;align-items:center;gap:6px;min-width:0}
+#hdr-tabs{display:flex;gap:4px;grid-column:2;grid-row:1}
+#hdr-left{grid-column:1;grid-row:1}
+#hdr-right{grid-column:3;grid-row:1}
+#hdr-tabs .nt-tab{min-height:28px;padding:3px 14px;font-size:13px;background:#1a2018;color:#8b9a70;border-color:#3a5030}
+#hdr-tabs .nt-tab.nt-tab-on{background:#3d5a2c;color:#f0e8c8;border-color:#7a9a50;font-weight:600}
+#hdr h1{font-family:var(--fh);font-size:16px;font-weight:400;color:#e0d4b0;letter-spacing:.06em}
+#hdr h1 em{color:#c47a3e;font-style:italic}
+.tg{display:flex;gap:2px;align-items:center;padding-right:6px;border-right:1px solid var(--parch3);margin-right:1px}
+.tg:last-child{border-right:none}
+.tl{font-size:9px;color:var(--ink3);font-variant:small-caps;letter-spacing:.04em;margin-right:2px;white-space:nowrap}
+button.b,select.b,a.b{font-family:var(--fu);font-size:11px;padding:2px 6px;min-height:22px;border:1px solid var(--parch3);border-radius:3px;background:var(--parch);color:var(--ink2);cursor:pointer;white-space:nowrap;user-select:none}
+button.b:hover,a.b:hover{background:var(--parch3)}
+button.b.on{background:var(--acc1);color:#fff;border-color:var(--acc1)}
+button.b.on2{background:var(--acc2);color:#fff;border-color:var(--acc2)}
+button.b.on3{background:var(--acc3);color:#fff;border-color:var(--acc3)}
+select.b{height:22px}
+input[type=file]{display:none}
+.sb-s{padding:7px;border-bottom:1px solid var(--parch3)}
+.sb-t{font-size:9px;font-variant:small-caps;color:var(--ink3);letter-spacing:.05em;margin-bottom:4px}
+.sb-b{width:100%;text-align:left;margin-bottom:2px;font-size:11px;padding:2px 6px}
+.pi{font-size:11px;padding:2px 6px;cursor:pointer;border-radius:3px;margin-bottom:2px;color:var(--ink2)}
+.pi:hover{background:var(--parch2)}
+.pi.cur{background:var(--acc1);color:#fff}
+#modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2500;align-items:center;justify-content:center}
+#modal-bg.open{display:flex}
+#modal{background:var(--parch);border-radius:6px;padding:20px;max-width:480px;width:90%;max-height:92vh;overflow-y:auto;box-sizing:border-box;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+#modal h2{font-family:var(--fh);font-size:15px;margin-bottom:8px;padding-right:30px}
+#modal-x{position:sticky;top:-8px;float:right;z-index:2;margin:-10px -8px 0 6px;width:30px;height:30px;border:1px solid var(--parch3);border-radius:50%;background:var(--parch);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+#modal-x:hover{background:var(--parch2);color:#a03020}
+.mbtns[style*="flex-direction: column"]{flex-wrap:nowrap}
+@media (max-width:700px){
+  #modal{width:94vw;max-width:94vw;max-height:86vh;padding:14px 12px;overflow-x:hidden}
+  #modal h2{font-size:17px}
+  #modal-body p{font-size:13px !important}
+  #modal .b{white-space:normal}
+  .nt-lib-row{display:grid !important;grid-template-columns:1fr 1fr;gap:6px !important}
+  .nt-lib-row .b{font-size:13px !important;padding:7px 6px !important;min-height:38px;text-align:left;line-height:1.25}
+  .nt-lib-row a{grid-column:span 2}
+  .nt-lib-row3{grid-template-columns:1fr 1fr 1fr}
+  .nt-lib-row3 .b{font-size:12px !important;padding:6px 4px !important;min-height:34px;text-align:center}
+  .nt-lib-row3 a{grid-column:1 / -1;font-size:12px !important}
+}
+.mbtns{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:12px}
+.mi{font-size:11px;color:var(--ink2);line-height:1.7}
+.pf{margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--parch3)}
+.pf:last-child{border:none;margin:0;padding:0}
+.pf-n{font-weight:600;color:var(--acc1);font-size:10px;margin-bottom:2px}
+.pf-ins{font-size:10px;padding:1px 5px;margin-top:2px;background:var(--parch2);border:1px solid var(--parch3);border-radius:2px;cursor:pointer;color:var(--ink2);display:inline-block}
+.pf-ins:hover{background:var(--parch3)}
+
+/* ── Mobile-Ansicht (Schritt 3) & Mobile-Bearbeitung (Schritt 4) ──────
+   Greift automatisch unter 700px Breite. Zeigt nur den "Noten-Editor"
+   (#greg-panel, der Standard-Tab mit Bibliothek/GregoBase/PDF-OCR).
+   Zwei Modi, exklusiv (kein Platz für nebeneinander auf dem Handy):
+   Ansicht (Default) zeigt die auf Bildschirmbreite skalierte Notation;
+   Bearbeiten (Klasse .greg-mobile-edit auf #greg-panel, umgeschaltet
+   per gregMobileSetEditMode) zeigt stattdessen die Eingabespalte
+   (#greg-input-panel: Neumen-Grid, Eintragsliste, GABC-Import, GregoBase,
+   PDF-Lesen) auf voller Breite — bereits button-/touch-basiert, nicht
+   der alte klickbasierte Canvas-Editor (der bleibt auf dem Handy
+   grundsätzlich ausgeblendet). Die Notation selbst wird per CSS-
+   Transform auf Bildschirmbreite skaliert (gregMobileApplyScale) statt
+   die interne, für Layout-Stabilität sorgfältig austarierte Render-
+   Breitenlogik anzufassen. */
+/* Ziehleisten: auch mit dem Finger verschiebbar (Tablet) */
+#greg-drag-handle,#greg-pdf-drag-handle{touch-action:none}
+@media (pointer:coarse){
+  #greg-drag-handle,#greg-pdf-drag-handle{width:18px !important;background:#22301a !important;
+    background-image:radial-gradient(circle,#8aa870 1.6px,transparent 2px) !important;background-size:18px 10px !important;
+    background-repeat:repeat-y !important;background-position:center calc(50% - 15px) !important}
+}
+#greg-mobile-bar{display:flex}
+.nt-mob-only{display:none}
+.nt-o-break{display:none}
+@media (max-width: 1000px) {
+  /* Schmale Bildschirme: oben Datei-Aktionen + Anzeige/Vollbild, darunter
+     die Wiedergabe-Knöpfe gesammelt, dann Titel/Links */
+  .nt-o-file{order:1} .nt-o-view{order:2} .nt-o-full{order:3}
+  .nt-o-break{display:block;order:4;flex-basis:100%;height:0}
+  .nt-o-play{order:5} .nt-o-title{order:6} .nt-o-spacer{display:none} .nt-bar-sep{display:none}
+}
+@media (max-width: 700px) {
+  .nt-noh-txt{display:none}
+  .nt-lbl{display:none}
+  /* Handy: Freitext-Schalter im PDF-Dialog statt in der Leiste */
+  #greg-mobile-bar .nt-filegrp label, #cl-viewbar .nt-filegrp label{display:none !important}
+  #greg-mobile-bar, #cl-viewbar{gap:4px !important}
+  /* Handy: Wiedergabe-/Anzeige-Extras im «⋯»-Menü statt eigener Knöpfe */
+  .nt-pm{display:none !important}
+  .nt-mob-only{display:inline-block !important}
+}
+#greg-mobile-scale-wrap{transform-origin:top left}
+@media (max-width: 700px) {
+  #hdr-sub { display:none; }
+  #hdr{padding:5px 8px;gap:6px}
+  #hdr-tabs .nt-tab{padding:3px 10px}
+  #greg-mobile-bar{display:flex}
+  #greg-drag-handle{display:none}
+  #greg-pdf-drag-handle,#greg-pdf-panel{display:none}
+  #greg-canvas-wrap{padding:8px 8px calc(48px + env(safe-area-inset-bottom)) !important}
+
+  /* Ansicht (Default): Eingabespalte aus, Notation an. !important nötig,
+     da #greg-input-panel inline display:flex trägt (inline schlägt eine
+     ID-Regel ohne !important immer, unabhängig von deren Spezifität). */
+  #greg-input-panel{display:none !important}
+
+  /* Bearbeiten: Eingabespalte auf volle Breite, Notation aus. !important
+     nötig — beide Elemente tragen inline display:flex/border-right. */
+  #greg-panel.greg-mobile-edit #greg-canvas-wrap{display:none !important}
+  #greg-panel.greg-mobile-edit .greg-details-back{display:block !important}
+  #greg-panel.greg-mobile-edit #greg-input-panel{display:flex !important;width:100% !important;min-width:0 !important;border-right:none !important}
+
+  /* Grössere Tastflächen in der Eingabespalte auf dem Handy. !important
+     bei Feldern nötig, da viele davon eine eigene inline font-size tragen
+     (z.B. der API-Key, die GABC-Textfelder) — ohne !important bliebe die
+     winzige Desktop-Schrift bestehen. */
+  #greg-panel.greg-mobile-edit #greg-input-panel button.b{min-height:30px;font-size:12px;padding:4px 8px}
+  #greg-panel.greg-mobile-edit #greg-input-panel input,
+  #greg-panel.greg-mobile-edit #greg-input-panel select,
+  #greg-panel.greg-mobile-edit #greg-input-panel textarea{font-size:13px !important}
+
+  /* Echtes Scrollen der Eingabespalte im Bearbeiten-Modus (Nutzer-Feedback:
+     "ich kann nicht nach unten scrollen ... sehe nicht bis ganz unten zum
+     GABC-Code"). Ursache: #greg-input-panel ist selbst ein Flex-Container
+     (column) mit inline overflow:hidden -- dessen direkte Kind-Divs sind
+     dadurch automatisch Flex-Items mit initialem flex-shrink:1 und wurden
+     bei zu wenig Platz einfach zusammengequetscht statt dass die Spalte
+     scrollt. Fix: overflow-y:auto auf der Spalte selbst (!important nötig,
+     inline overflow:hidden) + flex-shrink:0 auf allen direkten Kindern
+     (!important nötig wg. teils inline flex:1), sodass jede Sektion ihre
+     natürliche Höhe behält und die Spalte als Ganzes vertikal scrollt. */
+  #greg-panel.greg-mobile-edit #greg-input-panel{overflow-y:auto !important}
+  #greg-panel.greg-mobile-edit #greg-input-panel > div{flex-shrink:0 !important}
+
+  /* Einträge-Liste (Nutzer-Feedback: "nur ein winziger Bereich sichtbar"):
+     ohne obigen Fix schrumpfte dieser Bereich (inline flex:1) auf seine
+     Mindesthöhe zusammen. Jetzt bekommt er stattdessen eine grosszügige,
+     eigenständig scrollbare Höhe, unabhängig vom Rest der Spalte. */
+  #greg-panel.greg-mobile-edit #greg-entries-wrap{flex:none !important;height:calc(100vh - 285px) !important;height:calc(100dvh - 285px) !important;min-height:220px !important}
+
+  /* Grössere Tastflächen für die einzelnen Einträge (Zeilen werden per JS
+     mit eigener inline font-size/padding erzeugt -- !important nötig). */
+  #greg-panel.greg-mobile-edit #greg-entry-list > div{padding:7px 5px !important;font-size:13px !important;margin-bottom:3px !important}
+  #greg-panel.greg-mobile-edit #greg-entry-list button{font-size:14px !important;padding:5px 8px !important;min-width:28px !important}
+  #greg-panel.greg-mobile-edit #greg-entry-list input[type=checkbox]{width:18px !important;height:18px !important}
+}
