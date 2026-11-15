@@ -1,0 +1,30 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Salve Regina",
+   "mode": "",
+   "clef": "",
+   "hasDropCap": null,
+   "systems": [
+    "x(hhgh) x(d) x(hg) x(fefgf) x(ed) x(c) x(d) x(dc) x(d)",
+    "x(ef) x(g) x(dec) x(d) x(hh) x(gh) x(d) x(hg) x(fefgf) x(ed) x(c) x(d)",
+    "x(ef) x(g) x(dec) x(d) x(df) x(h) x(g) x(g) x(fh) x(e) x(g) x(f)",
+    "x(e) x(dg) x(c) x(d) x(e) x(dg) x(fe) x(d) x(df) x(h) x(j) x(g) x(g) x(fg) x(h)",
+    "x(d) x(f) x(g) x(d) x(fed) x(c) x(d) x(d) x(cf) x(gh) x(g) x(fe) x(g) x(f) x(d) x(cd) x(ffg) x(f) x(g) x(h)",
+    "x(j) x(g) x(hgf) x(d) x(g) x(h) x(k) x(k) x(jijk) x(h) x(k) x(j) x(h) x(g) x(fh) x(g) x(de) x(f) x(edc) x(cd)",
+    "x(f) x(g) x(d) x(cd) x(d) x(d) x(a) x(cd) x(d) x(de) x(edd) x(c) x(g) x(f) x(e) x(g)",
+    "x(fe) x(d) x(cd) x(j) x(dhi) x(h) x(hgf) x(g) x(d) x(f) x(fe) x(dc) x(efe) x(d) x(d) x(hhghij) x(ihg) x(h)",
+    "x(ghijji) x(hg) x(gh) x(hdfedcd) x(defg) x(g) x(gh) x(d) x(c) x(d) x(dgff) x(ed)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 3400
+}

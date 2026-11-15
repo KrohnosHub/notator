@@ -1,0 +1,39 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Gaudeamus omnes in Domino",
+   "mode": "",
+   "clef": "",
+   "hasDropCap": null,
+   "systems": [
+    "x(d) x(dhi) x(h) x(h) x(hg) x(fg) x(gjh) x(hghi) x(hi)",
+    "x(ih) x(h) x(f) x(g) x(gff) x(dg) x(gff) x(dg) x(gff)",
+    "x(f) x(g) x(ghjh) x(ghg) x(f) x(h) x(gjj) x(h) x(hih) x(h) x(fg) x(fg) x(f) x(f) x(g)",
+    "x(g) x(ghjh) x(ghg) x(fg) x(f) x(fgh) x(gh) x(gfefgffh) x(gf) x(f) x(g) x(ghjhg) x(hg)",
+    "x(fge) x(f) x(fghfgfe) x(def) x(ef) x(ed) x(f) x(gh) x(h) x(h) x(hj) x(h) x(h) x(h) x(hg)",
+    "x(gh) x(gf) x(gh) x(h) x(h) x(hjh) x(g) x(f) x(fff) x(d)",
+    "x(f) x(gh) x(h) x(h) x(h) x(h) x(h) x(h) x(h) x(h) x(h) x(hj) x(h) x(h) x(h) x(gh)",
+    "x(gf) x(gh) x(h) x(h) x(h) x(h) x(h) x(h) x(h) x(h) x(hj) x(h) x(h) x(gh) x(gf) x(gh)"
+   ]
+  },
+  {
+   "incipit": "saecula saeculorum Amen",
+   "mode": "",
+   "clef": "",
+   "hasDropCap": null,
+   "systems": [
+    "x(h) x(h) x(h) x(h) x(hjh) x(g) x(f) x(fff) x(d) x(h) x(hjh) x(g) x(f) x(fg) x(h)",
+    "x(h) x(hjh) x(g) x(f) x(fff) x(dcdf)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 3018
+}

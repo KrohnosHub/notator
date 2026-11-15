@@ -1,0 +1,52 @@
+{
+  "id": "gaudeamus-omnium-sanctorum",
+  "scan": "scan.pdf",
+  "source": {
+    "book": "«Gaudeamus omnes in Domino (Allerheiligen - Introitus)», Scan aus dem Drive des Nutzers",
+    "reference": "Gaudeamus... sanctorum omnium.notator (GregoBase 752, Graduale Romanum 1961 S. 647)",
+    "rights": "ungeklärt – Scan nicht im Repo"
+  },
+  "tags": [
+    "do-schluessel",
+    "initiale",
+    "b-vorzeichen",
+    "quilisma",
+    "liqueszenz",
+    "melismatisch",
+    "psalmvers",
+    "1-seite"
+  ],
+  "checkedBy": "",
+  "checkedOn": "",
+  "notes": "Soll aus der Notator-Datei des Nutzers (GregoBase-Fassung) abgeleitet; Systemgrenzen von Claude anhand der Textanfänge im Scan gesetzt. Nicht Note für Note geprüft; die GregoBase-Fassung kann vom Druck abweichen. «*» und «Ps.» sind weggelassen. Die letzten zwei Systeme (Schluss des Gloria Patri mit zwei «E u o u a e») weichen von der Vorlage ab und sind als zweites «Stück» ohne Soll geführt; das ist ein Behelf, keine echte Stückgrenze.",
+  "pieces": [
+    {
+      "incipit": "Gaudeamus omnes in Domino",
+      "mode": "1",
+      "clef": "c4",
+      "hasDropCap": true,
+      "pages": [
+        1
+      ],
+      "systems": [
+        "GAU(c)DE(d)Á(ixdh')(iv) MUS(h..) (,) o(hg~)mnes(hg) in(fg) Dó(gjh)mi(ixh..g)(hwihi)",
+        "no,(i.h.) (;) di(h)em(fg~) fe(g)stum(gf) (f) ce(dg)le(gf)(f) brán(dg~)tes(gf) (f) (,)",
+        "sub(f) ho(g)nó(g..)(hjh) re(ghg..) San(f)ctó(h)rum(gj) (j) ó(h)mni(h_[oh:h]i_[oh:h]h_[oh:h])um :(h..) (:) de(fg) quo(fg)rum(f) sol(f)",
+        "e(g)mni(g)tá(g..)(hjh) te(ghg..) (,) gau(fg)dent(f) An(fg)(hgh) ge(gvfe')(fwgfg) li,(g.f.) (;) et(f) col(g)láu(g..)(hjh~g~) dant(h_g) (,)",
+        "Fí(fge)li(f)um(fg) (hf) (gvfe) De(d)(ewfef) i.(e.d.) (::) Ex(f)sul(gh)tá(h)te(h) ju(hj)sti(h) in(h) Dó(h)mi(hg)",
+        "no :(g.h.) (:) re(gf)ctos(gh) de(h)cet(h) col(hjh)lau(g')dá(f)ti(fff)o.(d..) (::)",
+        "Gló(f)ri(gh)a(h) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h..) (,) et(h) Spi(h)rí(hj)tu(h)i(h) San(hg~)cto.(g.h.) (:)",
+        "Sic(gf)ut(gh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h..) (,) et(h) nunc,(hj) et(h) sem(hg~)per,(g.h.) (:) et(gf) in(gh)"
+      ]
+    },
+    {
+      "incipit": "saecula saeculorum Amen",
+      "mode": "",
+      "hasDropCap": false,
+      "pages": [
+        1
+      ],
+      "systemCount": 2
+    }
+  ]
+}
