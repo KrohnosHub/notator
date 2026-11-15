@@ -1,0 +1,39 @@
+{
+ "model": "claude-opus-5-5",
+ "effort": "low",
+ "pipeline": "geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: KI je Seite, Lage aus Tesseract; Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Gaudeamus omnes in Domino",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "GAU()DE(d)A(dhi)MUS(h) (,) o(h)mnes(hg) in(fg) Dó(gjh)mi(hghihi)",
+    "no,(ih) (;) di(h)em(f) fe(g)stum(gff) ce(dg)le(gff)brán(dg)tes(gff) (,)",
+    "sub(f) ho(g)nó(ghjh)re(ghg) San(f)ctó(h)rum(gjj) ó(h)mni(hih)um:(h) (:) de(fg) quo(fg)rum(f) so(f)le(g)",
+    "mni(g)tá(ghjh)te(ghg) (,) gau(fg)dent(f) An(fgh)ge(ghgfefgffh)li,(gf) (;) et(f) col(g)láu(ghjhg)dant(hg) (,)",
+    "Fí(fge)li(f)um(fghfgfe) De(defef)i.(ed) Ex() (::) sul(f)tá(gh)te(hh) ju(hj)sti(h) in(h) Dó(h)mi(hg)",
+    "no:(gh) re() (:) ctos(gfgh) de(h)cet(h) col(hjh)lau(g)dá(f)ti(fff)o.(d) (:)",
+    "Gló(f)ri(gh)a(h) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h) (,) et(h) Spi(h)rí(hj)tu(h)i(h) San(h)cto.(gh) (:)",
+    "Sic(gf)ut(gh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h) (,) et(h) nunc,(hj) et(h) sem(h)per,(gh) (:) et(gf) in(gh)"
+   ]
+  },
+  {
+   "incipit": "saecula saeculorum Amen",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "sǽ(h)cu(h)la(h) sæ(h)cu(hjh)ló(g)rum.(f) A(fff)men.(d) vel() (::) E(h) u(hjh) o(g) u(f) a(fg) e.(h) (::)",
+    "vel() E(h) u(hjh) o(g) u(f) a(fff) e.(dcdf) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2495,
+  "output_tokens": 412,
+  "costUsd": 0.01822
+ },
+ "durationMs": 6705
+}

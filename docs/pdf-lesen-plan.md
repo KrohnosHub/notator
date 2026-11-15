@@ -594,6 +594,41 @@ Antworten:
 Folgerung: Für den Text Sonnet 5.5 nehmen. Bei rund 0.007 USD pro Seite
 lohnt sich die Ersparnis mit Haiku nicht.
 
+### 7.7 Opus 5.5 und Streuung bei Sonnet 5.5 (15.11.2026)
+
+Serie `runs/ki-o55-low`: wie 7.5 mit `claude-opus-5-5` (1 Lauf). Dazu in
+`runs/ki-s55-low` zwei weitere Sonnet-Läufe (`geom.py --run 2|3`), also
+3 Läufe je Fall.
+
+| Messgrösse | Sonnet 5.5, 3 Läufe | Opus 5.5, 1 Lauf |
+| --- | --- | --- |
+| Silben (mit Akzenten) | 76 / 75 / 76 % | **81 %** |
+| Silben ohne Akzente | 86 / 85 / 85 % | 86 % |
+| Wortgrenzen | 90 / 90 / 89 % | 89 % |
+| Neumen-Gruppierung | 72 / 73 / 72 % | 73 % |
+| Kosten pro Seite | **ca. 0.007 USD** | ca. 0.015 USD |
+
+Je Fall (Silben mit Akzenten, Sonnet Läufe 1–3 → Opus): Ave Maria
+81/81/82 → 82, Gaudeamus 80/79/72 → 82, Salve mater 80/74/89 → 80,
+Salve Regina 59/59/58 → 72, Surrexit 96/100/96 → 100.
+
+Befund:
+
+- **Sonnet ist über alle Fälle stabil** (±1 Punkt). Einzelne Fälle
+  schwanken stärker: Salve mater 74–89 %, Gaudeamus 72–80 %.
+- **Opus liegt 5 Punkte höher**, mehr als die Streuung von Sonnet. Der
+  Gewinn kommt fast ganz vom Salve Regina (72 statt 59 %) und dort von den
+  Akzenten. Ohne Akzente sind beide Modelle gleich (86 %). Von Opus gibt es
+  nur einen Lauf; seine Streuung ist nicht gemessen.
+- Ob die Akzente beim Salve Regina im Druck wirklich so stehen wie im Soll
+  (GregoBase-Fassung), ist weiterhin nicht geprüft. Wenn das Soll dort
+  abweicht, ist der Vorsprung von Opus kleiner.
+
+Folgerung: Opus liest Akzente etwas besser, kostet aber das Doppelte. Die
+Kosten bleiben in beiden Fällen klein (unter 0.02 USD pro Seite). Die Wahl
+hängt davon ab, wie wichtig richtige Akzente sind; Buchstaben und
+Silbentrennung liest Sonnet gleich gut.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

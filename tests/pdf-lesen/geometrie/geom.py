@@ -10,7 +10,7 @@ Aufruf:
   python3 tests/pdf-lesen/geometrie/geom.py [--series geom-v3] [--work DIR] [--debug]
 
 Braucht: Python 3, numpy, Pillow, pdftoppm (poppler), optional tesseract mit Sprachpaket lat. Keine API-Aufrufe.
-Liest cases/<fall>/scan.pdf, schreibt runs/<serie>/<fall>/run-01.json.
+Liest cases/<fall>/scan.pdf, schreibt runs/<serie>/<fall>/run-NN.json (NN aus --run, Standard 1).
 Zusaetzlich (GEOM_FULL=1, Standard): Schluessel, Trennstriche und Silbenraster aus dem Bild.
 Text: geometrie/ocr.py mit Tesseract (GEOM_OCR=1, Standard, falls installiert).
 Nicht Teil dieses Prototyps: Mora-Punkte, Vorzeichen, Stueckgrenzen.
@@ -583,6 +583,7 @@ def main():
     ap.add_argument('--work', default=None)
     ap.add_argument('--debug', action='store_true')
     ap.add_argument('--case', action='append')
+    ap.add_argument('--run', type=int, default=1, help='Laufnummer fuer Wiederholungen (Streuung)')
     a = ap.parse_args()
     work = a.work or tempfile.mkdtemp(prefix='geom-')
     os.makedirs(work, exist_ok=True)
@@ -602,7 +603,7 @@ def main():
             'durationMs': int((time.time() - t0) * 1000),
         }
         d = os.path.join(ROOT, 'runs', a.series, case); os.makedirs(d, exist_ok=True)
-        json.dump(out, open(os.path.join(d, 'run-01.json'), 'w'), ensure_ascii=False, indent=1)
+        json.dump(out, open(os.path.join(d, 'run-%02d.json' % a.run), 'w'), ensure_ascii=False, indent=1)
         print('%s: %d Systeme, Schraege %.2f Grad, Linienabstand %.0f px, Schwelle %d, %.1f s' % (case, r['staves'], r['skew'], r['gap'], r['thr'], time.time() - t0))
     if a.debug: print('Debug-Bilder in', work)
 

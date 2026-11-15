@@ -55,6 +55,7 @@ NOTATOR_API_KEY=… GEOM_TEXT=ki python3 tests/pdf-lesen/geometrie/geom.py --ser
 
 - Braucht `pip install anthropic`. Modell und Aufwand: `GEOM_KI_MODEL`
   (Standard `claude-sonnet-5-5`), `GEOM_KI_EFFORT` (Standard `low`).
+- `--run N` schreibt `run-0N.json` (Wiederholungsläufe für die Streuung).
 - `--work` erhält je Seite das gesendete Bild (`ki-<fall>.png`) und die
   Antwort (`ki-<fall>.json`).
 - In der Cloud-Umgebung: Key als Umgebungsvariable `NOTATOR_API_KEY` in den
