@@ -19,18 +19,27 @@ MODEL = os.environ.get('GEOM_KI_MODEL', 'claude-sonnet-5-5')
 EFFORT = os.environ.get('GEOM_KI_EFFORT', 'low')
 # USD je 1 Mio. Token (Eingabe, Ausgabe), Stand 11/2026
 PRICES = {'claude-sonnet-5-5': (2.0, 10.0), 'claude-haiku-5-5': (0.10, 0.50), 'claude-opus-5-5': (4.0, 20.0)}
-LINE_H = 64            # Hoehe einer Textzeile im Bild (px)
+LINE_H = int(os.environ.get('GEOM_KI_LINE_H', 64))   # Hoehe einer Textzeile im Bild (px)
+BOTTOM = float(os.environ.get('GEOM_KI_BOTTOM', 1.6))  # unterer Rand in Linienabstaenden (Unterlaengen, Kommas)
+SPLIT = os.environ.get('GEOM_KI_SPLIT', '1') != '0'  # lange Zeilen in zwei Teile statt verkleinern
 
 PROMPT = """The image shows numbered strips. Each strip is one line of Latin chant text, cut from under a staff of \
 square notation in a printed book. Strip 0, if present, is the large decorated initial letter of the piece; it \
-belongs in front of the first word of strip 1.
+belongs in front of the first word of strip 1: write it directly before that word's first letters, with no \
+hyphen and no space (e.g. initial "S" + "Al-ve" -> "SAl-ve").
+A long strip may be cut into two parts shown on consecutive rows; the second part is marked "N+" and continues \
+strip N on the same line. Return such a strip as one entry.
 
 Transcribe the text of every numbered strip exactly as printed:
-- Separate words with one space. Mark every syllable boundary inside a word with "-", both where the print shows a \
-hyphen and inside words printed without one (use the usual syllable division of liturgical Latin, e.g. "be-ne-dí-cta", \
-"San-ctó-rum", "o-mnes").
+- Separate words with one space. Mark EVERY syllable boundary inside a word with "-". The print shows hyphens only \
+where notes separate the syllables; add the missing ones yourself with the usual syllable division of liturgical \
+Latin. Examples: printed "Surré-xit" -> "Sur-ré-xit", "appá-ru-it" -> "ap-pá-ru-it", "omnes" -> "o-mnes", \
+"benedícta" -> "be-ne-dí-cta", "GAUDEAMUS" -> "GAU-DE-A-MUS". Do not copy the spacing of the print: no space \
+after a hyphen inside a word ("Gló-ri- a" -> "Gló-ri-a").
+- Chant books divide before the consonant groups ct, gn, mn, pt, ps, x+consonant stays: "San-ctus", "a-gnus", \
+"ó-mni-um", "re-ctos", "ex-sul-tá-te". In "alleluia" the final "ia" is one syllable: "Al-le-lú-ia".
 - Keep accents (á é í ó ú ý ǽ) and the ligatures æ œ exactly as printed. Keep punctuation (, . ; : ! ?) at the end of \
-its word.
+its word; look closely to tell a comma (with a small tail below the line) from a full stop.
 - Leave out the asterisk *, crosses, verse numbers, and the signs ℣ ℟ and "Ps.".
 - If a strip contains no chant text, return an empty string for it.
 Return one entry per strip number 1..N."""
@@ -44,7 +53,7 @@ def page_strips(im, dark, sts, components):
         yt = ocr.text_top(dark, st, gl)
         if yt is None:
             rows.append(None); continue
-        box = (int(st['x0'] - 0.5 * gl), int(yt - 0.35 * gl), int(st['x1'] + 0.5 * gl), int(yt + 1.25 * gl))
+        box = (int(st['x0'] - 0.5 * gl), int(yt - 0.35 * gl), int(st['x1'] + 0.5 * gl), int(yt + BOTTOM * gl))
         rows.append({'box': box, 'gl': gl})
     crops = []
     dc = ocr.dropcap_box(dark, sts[0], (sts[0]['lines'][3] - sts[0]['lines'][0]) / 3.0, components) if sts else None
@@ -57,15 +66,36 @@ def page_strips(im, dark, sts, components):
         h = LINE_H if n else 2 * LINE_H
         f = h / c.height
         c = c.resize((max(1, int(c.width * f)), h), Image.LANCZOS)
+        if n and SPLIT and c.width > W - 70:
+            # Lange Zeile an einer Wortluecke nahe der Mitte teilen statt verkleinern (Kommas bleiben lesbar)
+            for half in split_strip(c): parts.append((n, half))
+            continue
         if c.width > W - 70: c = c.resize((W - 70, int(c.height * (W - 70) / c.width)), Image.LANCZOS)
         parts.append((n, c))
     H = sum(c.height + 10 for _, c in parts) + 10
     img = Image.new('L', (W, H), 255); d = ImageDraw.Draw(img); y = 10
+    prev = None
     for n, c in parts:
-        d.text((8, y + c.height // 2 - 6), str(n), fill=0)
-        d.line((0, y - 5, W, y - 5), fill=180)
-        img.paste(c, (60, y)); y += c.height + 10
+        d.text((8, y + c.height // 2 - 6), str(n) + ('+' if n == prev else ''), fill=0)
+        if n != prev: d.line((0, y - 5, W, y - 5), fill=180)
+        img.paste(c, (60, y)); y += c.height + 10; prev = n
     return img, rows
+
+
+def split_strip(c, maxw=1530):
+    """Teilt einen Streifen an der hellsten Spalte (Wortluecke) im mittleren Drittel; Teile hoechstens maxw breit."""
+    a = 255 - np.asarray(c.convert('L'), dtype=np.float32)
+    col = a.sum(axis=0)
+    w = c.width
+    lo, hi = w // 3, 2 * w // 3
+    k = np.ones(15) / 15
+    sm = np.convolve(col, k, mode='same')
+    cut = lo + int(np.argmin(sm[lo:hi]))
+    out = []
+    for part in (c.crop((0, 0, cut, c.height)), c.crop((cut, 0, w, c.height))):
+        if part.width > maxw: part = part.resize((maxw, int(part.height * maxw / part.width)), Image.LANCZOS)
+        out.append(part)
+    return out
 
 
 def estimate_tokens(img, nlines):
@@ -115,7 +145,12 @@ def call(img, nlines):
         raise RuntimeError('Antwort abgeschnitten (max_tokens)')
     text = ''.join(b.text for b in r.content if b.type == 'text')
     got = {e['n']: e['text'] for e in json.loads(text)['lines']}
-    return [got.get(k + 1, '') for k in range(nlines)], usage
+    return [clean_line(got.get(k + 1, '')) for k in range(nlines)], usage
+
+
+def clean_line(t):
+    """Gedruckte Abstaende nach Trennstrichen entfernen («Gló-ri- a» -> «Gló-ri-a»); Trennstrich am Zeilenende bleibt."""
+    return re.sub(r'-\s+(?=\S)', '-', t.strip())
 
 
 def mock_lines(exp, nsys):

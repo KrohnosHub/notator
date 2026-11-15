@@ -55,6 +55,9 @@ NOTATOR_API_KEY=… GEOM_TEXT=ki python3 tests/pdf-lesen/geometrie/geom.py --ser
 
 - Braucht `pip install anthropic`. Modell und Aufwand: `GEOM_KI_MODEL`
   (Standard `claude-sonnet-5-5`), `GEOM_KI_EFFORT` (Standard `low`).
+- `GEOM_TEXT=cache` rechnet mit den gespeicherten Antworten aus `--work` neu (keine Kosten).
+- Bild: `GEOM_KI_BOTTOM` (unterer Rand, Standard 1.6 Linienabstände), `GEOM_KI_SPLIT=0`
+  (lange Zeilen nicht teilen), `GEOM_KI_LINE_H` (Zeilenhöhe, Standard 64 px).
 - `--run N` schreibt `run-0N.json` (Wiederholungsläufe für die Streuung).
 - `--work` erhält je Seite das gesendete Bild (`ki-<fall>.png`) und die
   Antwort (`ki-<fall>.json`).

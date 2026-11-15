@@ -1,0 +1,35 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: cache; Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Surrexit Dominus vere",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "SUrré(f)xit(fgf) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih) (;) Al(i)le(ihg)lú(gh)ia,(f) (,) al(d)",
+    "le(fghihgf)lú(gh)ia.(f) (::) Surré(ffg)xit.(f) (::) Et(f) appá(fg)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghih) (:) (,)",
+    "Al(ijihg)le(gh)lú(f) (::) ia.(ff) Pa(f)tri,(ghf) (,) et(g) Fí(fe)li(dc)o,(c) (;) et(d) Spi(f)rí(ghi) (,)",
+    "tu(ih)i(gh) Sancto.(gf) (::) Surré(ffg)xit.(f) (::)"
+   ]
+  },
+  {
+   "incipit": "Ad coenam Agni providi",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "AD(h) cœnam(jhg) Agni(jijk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) albis(geg) cándi(fe)",
+    "di,(d) (;) Post(e) tránsi(edc)tum(g) ma(gh) (,) ris(j) Rubri,(jih) (,) Christo(jkj) ca(hg)námus(ihi) Prínci(hh)pi.(g) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2044,
+  "output_tokens": 264,
+  "costUsd": 0.006728
+ },
+ "durationMs": 2118
+}

@@ -1,0 +1,35 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: cache; Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Surrexit Dominus vere",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "SUrré(f)xit(fgf) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih) (;) Al(i)le(ihg)lú(gh)ia,(f) (,) al(d)",
+    "le(fghihgf)lú(gh)ia.(f) (::) Surré(ffg)xit.(f) (::) Et(f) appá(fg)ru(f)it(fe) Si(dc)mó(fgd)ni.(fghih) (:) (,)",
+    "Al(ij)le(ihg)lú(gh)ia.(f) Anunc() (::) Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(fe)li(dc)o,(c) (;) et(d) Spi(f)rí(ghi) (,)",
+    "tu(ih)i(gh) San(g)cto.(f) (::) Surré(ffg)xit.(f) (::)"
+   ]
+  },
+  {
+   "incipit": "Ad coenam Agni providi",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "Dœ(hj)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(f)di(e)",
+    "di,(d) (;) Post(e) tránsi(edc)tum(g) ma(gh) (,) ris(j) Ru(j)bri,(ih) (,) Chri(jk)sto(j) ca(hg)ná(i)mus(hi) Prín(h)ci(h)pi.(g) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2044,
+  "output_tokens": 291,
+  "costUsd": 0.006998
+ },
+ "durationMs": 2197
+}

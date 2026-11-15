@@ -512,7 +512,7 @@ def run_case(case, work, debug):
     sizes = [sz for st in sts for sz in analyse_staff(dark, st, g)[0]]
     ref = (float(np.median([a for a, _ in sizes])), float(np.median([w for _, w in sizes]))) if sizes else (0.2 * g * g, 0.45 * g)
     ki_lines = None; usage = {'input_tokens': 0, 'output_tokens': 0, 'costUsd': 0}
-    if FULL and TEXT in ('ki', 'mock', 'dry'):
+    if FULL and TEXT in ('ki', 'mock', 'dry', 'cache'):
         kimg, _ = text_ki.page_strips(im, dark, sts, components)
         kimg.save(os.path.join(work, 'ki-%s.png' % case))
         tin, tout = text_ki.estimate_tokens(kimg, len(sts))
@@ -521,6 +521,11 @@ def run_case(case, work, debug):
               (tin * pin + tout * pout) / 1e6, text_ki.MODEL), file=sys.stderr)
         has_dc = ocr.dropcap_box(dark, sts[0], (sts[0]['lines'][3] - sts[0]['lines'][0]) / 3.0, components) is not None
         if TEXT == 'mock': ki_lines = text_ki.mock_lines(exp, len(sts))
+        elif TEXT == 'cache':
+            # Gespeicherte KI-Antwort aus --work wiederverwenden (kein Aufruf); Kosten werden mitgefuehrt
+            cj = json.load(open(os.path.join(work, 'ki-%s.json' % case)))
+            ki_lines = [text_ki.clean_line(t) for t in cj['lines']]
+            u = cj['usage']; usage = {'input_tokens': u['input_tokens'], 'output_tokens': u['output_tokens'], 'costUsd': u['costUsd']}
         elif TEXT == 'ki':
             ki_lines, u = text_ki.call(kimg, len(sts))
             usage = {'input_tokens': u['input_tokens'], 'output_tokens': u['output_tokens'], 'costUsd': u['costUsd']}
@@ -532,7 +537,7 @@ def run_case(case, work, debug):
         if FULL:
             bars = find_bars(st); chunks = find_chunks(dark, st)
             line = None
-            if TEXT in ('ki', 'mock') and ki_lines is not None:
+            if TEXT in ('ki', 'mock', 'cache') and ki_lines is not None:
                 syls = None
                 if KI_POS == 'chunks':
                     syls = text_ki.syllables_from_chunks(ki_lines[k], text_ki.text_chunks(dark, st, gl), gl, dropcap=(k == 0 and has_dc))
@@ -594,7 +599,7 @@ def main():
         if r is None:
             print('%s: scan.pdf fehlt, uebersprungen' % case); continue
         out = {
-            'model': text_ki.MODEL if TEXT == 'ki' else 'keines (geometrisch)', 'effort': text_ki.EFFORT if TEXT == 'ki' else '',
+            'model': text_ki.MODEL if TEXT in ('ki', 'cache') else 'keines (geometrisch)', 'effort': text_ki.EFFORT if TEXT in ('ki', 'cache') else '',
             'pipeline': 'geometrie/geom.py: Tonhoehen, Schluessel, Trennstriche geometrisch; Text: %s; Stueckaufteilung aus expected.json'
                         % {'ocr': 'Tesseract' if OCR else 'Platzhalter', 'ki': 'KI je Seite, Lage aus Tesseract',
                            'mock': 'Soll-Text (Probelauf ohne KI)', 'dry': 'Tesseract (Trockenlauf)'}.get(TEXT, TEXT),

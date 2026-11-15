@@ -661,6 +661,61 @@ Sonnet, nicht getestet: grössere Textstreifen (`LINE_H` höher) gegen die
 verlorenen Kommas, und im Prompt klarer sagen, dass die Initiale ohne
 Trennstrich vor das erste Wort gehört.
 
+### 7.9 Soll korrigiert, Textstreifen und Prompt verbessert (15.11.2026)
+
+**Soll:** `salve-regina-1/expected.json` hat jetzt die gedruckten Akzente und
+«æ» (20 Stellen, siehe 7.8). Bei den anderen 4 Fällen stimmen Akzente und
+«æ» in allen Wörtern, die beide Modelle erkannt haben, mit dem Soll überein
+(automatischer Abgleich gegen die KI-Antworten; Wörter, die keine KI richtig
+las, sind damit nicht geprüft).
+
+**Ursache der verlorenen Kommas:** nicht die Verkleinerung allein, sondern
+der Ausschnitt. Er endete 1.25 Linienabstände unter dem Textanfang und schnitt
+Unterlängen und Kommaschwänze ab («Re-gí», «ergo»). Änderungen in
+`geometrie/text_ki.py`:
+
+- Unterer Rand 1.6 Linienabstände (`GEOM_KI_BOTTOM`). Beim Salve mater
+  ragt die nächste Strophe trotzdem nicht hinein (Sichtprüfung).
+- Lange Zeilen werden an einer Wortlücke in zwei Teile geteilt («N» und
+  «N+» übereinander) statt auf 1530 px Breite verkleinert
+  (`GEOM_KI_SPLIT=0` schaltet das ab). Das Bild bleibt 1600 px breit.
+- Prompt: Initiale ohne Trennstrich vor das erste Wort; Komma und Punkt
+  genau unterscheiden; jede Silbengrenze selbst setzen, mit Beispielen;
+  Trennregeln der Choralbücher (ct, gn, mn, pt, ps; «Al-le-lú-ia»).
+- Nachbearbeitung: Leerzeichen nach einem Trennstrich im Wort werden
+  entfernt («Gló-ri- a» → «Gló-ri-a»).
+- `GEOM_TEXT=cache` rechnet mit den gespeicherten KI-Antworten aus `--work`
+  neu (kein Aufruf, keine Kosten).
+
+Alle Werte gegen das korrigierte Soll (Silben mit / ohne Akzente,
+Wortgrenzen):
+
+| Serie | Silben | ohne Akzente | Wortgrenzen | Gruppierung | Kosten 5 Seiten |
+| --- | --- | --- | --- | --- | --- |
+| `ki-s55-low` (alt, 3 Läufe) | 80 % | 85 % | 90 % | 73 % | 0.037 USD |
+| `ki-o55-low` (alt, Opus, 1 Lauf) | 84 % | 86 % | 89 % | 73 % | 0.073 USD |
+| `ki-s55-low-v2` (Ausschnitt + Teilung, 3 Läufe) | 82 % | 83 % | 88 % | 71 % | 0.040 USD |
+| **`ki-s55-low-v3`** (dazu Prompt, 3 Läufe) | **85 %** | **87 %** | **90 %** | 73 % | **0.043 USD** |
+
+Je Fall in v3 (Silben, 3 Läufe): Ave Maria 83/83/83, Gaudeamus 81/81/81,
+Salve mater 89/89/89, Salve Regina 85/83/82, Surrexit 93/93/93.
+
+Befund:
+
+- **Sonnet mit v3 ist so gut wie Opus mit dem alten Ablauf** (85 gegen
+  84 %) und kostet die Hälfte. Opus mit v3 ist nicht gemessen.
+- Die Läufe streuen kaum noch (je Fall höchstens 3 Punkte).
+- v2 allein brachte wenig: Mit dem schärferen Bild übernahm Sonnet die
+  gedruckten Trennstriche wörtlich und trennte ungetrennte Wörter nicht mehr
+  («Surré-xit», «omnes»). Erst die Beispiele im Prompt (v3) beheben das.
+- Restfehler sind grossteils Trennkonvention, nicht Lesefehler: Das Soll
+  trennt uneinheitlich («díc-ta», «Sánc-ta» im Ave Maria, «San-ctó» im
+  Gaudeamus). Die neue Regel trifft das eine und verfehlt das andere; dazu
+  zwei Ausreisser («AVE» ungetrennt, «Sá-ncta»).
+- Weiter offen: Die Zier-Initiale «G» (Gaudeamus) und die Hymnus-Initiale
+  «A» (Surrexit, 2. Stück) erkennt das Skript nicht; dann fehlt der
+  Buchstabe.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).
