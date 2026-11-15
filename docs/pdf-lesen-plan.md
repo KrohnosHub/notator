@@ -506,6 +506,32 @@ liest. Geometrie und Notengruppen dienen dabei als Vorgabe, und die
 Zuordnung aus diesem Prototyp wird wiederverwendet. Dafür braucht es einen
 API-Key; Kosten geschätzt unter 0.02 USD pro Seite. [Annahme, nicht gemessen]
 
+### 7.4 Text mit KI, vorbereitet (15.11.2026)
+
+`geometrie/text_ki.py`, aufgerufen über `GEOM_TEXT=ki|dry|mock` in `geom.py`.
+Ein Aufruf je Seite: alle Textzeilen der Seite (je System die erste Zeile
+unter den Linien, dazu die Initiale) untereinander in einem Bild, nummeriert.
+Die KI gibt je Zeile den Text mit Silbentrennung zurück (strukturierte
+Ausgabe). Die Silben werden dann auf die Tintengruppen der Textzeile gelegt
+(dynamische Programmierung über die Breiten) und die Noten wie in 7.3
+zugeordnet. Tesseract ist dafür nicht nötig.
+
+Ohne API-Key gemessen:
+
+- **Trockenlauf** (`dry`): Bildgrösse 1600 × 430 bis 880 px, geschätzt
+  1400–2300 Eingabe- und 450–700 Ausgabe-Token je Seite, also **0.007–0.012
+  USD pro Seite mit Sonnet 5.5** (Haiku 5.5 etwa 20-mal billiger). Die
+  Ausgabe-Token bei `effort: low` sind geschätzt. [Annahme]
+- **Probelauf mit dem Soll-Text statt der KI-Antwort** (`mock`): misst, wie
+  gut die Zuordnung ist, wenn die KI fehlerfrei liest. Silben 93 %,
+  Wortgrenzen 91 %, Neumen-Gruppierung 74 % (mit Tesseract-Wortlage statt
+  Tintengruppen: 64 %). Die Silben bleiben unter 100 %, weil das Soll bei
+  Melismen leere Silben führt («Á(ixdh')(iv)»). Die Gruppierung begrenzen vor
+  allem fehlende oder zusätzliche Noten aus der Tonhöhenerkennung.
+
+Offen: der echte Lauf. Er braucht einen API-Key in `ANTHROPIC_API_KEY`
+(siehe README).
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).
