@@ -319,6 +319,73 @@ Nach der vereinbarten Regel (über 80 % bei höchstens 0.15 USD) ist das Ziel
 nicht erreicht. Offen bleibt der rein geometrische Weg für die Tonhöhen
 (Abschnitt 4), der keine API-Kosten hat, aber eigene Entwicklungsarbeit ist.
 
+## 7. Geometrischer Weg: Tonhöhen aus dem Bild messen (15.11.2026)
+
+Frage: Lassen sich die Tonhöhen ohne KI direkt aus dem Scan messen? Prototyp
+`tests/pdf-lesen/geometrie/geom.py` (Python, numpy, Pillow, pdftoppm), Serie
+`runs/geom-v1`. Dieselben 15 Systeme, keine API-Aufrufe, rund 3 s je Seite.
+
+Ablauf: Seite mit 300 dpi rendern, Notenlinien und Schräglage wie im Lesetest
+bestimmen (`lesetest/cut.py`), Linienlage je System lokal nachführen, alles
+wegfiltern, was dünner ist als ein Notenkopf (Linien, Hälse, Trennstriche,
+die meisten Vorzeichen und Punkte), verbleibende Tintenflecken als Notenköpfe
+werten und aus ihrer Höhe den Buchstaben ableiten. Übereinander stehende
+Noten (Podatus) und Schrägbalken (Porrectus) werden aus der Form des Flecks
+zerlegt. Ausgeschlossen werden die Schlüsselzone am Zeilenanfang, der Custos
+am Zeilenende und Textzeilen ober- und unterhalb.
+
+| | Ave Maria | Salve mater | Surrexit | Gesamt |
+| --- | --- | --- | --- | --- |
+| Tonhöhen je Stück | 99 % | 92 % | 95 % | **95 %** |
+| Notenzahl je System richtig | 3 von 4 | 3 von 7 | 1 von 4 | 47 % |
+| Fehler (fehlend, zusätzlich, falsch) | 1 von 88 Noten | 8 von 97 | 5 von 93 | 14 von 278 |
+
+Zum Vergleich: beste KI-Variante im Lesetest 74 %, Opus 5.5 in der
+Notator-Pipeline 72 %. «Tonhöhen ausgerichtet» je System: 94 %.
+
+Typische Fehlerbilder (alle 14 Fehler):
+
+- **Fehlende Note** (8): am Zeilenende in der Custos-Zone abgeschnitten
+  («Surrexit», System 1, im Bild geprüft); übrige Fälle nicht einzeln
+  geprüft, vermutlich blass oder hohl gedruckte Notenköpfe und Noten nahe am
+  Schlüssel. [Annahme]
+- **Zusätzliche Note** (6): Rest eines b-Vorzeichens als Note gelesen
+  («Surrexit», System 3) und kleine Flecken über den Linien («Salve mater»,
+  System 1), beides im Bild geprüft; die übrigen nicht einzeln geprüft.
+- **Falsche Höhe** (0).
+- Nie aufgetreten: eine ganze Folge um eine Stufe verschoben. Wo ein
+  Notenkopf gefunden wird, stimmt seine Höhe fast immer.
+
+Einschätzung:
+
+- **Über 80 % scheinen erreichbar**, bei 0 USD für die Tonhöhen. Das ist der
+  erste Weg, der das Ziel klar erfüllt.
+- **Die 95 % sind zu günstig gemessen.** Die Stellgrössen (Tintenschwelle,
+  Mindestgrösse, Breite der Schlüsselzone) wurden an denselben 15 Systemen
+  eingestellt, an denen gemessen wird. Auf neuen Scans ist weniger zu
+  erwarten; wie viel weniger, ist nicht gemessen.
+- **Empfindlich auf die Tintenschwelle:** mit fester Schwelle 150 statt der
+  automatisch bestimmten (rund 200) fällt der Wert auf 83 %, weil hohl
+  gedruckte Notenköpfe zerfallen. Gegen die Auflösung ist das Ergebnis stabil
+  (200 bis 400 dpi: 94–96 %).
+- **Die drei Fälle sind einfach:** fast nur Einzelnoten, Podatus, Clivis,
+  Climacus. Kein Porrectus (Schrägbalken-Code ungetestet), kein Quilisma,
+  keine Liqueszenzen, kein Fa-Schlüssel, kein Schlüsselwechsel. Für
+  melismatische Stücke (Gradualien, Alleluia) gilt die Zahl nicht.
+- **Nicht gelöst und nicht gemessen:** Text, Silbenzuordnung, Schlüssel,
+  Trennstriche, Mora-Punkte, Vorzeichen als solche, Stückgrenzen. Die
+  Aufteilung der Systeme auf Stücke stammt hier aus dem Soll. Die
+  Platzhalter-Gruppierung nach Abständen trifft die Neumen-Gruppen zu 93 %
+  (ganze Zeile exakt: 40 %); das hilft später beim Zuordnen der Silben.
+- Das Soll ist weiterhin nur grob bestätigt. Einzelne «Fehler» können Fehler
+  im Soll sein; geprüft habe ich das nicht.
+
+Vorschlag für den nächsten Schritt: zuerst 3 bis 5 weitere Scans messen, ohne
+am Prototyp zu drehen (darunter ein melismatisches Stück und ein
+Fa-Schlüssel). Hält der Wert über 85 %, die Tonhöhen geometrisch bestimmen
+und die KI nur noch Text, Schlüssel und Trennstriche lesen lassen, mit der
+gemessenen Notenfolge als Vorgabe im Prompt.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

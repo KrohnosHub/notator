@@ -8,6 +8,7 @@ Abschnitt 5.
 tests/pdf-lesen/
   evaluate.js              Vergleich + Streuung (Node ≥ 18, keine Abhängigkeiten)
   lesetest/                Lesetest ausserhalb von Notator (Schnitt, Lineale, Aufruf je System)
+  geometrie/               Tonhöhen aus dem Bild messen, ohne KI (Prototyp, Python + numpy + Pillow + pdftoppm)
   run-playwright.js        Messlauf: steuert das unveränderte Notator, ruft die API auf
   cases/<fall>/scan.pdf    der Scan – liegt nur lokal, nicht im Repo (.gitignore)
   cases/<fall>/expected.json   erwartetes Ergebnis, von Hand geprüft
@@ -26,6 +27,20 @@ node tests/pdf-lesen/evaluate.js --selftest   # prüft die Metriken selbst
 ```
 
 `evaluate.js` ruft keine API auf. Ohne Läufe prüft es nur das Format des Testsets.
+
+## Geometrischer Weg (kostenlos, nur Tonhöhen)
+
+```
+python3 tests/pdf-lesen/geometrie/geom.py --series geom-v1 [--debug --work /pfad]
+python3 tests/pdf-lesen/geometrie/diff.py geom-v1     # Soll/Ist je System nebeneinander
+```
+
+Misst Notenköpfe im Scan und leitet die Tonbuchstaben aus der Lage zu den vier
+Linien ab. Keine API-Aufrufe. Text ist Platzhalter (`x`), Schlüssel und
+Trennstriche fehlen; aussagekräftig sind nur «Tonhöhen je Stück», «Tonhöhen
+ausgerichtet», «Notenzahl je System». Die Aufteilung der Systeme auf Stücke
+übernimmt das Skript aus `expected.json`. `--debug` schreibt je System ein Bild
+mit den gefundenen Notenköpfen. Ergebnisse: `docs/pdf-lesen-plan.md`, Abschnitt 7.
 
 ## Messlauf (kostenpflichtig)
 

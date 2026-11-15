@@ -1,0 +1,28 @@
+{
+ "model": "keines (geometrisch)",
+ "effort": "",
+ "pipeline": "geometrie/geom.py: Notenkoepfe aus dem Bild gemessen; nur Tonhoehen, Text ist Platzhalter «x», Stueckaufteilung aus expected.json",
+ "pieces": [
+  {
+   "incipit": "Salve mater misericordiae",
+   "mode": "",
+   "clef": "",
+   "hasDropCap": null,
+   "systems": [
+    "x(g) x(g) x(j) x(jk) x(j) x(i) x(h) x(g) x(h) x(g) x(e) x(e) x(g) x(gg) x(f) x(e) x(d)",
+    "x(c) x(d) x(c) x(c) x(c) x(d) x(e) x(d) x(e) x(f) x(g) x(g) x(g) x(g) x(g)",
+    "x(h) x(g) x(g) x(f) x(f) x(g) x(f) x(e) x(d) x(e) x(dd) x(c) x(g) x(g) x(j)",
+    "x(e) x(g) x(fe) x(d) x(e) x(f) x(e) x(d) x(c) x(d) x(e) x(c) x(g)",
+    "x(h) x(i) x(j) x(i) x(g) x(h) x(f) x(g) x(j) x(j) x(g) x(h) x(g) x(g)",
+    "x(f) x(e) x(d) x(e) x(e) x(c) x(e) x(g) x(e) x(f) x(g) x(h) x(i) x(j)",
+    "x(kk) x(j) x(g) x(g)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "costUsd": 0
+ },
+ "durationMs": 3096
+}
