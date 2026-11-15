@@ -29,6 +29,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   PDF-Seiten weichen ab. Bei der Bilderkennung früh Diagnose-Logs einbauen und echte Konsolenausgaben von
   Matthias holen. `gregGst()` schreibt nur in die Statuszeile, nicht in die Konsole – ein leeres Konsolen-Log beweist nichts.
 - Nach einer Nutzermeldung nicht nur die gemeldete Stelle flicken, sondern alle gleichartigen Stellen systematisch prüfen.
+- **«PDF lesen» (Prototyp, 15.11.2026, Branch `claude/pdf-lesen-testset-plan`, Details `docs/pdf-lesen-plan.md` Abschnitt 7):**
+  Tonhöhen geometrisch (kostenlos, ca. 96 %), Text per KI mit einem Aufruf je Seite. **Sonnet 5.5** nehmen
+  (88 % Silben, ca. 0.01 USD/Seite); Haiku 5.5 ist schlechter als Tesseract. Sonnet mit verbessertem Ablauf
+  ist so gut wie Opus 5.5 mit dem alten bei halben Kosten (Opus mit dem neuen Ablauf nicht gemessen). Den Textstreifen unten grosszügig schneiden – sonst fehlen Unterlängen
+  und Kommaschwänze, und aus Kommas werden Punkte. Ein zu knapper Ausschnitt wirkt wie ein Lesefehler der KI.
+- API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
 - Playwright-Tests: Beim Start öffnet sich nach ca. 2 s die Bibliothek – warten, dann `closeModal()`.
   `page.evaluate` nie auf einen unbeendeten Promise warten lassen (hängt); in `() => { … }` einwickeln.
   PDF-Erzeugung lässt sich mit lokal eingebundenem jsPDF und `window._ntCollect` (Seitenbilder abfangen) prüfen.
@@ -60,6 +66,9 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - Kopffelder: `mode` → Annotation, `book` → Untertitel, `office-part` bewusst ignoriert; GregoBase-Importe mit `drop-cap: auto`.
 - **Melodie aus GregoBase übernehmen ist meist sicher, Text und Satzzeichen nicht:** Bei einer Vorlage aus einer anderen
   Ausgabe jede Silbe samt Komma, Punkt, æ usw. gegen das Ziel-PDF prüfen (Text-Extraktion), bevor ein Stück als fertig gilt.
+- GregoBase setzt bei zweisilbigen Wörtern meist **keine Akzente** und schreibt «ae» statt «æ»; Solesmes-Drucke
+  (Liber Usualis, Graduale) akzentuieren auch Zweisilber (máter, nóstra, tú-i) und drucken «æ». Als Vergleich
+  oder Soll gilt der Druck (15.11.2026, am Salve Regina geprüft).
 - Psalmtöne aus jgabc (gemeinfrei); Gloria-Patri-Vorlagen aus GregoBase («Gloria Patri I–VIII»).
 
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)
@@ -75,6 +84,12 @@ Allgemein
 
 Choral
 - ♭ gilt standardmässig bis zur nächsten Divisio (Solesmes-Regel per Schalter).
+- **Silbentrennung: Solesmes-Konvention** – Konsonantengruppen ct, gn, mn, pt, ps, st, sc und Konsonant + l/r gehen
+  ganz zur nächsten Silbe: «be-ne-dí-cta», «San-ctus», «a-gnus», «ó-mni-um», «no-stra», «Pa-tri»; x bleibt vorne
+  («ex-sul-tá-te»); «Al-le-lú-ia». Ein **gedruckter Trennstrich hat Vorrang** (ältere Drucke wie Cantus Mariales 1906
+  trennen klassisch «díg-ni-or», «om-nes»). An Graduale und Liber Usualis bestätigt (15.11.2026).
+  Offen: Notators automatische Trennung `ntPtSyllabify` (`src/js/3-orgel-und-mehr/160-psalmton-assistent.js`)
+  trennt noch «díc-ta», «Sanc-tus».
 - Ausgeblendete Abschnitte fehlen in Anzeige, Choral-PDF, Orgelansicht und Orgel-PDF; die Wiedergabe bleibt unverändert.
 - PC: Seitenansicht – Blatt in A4-Breite mittig, Breite an den Blatträndern ziehbar, je Stück gespeichert;
   bestehende Stücke behalten ihre Breite. Bildschirm und PDF haben dieselben Zeilenumbrüche. Handy unverändert.
