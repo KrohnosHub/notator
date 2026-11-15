@@ -25,6 +25,8 @@ jobs:
         run: python3 tools/gd-core-sync.py --check
       - name: gd-core-Tests
         run: node tests/gd-core.test.js
+      - name: Begleitsatz-Tests (Regeln + Schnappschuss; nach gewollter Änderung --update)
+        run: node tests/begleitsatz.test.js
       - name: Build-Nummer und Cache-Version höher als auf dem Ziel-Branch? (nur bei Pull Requests)
         if: github.event_name == 'pull_request'
         run: |
