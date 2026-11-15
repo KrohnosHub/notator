@@ -214,3 +214,20 @@ Noch offen für «die ganze Begleitung» (Reihenfolge = Vorschlag):
 3. Septakkorde und Vorhalte auch im Phrasen-Innern, Durchgänge in Mittelstimmen.
 4. Rezitation/Psalmtöne (liegender Akkord), Modusprofile mit Tenor, Anfangsakkord.
 5. Referenzvergleich: ganze NOH-Sätze als Testfälle (braucht die Melodien als GABC).
+
+## 10. Binnenkadenzen NOH (Stichprobe) und zweiter Schritt in Build 401 (15.11.2026)
+
+Gelesen: 9 Binnenschlüsse (Gloria I: 4, Ave Maria: 3, Ecce virgo: 1, Dico autem vobis: 1). **Nur qualitativ**: in dieser Auflösung sind Bass und Oberstimme lesbar, die Mittelstimmen oft nicht eindeutig; eine Zählung wie bei den Schlüssen ist damit nicht belastbar.
+
+Beobachtet:
+- Vor Atemzeichen und Viertelstrich bleibt der Akkord meist liegen (Bögen über den Strich). Widerspricht Entscheid 4 – **der Entscheid (immer Wechsel) geht vor**.
+- Auch an Binnenkadenzen stehen Vorhalte und Durchgangsnoten in den Mittelstimmen (z. B. Ave Maria, «tecum:»).
+- Im Gloria (Modus IV) schliessen Binnenphrasen auf der Finalis mit demselben Akkord wie der Schluss (Finalis als Quinte).
+- «Tu es Petrus» (Modus VI) wird mit b harmonisiert (4. Stufe als Dur-Akkord).
+
+Umgesetzt (zweiter Commit in Build 401):
+- Quartvorhalt auch vor dem Schlussakkord einer Binnenphrase (Divisio maior/finalis); er muss sich in den Dreiklang über demselben Grundton auflösen.
+- Moll-Septakkorde im Phrasen-Innern möglich (kleine Zusatzkosten, also nur wo die Stimmführung davon profitiert).
+- Modus V/VI: Akkorde mit b bevorzugt, Akkorde mit h zurückgestellt, solange der Abschnitt kein h in der Melodie hat.
+
+Nicht umgesetzt, weiterhin offen: Rezitation/Psalmtöne, Modusprofile mit Tenor (authentisch/plagal), Durchgänge in Mittelstimmen, Anfangsakkord, Vergleich ganzer NOH-Sätze (braucht die Melodien als GABC und besser lesbare Scans oder Matthias' Gegenprüfung).

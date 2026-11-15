@@ -7,16 +7,18 @@
     "d-Moll A3/F3/D3",
     "d-Moll A3/F3/D3",
     "a-Moll C4/E3/A2",
-    "a-Moll C4/E3/A2",
-    "d-Moll A3/D3/D2",
-    "d-Moll A3/D3/D2",
-    "G-Dur H3/D3/G2",
-    "e-Moll6 H3/E3/G2",
+    "d-Moll D4/F3/D3",
+    "F-Dur C4/A3/F3",
+    "d-Moll D4/A3/D3",
+    "d-Moll⁷ C4/F3/D3",
+    "C-Dur C4/G3/C3",
     "G-Dur H3/G3/G2",
     "D (Quartvorhalt) A3/G3/D3",
     "d-Moll A3/F3/D3"
    ],
-   "counts": {}
+   "counts": {
+    "quinte-fehlt": 1
+   }
   },
   "modus2": {
    "snap": [
@@ -55,13 +57,13 @@
     "e-Moll H3/G3/E3",
     "C-Dur C4/E3/C3",
     "G-Dur H3/D3/G2",
-    "d-Moll A3/D3/D2",
-    "a-Moll A3/C3/A2",
-    "d-Moll A3/F3/D3",
-    "a-Moll A3/C3/A2"
+    "d-Moll⁷ C4/D3/D2",
+    "a-Moll C4/E3/A2",
+    "d-Moll⁷ C4/F3/D3",
+    "a-Moll C4/A3/A2"
    ],
    "counts": {
-    "stimmueberschneidung": 2
+    "quinte-fehlt": 2
    }
   },
   "modus5": {
@@ -158,7 +160,7 @@
     "d-Moll A3/F3/D3",
     "g-Moll D4/G3/G2",
     "C-Dur E4/G3/C3",
-    "d-Moll D4/F3/D3",
+    "a-Moll⁷ C4/G3/A2",
     "G-Dur D4/G3/G2",
     "d-Moll D4/A3/D3",
     "a-Moll C4/A3/A2",
@@ -167,6 +169,7 @@
     "d-Moll A3/F3/D3"
    ],
    "counts": {
+    "quinte-fehlt": 1,
     "antiquintparallele": 1,
     "wechsel-auf-einzelachtel": 1
    }
@@ -177,16 +180,18 @@
     "g-Moll D4/B3/G3",
     "g-Moll D4/B3/G3",
     "d-Moll F4/A3/D3",
-    "d-Moll F4/A3/D3",
-    "g-Moll D4/G3/G2",
-    "g-Moll D4/G3/G2",
-    "C-Dur E4/G3/C3",
-    "a-Moll6 E4/A3/C3",
+    "g-Moll G4/B3/G3",
+    "B-Dur F4/D4/B3",
+    "g-Moll G4/D4/G3",
+    "g-Moll⁷ F4/B3/G3",
+    "F-Dur F4/C4/F3",
     "C-Dur E4/C4/C3",
     "G (Quartvorhalt) D4/C4/G3",
     "g-Moll D4/B3/G3"
    ],
-   "counts": {}
+   "counts": {
+    "quinte-fehlt": 1
+   }
   },
   "tu_es_petrus_schluss": {
    "snap": [

@@ -159,6 +159,9 @@ function clHarmonize(segs, ctx) {
   const phryg = clMod(clPcOf(clMod(fS + 1, 7), ctx.keyAlt[clMod(fS + 1, 7)]) - clPcOf(fS, ctx.keyAlt[fS]), 12) === 1;
   const finalRoot = phryg ? clMod(fS + 3, 7) : fS;
   ctx.finalRoot = finalRoot;
+  // Modus V/VI (übermässige Quarte über der Finalis): die NOH harmonisiert mit b
+  // (4. Stufe als Dur-Akkord), solange die Melodie das h nicht selbst bringt
+  const lyd = !!ctx.bVar && clMod(fS + 3, 7) === ctx.bVar.step && clMod(clPcOf(ctx.bVar.step, ctx.keyAlt[ctx.bVar.step]) - clPcOf(fS, ctx.keyAlt[fS]), 12) === 6;
   const states = segs.map((seg, si) => {
     seg.anc = si === nLast ? seg.notes.length - 1 : 0;
     let chords = clSegChords(seg, ctx.keyAlt);
@@ -169,6 +172,7 @@ function clHarmonize(segs, ctx) {
       const ka = ctx.keyAlt.slice(); ka[ctx.bVar.step] = ctx.bVar.alt;
       clSegChords(seg, ka).forEach(c => { if (c.steps.includes(ctx.bVar.step) && !chords.some(x => x.pcs.join() === c.pcs.join())) { c.alt2 = true; chords.push(c); } });
     }
+    if (lyd && !seg.notes.some(n => clMod(n.pitch.D, 7) === ctx.bVar.step)) chords.forEach(c => { if (!c.alt2 && c.steps.includes(ctx.bVar.step)) c.hNat = true; });
     seg.candidates = chords;
     const ov = clOvParse(clOvLookup(ctx.overrides, seg));
     if (ov && ov.x && ctx.finalisPc != null) {
@@ -182,10 +186,20 @@ function clHarmonize(segs, ctx) {
     const forcedInv = ov && ov.i != null ? ov.i : null;
     // Schlussformel (nur ohne Vorgabe, innerhalb der Schlussphrase): Quartvorhalt
     // direkt vor dem Schlussakkord, Moll-Septakkord der 5. Stufe davor
+    const add = (c, bonus) => { if (c && !chords.some(x => x.kind === c.kind && x.root === c.root)) { c.bonus = bonus; chords = chords.concat([c]); } };
     if (!ov && !seg.endBar && nLast >= 1 && (si === nLast - 1 || (si === nLast - 2 && !segs[nLast - 1].endBar))) {
-      const add = (c, bonus) => { if (c) { c.bonus = bonus; chords = chords.concat([c]); } };
       if (si === nLast - 1) add(clCadenceChord(seg, ctx.keyAlt, finalRoot, 'sus'), 1.2);
       add(clCadenceChord(seg, ctx.keyAlt, clMod(finalRoot + 4, 7), '7'), si === nLast - 1 ? 0.8 : 0.6);
+    }
+    // Binnenkadenz: Quartvorhalt auch vor dem Schlussakkord einer Phrase (halber/
+    // ganzer Strich) – der Folgeakkord muss dann derselbe Grundton sein (clTransCost).
+    // Moll-Septakkorde im Phrasen-Innern: möglich, aber nur bei klarem Vorteil.
+    if (!ov && !seg.endBar && si < nLast) {
+      const nx = segs[si + 1];
+      for (let r = 0; r < 7; r++) {
+        if (nx.endBar === 'maior' || nx.endBar === 'finalis') add(clCadenceChord(seg, ctx.keyAlt, r, 'sus'), 0.5);
+        add(clCadenceChord(seg, ctx.keyAlt, r, '7'), -0.4);
+      }
     }
     const isLast = si === segs.length - 1;
     const phraseEnd = isLast || seg.endBar === 'maior' || seg.endBar === 'finalis' || seg.endBar === 'minor';
@@ -194,7 +208,8 @@ function clHarmonize(segs, ctx) {
       let hc = 0;
       const chordPcs = ch.pcs;
       seg.notes.forEach((n, ni) => { if (ni !== seg.anc && !chordPcs.includes(clPcOf(clMod(n.pitch.D, 7), n.pitch.alt))) hc += n.dur >= 2 ? 6 : 0.6; });
-      if (ch.alt2) hc += 2.5; // andere b/h-Form: nur Vorschlag, automatisch selten
+      if (ch.alt2) hc += lyd ? 0 : 2.5; // andere b/h-Form: nur Vorschlag, automatisch selten (Modus V/VI: bevorzugt)
+      if (ch.hNat) hc += 1.5;
       if (ch.kind) hc -= ch.bonus;
       if (isLast && ch.root !== finalRoot) hc += 20;
       if (si === 0 && ch.root !== ctx.finalisStep) hc += 1;
@@ -286,6 +301,8 @@ function clTransCost(p, s, spPrev, sCur, cSeg, pSeg) {
     const d = cv[v].s - pv[v].s;
     if (!(d === 0 || d === -1 || d === -2)) c += 8;
   });
+  // Quartvorhalt löst sich in den Dreiklang über demselben Grundton auf
+  if (p.ch.kind === 'sus' && (s.ch.kind || s.ch.root !== p.ch.root || s.inv)) c += 12;
   if (s.ch.dis != null) VO.forEach(v => {
     if (clMod(cv[v].s, 12) === s.ch.pcs[s.ch.dis] && Math.abs(cv[v].s - pv[v].s) > 2) c += 0.5;
   });

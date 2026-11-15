@@ -92,7 +92,8 @@ function analyse(env, fx) {
       const nx = segs[i + 1];
       if (!nx || !nx.chord) err('dissonanz-ohne-aufloesung', i, 'kein Folgeakkord');
       else ['A', 'T', 'B'].forEach(k => { if (cl.clMod(v[k].s, 12) !== dpc) return; const d = nx.voicing[k].s - v[k].s; if (!(d === 0 || d === -1 || d === -2)) err('dissonanz-aufloesung', i, k + ' ' + semiName(v[k].s) + ' → ' + semiName(nx.voicing[k].s)); });
-      if (ch.kind === 'sus' && i !== segs.length - 2) err('vorhalt-ort', i, 'Quartvorhalt nicht direkt vor dem Schluss');
+      if (ch.kind === 'sus' && nx && nx.chord && (nx.chord.kind || nx.chord.root !== ch.root || nx.inv)) err('vorhalt-aufloesung', i, 'Quartvorhalt löst sich nicht in den Dreiklang auf: ' + cl.clChordName(nx.chord));
+      if (sg.endBar) err('dissonanz-vor-strich', i, cl.clChordName(ch));
     }
     if ((sg.anc || 0) !== (i === segs.length - 1 ? sg.notes.length - 1 : 0)) err('tragender-ton', i, 'anc=' + sg.anc);
     if (!ch.pcs.includes(pc(sg.notes[anc]))) err('melodieton-im-akkord', i, 'tragender Melodieton nicht im Akkord ' + cl.clChordName(ch));
