@@ -5,7 +5,7 @@ untereinander in ein Bild gesetzt und nummeriert; die KI gibt den Text je Zeile 
 Die waagrechte Lage der Woerter kommt von Tesseract (lokal); die KI-Woerter werden darauf ausgerichtet.
 Danach verteilt ocr.to_gabc_text die Noten auf die Silben.
 
-Modi (GEOM_TEXT): ki = echter Aufruf (braucht API-Key in ANTHROPIC_API_KEY),
+Modi (GEOM_TEXT): ki = echter Aufruf (API-Key in NOTATOR_API_KEY, sonst ANTHROPIC_API_KEY),
                   dry = nur Bild und Kostenschaetzung, kein Aufruf,
                   mock = Soll-Text aus expected.json statt KI-Antwort (misst die Zuordnung allein).
 """
@@ -80,9 +80,9 @@ def call(img, nlines):
     buf = io.BytesIO(); img.save(buf, format='PNG')
     data = base64.standard_b64encode(buf.getvalue()).decode('ascii')
     # Basis-URL fest auf die oeffentliche API: ANTHROPIC_BASE_URL der Umgebung ist nicht fuer diese Aufrufe gedacht.
-    # Ohne ANTHROPIC_API_KEY: Platzhalter; der Netzwerk-Proxy der Cloud-Umgebung setzt den hinterlegten Key ein.
+    # Ohne Key-Variable: Platzhalter; der Netzwerk-Proxy der Cloud-Umgebung setzt den hinterlegten Key ein.
     client = anthropic.Anthropic(base_url='https://api.anthropic.com',
-                                 api_key=os.environ.get('ANTHROPIC_API_KEY') or 'sk-ant-proxy-placeholder')
+                                 api_key=os.environ.get('NOTATOR_API_KEY') or os.environ.get('ANTHROPIC_API_KEY') or 'sk-ant-proxy-placeholder')
     schema = {
         'type': 'object',
         'properties': {'lines': {'type': 'array', 'items': {

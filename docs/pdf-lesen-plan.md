@@ -529,8 +529,44 @@ Ohne API-Key gemessen:
   Melismen leere Silben führt («Á(ixdh')(iv)»). Die Gruppierung begrenzen vor
   allem fehlende oder zusätzliche Noten aus der Tonhöhenerkennung.
 
-Offen: der echte Lauf. Er braucht einen API-Key in `ANTHROPIC_API_KEY`
-(siehe README).
+### 7.5 Text mit KI, gemessen (15.11.2026)
+
+Serie `runs/ki-s55-low`: wie 7.4, mit echtem Aufruf (Sonnet 5.5, `effort:
+low`, ein Aufruf je Seite). Key aus der Umgebungsvariable `NOTATOR_API_KEY`
+der Cloud-Umgebung «notator». Tonhöhen, Schlüssel und Trennstriche sind
+gegenüber `geom-v3` unverändert.
+
+| Messgrösse | geom-v3 (Tesseract) | ki-s55-low | mock (Soll-Text, 7.4) |
+| --- | --- | --- | --- |
+| Silben (mit Akzenten) | 58 % | **76 %** | 93 % |
+| Silben ohne Akzente und Satzzeichen | 68 % | **86 %** | – |
+| Wortgrenzen | 85 % | **90 %** | 91 % |
+| Neumen-Gruppierung | 74 % | 72 % | 74 % |
+| Kosten / Dauer (5 Seiten) | 0 USD / 23 s | **0.037 USD** / 31 s | – |
+
+Je Fall (Silben mit / ohne Akzente, Gruppierung): Surrexit 96 / 96 / 77 %,
+Ave Maria 81 / 86 / 89 %, Gaudeamus 80 / 81 / 69 %, Salve mater
+80 / 93 / 75 %, Salve Regina 59 / 81 / 64 %.
+
+Gemessene Token je Seite: 1570–2500 Eingabe, 230–420 Ausgabe, also
+0.005–0.009 USD pro Seite (etwas unter der Schätzung aus 7.4). Antwortzeit
+3–4 s pro Seite.
+
+Befund:
+
+- Die KI liest den Text deutlich besser als Tesseract (+18 Punkte Silben),
+  die Lücke zum fehlerfreien Text (mock) beträgt noch 17 Punkte.
+- Beim Salve Regina liegt der Abstand mit/ohne Akzente bei 22 Punkten:
+  Fehler sind dort vor allem Akzente und Satzzeichen, nicht Buchstaben.
+  Ob der Druck die Akzente anders setzt als das Soll (GregoBase-Fassung),
+  ist nicht geprüft.
+- Beim Salve mater gibt die KI Satzzeichen wie «Sal-ve ma-ter..» und
+  «(Rep.)» zurück; das drückt die Silben-mit-Akzenten-Werte.
+- Die Gruppierung bleibt bei rund 72 %; sie hängt an den Tonhöhen-Funden
+  (fehlende/zusätzliche Noten), nicht am Text.
+- Nur ein Lauf je Fall: Streuung nicht gemessen.
+
+Scans dafür: aus dem Drive geholt, nur lokal (nicht im Repo).
 
 ## Offene Fragen
 

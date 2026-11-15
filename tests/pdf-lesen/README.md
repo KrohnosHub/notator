@@ -50,15 +50,16 @@ Ergebnisse: `docs/pdf-lesen-plan.md`, Abschnitte 7 bis 7.3.
 ```
 GEOM_TEXT=dry  python3 tests/pdf-lesen/geometrie/geom.py --series tmp      # nur Bild + Kostenschätzung
 GEOM_TEXT=mock python3 tests/pdf-lesen/geometrie/geom.py --series tmp      # Soll-Text statt KI (misst die Zuordnung)
-ANTHROPIC_API_KEY=… GEOM_TEXT=ki python3 tests/pdf-lesen/geometrie/geom.py --series ki-s55-low --work /pfad
+NOTATOR_API_KEY=… GEOM_TEXT=ki python3 tests/pdf-lesen/geometrie/geom.py --series ki-s55-low --work /pfad
 ```
 
 - Braucht `pip install anthropic`. Modell und Aufwand: `GEOM_KI_MODEL`
   (Standard `claude-sonnet-5-5`), `GEOM_KI_EFFORT` (Standard `low`).
 - `--work` erhält je Seite das gesendete Bild (`ki-<fall>.png`) und die
   Antwort (`ki-<fall>.json`).
-- In der Cloud-Umgebung: Key als Umgebungsvariable `ANTHROPIC_API_KEY` in den
-  Umgebungs-Einstellungen hinterlegen (nicht ins Repo). Die Umgebung «notator»
+- In der Cloud-Umgebung: Key als Umgebungsvariable `NOTATOR_API_KEY` in den
+  Umgebungs-Einstellungen hinterlegen (nicht ins Repo). `ANTHROPIC_API_KEY`
+  kommt dort leer an; das Skript liest ihn nur noch als Ersatz. Die Umgebung «notator»
   installiert Tesseract und das SDK beim Start.
 
 ## Messlauf (kostenpflichtig)
