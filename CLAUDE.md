@@ -2,7 +2,20 @@
 
 Notenprogramm für gregorianische Noten (PWA, GitHub Pages: https://krohnoshub.github.io/notator/).
 Stand und Änderungsübersicht: `NOTES.md`, Details im Git-Log.
-**Gesammeltes Wissen (Lehren, Entscheidungen von Matthias, exsurge-Eigenheiten): `docs/WISSEN.md` – vor grösseren Änderungen lesen, neue Erkenntnisse und Entscheidungen dort nachtragen.**
+**Gesammeltes Wissen (Lehren, Entscheidungen von Matthias, exsurge-Eigenheiten, Silbentrennung): `docs/WISSEN.md` – wird unten eingebunden; neue Erkenntnisse und Entscheidungen dort nachtragen.**
+**Ältere Branches** (vor der Aufteilung in `src/`) kennen weder diese Datei noch `docs/WISSEN.md`: zuerst `main` hineinmergen, neue Arbeit immer von `main` aus beginnen.
+
+@docs/WISSEN.md
+
+## Zusammenarbeit claude.ai-Projekt ↔ Claude Code
+Beide Seiten arbeiten an Notator; **einzige gemeinsame Quelle ist `main`** (Code, `NOTES.md`, `docs/WISSEN.md`).
+- **Vor der Arbeit:** `git fetch origin main`; `git log --oneline -15 origin/main` lesen – auch Doku-Commits der anderen Seite.
+  Auf dem neuesten `main` aufsetzen; eigene ältere Branches zuerst mit `main` zusammenführen.
+- **Nie überschreiben:** kein Force-Push, kein «meine Fassung gewinnt». Bei Abweichungen beide Fassungen vergleichen und
+  zusammenführen; was die andere Seite neu weiss, bleibt erhalten.
+- **Nach der Arbeit, im selben Commit:** Änderungen kurz in `NOTES.md`, neue Erkenntnisse und Entscheidungen in
+  `docs/WISSEN.md` (mit Datum). Was nur im Chat steht, kennt die andere Seite nicht.
+- Kleine Schritte, zügig pushen – lange offene Stände führen zu Kollisionen.
 
 ## Kommunikation
 - Deutsch (Schweizer Schreibweise: «ss» statt «ß»), kurz und konkret. Unsicherheiten offen benennen.
@@ -26,7 +39,7 @@ Stand und Änderungsübersicht: `NOTES.md`, Details im Git-Log.
 1. **Vorher `git fetch origin main`** und auf dem neuesten Stand aufsetzen.
 2. `NOTATOR_BUILD_ID` erhöhen (`src/js/2-choral/190-autosave.js`) **und** `CACHE` in `sw.js` (`notator-vNNN`) – beide höher als auf `origin/main`, nie doppelt.
 3. `python3 build.py` (bei geänderten `data-on…`-Attributen vorher `python3 tools/handlers.py`)
-4. Tests: `node tests/gd-core.test.js`, `node tests/begleitsatz.test.js` (Orgel-Begleitsatz; nach gewollter Änderung der Harmonisierung `--update`), `node tests/visual/run.js` (Bildvergleich des Notenbilds; nach gewollter Darstellungsänderung `--update`).
+4. Tests: `node tests/gd-core.test.js`, `node tests/silbentrennung.test.js`, `node tests/begleitsatz.test.js` (Orgel-Begleitsatz; nach gewollter Änderung der Harmonisierung `--update`), `node tests/visual/run.js` (Bildvergleich des Notenbilds; nach gewollter Darstellungsänderung `--update`).
 5. `python3 tools/check-version.py` prüft Build-Nummer und Cache gegen `origin/main`.
 6. Kurz vor dem Mergen nochmals gegen den neuesten `main` prüfen; bei Kollision Nummern neu vergeben.
 7. Commit-Titel: `Build NNN: Kurzbeschreibung`.

@@ -1,6 +1,47 @@
-# Stand Build 297 (2026-10-16)
+# Notator – Stand Build 403 (16.11.2026)
 
-## Neu in Build 286–297 (Auszug, Details im Git-Log)
+Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
+Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
+Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN: …`).
+
+## Aufbau
+
+- Code in `src/` (CSS, `body.html`, JS in `1-start/`, `2-choral/`, `3-orgel-und-mehr/`, `vendor/exsurge.js`); `python3 build.py` erzeugt `index.html`.
+- Tests: `tests/gd-core.test.js`, `tests/silbentrennung.test.js`, `tests/begleitsatz.test.js`, `tests/visual/run.js` (Bildvergleich); GitHub Action «Tests» bei jedem Push.
+- Content-Security-Policy mit Skript-Hashes (setzt `build.py`), keine Inline-Handler (`tools/handlers.py`).
+- Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
+- GregoBase über eigenen Proxy (Cloudflare Worker).
+
+## Neu in Build 298–403 (Auszug)
+
+- **Silbentrennung (403):** automatische Trennung (Psalmton-Assistent, Strophen, «Text zuerst») nach Solesmes-Konvention: «be-ne-dí-cta», «San-ctus», «ó-mni-um», «no-stra»; eigener Test.
+- **Mappe (402):** Übersicht und Hinzufügen in einem Fenster, Choral und Orgel getrennt mit eigenem PDF, Orgel standardmässig mit Begleitsatz.
+- **Begleitsatz (300, 401):** freie Akkordwahl, b/h-Vorschlag, Vorgaben überstehen Transposition; Schlussformel nach NOH, Vorhalte/Septakkorde, Griffweite ohne Pedal, eigene Tests.
+- **Sicherheit und Aufbau (399–400):** gemeinsamer Drive-Kern, Content-Security-Policy, Aufteilung in `src/`.
+- **PC-Oberfläche (377–387):** Seitenansicht (A4-Blatt mittig, Breite an den Rändern ziehbar, je Stück gespeichert) für Choral und Orgel;
+  Leisten nach Aufgaben gruppiert (Datei/Ansicht/Wiedergabe, Neume/Silbe/Zeichen/Trennung/Struktur), «Freitext» heisst «Notiz».
+- **Dateien (353, 373, 378–381, 393):** Speichern unter (wie in Word: danach in der neuen Datei weiter), Zuordnung zur Bibliotheksdatei bleibt
+  nach dem Neuladen, Dateinamen beim Export aus dem Namen der Notator-Datei; Öffnen mit Drive vorrangig und Suche im Drive.
+- **Abschnitte (370, 375–376):** ausblendbar (nicht im PDF, nicht in der Orgel; Wiedergabe unverändert); Dateiname oben statt Abschnittstitel.
+- **Strophen und Vorlagen (347–356, 388–397):** Text unter gleicher Melodie oder eigene Noten je Strophe, Kehrvers (℟) nach jeder Strophe,
+  Erkennung von «1.»/«2.»; Gloria-Patri-Vorlagen (Introitus 1–8, Psalmton); Blockbearbeitung (markieren, duplizieren, verschieben, löschen).
+- **Psalmton-Assistent (365, 372, 374):** Schlüsselwahl, Text je Abschnitt, Ziel wählbar, Erklärung der Zeichen.
+- **Eingabe (313–321, 371):** Bearbeitungsfenster direkt an der Note, Werkzeugleiste über dem Notenblatt, «Text zuerst, Noten danach»,
+  Mora (Taste M), Vorzeichen vor einer bestimmten Note; Iktus/Episema/Modifier gelten nur für die eben gesetzte Neume.
+- **Handy (298–308, 328–335, 352, 366–369, 385):** Werkzeugleiste über den Noten, Zwei-Finger-Zoom, Neume per Tippen setzen, Grundgrösse
+  halbiert, Original-PDF als Blatt unten, Orgel standardmässig 950 px eingepasst; zwei Endlosschleifen (Tab-Absturz) behoben.
+- **Orgel (301–312, 344–345, 386, 398):** Menü einklappbar, Beschriftungen unter Trennstrichen (V/., ij., Ps. …) richtig platziert,
+  Breite frei wählbar; PDF ohne kurzes Vergrössern der Anzeige.
+- **Bibliothek (324–327, 340):** Kirchenjahr-/Gattungsfilter mit automatischer Einordnung; gelöschte Drive-Dateien ausgeblendet und beim Öffnen gewarnt.
+- **Übriges:** PDF lesen – erkannte Teile als ein Stück laden (364); Schlüssel wechseln mit «Melodie beibehalten» (365);
+  Speichern/Export werden quittiert, Fehler nicht mehr stumm (346); GregoBase-Suche auch bei abweichendem Titel (382).
+
+## Laufende Arbeit
+
+- **PDF lesen neu (Branch `claude/pdf-lesen-testset-plan`, noch nicht in `main`):** Testset mit Soll-GABC, Tonhöhen geometrisch, Text per KI je Seite
+  (Sonnet 5.5); Plan und Messungen in `docs/pdf-lesen-plan.md` auf diesem Branch.
+
+## Neu in Build 286–297
 
 - **286** Abschnitte einzeln abspielen; Orgel-Einstellungen (Grundton, Oktave, Titel, Kopfzeile) je Abschnitt; Auswahl bei mehreren GregoBase-Links.
 - **287** Orgel-Zeilenumbrüche: aus dem Choral (⏎) übernommen, per Klick setzen/entfernen.
@@ -11,11 +52,6 @@
 - **295** Schutz vor Datenverlust (Rückfrage, Warnung beim Schliessen, Wiederherstellung aus localStorage), Orgel rückgängig/wiederholen, Strg+Z/Y/S; alter GABC-Tab entfernt.
 - **296** Grundton für alle Abschnitte; Mappe mit Seitenzahlen + Inhaltsverzeichnis; NOH-Verknüpfung je Stück (📚 NOH ▾); Anfangston (♩); Psalmton-Assistent (Tondaten aus jgabc, gemeinfrei).
 - **297** Vorschläge nach Kirchenjahr (heutiger Kalender für die eigene Bibliothek, Kalender 1962 für die Notenbibliothek).
-
-# Stand Build 261 (2026-10-10)
-
-Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator).
-Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
 
 ## Neu in Build 227–237
 
@@ -39,7 +75,7 @@ Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
   PDF (Senden über das Teilen-Menü des Geräts, Download oder Drive-Link
   «Jeder mit dem Link»).
 
-## Neu in Build 238–261 (Auszug, Details im Git-Log)
+## Neu in Build 238–261
 
 - **253–255 Gregorio-Abgleich:** verlustfreier GABC-Import/-Export (Rohformen,
   Sonderschlüssel, Virgula, Custos, alle Kopffelder), Übersetzung `[..]`,
@@ -64,100 +100,8 @@ Die lokale Datei `Notator_208.html` auf dem PC ist veraltet.
 
 ## Offen / Ideen
 
-- Mappe: Seitenzahlen, Inhaltsverzeichnis mit Seitenzahlen.
+- Alleluja-Vorlagen (wie Gloria Patri): recherchiert, zurückgestellt.
+- Schriftart der Initiale (Drop-Cap) wählbar machen (Idee 08/2026, nicht priorisiert).
 - Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).
-- Zurückgelegt (Gregorio-Vergleich, optional): **NABC** (adiastematische
-  St.-Galler/Laon-Neumen über dem System, `|` in der Notenklammer) und
-  **TeX-/Gregorio-Export** (Druckvorlage in Verlagsqualität via GregorioTeX).
+- Zurückgelegt (Gregorio-Vergleich, optional): **NABC** (adiastematische St.-Galler/Laon-Neumen über dem System) und **TeX-/Gregorio-Export**.
   Verworfen: Chorzeichen, Klammern, Polyphonie, 2/5 Linien, Doppelschlüssel-Anzeige.
-
----
-
-# Session 64 (2026-09-26): Notator_208.html — Original-PDF als ausklappbares Seitenpanel statt Geister-Hintergrund
-
-Nutzer meldete: beim "PDF lesen" (Gregorianisch-Modus) wurde das Original-PDF
-bisher nur als schwaches Geisterbild HINTER der neu erzeugten Notation
-angezeigt — dadurch war weder der Scan noch die Notation richtig lesbar.
-Wunsch: eine zusätzliche Option, das Original direkt (z.B. als aufklappbare
-Seitenleiste) zu sehen.
-
-## Ist-Zustand vor dieser Änderung
-
-`gregRenderPDFPage()` rendert die aktuelle PDF-Seite per pdf.js auf eine
-Canvas `#greg-pdf-bg`, die absolut positioniert bei `opacity:0.35` direkt
-hinter `#greg-svg-wrap` liegt (beide im selben Kästchen `#greg-svg-original-
-slot` gestapelt). Wird automatisch bei JEDEM echten "PDF lesen"-Lauf
-aufgerufen (Zeile `await gregRenderPDFPage(1);` kurz vor dem Schritt-A-
-Vision-Aufruf), nicht nur bei manueller Nutzung. Zusätzlich setzte diese
-Funktion bisher `#greg-svg-wrap`s `min-height` auf die volle PDF-Seiten-
-höhe (Ursache des in Session 63/Runde 64 gefundenen und dort nur
-downstream gepatchten "riesiger Weissraum"-Bugs in `gregRenderAllSections`).
-
-## Entscheidung (mit Nutzer abgestimmt, 3 Rückfragen)
-
-1. Die 35%-Geister-Canvas wird komplett entfernt (nicht nur ergänzt).
-2. Neues Panel erscheint RECHTS, ausklappbar, mit eigener Ziehleiste
-   analog zur bestehenden zwischen GABC-Editor und Noten-Editor
-   (`#greg-drag-handle`/`#greg-input-panel`).
-3. Panel öffnet sich automatisch, sobald eine PDF-Seite gerendert wird
-   (also auch beim automatischen Vision-Lauf) — manuell schliess-/wieder
-   einblendbar über einen neuen Toolbar-Knopf.
-
-## Umsetzung (Runde 65)
-
-- Neue Funktion `gregToggleOriginalPdf(forceOpen)`: zeigt/versteckt
-  `#greg-pdf-panel` + `#greg-pdf-drag-handle`, zeigt den Toolbar-
-  Wiedereinblend-Knopf `#greg-pdf-panel-toggle` sobald ein PDF geladen ist.
-  `forceOpen` optional (true/false erzwingt Zustand, ohne Argument =
-  umschalten).
-- `#greg-pdf-bg`-Canvas aus `#greg-svg-original-slot` entfernt und in das
-  neue `#greg-pdf-panel` verschoben — rendert jetzt in voller Deckkraft,
-  Breite richtet sich nach der Panel-Breite statt nach `greg-canvas-wrap`.
-- `#greg-pdf-nav` (Seiten-◀/▶ + Label) unverändert wiederverwendet, nur
-  räumlich ins neue Panel-Header verschoben (gleiche IDs, keine JS-Änderung
-  an der Nav-Logik nötig).
-- `gregRenderPDFPage()` ruft jetzt `gregToggleOriginalPdf(true)` auf
-  (Auto-Öffnen) und setzt KEIN `min-height` auf `#greg-svg-wrap` mehr —
-  entfernt die Ursache des Session-63/Runde-64-Weissraum-Bugs an der
-  Wurzel (der defensive Fix in `gregRenderAllSections` bleibt trotzdem als
-  Sicherheitsnetz bestehen, kostet nichts).
-- `gregClearPDF()` schliesst das Panel jetzt vollständig und versteckt auch
-  den Toolbar-Wiedereinblend-Knopf.
-- Neue, zu `#greg-drag-handle` analoge Ziehleisten-Logik für
-  `#greg-pdf-drag-handle` (Vorzeichen umgekehrt, da Panel rechts von seiner
-  Ziehleiste liegt statt links) — rendert die PDF-Seite nach Grössen-
-  änderung neu (debounced), damit sie zur neuen Panel-Breite passt.
-
-## Verifikation
-
-- Syntax-Check aller 7 `<script>`-Blöcke: grün.
-- `gregToggleOriginalPdf` per echter Extraktion aus der Datei in Node gegen
-  eine simulierte Klick-Abfolge getestet (Mock-DOM, kein jsdom nötig für
-  diese reine Zustandslogik): Start zu → Auto-Öffnen(true) → manuell
-  schliessen → manuell wieder öffnen (Toolbar-Knopf) → `gregClearPDF`-
-  Szenario (forceOpen=false) — alle 5 Zustände exakt wie erwartet
-  (`flex`/`none` an Panel + Ziehleiste, Toolbar-Knopf sichtbar sobald PDF
-  geladen).
-- **Nicht möglich:** das tatsächliche visuelle Ergebnis im Browser (Panel-
-  Breite, Ziehleisten-Gefühl, ob das automatische Neurendern beim Resize
-  ruckelt) — wie üblich hängt volles Rendering in dieser Sandbox. Bitte im
-  Browser testen.
-
-## Codeänderungen (Notator_208.html, ersetzt Notator_207.html)
-
-- HTML: `#greg-pdf-panel` + `#greg-pdf-drag-handle` neu (rechts neben
-  `#greg-canvas-wrap`), `#greg-pdf-bg`-Canvas dorthin verschoben,
-  `#greg-pdf-nav` dorthin verschoben, neuer Toolbar-Knopf
-  `#greg-pdf-panel-toggle` neben "PDF lesen".
-- JS: `gregToggleOriginalPdf` neu; `gregRenderPDFPage`, `gregClearPDF`
-  angepasst (kein min-height-Hack mehr, Panel-Steuerung); neue
-  Ziehleisten-IIFE für `#greg-pdf-drag-handle`.
-- Kommentar bei `gregRenderAllSections()` (Runde-64-Fund) aktualisiert:
-  weist jetzt darauf hin, dass die Ursache seit Runde 65 an der Quelle
-  entfernt ist, die dortige defensive Klausel aber bleibt.
-- Build-ID 207→208.
-
-## Offen
-
-Echter Browser-Test durch den Nutzer steht aus (Panel-Optik, Resize-
-Verhalten, automatisches Öffnen beim "PDF lesen").

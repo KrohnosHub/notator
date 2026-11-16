@@ -2,7 +2,7 @@
 
 Ergänzt `CLAUDE.md` (Arbeitsablauf, Sicherheit) und `NOTES.md` (Änderungsübersicht).
 Hier steht, was sich nicht aus dem Code ablesen lässt: Lehren aus Fehlern, Entscheidungen von Matthias
-und Eigenheiten von exsurge. Stand: Build 401, 16.11.2026. **Neue Erkenntnisse und Entscheidungen hier
+und Eigenheiten von exsurge. Stand: Build 402, 16.11.2026. **Neue Erkenntnisse und Entscheidungen hier
 nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai und Claude Code – denselben Stand haben.
 
 ## 1. Zusammenarbeit mit Matthias
@@ -60,7 +60,36 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - Kopffelder: `mode` → Annotation, `book` → Untertitel, `office-part` bewusst ignoriert; GregoBase-Importe mit `drop-cap: auto`.
 - **Melodie aus GregoBase übernehmen ist meist sicher, Text und Satzzeichen nicht:** Bei einer Vorlage aus einer anderen
   Ausgabe jede Silbe samt Komma, Punkt, æ usw. gegen das Ziel-PDF prüfen (Text-Extraktion), bevor ein Stück als fertig gilt.
+- **GregoBase-Akzente weichen vom Druck ab:** Viele Drucke (z. B. Liber Usualis) setzen Akzente auch bei Zweisilbern
+  (máter, nóstra, Jésum) und drucken «æ»; GregoBase lässt diese Akzente weg und schreibt «ae» (geprüft am Salve Regina, 15.11.2026).
 - Psalmtöne aus jgabc (gemeinfrei); Gloria-Patri-Vorlagen aus GregoBase («Gloria Patri I–VIII»).
+
+## 4a. Silbentrennung (Latein)
+
+- **Regel (festgelegt 15.11.2026, an den Scans des PDF-lesen-Testsets geprüft):** Ein **gedruckter Trennstrich gilt immer**.
+  Wo keiner gedruckt ist, gilt die **Solesmes-Konvention**: Konsonantengruppen (ct, mn, pt, gn, st, Konsonant + l/r) gehen ganz
+  zur nächsten Silbe – «be-ne-dí-cta», «dí-ctus», «frú-ctus», «San-ctus», «ó-mni-um», «no-stra», «a-gnus»; ebenso sc, ps.
+  x bleibt vorne («ex-sul-tá-te»); in «alleluia» ist «ia» eine Silbe («Al-le-lú-ia»).
+  Belege im Druck: Graduale «re-ctos», «sol-e-mni-tá-te»; Liber Usualis «bene-dí-ctum».
+- Ausnahme: Drucke mit klassischer Trennung (Cantus Mariales 1906: «díg-ni-or», «om-nes») – dort folgt das Soll dem Druck.
+- **Fehlender Trennstrich heisst nicht «keine Silbengrenze»** (geklärt August 2026): Ältere Drucke setzen Trennstriche unvollständig,
+  z. B. Liber Usualis, Hymnus «Audi benigne Conditor»: gedruckt «Cóndi-tor» (GregoBase und Notengruppen: Cón-di-tor),
+  «confi-téntibus» = ein Trennstrich für fünf Silben. Verlässlich ist die **Aufteilung der Notengruppen** über dem Text.
+- Umgesetzt in Build 403 (16.11.2026, Auftrag Matthias): `ntPtSyllabify` (`src/js/3-orgel-und-mehr/160-psalmton-assistent.js`;
+  Psalmton-Assistent, Strophen, «Text zuerst») gibt den längsten zulässigen Silbenanfang einer Konsonantengruppe an die
+  nächste Silbe; Prüfung mit `tests/silbentrennung.test.js` (31 Wörter). Gesetzte Bindestriche im Text haben weiterhin Vorrang.
+
+## 4b. PDF lesen (Stand Testset, 15.11.2026)
+
+- Neuaufbau auf dem Branch `claude/pdf-lesen-testset-plan` (Plan, Messungen und Soll-Fälle: `docs/pdf-lesen-plan.md`, `tests/pdf-lesen/`).
+- Tonhöhen, Schlüssel und Trennstriche geometrisch; Text per KI, ein Aufruf je Seite.
+- **Modell für den Text: Sonnet 5.5** (`effort: low`): nach den Verbesserungen 88 % Silben (3 Läufe, kaum Streuung),
+  ca. 0.01 USD je Seite – so gut wie Opus 5.5 mit dem früheren Ablauf, bei halben Kosten (Opus mit dem neuen Ablauf
+  nicht gemessen). Der anfängliche Akzent-Vorsprung von Opus lag an Fehlern im Soll (GregoBase-Akzente) und an
+  Kommas, nicht am Modell (`docs/pdf-lesen-plan.md` 7.8–7.10). Haiku 5.5 ist schlechter als Tesseract.
+- **Bildausschnitt grosszügig:** Der Textstreifen muss unten Unterlängen und Kommaschwänze enthalten, sonst werden
+  Kommas als Punkte gelesen – das sieht aus wie ein Lesefehler der KI. Lange Zeilen teilen statt verkleinern.
+- API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
 
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)
 
@@ -93,8 +122,13 @@ Orgel
 - NOH-Notenbibliothek liegt im selben Repo unter `noh/` (eigener Chat «Digitale Musiknotenbibliothek erstellen»); Notator und NOH verlinken sich.
 - Schola-Planer und Gesangs-App laufen auf derselben Origin `krohnoshub.github.io` und teilen das Google-Token (siehe Sicherheit in `CLAUDE.md`).
 
+- Vergleichbare Programme (Recherche 17.08.2026): Gregorio/GregorioTeX (Textcode → PDF via LaTeX), Illuminare Score Editor
+  (Web, Textcode mit Vorschau, kein Offline-Modus), Square Note und Chant Tools (Apps fürs Lesen/Abspielen, kein echter Editor).
+  Alleinstellung von Notator: Neumen per Klick setzen sowie GregoBase-Anbindung und «PDF lesen» aus gedruckten Büchern;
+  die Forschung zur Notenerkennung zielt auf mittelalterliche Handschriften, nicht auf moderne Drucke.
+
 ## 7. Veraltet – nicht mehr anwenden
 
 Aus der Zeit vor GitHub Pages stammen: versionierte Dateien `Notator_XXX.html`, die «Test-Bibliothek» mit Archiv-Ordner,
 `Notator_starten.bat`/`notator_server.py` (lokaler GregoBase-Proxy), Upload über die GitHub-Weboberfläche und
-Syntax-Checks per `new Function`. Heute: `src/` + `build.py`, Pull Requests, CSP. Der Teil «Session 64» in `NOTES.md` ist ebenfalls historisch.
+Syntax-Checks per `new Function`. Heute: `src/` + `build.py`, direkte Pushes nach `main` (siehe `CLAUDE.md`), CSP.

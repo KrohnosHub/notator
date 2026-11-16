@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-NPozLnne+eVxLbylXyJddy9YFKE62C5bD1v4OG/flgA=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-SIit6sn4ErYnviZ+XETNkAOKpVFqq9B7T8qf/VQqfWM='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-ulILgkh6Iarhmnw1u+3lbQYJKPybPJmwlwJOXUCuzXw=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-FfB2j1ZRoLLpCTeMmeblQeROdx9GcIFZwidr8JhJ6L8='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -9002,7 +9002,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '402';
+const NOTATOR_BUILD_ID = '403';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20187,13 +20187,15 @@ function ntPtSyllabify(word) {
   const cuts = [];
   for (let k = 0; k < nuc.length - 1; k++) {
     const a = nuc[k][1] + 1, b = nuc[k + 1][0];
-    const cl = lw.slice(a, b).replace(/[^a-z]/g, '');
     let cut;
     if (b - a <= 1) cut = b - a === 0 ? b : a;
     else {
-      const last2 = lw.slice(b - 2, b);
-      cut = (/^[bcdfgpt][lr]$/.test(last2) || /^(ch|ph|th|gn|qu|gu)$/.test(last2) || (b - a === 2 && /^s[tpc]$/.test(last2))) ? b - 2 : b - 1; // kirchenlateinisch: a-gnus, ex-quí-ro, Chri-ste, ré-spi-ce
-      if (cl === 'x') cut = a;
+      // Solesmes-Konvention (docs/WISSEN.md 4a): der längste zulässige Silbenanfang der Konsonantengruppe geht zur
+      // nächsten Silbe – be-ne-dí-cta, San-ctus, ó-mni-um, no-stra, mon-stra, re-dém-ptor, a-gnus, Chri-ste; x bleibt vorne (ex-sul-tá-te).
+      const onset = t => /^([bcdfgpt][lr]|ch|ph|th|gn|qu|gu|ct|mn|pt|ps|st|sc|sp)$/.test(t) || /^(s[ct]r|sp[lr]|[cpt]h[lr])$/.test(t);
+      cut = b - 1;
+      for (let n = Math.min(3, b - a); n >= 2; n--) if (onset(lw.slice(b - n, b))) { cut = b - n; break; }
+      if (lw[a] === 'x' && cut === a) cut = a + 1;
     }
     cuts.push(cut);
   }
