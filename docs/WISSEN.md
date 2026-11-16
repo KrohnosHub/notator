@@ -2,7 +2,7 @@
 
 Ergänzt `CLAUDE.md` (Arbeitsablauf, Sicherheit) und `NOTES.md` (Änderungsübersicht).
 Hier steht, was sich nicht aus dem Code ablesen lässt: Lehren aus Fehlern, Entscheidungen von Matthias
-und Eigenheiten von exsurge. Stand: Build 401, 16.11.2026. **Neue Erkenntnisse und Entscheidungen hier
+und Eigenheiten von exsurge. Stand: Build 402, 16.11.2026. **Neue Erkenntnisse und Entscheidungen hier
 nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai und Claude Code – denselben Stand haben.
 
 ## 1. Zusammenarbeit mit Matthias
@@ -60,7 +60,29 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - Kopffelder: `mode` → Annotation, `book` → Untertitel, `office-part` bewusst ignoriert; GregoBase-Importe mit `drop-cap: auto`.
 - **Melodie aus GregoBase übernehmen ist meist sicher, Text und Satzzeichen nicht:** Bei einer Vorlage aus einer anderen
   Ausgabe jede Silbe samt Komma, Punkt, æ usw. gegen das Ziel-PDF prüfen (Text-Extraktion), bevor ein Stück als fertig gilt.
+- **GregoBase-Akzente weichen vom Druck ab:** Viele Drucke (z. B. Liber Usualis) setzen Akzente auch bei Zweisilbern
+  (máter, nóstra, Jésum) und drucken «æ»; GregoBase lässt diese Akzente weg und schreibt «ae» (geprüft am Salve Regina, 15.11.2026).
 - Psalmtöne aus jgabc (gemeinfrei); Gloria-Patri-Vorlagen aus GregoBase («Gloria Patri I–VIII»).
+
+## 4a. Silbentrennung (Latein)
+
+- **Regel (festgelegt 15.11.2026, an den Scans des PDF-lesen-Testsets geprüft):** Ein **gedruckter Trennstrich gilt immer**.
+  Wo keiner gedruckt ist, gilt die **Solesmes-Konvention**: Konsonantengruppen (ct, mn, pt, gn, st, Konsonant + l/r) gehen ganz
+  zur nächsten Silbe – «be-ne-dí-cta», «dí-ctus», «frú-ctus», «San-ctus», «ó-mni-um», «no-stra», «a-gnus».
+  Belege im Druck: Graduale «re-ctos», «sol-e-mni-tá-te»; Liber Usualis «bene-dí-ctum».
+- Ausnahme: Drucke mit klassischer Trennung (Cantus Mariales 1906: «díg-ni-or», «om-nes») – dort folgt das Soll dem Druck.
+- **Fehlender Trennstrich heisst nicht «keine Silbengrenze»** (geklärt August 2026): Ältere Drucke setzen Trennstriche unvollständig,
+  z. B. Liber Usualis, Hymnus «Audi benigne Conditor»: gedruckt «Cóndi-tor» (GregoBase und Notengruppen: Cón-di-tor),
+  «confi-téntibus» = ein Trennstrich für fünf Silben. Verlässlich ist die **Aufteilung der Notengruppen** über dem Text.
+- Abweichung im Code: `ntPtSyllabify` (`src/js/3-orgel-und-mehr/160-psalmton-assistent.js`; Psalmton-Assistent, Strophen,
+  «Text zuerst») trennt «díc-ta», «Sanc-tus» (ct, mn, pt, ps nicht als Gruppe). Angleichen an die Regel oben: noch nicht entschieden.
+
+## 4b. PDF lesen (Stand Testset, 15.11.2026)
+
+- Neuaufbau auf dem Branch `claude/pdf-lesen-testset-plan` (Plan, Messungen und Soll-Fälle: `docs/pdf-lesen-plan.md`, `tests/pdf-lesen/`).
+- Tonhöhen, Schlüssel und Trennstriche geometrisch; Text per KI, ein Aufruf je Seite.
+- **Modell für den Text: Sonnet 5.5** (`effort: low`). Opus 5.5 liest Akzente etwas besser, kostet aber das Doppelte;
+  Buchstaben und Silbentrennung liest Sonnet gleich gut. Kosten unter 0.02 USD je Seite.
 
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)
 
@@ -97,4 +119,4 @@ Orgel
 
 Aus der Zeit vor GitHub Pages stammen: versionierte Dateien `Notator_XXX.html`, die «Test-Bibliothek» mit Archiv-Ordner,
 `Notator_starten.bat`/`notator_server.py` (lokaler GregoBase-Proxy), Upload über die GitHub-Weboberfläche und
-Syntax-Checks per `new Function`. Heute: `src/` + `build.py`, Pull Requests, CSP. Der Teil «Session 64» in `NOTES.md` ist ebenfalls historisch.
+Syntax-Checks per `new Function`. Heute: `src/` + `build.py`, direkte Pushes nach `main` (siehe `CLAUDE.md`), CSP.

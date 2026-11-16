@@ -2,7 +2,10 @@
 
 Notenprogramm für gregorianische Noten (PWA, GitHub Pages: https://krohnoshub.github.io/notator/).
 Stand und Änderungsübersicht: `NOTES.md`, Details im Git-Log.
-**Gesammeltes Wissen (Lehren, Entscheidungen von Matthias, exsurge-Eigenheiten): `docs/WISSEN.md` – vor grösseren Änderungen lesen, neue Erkenntnisse und Entscheidungen dort nachtragen.**
+**Gesammeltes Wissen (Lehren, Entscheidungen von Matthias, exsurge-Eigenheiten, Silbentrennung): `docs/WISSEN.md` – wird unten eingebunden; neue Erkenntnisse und Entscheidungen dort nachtragen.**
+**Ältere Branches** (vor der Aufteilung in `src/`) kennen weder diese Datei noch `docs/WISSEN.md`: zuerst `main` hineinmergen, neue Arbeit immer von `main` aus beginnen.
+
+@docs/WISSEN.md
 
 ## Kommunikation
 - Deutsch (Schweizer Schreibweise: «ss» statt «ß»), kurz und konkret. Unsicherheiten offen benennen.
