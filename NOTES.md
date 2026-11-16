@@ -38,8 +38,8 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 
 ## Laufende Arbeit
 
-- **PDF lesen neu (Branch `claude/pdf-lesen-testset-plan`, noch nicht in `main`):** Testset mit Soll-GABC, Tonhöhen geometrisch, Text per KI je Seite
-  (Sonnet 5.5); Plan und Messungen in `docs/pdf-lesen-plan.md` auf diesem Branch.
+- **PDF lesen neu (Prototyp ausserhalb der App, seit 16.11.2026 in `main`):** Testset mit Soll-GABC (`tests/pdf-lesen/`, Scans nur lokal),
+  Tonhöhen geometrisch, Text per KI je Seite (Sonnet 5.5, 89 % Silben); Plan und Messungen in `docs/pdf-lesen-plan.md`. Nächster Schritt: Einbau in Notator.
 
 ## Neu in Build 286–297
 

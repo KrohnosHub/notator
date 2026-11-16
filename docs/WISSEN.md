@@ -81,12 +81,15 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 
 ## 4b. PDF lesen (Stand Testset, 15.11.2026)
 
-- Neuaufbau auf dem Branch `claude/pdf-lesen-testset-plan` (Plan, Messungen und Soll-Fälle: `docs/pdf-lesen-plan.md`, `tests/pdf-lesen/`).
+- Neuaufbau als Prototyp ausserhalb der App (Plan, Messungen und Soll-Fälle: `docs/pdf-lesen-plan.md`, `tests/pdf-lesen/`; Scans nur lokal, aus dem Drive holen).
 - Tonhöhen, Schlüssel und Trennstriche geometrisch; Text per KI, ein Aufruf je Seite.
-- **Modell für den Text: Sonnet 5.5** (`effort: low`): nach den Verbesserungen 88 % Silben (3 Läufe, kaum Streuung),
+- **Modell für den Text: Sonnet 5.5** (`effort: low`): nach den Verbesserungen 89 % Silben (3 Läufe, kaum Streuung; Stand 7.11),
   ca. 0.01 USD je Seite – so gut wie Opus 5.5 mit dem früheren Ablauf, bei halben Kosten (Opus mit dem neuen Ablauf
   nicht gemessen). Der anfängliche Akzent-Vorsprung von Opus lag an Fehlern im Soll (GregoBase-Akzente) und an
   Kommas, nicht am Modell (`docs/pdf-lesen-plan.md` 7.8–7.10). Haiku 5.5 ist schlechter als Tesseract.
+- **Initialen** können zwei Systeme hoch und breiter als erwartet sein (Zier-«G» Gaudeamus) und stehen auch mitten auf
+  der Seite (Hymnus-«A»): bei jedem System suchen; im KI-Bild links vor die Zeile setzen. Im Prompt verlangen, dass jede
+  nummerierte Zeile für sich bleibt – sonst zieht Sonnet gelegentlich Zeilen zusammen.
 - **Bildausschnitt grosszügig:** Der Textstreifen muss unten Unterlängen und Kommaschwänze enthalten, sonst werden
   Kommas als Punkte gelesen – das sieht aus wie ein Lesefehler der KI. Lange Zeilen teilen statt verkleinern.
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
