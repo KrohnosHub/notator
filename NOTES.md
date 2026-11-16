@@ -102,6 +102,7 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Silbentrennung angleichen: Notators eigene Trennung (`ntPtSyllabify`: Psalmton-Assistent, Strophen, «Text zuerst») trennt «díc-ta», «Sanc-tus»;
   festgelegt ist die Solesmes-Konvention «dí-cta», «San-ctus» (siehe `docs/WISSEN.md`). Entscheid von Matthias offen.
 - Alleluja-Vorlagen (wie Gloria Patri): recherchiert, zurückgestellt.
+- Schriftart der Initiale (Drop-Cap) wählbar machen (Idee 08/2026, nicht priorisiert).
 - Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).
 - Zurückgelegt (Gregorio-Vergleich, optional): **NABC** (adiastematische St.-Galler/Laon-Neumen über dem System) und **TeX-/Gregorio-Export**.
   Verworfen: Chorzeichen, Klammern, Polyphonie, 2/5 Linien, Doppelschlüssel-Anzeige.

@@ -121,6 +121,11 @@ Orgel
 - NOH-Notenbibliothek liegt im selben Repo unter `noh/` (eigener Chat «Digitale Musiknotenbibliothek erstellen»); Notator und NOH verlinken sich.
 - Schola-Planer und Gesangs-App laufen auf derselben Origin `krohnoshub.github.io` und teilen das Google-Token (siehe Sicherheit in `CLAUDE.md`).
 
+- Vergleichbare Programme (Recherche 17.08.2026): Gregorio/GregorioTeX (Textcode → PDF via LaTeX), Illuminare Score Editor
+  (Web, Textcode mit Vorschau, kein Offline-Modus), Square Note und Chant Tools (Apps fürs Lesen/Abspielen, kein echter Editor).
+  Alleinstellung von Notator: Neumen per Klick setzen sowie GregoBase-Anbindung und «PDF lesen» aus gedruckten Büchern;
+  die Forschung zur Notenerkennung zielt auf mittelalterliche Handschriften, nicht auf moderne Drucke.
+
 ## 7. Veraltet – nicht mehr anwenden
 
 Aus der Zeit vor GitHub Pages stammen: versionierte Dateien `Notator_XXX.html`, die «Test-Bibliothek» mit Archiv-Ordner,
