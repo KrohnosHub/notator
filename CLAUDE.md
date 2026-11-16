@@ -7,6 +7,16 @@ Stand und Änderungsübersicht: `NOTES.md`, Details im Git-Log.
 
 @docs/WISSEN.md
 
+## Zusammenarbeit claude.ai-Projekt ↔ Claude Code
+Beide Seiten arbeiten an Notator; **einzige gemeinsame Quelle ist `main`** (Code, `NOTES.md`, `docs/WISSEN.md`).
+- **Vor der Arbeit:** `git fetch origin main`; `git log --oneline -15 origin/main` lesen – auch Doku-Commits der anderen Seite.
+  Auf dem neuesten `main` aufsetzen; eigene ältere Branches zuerst mit `main` zusammenführen.
+- **Nie überschreiben:** kein Force-Push, kein «meine Fassung gewinnt». Bei Abweichungen beide Fassungen vergleichen und
+  zusammenführen; was die andere Seite neu weiss, bleibt erhalten.
+- **Nach der Arbeit, im selben Commit:** Änderungen kurz in `NOTES.md`, neue Erkenntnisse und Entscheidungen in
+  `docs/WISSEN.md` (mit Datum). Was nur im Chat steht, kennt die andere Seite nicht.
+- Kleine Schritte, zügig pushen – lange offene Stände führen zu Kollisionen.
+
 ## Kommunikation
 - Deutsch (Schweizer Schreibweise: «ss» statt «ß»), kurz und konkret. Unsicherheiten offen benennen.
 - Vor grösseren Umbauten Vorgehen kurz vorschlagen und bestätigen lassen.
