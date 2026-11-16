@@ -2,7 +2,10 @@
 
 Notenprogramm für gregorianische Noten (PWA, GitHub Pages: https://krohnoshub.github.io/notator/).
 Stand und Änderungsübersicht: `NOTES.md`, Details im Git-Log.
-**Gesammeltes Wissen (Lehren, Entscheidungen von Matthias, exsurge-Eigenheiten): `docs/WISSEN.md` – wird unten automatisch mitgeladen; neue Erkenntnisse und Entscheidungen dort nachtragen.**
+**Gesammeltes Wissen (Lehren, Entscheidungen von Matthias, exsurge-Eigenheiten, Silbentrennung): `docs/WISSEN.md` – wird unten eingebunden; neue Erkenntnisse und Entscheidungen dort nachtragen.**
+**Ältere Branches** (vor der Aufteilung in `src/`) kennen weder diese Datei noch `docs/WISSEN.md`: zuerst `main` hineinmergen, neue Arbeit immer von `main` aus beginnen.
+
+@docs/WISSEN.md
 
 ## Kommunikation
 - Deutsch (Schweizer Schreibweise: «ss» statt «ß»), kurz und konkret. Unsicherheiten offen benennen.
@@ -40,6 +43,3 @@ Die GitHub Action «Tests» läuft bei jedem Push nach `main` (und bei PRs: Buil
 - **Content-Security-Policy** (Meta-Tag in `src/shell.html`): Inline-Skripte nur per Hash – `build.py` setzt die Hashes automatisch. Neue externe Hosts (Skripte, APIs, Bilder) bewusst in der passenden Direktive ergänzen, sonst blockiert der Browser sie (Konsole: «Refused to …»).
 - **Keine Inline-Handler** (`onclick="…"`): In `src/body.html` stattdessen `data-onclick="…"` (bzw. `data-oninput` …) schreiben und `python3 tools/handlers.py` ausführen – das erzeugt `src/js/1-start/005-handler.js` (nicht von Hand ändern). In HTML-Strings im JS: Element nach dem Einsetzen per `el.onclick = …`/`addEventListener` verbinden.
 - Kein `eval`, kein `new Function`, keine Strings in `setTimeout` (CSP).
-
-## Gesammeltes Wissen (automatisch eingebunden)
-@docs/WISSEN.md

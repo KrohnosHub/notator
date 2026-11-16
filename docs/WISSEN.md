@@ -2,7 +2,7 @@
 
 Ergänzt `CLAUDE.md` (Arbeitsablauf, Sicherheit) und `NOTES.md` (Änderungsübersicht).
 Hier steht, was sich nicht aus dem Code ablesen lässt: Lehren aus Fehlern, Entscheidungen von Matthias
-und Eigenheiten von exsurge. Stand: Build 401, 16.11.2026. **Neue Erkenntnisse und Entscheidungen hier
+und Eigenheiten von exsurge. Stand: Build 402, 16.11.2026. **Neue Erkenntnisse und Entscheidungen hier
 nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai und Claude Code – denselben Stand haben.
 
 ## 1. Zusammenarbeit mit Matthias
@@ -29,12 +29,6 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   PDF-Seiten weichen ab. Bei der Bilderkennung früh Diagnose-Logs einbauen und echte Konsolenausgaben von
   Matthias holen. `gregGst()` schreibt nur in die Statuszeile, nicht in die Konsole – ein leeres Konsolen-Log beweist nichts.
 - Nach einer Nutzermeldung nicht nur die gemeldete Stelle flicken, sondern alle gleichartigen Stellen systematisch prüfen.
-- **«PDF lesen» (Prototyp, 15.11.2026, Branch `claude/pdf-lesen-testset-plan`, Details `docs/pdf-lesen-plan.md` Abschnitt 7):**
-  Tonhöhen geometrisch (kostenlos, ca. 96 %), Text per KI mit einem Aufruf je Seite. **Sonnet 5.5** nehmen
-  (88 % Silben, ca. 0.01 USD/Seite); Haiku 5.5 ist schlechter als Tesseract. Sonnet mit verbessertem Ablauf
-  ist so gut wie Opus 5.5 mit dem alten bei halben Kosten (Opus mit dem neuen Ablauf nicht gemessen). Den Textstreifen unten grosszügig schneiden – sonst fehlen Unterlängen
-  und Kommaschwänze, und aus Kommas werden Punkte. Ein zu knapper Ausschnitt wirkt wie ein Lesefehler der KI.
-- API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
 - Playwright-Tests: Beim Start öffnet sich nach ca. 2 s die Bibliothek – warten, dann `closeModal()`.
   `page.evaluate` nie auf einen unbeendeten Promise warten lassen (hängt); in `() => { … }` einwickeln.
   PDF-Erzeugung lässt sich mit lokal eingebundenem jsPDF und `window._ntCollect` (Seitenbilder abfangen) prüfen.
@@ -66,10 +60,29 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - Kopffelder: `mode` → Annotation, `book` → Untertitel, `office-part` bewusst ignoriert; GregoBase-Importe mit `drop-cap: auto`.
 - **Melodie aus GregoBase übernehmen ist meist sicher, Text und Satzzeichen nicht:** Bei einer Vorlage aus einer anderen
   Ausgabe jede Silbe samt Komma, Punkt, æ usw. gegen das Ziel-PDF prüfen (Text-Extraktion), bevor ein Stück als fertig gilt.
-- GregoBase setzt bei zweisilbigen Wörtern meist **keine Akzente** und schreibt «ae» statt «æ»; Solesmes-Drucke
-  (Liber Usualis, Graduale) akzentuieren auch Zweisilber (máter, nóstra, tú-i) und drucken «æ». Als Vergleich
-  oder Soll gilt der Druck (15.11.2026, am Salve Regina geprüft).
+- **GregoBase-Akzente weichen vom Druck ab:** Viele Drucke (z. B. Liber Usualis) setzen Akzente auch bei Zweisilbern
+  (máter, nóstra, Jésum) und drucken «æ»; GregoBase lässt diese Akzente weg und schreibt «ae» (geprüft am Salve Regina, 15.11.2026).
 - Psalmtöne aus jgabc (gemeinfrei); Gloria-Patri-Vorlagen aus GregoBase («Gloria Patri I–VIII»).
+
+## 4a. Silbentrennung (Latein)
+
+- **Regel (festgelegt 15.11.2026, an den Scans des PDF-lesen-Testsets geprüft):** Ein **gedruckter Trennstrich gilt immer**.
+  Wo keiner gedruckt ist, gilt die **Solesmes-Konvention**: Konsonantengruppen (ct, mn, pt, gn, st, Konsonant + l/r) gehen ganz
+  zur nächsten Silbe – «be-ne-dí-cta», «dí-ctus», «frú-ctus», «San-ctus», «ó-mni-um», «no-stra», «a-gnus».
+  Belege im Druck: Graduale «re-ctos», «sol-e-mni-tá-te»; Liber Usualis «bene-dí-ctum».
+- Ausnahme: Drucke mit klassischer Trennung (Cantus Mariales 1906: «díg-ni-or», «om-nes») – dort folgt das Soll dem Druck.
+- **Fehlender Trennstrich heisst nicht «keine Silbengrenze»** (geklärt August 2026): Ältere Drucke setzen Trennstriche unvollständig,
+  z. B. Liber Usualis, Hymnus «Audi benigne Conditor»: gedruckt «Cóndi-tor» (GregoBase und Notengruppen: Cón-di-tor),
+  «confi-téntibus» = ein Trennstrich für fünf Silben. Verlässlich ist die **Aufteilung der Notengruppen** über dem Text.
+- Abweichung im Code: `ntPtSyllabify` (`src/js/3-orgel-und-mehr/160-psalmton-assistent.js`; Psalmton-Assistent, Strophen,
+  «Text zuerst») trennt «díc-ta», «Sanc-tus» (ct, mn, pt, ps nicht als Gruppe). Angleichen an die Regel oben: noch nicht entschieden.
+
+## 4b. PDF lesen (Stand Testset, 15.11.2026)
+
+- Neuaufbau auf dem Branch `claude/pdf-lesen-testset-plan` (Plan, Messungen und Soll-Fälle: `docs/pdf-lesen-plan.md`, `tests/pdf-lesen/`).
+- Tonhöhen, Schlüssel und Trennstriche geometrisch; Text per KI, ein Aufruf je Seite.
+- **Modell für den Text: Sonnet 5.5** (`effort: low`). Opus 5.5 liest Akzente etwas besser, kostet aber das Doppelte;
+  Buchstaben und Silbentrennung liest Sonnet gleich gut. Kosten unter 0.02 USD je Seite.
 
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)
 
@@ -84,12 +97,6 @@ Allgemein
 
 Choral
 - ♭ gilt standardmässig bis zur nächsten Divisio (Solesmes-Regel per Schalter).
-- **Silbentrennung: Solesmes-Konvention** – Konsonantengruppen ct, gn, mn, pt, ps, st, sc und Konsonant + l/r gehen
-  ganz zur nächsten Silbe: «be-ne-dí-cta», «San-ctus», «a-gnus», «ó-mni-um», «no-stra», «Pa-tri»; x bleibt vorne
-  («ex-sul-tá-te»); «Al-le-lú-ia». Ein **gedruckter Trennstrich hat Vorrang** (ältere Drucke wie Cantus Mariales 1906
-  trennen klassisch «díg-ni-or», «om-nes»). An Graduale und Liber Usualis bestätigt (15.11.2026).
-  Offen: Notators automatische Trennung `ntPtSyllabify` (`src/js/3-orgel-und-mehr/160-psalmton-assistent.js`)
-  trennt noch «díc-ta», «Sanc-tus».
 - Ausgeblendete Abschnitte fehlen in Anzeige, Choral-PDF, Orgelansicht und Orgel-PDF; die Wiedergabe bleibt unverändert.
 - PC: Seitenansicht – Blatt in A4-Breite mittig, Breite an den Blatträndern ziehbar, je Stück gespeichert;
   bestehende Stücke behalten ihre Breite. Bildschirm und PDF haben dieselben Zeilenumbrüche. Handy unverändert.
@@ -112,4 +119,4 @@ Orgel
 
 Aus der Zeit vor GitHub Pages stammen: versionierte Dateien `Notator_XXX.html`, die «Test-Bibliothek» mit Archiv-Ordner,
 `Notator_starten.bat`/`notator_server.py` (lokaler GregoBase-Proxy), Upload über die GitHub-Weboberfläche und
-Syntax-Checks per `new Function`. Heute: `src/` + `build.py`, Pull Requests, CSP. Der Teil «Session 64» in `NOTES.md` ist ebenfalls historisch.
+Syntax-Checks per `new Function`. Heute: `src/` + `build.py`, direkte Pushes nach `main` (siehe `CLAUDE.md`), CSP.
