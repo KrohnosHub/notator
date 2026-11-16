@@ -68,7 +68,8 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 
 - **Regel (festgelegt 15.11.2026, an den Scans des PDF-lesen-Testsets geprüft):** Ein **gedruckter Trennstrich gilt immer**.
   Wo keiner gedruckt ist, gilt die **Solesmes-Konvention**: Konsonantengruppen (ct, mn, pt, gn, st, Konsonant + l/r) gehen ganz
-  zur nächsten Silbe – «be-ne-dí-cta», «dí-ctus», «frú-ctus», «San-ctus», «ó-mni-um», «no-stra», «a-gnus».
+  zur nächsten Silbe – «be-ne-dí-cta», «dí-ctus», «frú-ctus», «San-ctus», «ó-mni-um», «no-stra», «a-gnus»; ebenso sc, ps.
+  x bleibt vorne («ex-sul-tá-te»); in «alleluia» ist «ia» eine Silbe («Al-le-lú-ia»).
   Belege im Druck: Graduale «re-ctos», «sol-e-mni-tá-te»; Liber Usualis «bene-dí-ctum».
 - Ausnahme: Drucke mit klassischer Trennung (Cantus Mariales 1906: «díg-ni-or», «om-nes») – dort folgt das Soll dem Druck.
 - **Fehlender Trennstrich heisst nicht «keine Silbengrenze»** (geklärt August 2026): Ältere Drucke setzen Trennstriche unvollständig,
@@ -81,8 +82,13 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 
 - Neuaufbau auf dem Branch `claude/pdf-lesen-testset-plan` (Plan, Messungen und Soll-Fälle: `docs/pdf-lesen-plan.md`, `tests/pdf-lesen/`).
 - Tonhöhen, Schlüssel und Trennstriche geometrisch; Text per KI, ein Aufruf je Seite.
-- **Modell für den Text: Sonnet 5.5** (`effort: low`). Opus 5.5 liest Akzente etwas besser, kostet aber das Doppelte;
-  Buchstaben und Silbentrennung liest Sonnet gleich gut. Kosten unter 0.02 USD je Seite.
+- **Modell für den Text: Sonnet 5.5** (`effort: low`): nach den Verbesserungen 88 % Silben (3 Läufe, kaum Streuung),
+  ca. 0.01 USD je Seite – so gut wie Opus 5.5 mit dem früheren Ablauf, bei halben Kosten (Opus mit dem neuen Ablauf
+  nicht gemessen). Der anfängliche Akzent-Vorsprung von Opus lag an Fehlern im Soll (GregoBase-Akzente) und an
+  Kommas, nicht am Modell (`docs/pdf-lesen-plan.md` 7.8–7.10). Haiku 5.5 ist schlechter als Tesseract.
+- **Bildausschnitt grosszügig:** Der Textstreifen muss unten Unterlängen und Kommaschwänze enthalten, sonst werden
+  Kommas als Punkte gelesen – das sieht aus wie ein Lesefehler der KI. Lange Zeilen teilen statt verkleinern.
+- API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
 
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)
 
