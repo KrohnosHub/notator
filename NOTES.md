@@ -1,4 +1,4 @@
-# Notator – Stand Build 402 (16.11.2026)
+# Notator – Stand Build 403 (16.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -7,13 +7,14 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 ## Aufbau
 
 - Code in `src/` (CSS, `body.html`, JS in `1-start/`, `2-choral/`, `3-orgel-und-mehr/`, `vendor/exsurge.js`); `python3 build.py` erzeugt `index.html`.
-- Tests: `tests/gd-core.test.js`, `tests/begleitsatz.test.js`, `tests/visual/run.js` (Bildvergleich); GitHub Action «Tests» bei jedem Push.
+- Tests: `tests/gd-core.test.js`, `tests/silbentrennung.test.js`, `tests/begleitsatz.test.js`, `tests/visual/run.js` (Bildvergleich); GitHub Action «Tests» bei jedem Push.
 - Content-Security-Policy mit Skript-Hashes (setzt `build.py`), keine Inline-Handler (`tools/handlers.py`).
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–402 (Auszug)
+## Neu in Build 298–403 (Auszug)
 
+- **Silbentrennung (403):** automatische Trennung (Psalmton-Assistent, Strophen, «Text zuerst») nach Solesmes-Konvention: «be-ne-dí-cta», «San-ctus», «ó-mni-um», «no-stra»; eigener Test.
 - **Mappe (402):** Übersicht und Hinzufügen in einem Fenster, Choral und Orgel getrennt mit eigenem PDF, Orgel standardmässig mit Begleitsatz.
 - **Begleitsatz (300, 401):** freie Akkordwahl, b/h-Vorschlag, Vorgaben überstehen Transposition; Schlussformel nach NOH, Vorhalte/Septakkorde, Griffweite ohne Pedal, eigene Tests.
 - **Sicherheit und Aufbau (399–400):** gemeinsamer Drive-Kern, Content-Security-Policy, Aufteilung in `src/`.
@@ -99,8 +100,6 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 
 ## Offen / Ideen
 
-- Silbentrennung angleichen: Notators eigene Trennung (`ntPtSyllabify`: Psalmton-Assistent, Strophen, «Text zuerst») trennt «díc-ta», «Sanc-tus»;
-  festgelegt ist die Solesmes-Konvention «dí-cta», «San-ctus» (siehe `docs/WISSEN.md`). Entscheid von Matthias offen.
 - Alleluja-Vorlagen (wie Gloria Patri): recherchiert, zurückgestellt.
 - Schriftart der Initiale (Drop-Cap) wählbar machen (Idee 08/2026, nicht priorisiert).
 - Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).

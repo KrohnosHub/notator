@@ -75,8 +75,9 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - **Fehlender Trennstrich heisst nicht «keine Silbengrenze»** (geklärt August 2026): Ältere Drucke setzen Trennstriche unvollständig,
   z. B. Liber Usualis, Hymnus «Audi benigne Conditor»: gedruckt «Cóndi-tor» (GregoBase und Notengruppen: Cón-di-tor),
   «confi-téntibus» = ein Trennstrich für fünf Silben. Verlässlich ist die **Aufteilung der Notengruppen** über dem Text.
-- Abweichung im Code: `ntPtSyllabify` (`src/js/3-orgel-und-mehr/160-psalmton-assistent.js`; Psalmton-Assistent, Strophen,
-  «Text zuerst») trennt «díc-ta», «Sanc-tus» (ct, mn, pt, ps nicht als Gruppe). Angleichen an die Regel oben: noch nicht entschieden.
+- Umgesetzt in Build 403 (16.11.2026, Auftrag Matthias): `ntPtSyllabify` (`src/js/3-orgel-und-mehr/160-psalmton-assistent.js`;
+  Psalmton-Assistent, Strophen, «Text zuerst») gibt den längsten zulässigen Silbenanfang einer Konsonantengruppe an die
+  nächste Silbe; Prüfung mit `tests/silbentrennung.test.js` (31 Wörter). Gesetzte Bindestriche im Text haben weiterhin Vorrang.
 
 ## 4b. PDF lesen (Stand Testset, 15.11.2026)
 

@@ -32,13 +32,15 @@ function ntPtSyllabify(word) {
   const cuts = [];
   for (let k = 0; k < nuc.length - 1; k++) {
     const a = nuc[k][1] + 1, b = nuc[k + 1][0];
-    const cl = lw.slice(a, b).replace(/[^a-z]/g, '');
     let cut;
     if (b - a <= 1) cut = b - a === 0 ? b : a;
     else {
-      const last2 = lw.slice(b - 2, b);
-      cut = (/^[bcdfgpt][lr]$/.test(last2) || /^(ch|ph|th|gn|qu|gu)$/.test(last2) || (b - a === 2 && /^s[tpc]$/.test(last2))) ? b - 2 : b - 1; // kirchenlateinisch: a-gnus, ex-quí-ro, Chri-ste, ré-spi-ce
-      if (cl === 'x') cut = a;
+      // Solesmes-Konvention (docs/WISSEN.md 4a): der längste zulässige Silbenanfang der Konsonantengruppe geht zur
+      // nächsten Silbe – be-ne-dí-cta, San-ctus, ó-mni-um, no-stra, mon-stra, re-dém-ptor, a-gnus, Chri-ste; x bleibt vorne (ex-sul-tá-te).
+      const onset = t => /^([bcdfgpt][lr]|ch|ph|th|gn|qu|gu|ct|mn|pt|ps|st|sc|sp)$/.test(t) || /^(s[ct]r|sp[lr]|[cpt]h[lr])$/.test(t);
+      cut = b - 1;
+      for (let n = Math.min(3, b - a); n >= 2; n--) if (onset(lw.slice(b - n, b))) { cut = b - n; break; }
+      if (lw[a] === 'x' && cut === a) cut = a + 1;
     }
     cuts.push(cut);
   }
