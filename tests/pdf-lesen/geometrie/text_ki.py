@@ -24,9 +24,13 @@ BOTTOM = float(os.environ.get('GEOM_KI_BOTTOM', 1.6))  # unterer Rand in Liniena
 SPLIT = os.environ.get('GEOM_KI_SPLIT', '1') != '0'  # lange Zeilen in zwei Teile statt verkleinern
 
 PROMPT = """The image shows numbered strips. Each strip is one line of Latin chant text, cut from under a staff of \
-square notation in a printed book. Strip 0, if present, is the large decorated initial letter of the piece; it \
-belongs in front of the first word of strip 1: write it directly before that word's first letters, with no \
-hyphen and no space (e.g. initial "S" + "Al-ve" -> "SAl-ve").
+square notation in a printed book. A strip may begin with a large (often decorated) initial letter, shown scaled \
+down at its left edge; it is the first letter of the strip's first word: write it directly before that word's \
+other letters, with no hyphen and no space (e.g. initial "S" + "Al-ve" -> "SAl-ve", initial "A" + "D cœnam" -> \
+"Ad cœ-nam").
+Every numbered strip is its own line: return exactly the text printed in that strip. Never move text from one \
+strip into another, even when a word or sentence continues on the next strip (keep the hyphen at the end of the \
+strip, e.g. strip 1 "... al-", strip 2 "le-lú-ia.").
 A long strip may be cut into two parts shown on consecutive rows; the second part is marked "N+" and continues \
 strip N on the same line. Return such a strip as one entry.
 
@@ -49,7 +53,7 @@ its word; look closely to tell a comma (with a small tail below the line) from a
 Return one entry per strip number 1..N."""
 
 
-def page_strips(im, dark, sts, components):
+def page_strips(im, dark, sts, components, dropcaps=None):
     """Schneidet je System die Textzeile aus. Gibt (Bild fuer die KI, Liste je System: dict mit Ausschnitt-Koordinaten)."""
     rows = []
     for k, st in enumerate(sts):
@@ -60,14 +64,22 @@ def page_strips(im, dark, sts, components):
         box = (int(st['x0'] - 0.5 * gl), int(yt - 0.35 * gl), int(st['x1'] + 0.5 * gl), int(yt + BOTTOM * gl))
         rows.append({'box': box, 'gl': gl})
     crops = []
-    dc = ocr.dropcap_box(dark, sts[0], (sts[0]['lines'][3] - sts[0]['lines'][0]) / 3.0, components) if sts else None
-    if dc: crops.append((0, im.crop(dc)))
     for k, r in enumerate(rows):
-        if r: crops.append((k + 1, im.crop(r['box'])))
+        if not r: continue
+        c = im.crop(r['box'])
+        dc = dropcaps[k] if dropcaps else None
+        if dc:
+            # Initiale links vor die Zeile setzen (auf Zeilenhoehe verkleinert), damit die KI sie dem ersten Wort zuordnet
+            ini = im.crop(dc); f = c.height / ini.height
+            ini = ini.resize((max(1, int(ini.width * f)), c.height), Image.LANCZOS)
+            gap = int(0.6 * r['gl'])
+            both = Image.new(c.mode, (ini.width + gap + c.width, c.height), 255)
+            both.paste(ini, (0, 0)); both.paste(c, (ini.width + gap, 0)); c = both
+        crops.append((k + 1, c))
     W = 1600
     parts = []
     for n, c in crops:
-        h = LINE_H if n else 2 * LINE_H
+        h = LINE_H
         f = h / c.height
         c = c.resize((max(1, int(c.width * f)), h), Image.LANCZOS)
         if n and SPLIT and c.width > W - 70:

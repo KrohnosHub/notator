@@ -748,7 +748,34 @@ Nebenbefund: Notator selbst (`ntPtSyllabify` in
 `src/js/3-orgel-und-mehr/160-psalmton-assistent.js`, genutzt von
 Psalmton-Assistent, Strophen und «Text zuerst») trennt «díc-ta»,
 «Sanc-tus», weil ct, mn, pt, ps dort nicht als Gruppe gelten. Das weicht
-von der Solesmes-Konvention ab; nicht geändert.
+von der Solesmes-Konvention ab; in Build 403 angeglichen (16.11.2026).
+
+### 7.11 Initialen auf allen Systemen (16.11.2026)
+
+Vorher fehlten das Zier-«G» (Gaudeamus) und die Hymnus-Initiale «A» (Surrexit,
+2. Stück). Ursachen und Änderungen (`geometrie/ocr.py`, `geom.py`, `text_ki.py`):
+
+- Das «G» ist rund 12 Linienabstände hoch und breiter als das Suchfenster
+  (9 Linienabstände); Bogen und Fuss hingen nur ausserhalb des Fensters
+  zusammen. Fenster jetzt 16 Linienabstände breit und nach unten bis ins
+  nächste System; alle grösseren Teile, die den Kasten berühren, werden
+  dazugenommen. Teile, die in Linien oder Text eines anderen Systems liegen,
+  und kleine Angaben darüber (Modus «VIII», «5», «1.») nicht.
+- Initialen werden bei **jedem** System gesucht; ein Teil einer schon
+  gefundenen Initiale zählt nicht als neue.
+- Im KI-Bild steht die Initiale jetzt verkleinert **links vor ihrer Zeile**
+  statt als eigener Streifen 0. Prompt entsprechend, dazu: jede nummerierte
+  Zeile bleibt für sich (ohne diesen Satz zog Sonnet in einzelnen Läufen
+  mehrere Zeilen in eine zusammen – Surrexit fiel einmal auf 16 %).
+
+| Serie | Silben | ohne Akzente | Wortgrenzen | Gruppierung |
+| --- | --- | --- | --- | --- |
+| `ki-s55-low-v4` | 88 % | 89 % | 90 % | 74 % |
+| **`ki-s55-low-v5`** (3 Läufe) | **89 %** | **90 %** | **90 %** | 74 % |
+
+Je Fall (Silben): Ave Maria 100/100/97, Surrexit 98/91/91, Salve mater
+92/92/92, Salve Regina 86/86/86, Gaudeamus 81/79/83 (mit «GAU-DE-A-MUS»).
+Kosten 0.043 USD für 5 Seiten.
 
 ## Offene Fragen
 

@@ -513,13 +513,18 @@ def run_case(case, work, debug):
     ref = (float(np.median([a for a, _ in sizes])), float(np.median([w for _, w in sizes]))) if sizes else (0.2 * g * g, 0.45 * g)
     ki_lines = None; usage = {'input_tokens': 0, 'output_tokens': 0, 'costUsd': 0}
     if FULL and TEXT in ('ki', 'mock', 'dry', 'cache'):
-        kimg, _ = text_ki.page_strips(im, dark, sts, components)
+        dcs = []
+        for st in sts:
+            d = ocr.dropcap_box(dark, st, (st['lines'][3] - st['lines'][0]) / 3.0, components, sts)
+            # Teil einer schon gefundenen Initiale (gross genug fuer zwei Systeme)? Dann keine eigene.
+            if d and any(p and d[0] < p[2] and p[0] < d[2] and d[1] < p[3] and p[1] < d[3] for p in dcs): d = None
+            dcs.append(d)
+        kimg, _ = text_ki.page_strips(im, dark, sts, components, dcs)
         kimg.save(os.path.join(work, 'ki-%s.png' % case))
         tin, tout = text_ki.estimate_tokens(kimg, len(sts))
         pin, pout = text_ki.PRICES.get(text_ki.MODEL, (0, 0))
         print('  %s: KI-Bild %dx%d, geschaetzt %d/%d Token, %.4f USD mit %s' % (case, kimg.width, kimg.height, tin, tout,
               (tin * pin + tout * pout) / 1e6, text_ki.MODEL), file=sys.stderr)
-        has_dc = ocr.dropcap_box(dark, sts[0], (sts[0]['lines'][3] - sts[0]['lines'][0]) / 3.0, components) is not None
         if TEXT == 'mock': ki_lines = text_ki.mock_lines(exp, len(sts))
         elif TEXT == 'cache':
             # Gespeicherte KI-Antwort aus --work wiederverwenden (kein Aufruf); Kosten werden mitgefuehrt
@@ -540,7 +545,7 @@ def run_case(case, work, debug):
             if TEXT in ('ki', 'mock', 'cache') and ki_lines is not None:
                 syls = None
                 if KI_POS == 'chunks':
-                    syls = text_ki.syllables_from_chunks(ki_lines[k], text_ki.text_chunks(dark, st, gl), gl, dropcap=(k == 0 and has_dc))
+                    syls = text_ki.syllables_from_chunks(ki_lines[k], text_ki.text_chunks(dark, st, gl), gl, dropcap=(dcs[k] is not None))
                 if syls is None:
                     tw, lx0, lx1 = ocr.line_words(im, dark, st, gl)
                     syls = text_ki.syllables_from_text(ki_lines[k], tw, lx0, lx1)

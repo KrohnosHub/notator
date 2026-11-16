@@ -173,19 +173,47 @@ def read_line(im, dark, st, gl):
     return syls
 
 
-def dropcap_box(dark, st, gl, components):
+def dropcap_box(dark, st, gl, components, others=None):
     """Umrandung der Initiale (Seitenkoordinaten, mit Rand) oder None."""
     q = st['lines']
     yt = text_top(dark, st, gl) or int(q[3] + 2 * gl)
-    xa = max(0, int(st['x0'] - 9 * gl)); xb = int(st['x0'] - 0.1 * gl)
+    xa = max(0, int(st['x0'] - 16 * gl)); xb = int(st['x0'] - 0.1 * gl)
     ya = max(0, int(q[0] - 3.5 * gl)); yb = int(min(dark.shape[0], yt + 2.5 * gl))
     if xb - xa < gl: return None
-    best = None
-    for runs in components(dark[ya:yb, xa:xb]):
+    blocked0 = []
+    for o in others or []:
+        if o is st: continue
+        og = (o['lines'][3] - o['lines'][0]) / 3.0
+        blocked0.append((o['x0'] - xa, o['lines'][0] - og - ya, o['x1'] - xa, o['lines'][3] + 2.5 * og - ya))
+    def in_other0(b):
+        return any(b[0] < q[2] and q[0] < b[2] and b[1] < q[3] and q[1] < b[3] for q in blocked0)
+    best = None; boxes = []
+    ybx = int(min(dark.shape[0], yb + 6 * gl))         # erweitert: grosse Zier-Initialen reichen bis zum naechsten System
+    for runs in components(dark[ya:ybx, xa:xb]):
         y0 = min(r[0] for r in runs); y1 = max(r[0] for r in runs)
         x0 = min(r[1] for r in runs); x1 = max(r[2] for r in runs)
-        if y1 - y0 >= 2.5 * gl and (best is None or y1 - y0 > best[3] - best[1]): best = [x0, y0, x1, y1]
+        boxes.append([x0, y0, x1, y1])
+        if y0 < yb - ya and y1 - y0 >= 2.5 * gl and not in_other0([x0, y0, x1, y1]) and (best is None or y1 - y0 > best[3] - best[1]): best = [x0, y0, x1, y1]
     if best is None: return None
+    # Verzierte Initialen bestehen aus mehreren Teilen (Bogen, Fuellung): alle groesseren Teile dazunehmen,
+    # die den Kasten beruehren oder knapp darunter liegen; wiederholen, bis nichts mehr dazukommt.
+    # Bereiche anderer Systeme (Linien und Textzeile) gehoeren nicht zur Initiale
+    blocked = []
+    for o in others or []:
+        if o is st: continue
+        og = (o['lines'][3] - o['lines'][0]) / 3.0
+        blocked.append((o['x0'] - xa, o['lines'][0] - og - ya, o['x1'] - xa, o['lines'][3] + 2.5 * og - ya))
+    def in_other(b):
+        return any(b[0] < q[2] and q[0] < b[2] and b[1] < q[3] and q[1] < b[3] for q in blocked)
+    m = 0.3 * gl; mv = 1.5 * gl; grown = True
+    while grown:
+        grown = False
+        for b in boxes:
+            if max(b[3] - b[1], b[2] - b[0]) < 0.3 * gl or in_other(b): continue
+            if b[0] > best[2] + m or b[2] < best[0] - m or b[1] > best[3] + mv or b[3] < best[1] - mv: continue
+            if b[3] < best[1] and b[3] - b[1] < 1.2 * gl: continue   # kleine Angabe darueber (Modus «VIII», «5»): nicht dazu
+            nb = [min(best[0], b[0]), min(best[1], b[1]), max(best[2], b[2]), max(best[3], b[3])]
+            if nb != best: best = nb; grown = True
     pad = int(0.3 * gl)
     return (xa + best[0] - pad, ya + best[1] - pad, xa + best[2] + pad, ya + best[3] + pad)
 
