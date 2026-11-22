@@ -152,7 +152,9 @@ function gregVerseTplInfo(t) {
   const ents = gregEntries.slice(t.a, t.b + 1).filter(e => !e.vsCopy);
   const first = ents[0];
   const numKind = first && first.type !== 'note' && /^\s*\d+\.?\s*$/.test(first.text || '') ? 'dir'
-    : (gregVerseSlots(ents)[0] && NT_VS_NUM.test(gregVerseSlots(ents)[0].syllable) ? 'syl' : '');
+    : (gregVerseSlots(ents)[0] && NT_VS_NUM.test(gregVerseSlots(ents)[0].syllable) ? 'syl'
+      // Text untereinander: die Nummern stehen schon in den Strophen (e.verses) – beim erneuten Bearbeiten beibehalten
+      : (gregVerseSlots(ents)[0] && (gregVerseSlots(ents)[0].verses || []).some(v => NT_VS_NUM.test(v || '')) ? 'syl' : ''));
   return { ents, numKind };
 }
 const gregVsStripNum = s => String(s || '').replace(NT_VS_NUM, '');

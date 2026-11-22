@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-x4x6SDBBywrXAmB0+sLhuzlR+smoACMWSbBefkAlJYM=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-34Taeufg2EG8xCGg2QOQlyEbCe27odF+zB2iGLHao/c='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-RB8FpPA1TNbX10Rpp/pSse9Xx89ey3rXmxc3ItWllnU=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-DNNcAPk2ZDMVJtyg06siW4fNKgXAW1f6vxtIVOsAnEw='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -9002,7 +9002,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '404';
+const NOTATOR_BUILD_ID = '405';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20536,7 +20536,9 @@ function gregVerseTplInfo(t) {
   const ents = gregEntries.slice(t.a, t.b + 1).filter(e => !e.vsCopy);
   const first = ents[0];
   const numKind = first && first.type !== 'note' && /^\s*\d+\.?\s*$/.test(first.text || '') ? 'dir'
-    : (gregVerseSlots(ents)[0] && NT_VS_NUM.test(gregVerseSlots(ents)[0].syllable) ? 'syl' : '');
+    : (gregVerseSlots(ents)[0] && NT_VS_NUM.test(gregVerseSlots(ents)[0].syllable) ? 'syl'
+      // Text untereinander: die Nummern stehen schon in den Strophen (e.verses) – beim erneuten Bearbeiten beibehalten
+      : (gregVerseSlots(ents)[0] && (gregVerseSlots(ents)[0].verses || []).some(v => NT_VS_NUM.test(v || '')) ? 'syl' : ''));
   return { ents, numKind };
 }
 const gregVsStripNum = s => String(s || '').replace(NT_VS_NUM, '');

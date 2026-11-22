@@ -1,4 +1,4 @@
-# Notator – Stand Build 404 (22.11.2026)
+# Notator – Stand Build 405 (22.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -16,6 +16,7 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 
 - **Silbentrennung (403):** automatische Trennung (Psalmton-Assistent, Strophen, «Text zuerst») nach Solesmes-Konvention: «be-ne-dí-cta», «San-ctus», «ó-mni-um», «no-stra»; eigener Test.
 - **Strophen: Note ohne Silbe (404):** «~» im Strophentext gilt auch mitten im Wort («memori~ále»: Silbe davor mit «-», Note bleibt leer); in der Vorschau eine Note antippen setzt/entfernt «~».
+- **Strophen-Nummern (405):** Beim erneuten Bearbeiten (Text untereinander) bleiben die Nummern «2.», «3.» … erhalten, auch wenn die Vorlage selbst keine «1.» trägt.
 - **Mappe (402):** Übersicht und Hinzufügen in einem Fenster, Choral und Orgel getrennt mit eigenem PDF, Orgel standardmässig mit Begleitsatz.
 - **Begleitsatz (300, 401):** freie Akkordwahl, b/h-Vorschlag, Vorgaben überstehen Transposition; Schlussformel nach NOH, Vorhalte/Septakkorde, Griffweite ohne Pedal, eigene Tests.
 - **Sicherheit und Aufbau (399–400):** gemeinsamer Drive-Kern, Content-Security-Policy, Aufteilung in `src/`.
