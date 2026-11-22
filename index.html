@@ -8851,7 +8851,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '397';
+const NOTATOR_BUILD_ID = '398';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20091,29 +20091,36 @@ function gregVerseParse(text) {
   const out = [];
   const LET = /[A-Za-zÀ-ÿǽǼæœÆŒ]/;
   String(text || '').replace(/[\r\n]+/g, ' ').trim().split(/\s+/).filter(Boolean).forEach(w => {
-    if (w === '~') { out.push({ t: '', cont: false }); return; }
+    if (w === '~') { out.push({ t: '', cont: false, skip: true }); return; }
     if (!LET.test(w)) { // reines Satzzeichen (z.B. «–») an die vorige Silbe hängen
       if (out.length) out[out.length - 1].t += (/^[,.;:!?]/.test(w) ? '' : ' ') + w;
       return;
     }
     w.split('_').filter(Boolean).forEach((ww, wi) => {
-      const parts = LET.test(ww) ? ntPtSyllabify(ww) : [ww];
-      parts.forEach((p, pi) => {
-        if (wi > 0 && pi === 0 && out.length) { const l = out[out.length - 1]; l.t += ' ' + p; l.cont = parts.length > 1; l.elided = true; return; }
-        out.push({ t: p, cont: pi < parts.length - 1 });
+      // «~» im Wort (memori~ále): Note ohne Silbe mitten im Wort – die Silbe davor führt mit «-» weiter
+      const segs = ww.split('~'), lastTxt = segs.reduce((m, x, i) => x ? i : m, -1);
+      segs.forEach((sg, si) => {
+        if (si > 0) out.push({ t: '', cont: si < lastTxt, skip: true });
+        if (!sg) return;
+        const parts = LET.test(sg) ? ntPtSyllabify(sg) : [sg];
+        parts.forEach((p, pi) => {
+          if (wi > 0 && si === 0 && pi === 0 && out.length) { const l = out[out.length - 1]; l.t += ' ' + p; l.cont = parts.length > 1; l.elided = true; return; }
+          out.push({ t: p, cont: pi < parts.length - 1 || si < lastTxt });
+        });
       });
     });
   });
   return out;
 }
 // Gespeicherte Strophe k -> Eingabetext (Silbentrennung nur, wo die automatische abweicht)
+const gregVsJoin = p => p.reduce((o, x, i) => i ? o + (x === '~' || p[i - 1] === '~' ? '' : '-') + x : x, '');
 function gregVerseText(entries, k) {
   const sl = gregVerseSlots(entries);
   const words = []; let cur = null;
   sl.forEach(e => {
     let v = (e.verses && e.verses[k]) || '';
     const cont = /-$/.test(v); v = v.replace(/-$/, '').trim();
-    if (!v) { if (cur) { words.push(cur); cur = null; } words.push(['~']); return; }
+    if (!v) { if (cur) { cur.push('~'); return; } words.push(['~']); return; }
     v = v.replace(/\s+/g, '_');
     if (!cur) cur = [];
     cur.push(v);
@@ -20123,9 +20130,9 @@ function gregVerseText(entries, k) {
   return words.map(p => {
     if (p.length === 1) return p[0];
     const j = p.join('');
-    if (/[_~]/.test(j)) return p.join('-');
+    if (/[_~]/.test(j)) return gregVsJoin(p);
     const a = ntPtSyllabify(j);
-    return (a.length === p.length && a.every((x, i) => x === p[i])) ? j : p.join('-');
+    return (a.length === p.length && a.every((x, i) => x === p[i])) ? j : gregVsJoin(p);
   }).join(' ');
 }
 function gregVerseApply(entries, k, parsed) {
@@ -20147,7 +20154,7 @@ function gregSylsToText(syls) {
   const words = []; let cur = null;
   syls.forEach(s => {
     const v = String(s.t || '').trim();
-    if (!v) { if (cur) { words.push(cur); cur = null; } words.push(['~']); return; }
+    if (!v) { if (cur) { cur.push('~'); return; } words.push(['~']); return; }
     if (!cur) cur = [];
     cur.push(v.replace(/\s+(?=\S*[A-Za-zÀ-ÿǽæœ])/g, '_'));
     if (!s.cont) { words.push(cur); cur = null; }
@@ -20156,9 +20163,9 @@ function gregSylsToText(syls) {
   return words.map(p => {
     if (p.length === 1) return p[0];
     const j = p.join('');
-    if (/[_~]/.test(j)) return p.join('-');
+    if (/[_~]/.test(j)) return gregVsJoin(p);
     const a = ntPtSyllabify(j);
-    return (a.length === p.length && a.every((x, i) => x === p[i])) ? j : p.join('-');
+    return (a.length === p.length && a.every((x, i) => x === p[i])) ? j : gregVsJoin(p);
   }).join(' ');
 }
 // Vorlage-Strophe bestimmen: 1. aktuelle Markierung, 2. gespeicherte Vorlage (e.vsTpl),
@@ -20297,8 +20304,8 @@ function gregVerseOwnApply(drafts, numKind) {
     slots.forEach((e, i) => {
       const v = (i === slots.length - 1 && parsed.length > slots.length) ? { t: parsed.slice(i).map(x => x.t).join(' '), cont: false } : parsed[i];
       e.syllable = (i === 0 && numKind === 'syl' ? n + '. ' : '') + (v ? v.t : '');
-      const cont = !!(v && v.cont && v.t);
-      e.hyphen = cont; e.wordEnd = !cont; e.italic = false;
+      const cont = !!(v && v.cont && (v.t || v.skip));
+      e.hyphen = cont && !!v.t; e.wordEnd = !cont; e.italic = false;
       for (let j = copy.indexOf(e) + 1; j < copy.length && copy[j].type === 'note' && !String(copy[j].syllable || '').trim(); j++) copy[j].wordEnd = false;
     });
     if (numKind === 'dir') copy[0].text = n + '.';
@@ -20377,7 +20384,7 @@ function gregVersesShow() {
     '<label><input type="radio" name="vs-mode" value="stack"' + (mode === 'stack' ? ' checked' : '') + '> Text untereinander (gleiche Noten)</label>' +
     '<label><input type="radio" name="vs-mode" value="own"' + (mode === 'own' ? ' checked' : '') + '> eigene Noten je Strophe</label></div>' +
     '<div id="vs-intro" style="font-size:12px;line-height:1.45;margin-bottom:6px"></div>' +
-    '<div style="font-size:11px;color:var(--ink2);margin-bottom:8px;line-height:1.4"><b>-</b> legt die Silbentrennung fest (Glo-ri-a) · <b>_</b> legt zwei Silben auf eine Note (tu_in) · <b>~</b> lässt eine Note ohne Silbe</div>' +
+    '<div style="font-size:11px;color:var(--ink2);margin-bottom:8px;line-height:1.4"><b>-</b> legt die Silbentrennung fest (Glo-ri-a) · <b>_</b> legt zwei Silben auf eine Note (tu_in) · <b>~</b> lässt eine Note ohne Silbe (auch im Wort: memori~ále) · Note unten antippen setzt/entfernt ~</div>' +
     '<div id="vs-list"></div>' +
     '<button class="b" id="vs-add" style="font-size:12px;margin-top:6px">+ Strophe hinzufügen</button>';
   document.getElementById('vs-tpl').onclick = gregVerseTplPick;
@@ -20416,10 +20423,20 @@ function gregVersesShow() {
     for (let i = 0; i < n; i++) {
       const over = i >= mel.length, miss = i >= p.length;
       const t = miss ? '' : p[i].t + (p[i].cont && p[i].t ? '-' : '');
-      h += '<span style="display:inline-flex;flex-direction:column;align-items:center;border:1px solid ' + (over || miss ? '#c0392b' : '#d8d0b8') + ';border-radius:3px;padding:0 3px;min-width:18px;background:' + (over ? '#fbe3df' : '#fffdf6') + '">' +
+      h += '<span class="vs-chip" data-i="' + i + '" style="cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;border:1px solid ' + (over || miss ? '#c0392b' : '#d8d0b8') + ';border-radius:3px;padding:0 3px;min-width:18px;background:' + (over ? '#fbe3df' : '#fffdf6') + '">' +
         '<span style="font-size:10px;color:#8a8270">' + (over ? '–' : esc(mel[i])) + '</span><span style="font-size:12px;color:' + (miss ? '#c0392b' : '#1a1a0a') + '">' + (miss ? '·' : esc(t || '~')) + '</span></span>';
     }
     box.innerHTML = p.length ? h : '';
+    // Note antippen: ohne Silbe setzen (~) bzw. wieder entfernen; der Text wird entsprechend umgeschrieben
+    box.querySelectorAll('.vs-chip').forEach(c => c.onclick = () => {
+      const i = +c.dataset.i, q = gregVerseParse(drafts[k]);
+      if (i < q.length && q[i].skip) q.splice(i, 1);
+      else if (i < q.length && !q[i].t) return;
+      else q.splice(i, 0, { t: '', cont: false, skip: true });
+      drafts[k] = gregSylsToText(q);
+      const ta = list.querySelector('.vs-txt[data-k="' + k + '"]'); if (ta) ta.value = drafts[k];
+      prev(k);
+    });
     if (!drafts[k].trim()) { st.textContent = ''; return; }
     if (p.length === mel.length) { st.style.color = '#3d6b35'; st.textContent = '✓ ' + p.length + ' Silben passen'; }
     else if (p.length > mel.length) { st.style.color = '#c0392b'; st.textContent = '⚠ ' + p.length + ' Silben für ' + mel.length + ' Noten – Überzählige kommen auf die letzte Note'; }
