@@ -169,7 +169,7 @@ function ntViewScalePop(btn) {
 document.addEventListener('DOMContentLoaded', ntViewScaleUpdateButtons);
 
 // Einstellungen (Tempo, Instrument) als kleines Aufklappfeld
-// Handy: «⋯» neben ▶/■ – ab Stelle, Abschnitt, Tempo/Klang, wach halten, Grösse
+// Handy: «⋯» neben ▶/■ – ab Stelle, Abschnitt, Tempo/Klang (Anzeigegrösse und Wach halten: bei den Anzeige-Knöpfen)
 function ntPlayMore(btn) {
   const old = document.getElementById('nt-pm-pop');
   if (old) { old.remove(); return; }
@@ -192,8 +192,6 @@ function ntPlayMore(btn) {
   }
   item('&#9654;&#8739; Ab Stelle abspielen …', () => ntPlayPick(src));
   item('&#9834; Tempo und Klang', () => ntPlaySettings(btn));
-  item('&#9728;&#xFE0E; Bildschirm wach halten: ' + (ntWakePref() ? 'an' : 'aus'), () => ntWakeToggle());
-  item('&#128269; Anzeigegrösse', () => ntViewScalePop(btn));
   document.body.appendChild(d);
   d.style.right = ''; d.style.left = Math.max(8, Math.min(rc.left, window.innerWidth - d.offsetWidth - 8)) + 'px';
   const close = e => { if (!d.contains(e.target) && e.target !== btn) { d.remove(); document.removeEventListener('pointerdown', close, true); } };

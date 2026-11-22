@@ -1,4 +1,4 @@
-# Notator – Stand Build 406 (22.11.2026)
+# Notator – Stand Build 407 (22.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -18,6 +18,7 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - **Strophen: Note ohne Silbe (404):** «~» im Strophentext gilt auch mitten im Wort («memori~ále»: Silbe davor mit «-», Note bleibt leer); in der Vorschau eine Note antippen setzt/entfernt «~».
 - **Strophen-Nummern (405):** Beim erneuten Bearbeiten (Text untereinander) bleiben die Nummern «2.», «3.» … erhalten, auch wenn die Vorlage selbst keine «1.» trägt.
 - **Strophen (406):** Schalter «Strophen nummerieren» im Assistenten (Wahl wird in der Vorlage gemerkt, bleibt auch beim Wechsel «Text untereinander» ↔ «eigene Noten» erhalten); Noten ohne Silbe (`~`) überleben den Layoutwechsel (`vsSkip`, bleibt Strophen-Platz); Nummer wird im Textfeld nicht mehr als «_» angezeigt.
+- **Handy-Kopfleiste (407):** Anzeigegrösse (🔍 %) und ⚙ Einstellungen (Bildschirm wach halten …) stehen jetzt neben dem Vollbild-Knopf statt im «⋯»-Menü der Wiedergabe; «Seiten» auf dem Handy nur als Symbol (Platz).
 - **Mappe (402):** Übersicht und Hinzufügen in einem Fenster, Choral und Orgel getrennt mit eigenem PDF, Orgel standardmässig mit Begleitsatz.
 - **Begleitsatz (300, 401):** freie Akkordwahl, b/h-Vorschlag, Vorgaben überstehen Transposition; Schlussformel nach NOH, Vorhalte/Septakkorde, Griffweite ohne Pedal, eigene Tests.
 - **Sicherheit und Aufbau (399–400):** gemeinsamer Drive-Kern, Content-Security-Policy, Aufteilung in `src/`.
