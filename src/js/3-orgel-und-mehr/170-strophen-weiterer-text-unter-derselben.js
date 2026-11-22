@@ -2,7 +2,7 @@
 // Jede Note mit Silbe (Strophe 1) ist ein «Platz»; e.verses[k] = Silbe der
 // Strophe k+2 auf diesem Platz («-» am Ende = Wort geht weiter).
 function gregVerseSlots(entries) {
-  return (entries || []).filter(e => e && e.type === 'note' && e.syllable && String(e.syllable).trim() && !/^[*†+]$/.test(String(e.syllable).trim()));
+  return (entries || []).filter(e => e && e.type === 'note' && ((e.syllable && String(e.syllable).trim() && !/^[*†+]$/.test(String(e.syllable).trim())) || e.vsSkip)); // vsSkip: Note ohne Silbe in einer Strophen-Kopie (bleibt Platz)
 }
 function gregVerseCount(entries) {
   const sl = gregVerseSlots(entries);
@@ -44,7 +44,7 @@ function gregVerseText(entries, k) {
   const words = []; let cur = null;
   sl.forEach(e => {
     let v = (e.verses && e.verses[k]) || '';
-    const cont = /-$/.test(v); v = v.replace(/-$/, '').trim();
+    const cont = /-$/.test(v); v = v.replace(/-$/, '').replace(NT_VS_NUM, '').trim();
     if (!v) { if (cur) { cur.push('~'); return; } words.push(['~']); return; }
     v = v.replace(/\s+/g, '_');
     if (!cur) cur = [];
@@ -152,10 +152,18 @@ function gregVerseTplInfo(t) {
   const ents = gregEntries.slice(t.a, t.b + 1).filter(e => !e.vsCopy);
   const first = ents[0];
   const numKind = first && first.type !== 'note' && /^\s*\d+\.?\s*$/.test(first.text || '') ? 'dir'
-    : (gregVerseSlots(ents)[0] && NT_VS_NUM.test(gregVerseSlots(ents)[0].syllable) ? 'syl'
-      // Text untereinander: die Nummern stehen schon in den Strophen (e.verses) – beim erneuten Bearbeiten beibehalten
-      : (gregVerseSlots(ents)[0] && (gregVerseSlots(ents)[0].verses || []).some(v => NT_VS_NUM.test(v || '')) ? 'syl' : ''));
-  return { ents, numKind };
+    : (gregVerseSlots(ents)[0] && NT_VS_NUM.test(gregVerseSlots(ents)[0].syllable) ? 'syl' : '');
+  let own = false; // true: Nummern bestimmt der Schalter «Strophen nummerieren» (nicht die Vorlage selbst)
+  const s0 = gregVerseSlots(ents)[0];
+  let nk = numKind;
+  if (!nk && s0) {
+    own = true;
+    if (s0.vsNum === true) nk = 'syl';
+    else if (s0.vsNum === false) nk = '';
+    // sonst: Nummern stehen schon in den Strophen (Text untereinander: e.verses; eigene Noten: «2.»-Einträge) – beibehalten
+    else if ((s0.verses || []).some(v => NT_VS_NUM.test(v || '')) || gregEntries.some(e => e.vsCopy && e.type !== 'note' && /^\s*\d+\.\s*$/.test(e.text || ''))) nk = 'syl';
+  }
+  return { ents, numKind: nk, numOwn: own };
 }
 const gregVsStripNum = s => String(s || '').replace(NT_VS_NUM, '');
 // Index des Strophenbeginns «n.» (Silbe «n. Text» oder eigenes Zeichen «n.») ab Index from
@@ -226,11 +234,12 @@ function gregVerseOwnApply(drafts, numKind) {
   drafts.forEach((d, k) => {
     const n = k + 2, parsed = gregVerseParse(d);
     const off = gregEntries.reduce((m, e) => Math.max(m, typeof e.mappingIdx === 'number' ? e.mappingIdx : -1), -1) + 1;
-    const copy = base.filter(e => e.type !== 'comment').map(e => { const c = JSON.parse(JSON.stringify(e)); if (typeof c.mappingIdx === 'number') c.mappingIdx += off; delete c.verses; delete c.vsTpl; c.vsCopy = n; return c; });
+    const copy = base.filter(e => e.type !== 'comment').map(e => { const c = JSON.parse(JSON.stringify(e)); if (typeof c.mappingIdx === 'number') c.mappingIdx += off; delete c.verses; delete c.vsTpl; delete c.vsSkip; c.vsCopy = n; return c; });
     const slots = gregVerseSlots(copy);
     slots.forEach((e, i) => {
       const v = (i === slots.length - 1 && parsed.length > slots.length) ? { t: parsed.slice(i).map(x => x.t).join(' '), cont: false } : parsed[i];
       e.syllable = (i === 0 && numKind === 'syl' ? n + '. ' : '') + (v ? v.t : '');
+      if (v && v.skip && !v.t && !(i === 0 && numKind === 'syl')) e.vsSkip = true; else delete e.vsSkip;
       const cont = !!(v && v.cont && (v.t || v.skip));
       e.hyphen = cont && !!v.t; e.wordEnd = !cont; e.italic = false;
       for (let j = copy.indexOf(e) + 1; j < copy.length && copy[j].type === 'note' && !String(copy[j].syllable || '').trim(); j++) copy[j].wordEnd = false;
@@ -309,12 +318,14 @@ function gregVersesShow() {
     '<button class="b" id="vs-tpl" style="font-size:11px;padding:2px 7px" title="Im Notenbild erste und letzte Note der Vorlage-Strophe antippen">▭ Vorlage wählen …</button></div>' +
     '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;margin-bottom:6px;padding:4px 6px;background:#f3eedd;border-radius:4px">' +
     '<label><input type="radio" name="vs-mode" value="stack"' + (mode === 'stack' ? ' checked' : '') + '> Text untereinander (gleiche Noten)</label>' +
-    '<label><input type="radio" name="vs-mode" value="own"' + (mode === 'own' ? ' checked' : '') + '> eigene Noten je Strophe</label></div>' +
+    '<label><input type="radio" name="vs-mode" value="own"' + (mode === 'own' ? ' checked' : '') + '> eigene Noten je Strophe</label>' +
+    '<label style="flex-basis:100%"><input type="checkbox" id="vs-num"> Strophen nummerieren (2., 3., …)</label></div>' +
     '<div id="vs-intro" style="font-size:12px;line-height:1.45;margin-bottom:6px"></div>' +
     '<div style="font-size:11px;color:var(--ink2);margin-bottom:8px;line-height:1.4"><b>-</b> legt die Silbentrennung fest (Glo-ri-a) · <b>_</b> legt zwei Silben auf eine Note (tu_in) · <b>~</b> lässt eine Note ohne Silbe (auch im Wort: memori~ále) · Note unten antippen setzt/entfernt ~</div>' +
     '<div id="vs-list"></div>' +
     '<button class="b" id="vs-add" style="font-size:12px;margin-top:6px">+ Strophe hinzufügen</button>';
   document.getElementById('vs-tpl').onclick = gregVerseTplPick;
+  { const cb = document.getElementById('vs-num'); cb.checked = !!ti.numKind; if (!ti.numOwn) { cb.disabled = true; cb.title = 'Die Vorlage trägt selbst eine Strophennummer'; } else cb.onchange = () => { ti.numKind = cb.checked ? 'syl' : ''; }; }
   const intro = () => {
     document.getElementById('vs-intro').innerHTML = mode === 'stack'
       ? 'Weitere Strophen stehen als Textzeilen unter den Noten der Vorlage. Ganzen Text der Strophe eingeben – Notator verteilt die Silben auf die <b>' + slots.length + ' Noten mit Silbe</b>' + (ti.numKind ? ' (Strophennummer wird ergänzt)' : '') + '.'
@@ -394,6 +405,7 @@ function gregVersesShow() {
     hadTail.forEach((v, e) => { delete e.vsTail; });
     gregPush();
     curVs.forEach(([c, t], e) => { e.vsCopy = c; if (t) e.vsTail = t; });
+    if (ti.numOwn) { const s0 = gregVerseSlots(ti.ents)[0]; if (s0) s0.vsNum = ti.numKind === 'syl'; } // Wahl «nummerieren» merken
     gregVersesApplyAll(mode, keep, ti, true);
     closeModal();
     gregGst(keep.length ? (keep.length + 1) + ' Strophen ' + (mode === 'own' ? 'mit eigenen Noten' : 'unter der Melodie') + ' – bitte im Notenbild prüfen.' : 'Weitere Strophen entfernt.');

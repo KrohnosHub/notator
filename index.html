@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-RB8FpPA1TNbX10Rpp/pSse9Xx89ey3rXmxc3ItWllnU=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-DNNcAPk2ZDMVJtyg06siW4fNKgXAW1f6vxtIVOsAnEw='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-zRVzW62dDIXdNTQCjkywfwdU3swO1tegvXLH3SetdWQ=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-OLNfAVuxqG3JQ9TCm+B69b2CWBBD8cAttc23FwvkbZw='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -9002,7 +9002,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '405';
+const NOTATOR_BUILD_ID = '406';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -20386,7 +20386,7 @@ function ntPsalmToneShow() {
 // Jede Note mit Silbe (Strophe 1) ist ein «Platz»; e.verses[k] = Silbe der
 // Strophe k+2 auf diesem Platz («-» am Ende = Wort geht weiter).
 function gregVerseSlots(entries) {
-  return (entries || []).filter(e => e && e.type === 'note' && e.syllable && String(e.syllable).trim() && !/^[*†+]$/.test(String(e.syllable).trim()));
+  return (entries || []).filter(e => e && e.type === 'note' && ((e.syllable && String(e.syllable).trim() && !/^[*†+]$/.test(String(e.syllable).trim())) || e.vsSkip)); // vsSkip: Note ohne Silbe in einer Strophen-Kopie (bleibt Platz)
 }
 function gregVerseCount(entries) {
   const sl = gregVerseSlots(entries);
@@ -20428,7 +20428,7 @@ function gregVerseText(entries, k) {
   const words = []; let cur = null;
   sl.forEach(e => {
     let v = (e.verses && e.verses[k]) || '';
-    const cont = /-$/.test(v); v = v.replace(/-$/, '').trim();
+    const cont = /-$/.test(v); v = v.replace(/-$/, '').replace(NT_VS_NUM, '').trim();
     if (!v) { if (cur) { cur.push('~'); return; } words.push(['~']); return; }
     v = v.replace(/\s+/g, '_');
     if (!cur) cur = [];
@@ -20536,10 +20536,18 @@ function gregVerseTplInfo(t) {
   const ents = gregEntries.slice(t.a, t.b + 1).filter(e => !e.vsCopy);
   const first = ents[0];
   const numKind = first && first.type !== 'note' && /^\s*\d+\.?\s*$/.test(first.text || '') ? 'dir'
-    : (gregVerseSlots(ents)[0] && NT_VS_NUM.test(gregVerseSlots(ents)[0].syllable) ? 'syl'
-      // Text untereinander: die Nummern stehen schon in den Strophen (e.verses) – beim erneuten Bearbeiten beibehalten
-      : (gregVerseSlots(ents)[0] && (gregVerseSlots(ents)[0].verses || []).some(v => NT_VS_NUM.test(v || '')) ? 'syl' : ''));
-  return { ents, numKind };
+    : (gregVerseSlots(ents)[0] && NT_VS_NUM.test(gregVerseSlots(ents)[0].syllable) ? 'syl' : '');
+  let own = false; // true: Nummern bestimmt der Schalter «Strophen nummerieren» (nicht die Vorlage selbst)
+  const s0 = gregVerseSlots(ents)[0];
+  let nk = numKind;
+  if (!nk && s0) {
+    own = true;
+    if (s0.vsNum === true) nk = 'syl';
+    else if (s0.vsNum === false) nk = '';
+    // sonst: Nummern stehen schon in den Strophen (Text untereinander: e.verses; eigene Noten: «2.»-Einträge) – beibehalten
+    else if ((s0.verses || []).some(v => NT_VS_NUM.test(v || '')) || gregEntries.some(e => e.vsCopy && e.type !== 'note' && /^\s*\d+\.\s*$/.test(e.text || ''))) nk = 'syl';
+  }
+  return { ents, numKind: nk, numOwn: own };
 }
 const gregVsStripNum = s => String(s || '').replace(NT_VS_NUM, '');
 // Index des Strophenbeginns «n.» (Silbe «n. Text» oder eigenes Zeichen «n.») ab Index from
@@ -20610,11 +20618,12 @@ function gregVerseOwnApply(drafts, numKind) {
   drafts.forEach((d, k) => {
     const n = k + 2, parsed = gregVerseParse(d);
     const off = gregEntries.reduce((m, e) => Math.max(m, typeof e.mappingIdx === 'number' ? e.mappingIdx : -1), -1) + 1;
-    const copy = base.filter(e => e.type !== 'comment').map(e => { const c = JSON.parse(JSON.stringify(e)); if (typeof c.mappingIdx === 'number') c.mappingIdx += off; delete c.verses; delete c.vsTpl; c.vsCopy = n; return c; });
+    const copy = base.filter(e => e.type !== 'comment').map(e => { const c = JSON.parse(JSON.stringify(e)); if (typeof c.mappingIdx === 'number') c.mappingIdx += off; delete c.verses; delete c.vsTpl; delete c.vsSkip; c.vsCopy = n; return c; });
     const slots = gregVerseSlots(copy);
     slots.forEach((e, i) => {
       const v = (i === slots.length - 1 && parsed.length > slots.length) ? { t: parsed.slice(i).map(x => x.t).join(' '), cont: false } : parsed[i];
       e.syllable = (i === 0 && numKind === 'syl' ? n + '. ' : '') + (v ? v.t : '');
+      if (v && v.skip && !v.t && !(i === 0 && numKind === 'syl')) e.vsSkip = true; else delete e.vsSkip;
       const cont = !!(v && v.cont && (v.t || v.skip));
       e.hyphen = cont && !!v.t; e.wordEnd = !cont; e.italic = false;
       for (let j = copy.indexOf(e) + 1; j < copy.length && copy[j].type === 'note' && !String(copy[j].syllable || '').trim(); j++) copy[j].wordEnd = false;
@@ -20693,12 +20702,14 @@ function gregVersesShow() {
     '<button class="b" id="vs-tpl" style="font-size:11px;padding:2px 7px" title="Im Notenbild erste und letzte Note der Vorlage-Strophe antippen">▭ Vorlage wählen …</button></div>' +
     '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;margin-bottom:6px;padding:4px 6px;background:#f3eedd;border-radius:4px">' +
     '<label><input type="radio" name="vs-mode" value="stack"' + (mode === 'stack' ? ' checked' : '') + '> Text untereinander (gleiche Noten)</label>' +
-    '<label><input type="radio" name="vs-mode" value="own"' + (mode === 'own' ? ' checked' : '') + '> eigene Noten je Strophe</label></div>' +
+    '<label><input type="radio" name="vs-mode" value="own"' + (mode === 'own' ? ' checked' : '') + '> eigene Noten je Strophe</label>' +
+    '<label style="flex-basis:100%"><input type="checkbox" id="vs-num"> Strophen nummerieren (2., 3., …)</label></div>' +
     '<div id="vs-intro" style="font-size:12px;line-height:1.45;margin-bottom:6px"></div>' +
     '<div style="font-size:11px;color:var(--ink2);margin-bottom:8px;line-height:1.4"><b>-</b> legt die Silbentrennung fest (Glo-ri-a) · <b>_</b> legt zwei Silben auf eine Note (tu_in) · <b>~</b> lässt eine Note ohne Silbe (auch im Wort: memori~ále) · Note unten antippen setzt/entfernt ~</div>' +
     '<div id="vs-list"></div>' +
     '<button class="b" id="vs-add" style="font-size:12px;margin-top:6px">+ Strophe hinzufügen</button>';
   document.getElementById('vs-tpl').onclick = gregVerseTplPick;
+  { const cb = document.getElementById('vs-num'); cb.checked = !!ti.numKind; if (!ti.numOwn) { cb.disabled = true; cb.title = 'Die Vorlage trägt selbst eine Strophennummer'; } else cb.onchange = () => { ti.numKind = cb.checked ? 'syl' : ''; }; }
   const intro = () => {
     document.getElementById('vs-intro').innerHTML = mode === 'stack'
       ? 'Weitere Strophen stehen als Textzeilen unter den Noten der Vorlage. Ganzen Text der Strophe eingeben – Notator verteilt die Silben auf die <b>' + slots.length + ' Noten mit Silbe</b>' + (ti.numKind ? ' (Strophennummer wird ergänzt)' : '') + '.'
@@ -20778,6 +20789,7 @@ function gregVersesShow() {
     hadTail.forEach((v, e) => { delete e.vsTail; });
     gregPush();
     curVs.forEach(([c, t], e) => { e.vsCopy = c; if (t) e.vsTail = t; });
+    if (ti.numOwn) { const s0 = gregVerseSlots(ti.ents)[0]; if (s0) s0.vsNum = ti.numKind === 'syl'; } // Wahl «nummerieren» merken
     gregVersesApplyAll(mode, keep, ti, true);
     closeModal();
     gregGst(keep.length ? (keep.length + 1) + ' Strophen ' + (mode === 'own' ? 'mit eigenen Noten' : 'unter der Melodie') + ' – bitte im Notenbild prüfen.' : 'Weitere Strophen entfernt.');
