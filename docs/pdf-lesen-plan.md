@@ -786,6 +786,26 @@ aus `geom.py`, `ocr.py` und `text_ki.py`. Vergleich auf den 5 Scans mit `geometr
 Wichtig war die bikubische Drehung mit a = −1 wie in PIL: mit a = −0.5 kippten einzelne Notenköpfe
 (Notenzahl 41 statt 47 %, Trennstriche 71 statt 76 %).
 
+### 7.13 In Notator, hinter Schalter (Build 409, 23.11.2026)
+
+`src/js/2-choral/174-pdf-lesen-neu.js`: Seite mit pdf.js bei 300 dpi rendern, Geometrie (172), Textstreifen-Bild
+im Browser (Canvas), ein Aufruf je Seite, Stückgrenzen an den Initialen, GregoBase-Angebot und Import wie bisher.
+Messlauf über die echte Oberfläche mit den gespeicherten KI-Antworten von v5 (`runs/js-app-mock`, kostenlos):
+
+| | Prototyp (pdftoppm, `js-geo-v1`) | App (pdf.js, `js-app-mock-sollteilung`) |
+| --- | --- | --- |
+| Tonhöhen je Stück | 96 % | 96 % |
+| Silben / Wortgrenzen | 89 % / 90 % | 89 % / 91 % |
+| Notenzahl je System richtig | 47 % | 31 % |
+| Trennstriche | 76 % | 69 % |
+| Dauer pro Seite | – | ca. 6 s |
+
+- Zum Vergleich mit derselben Stückaufteilung wie im Soll ausgewertet (`-sollteilung`). Mit der eigenen Aufteilung
+  (`js-app-mock`) setzt die App beim Gaudeamus die Grenze an das «G» des Gloria Patri (Initiale im Druck); das Soll
+  führt dort eine behelfsmässige Grenze zwei Systeme später – daher dort schlechtere Werte. Bei den anderen 4 Fällen
+  stimmen Stückzahl und Systemzahl.
+- Notenzahl und Trennstriche: pdf.js glättet das eingebettete Scanbild anders als pdftoppm. Offener Punkt.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

@@ -1,0 +1,35 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/v5r1)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Surrexit Dominus vere",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "SUr(f)ré(fg)xit(f) Dó(f)mi(fe)nus(dc) ve(fgd)re,(fghih) (;) Al(i)le(ihg)lú(gh)ia,(f) (,) al(d)",
+    "le(fghihgf)lú(gh)ia.(f) (::) Sur(f)ré(fg)xit.(f) Et() (::) ap(f)pá(f)ru(g)it(ffe) Si(dc)mó(fgd)ni.(fghih) (:) (,)",
+    "Al(iihg)le(gh)lú(f)ia.() (::) Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fi(fe)li(dc)o,(c) (;) et(d) Spi(f)rí(ghi)",
+    "tu(ih)i(gh) San(g)cto.(f) (::) Sur(f)ré(fg)xit.(f) (::)"
+   ]
+  },
+  {
+   "incipit": "Ad coenam Agni providi",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "AD(h) cœ(j)nam(hg) A(ji)gni(jk) pró(j)vi(i)di,(h) (,) Et(h) sto(hg)lis(ef) al(g)bis(eg) cán(f)di(e)",
+    "di,(d) (;) Post(e) tránsi(edc)tum(g) ma(gh) (,) ris(j) Ru(j)bri,(ih) (,) Chri(jk)sto(j) ca(hg)ná(i)mus(hi) Prín(h)ci(h)pi.(g) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2242,
+  "output_tokens": 299,
+  "costUsd": 0.007474
+ },
+ "durationMs": 5997
+}

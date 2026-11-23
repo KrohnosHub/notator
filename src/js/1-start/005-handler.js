@@ -15,6 +15,7 @@ const NT_INLINE_HANDLERS = {
     "gregUpdateQuilismaUI()": function (event) { gregUpdateQuilismaUI() },
     "if(this.value){gregAddDiv(this.value);this.value='';}": function (event) { if(this.value){gregAddDiv(this.value);this.value='';} },
     "ntPlaySecSet(this.value)": function (event) { ntPlaySecSet(this.value) },
+    "pgNeuSetzen(this.checked)": function (event) { pgNeuSetzen(this.checked) },
   },
   click: {
     "clAddText()": function (event) { clAddText() },

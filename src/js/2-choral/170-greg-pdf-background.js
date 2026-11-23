@@ -1370,6 +1370,13 @@ async function gregLoadPDF(input) {
       return;
     }
 
+    // Neue Erkennung (Build 409, Schalter in der API-Key-Zeile): Geometrie + ein KI-Aufruf je Seite für den Text
+    if (typeof pgNeuAktiv === 'function' && pgNeuAktiv()) {
+      await pgPdfLesenNeu(_gregPdfDoc, apiKey);
+      if (gregIsMobileViewport() && window._gregMode !== 'edit') gregSetMode('edit');
+      return;
+    }
+
     // Detect how many pieces are on the page(s) first, then let user choose
     gregGst('Analysiere PDF (' + _gregPdfDoc.numPages + ' Seite(n))…');
 
