@@ -924,6 +924,25 @@ handschriftliche Akkorde; Soll vom Druck abgelesen, da die Notator-Datei eine an
 Ursachen und Abhilfe: siehe `docs/WISSEN.md` (Gegenprobe 2). Testset und Gegenprobe 1 mit gespeicherten KI-Antworten: unverändert.
 Kosten: Doppelseite = zwei KI-Aufrufe (je ca. 0.01 USD). `run-neu-playwright.js` speichert dafür je Aufruf eine Antwortdatei.
 
+### 7.22 Gegenprobe 3 (Build 417, 23.11.2026)
+
+Neue Fälle, Soll vor der Messung: `rorate-caeli` (feiner Notendruck, 10 Systeme, viele ♭, Scannerstreifen links),
+`adorate-deum` (Campion, c2, Gloria «7. Transp.»), `ad-te-levavi` (Campion, sehr grosse Zier-Initiale, handschriftliche Akkorde,
+gedrehter Randtext). Ungeeignet: Requiem (moderner Satz).
+
+| App (pdf.js), echter KI-Aufruf | Build 416 | Build 417 |
+| --- | --- | --- |
+| Gefundene Systeme | 22 von 24 | 24 von 24 |
+| Stückgrenzen (Anzahl Stücke) | 0 % | 100 % |
+| Notenzahl je System richtig | 38 % | **58 %** |
+| Tonhöhen je Stück | 36 % | **94 %** |
+| Silben / Trennstriche | 46 % / 36 % | 95 % / 67 % |
+| Schlüssel / Modus | 60 % / 40 % | 100 % / 100 % |
+| ♭ gefunden / richtig | 15 / 50 % | 54 / 64 % |
+| Virga gefunden / richtig | 50 / 50 % | 50 / 33 % |
+
+Offen: Virga-Fehlmeldungen (Campion-Druck), ♭ im feinen Druck (Rorate), Trennstriche 67 %.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

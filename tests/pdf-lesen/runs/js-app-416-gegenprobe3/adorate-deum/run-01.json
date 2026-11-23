@@ -1,0 +1,26 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "ADoráte Deum omnes ángeli eius",
+   "mode": "7",
+   "clef": "c2",
+   "hasDropCap": true,
+   "systems": [
+    "AD()o(c)rá(ff)te(gf) De(gf)um(fhghffe.) omnes(efgg) ánge(iijiif)li(fxfd) e(ef)ius:(c.)",
+    "audí(dffd)vit,(fefddc.) (,) et(dfe) laetá(fggh)ta(fd) est(ff) Si(fgfe)on:(f.) et(f) ex(g)sul(f)ta(fg)",
+    "vé(gffed)runt(ff) (,) fí(g)li(c)ae(cdefe) Iu(fffdffd)dae.(d.c) (::) Dó(cfe)mi(fg)nus(g) reg(g)ná(g)vit,(g)",
+    "exsúltet(ggih) terra:(hgg.h.) lae(ge)téntur(fgg) ín(ghi)su(g)lae(f) mul(fff)tae.(d.c.) (::)",
+    "prin(g)cí(g)pi(g)o,(g.) (,) et(g) nunc,(gi) et(h) sem(hg)per,(g.h.) (:) et(ge) in(fg) saé(g)cu(g)la(g) sae(g)cu(ghi)ló(g)rum.(ffff) A()men.(dc.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2648,
+  "output_tokens": 253,
+  "costUsd": 0.007826
+ },
+ "durationMs": 8104
+}

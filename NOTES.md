@@ -1,4 +1,4 @@
-# Notator – Stand Build 416 (23.11.2026)
+# Notator – Stand Build 417 (23.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–416 (Auszug)
+## Neu in Build 298–417 (Auszug)
 
+- **PDF lesen, Gegenprobe 3 (417):** Rorate caeli, Adorate Deum, Ad te levavi. Feiner Druck: Schlüssel etwas hinter dem Linienanfang wird gefunden; senkrechte Scannerstreifen gelten nicht mehr als Initiale; kleinere Gloria-Systeme (69 %) zählen, wenn ein Schlüssel erkannt wird. Gegenprobe 3: Notenzahl 38 → 58 %, Tonhöhen/Stück 36 → 94 %, Stückgrenzen 0 → 100 %.
 - **PDF lesen, Doppelseiten (416):** zweite Gegenprobe (Media vita, Signum magnum, Vox clara) fand drei Lücken der Systemsuche: Doppelseiten (zwei Spalten) werden jetzt geteilt und jede Spalte für sich gelesen, kleinere Systeme auf derselben Seite (Gloria Patri) und kurze Systeme werden gefunden. Gegenprobe 2: Notenzahl 11 → 68 %, Tonhöhen/Stück 43 → 98 %; altes Testset unverändert.
 - **PDF lesen, Gegenprobe (415):** zwei neue Testseiten (Parce Domine, Tu es Petrus) ohne Einstellen gemessen; die Paar-Regel aus 412 hielt dort Iktus-Striche für Noten (43 Zusatznoten). Jetzt muss der Notenrest ungefähr quadratisch sein: Gegenprobe Notenzahl 30 → 60 %, Testset 63 %.
 - **PDF lesen, ♭ und tiefe Noten (414):** ♭ wird geometrisch erkannt (Testset in der App: 89 % gefunden, 80 % richtig); tiefe Noten direkt nach dem Schlüssel werden nicht mehr als Schlüssel verworfen. Notenzahl je System richtig: 66 %.

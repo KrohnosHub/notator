@@ -1,0 +1,39 @@
+{
+ "id": "rorate-caeli",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Gesangbuch mit lateinischen Gesängen, Nr. 226, S. 174 (Seite 1 von 2), Scan aus dem Drive des Nutzers",
+  "reference": "Rorate caeli (SR 430).notator",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "b-vorzeichen",
+  "schlanke-noten",
+  "kehrvers-als-text",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 3 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Feiner, schlanker Notendruck, 10 Systeme, viele ♭. Soll aus der Notator-Datei, auf die gedruckten Systeme verteilt; Text nach dem Druck (æ, Sanc-ti, fac-ta, Pec-cá-vi-mus – die Datei hat dort eine überzählige Silbe «va»). «Repetitur Roráte», «℟. Roráte» und Strophennummern weggelassen. Nicht Note für Note geprüft.",
+ "pieces": [
+  {
+   "incipit": "Rorate caeli",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "RO(f)rá(gh)te,(h.) cæ(k')li,(j) (ix)dé(ji)su(h)per,(h.g.) (;) et(h) (ix)nu(i')bes(h) plu(gf)ant(e) ju(fe)stum.(d.) (::)",
+    "Ne(f) i(g)ra(h)cá(hg)ris,(h) (ix)Dó(hi)mi(h)ne,(h.) (,) ne(h) ul(h)tra(h) me(h)mí(h)ne(h)ris(h)",
+    "i(g)(ix)ni(i)qui(h)tá(hg)tis:(f) (:) ec(h)(ix)ce(i) cí(j)vi(j)tas(j) Sanc(j)ti(j.) fac(j)ta(j)",
+    "est(j) de(j)sér(j)ta:(j.) (,) Si(j)on(j) de(j)sér(jk)ta(j) (ix)fac(ji)ta(h) est:(h.) (;)",
+    "Je(f)rú(gh)sa(h)lem(h.) (ix)de(gi)so(h)lá(hg)ta(f) est:(f.) (:) do(h)mus(h) sanc(h)ti(h)",
+    "fi(h)ca(h)ti(h)ó(h)nis(h) tu(h)æ(h.) et(h) gló(h)ri(g)æ(j) (ix)tu(ji)æ,(h.) (;)",
+    "u(f)bi(gh) lau(h)da(h)(ix)vé(hi)runt(h) te(h.) pa(gf)tres(e) no(fe)stri.(d.) (::)",
+    "Pec(f)cá(gh)vi(h)mus,(h.) et(h) fac(h)ti(h) su(h)mus(h) tam(h)quam(g) im(h)(ix)mún(hi)dus(h) nos,(h.) (,)",
+    "et(h) ce(g)cí(f)di(e)mus(d.) (;) qua(h)si(h) fó(h)li(h)um(g) (ix)u(i)ni(h)vér(hg)si:(f.) (:) et(h) (ix)i(i)ni(j)",
+    "qui(j)tá(j)tes(j) no(j)stræ(j.) qua(j)si(j) ven(j)tus(j) abs(k)tu(j)(iy)lé(ji)runt(h) nos:(h.) (;)"
+   ]
+  }
+ ]
+}

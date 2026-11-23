@@ -133,6 +133,13 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   zusätzlich links/rechts nach Linien suchen. Typischer Abstand nur aus gleichmässigen Vierergruppen: pdf.js liefert Textzeilen
   (englische Übersetzung) als Linienkandidaten, die den Median verdarben – mit pdftoppm trat das nicht auf, also immer **in der App** messen.
   Ein Druck mit gleichem Titel kann eine andere Melodie haben (Vox clara: dominikanisch c4 im Scan, monastisch c3 in der Datei) – Soll dann vom Druck ablesen.
+- **Gegenprobe 3 (Build 417, 23.11.2026):** Feste Grössengrenzen brechen beim nächsten Druck (Gloria-Systeme mit 69 % fielen
+  unter die 70 % aus Build 416). Besser ein Merkmal: abweichend grosse oder nur am Rand gefundene Systeme gelten nur mit erkanntem
+  Schlüssel – und sie dürfen die typische Notenkopfgrösse der Seite nicht mitbestimmen (sonst wurde bei Tu es Petrus ein Fleck zur Note).
+  In feinem Druck beginnen die Linien bis 0.6 Linienabstände vor dem Schlüssel (Suchfenster jetzt 0.9). Senkrechte Scannerstreifen
+  am Rand sind keine Initiale (Mindestbreite 0.6 Linienabstände). Vergleich mit Build 416: alle älteren Fälle unverändert.
+  Der Prototyp-Vergleich (`tests/pdf-geometrie.test.js`) lässt seither 1 Note/Textgruppe Unterschied je System als Hinweis zu
+  (Rundungs-Grenzfall bei ad-te-levavi).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

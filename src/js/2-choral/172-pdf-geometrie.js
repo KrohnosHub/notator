@@ -134,13 +134,14 @@ function pgGroup(lines) {
     if (ms.length) { ms.sort((a, b) => a - b); g = ms[Math.floor(ms.length / 2)]; }
   }
   // Ab Build 416 (nicht im Prototyp): jedes System nach seinem eigenen Linienabstand prüfen – kleinere Systeme auf derselben
-  // Seite (Gloria Patri unter einem Introitus: 74 %) wichen sonst um mehr als 25 % vom Seitenwert ab und fielen weg.
-  // Untergrenze 70 %: eine handgeschriebene Zeile (Tu es Petrus, 62 %) bleibt draussen.
+  // Seite (Gloria Patri unter einem Introitus: 69–74 %) wichen sonst um mehr als 25 % vom Seitenwert ab und fielen weg.
+  // Abweichende Systeme gelten nur mit erkanntem Schlüssel (pgAnalysePage) – so bleibt die handgeschriebene Zeile bei
+  // Tu es Petrus (62 %, kein Schlüssel) draussen (Build 417; Build 416 hatte eine feste Grenze von 70 %).
   const own = !globalThis._pgNurPrototyp;
   let i = 0;
   while (i + 3 < lines.length) {
     const q = lines.slice(i, i + 4), m = (q[3] - q[0]) / 3;
-    const ok = own ? m > 0.7 * g && m < 1.6 * g && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)
+    const ok = own ? m > 0.6 * g && m < 1.6 * g && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)
       : [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - g) < 0.25 * g);
     if (ok) { out.push(q); i += 4; } else i++;
   }
@@ -192,7 +193,7 @@ function pgStaves(img) {
     for (const [lo, hi] of [[0.05, 0.30], [0.70, 0.95]]) {
       for (const q of pgGroup(pgLineCands(dark, lo, hi)).out) {
         const m = (q[3] - q[0]) / 3;
-        if (m > 0.7 * g && m < 1.6 * g && !out.some(o => q[0] < o[3] + m && o[0] < q[3] + m)) out.push(q);
+        if (m > 0.6 * g && m < 1.6 * g && !out.some(o => q[0] < o[3] + m && o[0] < q[3] + m)) { q.side = true; out.push(q); }
       }
     }
     out.sort((a, b) => a[0] - b[0]);
@@ -214,7 +215,8 @@ function pgStaves(img) {
       last = x;
     }
     if (last !== null && last - st0 > best[1] - best[0]) best = [st0, last];
-    sts.push({lines: q, x0: best[0], x1: best[1]});
+    const m = (q[3] - q[0]) / 3;
+    sts.push({lines: q, x0: best[0], x1: best[1], odd: !globalThis._pgNurPrototyp && (!!q.side || m < 0.8 * g)});
   }
   return {img, sts, g, ang};
 }
@@ -568,7 +570,8 @@ function pgSplitBlob(b, gl, hs, stepOf) {
 // ── Schlüssel und Trennstriche ──────────────────────────────────────────
 function pgFindClef(st) {
   const c = st._ctx, gl = c.gl, q = st.lines, x0 = st.x0;
-  const bl = c.blobs.filter(b => b.x0 < x0 + 0.6 * gl && b.x1 > x0 - 0.2 * gl
+  // Build 417 (nicht im Prototyp): 0.9 statt 0.6 – in feinem Druck beginnen die Linien deutlich vor dem Schlüssel (Rorate)
+  const bl = c.blobs.filter(b => b.x0 < x0 + (globalThis._pgNurPrototyp ? 0.6 : 0.9) * gl && b.x1 > x0 - 0.2 * gl
     && b.y0 > q[0] - 1.4 * gl && b.y1 < q[3] + 1.4 * gl && b.area > 0.3 * c.wref * c.wref);
   if (!bl.length) return '';
   const ya = Math.min(...bl.map(b => b.y0)), yb = Math.max(...bl.map(b => b.y1));
@@ -665,7 +668,9 @@ function pgDropcapBox(dark, st, gl, others) {
   let best = null; const boxes = [];
   for (const runs of pgComponents(pgCrop(dark, ya, ybx, xa, xb))) {
     const b = pgBox(runs); boxes.push(b);
-    if (b[1] < yb - ya && b[3] - b[1] >= 2.5 * gl && !inOther(b) && (!best || b[3] - b[1] > best[3] - best[1])) best = b.slice();
+    // Build 417 (nicht im Prototyp): mindestens 0.6 Linienabstände breit – senkrechte Scannerstreifen am Rand sind keine Initiale
+    const narrow = !globalThis._pgNurPrototyp && b[2] - b[0] + 1 < 0.6 * gl;
+    if (b[1] < yb - ya && b[3] - b[1] >= 2.5 * gl && !narrow && !inOther(b) && (!best || b[3] - b[1] > best[3] - best[1])) best = b.slice();
   }
   if (!best) return null;
   // Verzierte Initialen bestehen aus mehreren Teilen: alle grösseren Teile dazunehmen, die den Kasten berühren
@@ -871,7 +876,8 @@ function pgAnalysePage(img) {
   // Ab Build 416 (nicht im Prototyp): Notenkopfgrössen relativ zum Linienabstand des Systems, damit kleinere Systeme
   // auf derselben Seite nicht als «zu klein» verworfen werden
   const rel = !globalThis._pgNurPrototyp, glOf = st => (st.lines[3] - st.lines[0]) / 3;
-  for (const st of sts) {
+  const normal = sts.filter(st => !st.odd);                 // abweichende Systeme verfälschen die Grösse nicht (Build 417)
+  for (const st of normal.length ? normal : sts) {
     const k = rel ? glOf(st) : 1;
     sizes = sizes.concat(pgAnalyseStaff(dark, st, g, null).sizes.map(([a, w]) => [a / (k * k), w / k]));
   }
@@ -885,9 +891,9 @@ function pgAnalysePage(img) {
   }
   const staves = sts.map((st, k) => {
     const {notes, gl} = pgAnalyseStaff(dark, st, g, refOf(st));
-    return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st),
+    return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st), odd: st.odd,
       dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
-  });
+  }).filter(s => !s.odd || s.clef);      // abweichend grosses oder nur am Rand gefundenes System: nur mit Schlüssel (Build 417)
   return {img: sv.img, staves, gap: g, angle: sv.ang, thr};
 }
 

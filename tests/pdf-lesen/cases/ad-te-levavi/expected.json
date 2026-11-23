@@ -1,0 +1,45 @@
+{
+ "id": "ad-te-levavi",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal (ccwatershed.org), Introitus 1. Adventssonntag (Seite 1 von 5), Scan aus dem Drive des Nutzers",
+  "reference": "Ad te levavi animam meam.notator (GregoBase); Gloria Patri vom Druck abgelesen",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale-gross-verziert",
+  "englische-interlinear-uebersetzung",
+  "handschriftliche-akkorde",
+  "randtext-gedreht",
+  "zwei-stuecke",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 3 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Sehr grosse Zier-Initiale A (vier Systeme hoch, links neben den ersten zwei Systemen), handschriftliche Akkordbuchstaben über fast allen Systemen, englischer Text gedreht am rechten Rand. Introitus aus der Notator-Datei («*», «Ps.» weggelassen). Gloria Patri (Modus VIII) von Claude vom Druck abgelesen – unsicherer.",
+ "pieces": [
+  {
+   "incipit": "Ad te levavi",
+   "mode": "8",
+   "clef": "c4",
+   "systems": [
+    "AD(gd~) te(f) le(gh)vá(h)vi(g.) (,) á(gj/j)ni(h)mam(gh) me(fg)am :(ghg/gf.) (;)",
+    "De(h)us(jj) me(jj/kj)us(j.k.) (,) in(fg~) te(g) con(f)fí(fh/ji)do,(i_[oh:h]h_[oh:h]) (,)",
+    "non(jjj) e(hg)ru(ghfg)bé(ghg___)scam :(g.) (:) ne(j)que(jv./jjj/h_[oh:h]i_[oh:h]h_[oh:h]) ir(h)rí(jkj)de(ih)ant(jjj) me(g.) (,)",
+    "in(g)i(g)mí(g.h!iwj)ci(j_h) me(h_f)i :(f.) (:) ét(fh)e(hg)nim(g.) u(g)ni(g)vér(g!ihi)si(g.) (,) qui(g) te(g) ex(hji)spé(i/jkj)",
+    "ctant,(hih.) (;) non(gh~) con(h)fun(hfhg)dén(ghg___)tur.(g.) (::) Vi(g)as(hg) tu(gj)as,(j) Dó(j)mi(j)ne,(j) de(ji)",
+    "món(jk)stra(k) mi(jk)hi :(j.) (:) et(jh~) sé(hj)mi(j)tas(j) tu(j)as(j/ji) é(gh)do(ji)ce(h) me.(g.) (::)"
+   ]
+  },
+  {
+   "incipit": "Gloria Patri",
+   "mode": "8",
+   "clef": "c4",
+   "systems": [
+    "GLó(g)ri(hg)a(gj) Pa(j)tri,(j) et(j) Fí(j)li(j)o,(j.) (,) et(j) Spi(j)rí(ji)tu(jk)i(k) San(jk)cto.(j.) (:) Si(jh)cut(hj) e(j)rat(j) in(j)",
+    "prin(j)cí(j)pi(j)o,(j.) (,) et(ji) nunc,(jk) et(k) sem(jk)per,(j.) (:) et(jh) in(hj) saé(j)cu(j)la(j) sae(j)cu(j/ji)ló(gh)rum.(ji) A(h)men.(ghd___/f/fg.) (::)"
+   ]
+  }
+ ]
+}

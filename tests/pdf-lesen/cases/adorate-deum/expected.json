@@ -1,0 +1,42 @@
+{
+ "id": "adorate-deum",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal (ccwatershed.org), Introitus 3. Sonntag nach Epiphanie (Seite 1 von 7), Scan aus dem Drive des Nutzers",
+  "reference": "Adorate Deum.notator (GregoBase); Gloria Patri vom Druck abgeleitet",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c2",
+  "initiale",
+  "englische-interlinear-uebersetzung",
+  "zwei-stuecke",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 3 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Gleiche Quelle wie signum-magnum (Campion), aber Schlüssel c2 und Gloria «7. Transp.». Introitus aus der Notator-Datei (Text nach dem Druck: ánge-li, e-ius, Iu-dae; «*» und «Ps.» weggelassen). Gloria Patri fehlt in der Datei: aus dem Gloria von signum-magnum um eine Terz tiefer übertragen und mit dem Druck verglichen – nicht Note für Note geprüft.",
+ "pieces": [
+  {
+   "incipit": "Adorate Deum",
+   "mode": "7",
+   "clef": "c2",
+   "systems": [
+    "AD(c)o(ff)rá(g)te(f) De(g_[oh:h]f)um(fhg/hf/fe.) (,) o(ef'g~)mnes(g) án(ii)ge(ji/if)li(f_d) e(ef~)ius :(c.) (:)",
+    "au(d)dí(f/fd)vit,(fe/fd/dc.) (,) et(dfe) lae(fg)tá(gh)ta(f_d) est(ff) Si(fgF'E)on :(f.) (:) et(f) ex(g)sul(f)ta(fg)",
+    "vé(gf/fvED)runt(ff) (,) fí(g)li(c)ae(c.d!ewf_e) Iu(ff/fd/f/fd)dae.(d.c.) (::) Dó(cfe)mi(fg)nus(g) re(g)gná(g)vit,(g)",
+    "ex(g)súl(gi)tet(h) ter(hg~)ra :(g.h.) (:) lae(ge)tén(fg)tur(g) ín(g!hwi)su(g')lae(f) mul(fff)tae.(d.c.) (::)"
+   ]
+  },
+  {
+   "incipit": "Gloria Patri",
+   "mode": "7",
+   "clef": "c2",
+   "systems": [
+    "GLó(cfe)ri(fg)a(g) Pa(g)tri,(g) et(g) Fí(g)li(g)o,(g.) (,) et(g) Spi(g)rí(gi)tu(h)i(h) San(hg)cto.(g.h.) (:) Si(ge)cut(fg) e(g)rat(g) in(g)",
+    "prin(g)cí(g)pi(g)o,(g.) (,) et(g) nunc,(gi) et(h) sem(hg)per,(g.h.) (:) et(ge) in(fg) saé(g)cu(g)la(g) sae(g)cu(g!hwi)ló(g')rum.(f) A(fff)men.(d.c.) (::)"
+   ]
+  }
+ ]
+}
