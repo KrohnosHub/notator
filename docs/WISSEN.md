@@ -103,6 +103,14 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   `--pdfjs DIR`, wenn cdnjs gesperrt ist – in der Cloud-Umgebung der Fall).
 - **Modus (Build 411):** nur die Angabe direkt über der Initiale (`pgModeBox`): als Zeile «M<n>» ins KI-Bild, Antwortfeld
   `modes`. Testset: 4 von 7 Stücken richtig; bei Gaudeamus und Salve Regina steht dort keine Angabe.
+- **Notenzahl (Build 412, 23.11.2026):** Hauptursache fehlender Noten war die zweite Note senkrechter Paare (Clivis/Pes):
+  Das Öffnen des Bildes trennt sie nur als schmalen Rest ab, der als «zu klein» verworfen wurde. Jetzt gilt ein solcher Rest
+  direkt über/unter einem Notenkopf als Note, gelesen **nach** seinem Nachbarn. Pauschal kleinere Mindestgrössen schaden
+  (mehr Zusatznoten und falsche Tonhöhen). Der Rückstand der App (pdf.js) gegenüber pdftoppm kam von demselben Effekt.
+  Diagnose: `globalThis._pgDiag = []` sammelt verworfene Flecken mit Grund. `globalThis._pgNurPrototyp = true` schaltet
+  die Ergänzungen ab (Vergleich mit dem Python-Prototyp im Test).
+- **Soll-Fassungen und Zeichen:** GregoBase-Soll lässt teils Mora-Punkte weg (Salve mater: keine), Bewertung zählt dort
+  richtige Funde als falsch. `[ll:1]`, `[oh:h]` u. ä. in GABC sind keine Noten.
 - **Neumenformen fehlen noch** (Quilisma, Liqueszenz, Oriscus, Episem, Mora …): wichtigstes offenes Thema, hohe Priorität
   (Matthias, 23.11.2026; siehe `NOTES.md`, Offen).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

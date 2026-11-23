@@ -818,6 +818,25 @@ kommen als Zeilen «M<n>» ins KI-Bild, die KI gibt den Modus im Feld `modes` al
 Oberfläche (`runs/js-app-411`, 0.048 USD): Ave Maria 1, Salve mater 5, Surrexit 6, Hymnus 8 richtig; Gaudeamus
 (Stück 1) und Salve Regina leer, weil dort über der Initiale nichts steht (Modus insgesamt 4 von 7).
 
+### 7.16 Notenzahl und Mora-Punkte (Build 412, 23.11.2026)
+
+Diagnose: erkannte Notenfolge je System gegen das Soll ausgerichtet, jede fehlende Note dem Filter zugeordnet, der in
+ihrem Bereich zugeschlagen hat. Vorher (pdftoppm): 15 von 32 Systemen richtig, 20 Noten fehlen, 9 zu viel.
+- Häufigster Grund (11 von 20): **zweite Note senkrechter Paare** als «zu klein» verworfen. Neue Regel (Rest direkt
+  über/unter einem Notenkopf, ≥ 1 Stufe versetzt, nach dem Nachbarn gelesen): 18 von 32 Systemen, 8 fehlen.
+- Weitere fehlende: tiefe Noten unter dem System im Textbereich, verschmolzene Köpfe. Zusätzliche: Druckflecken,
+  Custos, Teile verzierter Neumen, beim Salve mater Noten des Drucks, die im (GregoBase-)Soll fehlen.
+- **Mora-Punkte:** kleiner kompakter Punkt rechts neben dem Notenkopf (Linien ausgeblendet). `evaluate.js` zeigt jetzt
+  Mora-Punkte und ♭ (gefunden / davon richtig).
+- pdf.js vs. pdftoppm: mit der Paar-Regel gleich gut; 600 dpi mit Mittelung bringt nichts.
+
+| App (pdf.js), Soll-Stückaufteilung | Build 411 | Build 412 |
+| --- | --- | --- |
+| Notenzahl je System richtig | 31 % | **63 %** |
+| Neumen-Gruppierung exakt | 3 % | 16 % |
+| Mora-Punkte gefunden / davon richtig | 0 % / – | **77 % / 80 %** |
+| Tonhöhen je Stück, Silben | 96 %, 89 % | 96 %, 88 % |
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

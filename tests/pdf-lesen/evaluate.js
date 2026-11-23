@@ -37,7 +37,8 @@ function notesOf(pitchField) {
   s = s.replace(/[a-m][xy#]/g, '');
   const letters = (s.match(/[a-mA-M]/g) || []).map(c => c.toLowerCase());
   const moras = (s.match(/\./g) || []).length;
-  return { letters, accidentals, moras };
+  const moraRuns = (s.match(/\.+/g) || []).length;   // gedruckte Mora-Punkte ≈ Folgen von Punkten («g..» = 1)
+  return { letters, accidentals, moras, moraRuns };
 }
 
 function normText(t, stripAccents) {
@@ -57,6 +58,7 @@ function parseSystemLine(line) {
     clefs: [],          // im Text gefundene Schluessel
     accidentals: 0,
     moras: 0,
+    moraRuns: 0,
   };
   const re = /([^\s(]*)\(([^)]*)\)/g;
   let m, prevEnd = 0;
@@ -69,6 +71,7 @@ function parseSystemLine(line) {
     const n = notesOf(field);
     out.accidentals += n.accidentals;
     out.moras += n.moras;
+    out.moraRuns += n.moraRuns;
     if (!text && !n.letters.length) continue; // leere/unbekannte Klammer
     out.syllables.push(normText(text, false));
     out.syllablesPlain.push(normText(text, true).replace(/[^a-z0-9]/g, ''));
@@ -142,6 +145,8 @@ function compareSystem(expLine, actLine) {
     wordBreaks: similarity(e.wordStarts, a.wordStarts),
     bars: similarity(e.bars, a.bars),
     morasOk: e.moras === a.moras,
+    moraSoll: e.moraRuns, moraIst: a ? a.moraRuns : 0, moraHit: Math.min(e.moraRuns, a ? a.moraRuns : 0),
+    accSoll: e.accidentals, accIst: a ? a.accidentals : 0, accHit: Math.min(e.accidentals, a ? a.accidentals : 0),
     missing: !actLine,
   };
 }
@@ -217,6 +222,8 @@ function summarize(comparisons) {
     syllablesPlain: mean(sys.map(s => s.syllablesPlain)),
     wordBreaks: mean(sys.map(s => s.wordBreaks)),
     bars: mean(sys.map(s => s.bars)),
+    moraRecall: ratio(sys, 'moraHit', 'moraSoll'), moraPrecision: ratio(sys, 'moraHit', 'moraIst'),
+    accRecall: ratio(sys, 'accHit', 'accSoll'), accPrecision: ratio(sys, 'accHit', 'accIst'),
     systemsMissing: share(sys, s => s.missing),
     pieces: pcs.length,
     pieceCountOk: share(comparisons, c => c.pieceCountOk),
@@ -227,6 +234,9 @@ function summarize(comparisons) {
     modeOk: share(pcs, p => p.modeOk),
   };
 }
+
+// Anteil Summe(hit)/Summe(basis) über alle Systeme; null, wenn die Basis 0 ist
+function ratio(sys, hit, base) { const b = sys.reduce((t, x) => t + (x[base] || 0), 0); return b ? sys.reduce((t, x) => t + (x[hit] || 0), 0) / b : null; }
 
 // Streuung: paarweiser Vergleich der Laeufe untereinander (ohne Blick auf
 // das erwartete Ergebnis) je System.
@@ -330,6 +340,7 @@ function printSummary(title, s) {
   console.log('  Silben                          ' + pct(s.syllables) + '   ohne Akzente ' + pct(s.syllablesPlain));
   console.log('  Wortgrenzen                     ' + pct(s.wordBreaks));
   console.log('  Trennstriche                    ' + pct(s.bars));
+  console.log('  Mora-Punkte  gefunden ' + pct(s.moraRecall) + '  davon richtig ' + pct(s.moraPrecision) + '   ♭/♮  gefunden ' + pct(s.accRecall) + '  davon richtig ' + pct(s.accPrecision));
   console.log('  Schlüssel                       ' + pct(s.clefOk));
   console.log('  Stückgrenzen: Anzahl Stücke     ' + pct(s.pieceCountOk) + '   Systemzahl je Stück ' + pct(s.systemCountOk));
   console.log('  Incipit                         ' + pct(s.incipitOk) + '   Modus ' + pct(s.modeOk));

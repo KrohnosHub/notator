@@ -1,4 +1,4 @@
-# Notator – Stand Build 411 (23.11.2026)
+# Notator – Stand Build 412 (23.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–411 (Auszug)
+## Neu in Build 298–412 (Auszug)
 
+- **PDF lesen, Notenzahl und Mora (412):** abgetrennte zweite Note senkrechter Paare (Clivis/Pes) wird nicht mehr als «zu klein» verworfen; Mora-Punkte werden erkannt. Testset in der App: Notenzahl je System richtig 63 % (vorher 31 %), Mora-Punkte 77 % gefunden.
 - **PDF lesen, Modus (411):** die kleine Angabe über der Initiale («VIII», «5», «1.», «R. br. VI») wird im selben KI-Aufruf gelesen und als Annotation übernommen. Steht der Modus woanders (z. B. «Intr. I» neben dem System), bleibt er leer.
 - **PDF lesen (410):** neue Erkennung ist Standard, der alte Vision-Weg (GABC je System per KI, OMR-Korrektur) ist entfernt; Schalter entfällt. `170-greg-pdf-background.js` von 2426 auf 523 Zeilen.
 - **PDF lesen, neue Erkennung (409, Schalter «Neue Erkennung (Test)» in der API-Key-Zeile):** Seite mit 300 dpi, Tonhöhen/Schlüssel/Trennstriche/Initialen geometrisch, Text per KI (ein Aufruf je Seite, Sonnet 5.5), Stückgrenzen an den Initialen, GregoBase-Angebot wie bisher. Ca. 6 s und 0.01 USD pro Seite. Ohne Schalter läuft der bisherige Weg. Neumenformen fehlen noch.
@@ -112,9 +113,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
   liefert nur Tonhöhen, nach Silben gruppiert. Quilisma, Liqueszenz, Oriscus, Episem, Mora, Virga, Pes/Clivis-Formen
   usw. fehlen; die Notenzahl je System stimmt erst bei 47 %. Ohne diese Formen ist das Ergebnis oft unbefriedigend.
   Ansätze: Form der Tintenflecken auswerten (geometrisch) oder je System ein gezielter KI-Aufruf nur für die Formen.
-- «PDF lesen», neue Erkennung: In der App (pdf.js) stimmen Notenzahl je System (31 statt 47 %) und Trennstriche (69 statt 76 %)
-  seltener als im Prototyp (pdftoppm) – das Rendern glättet anders. Tonhöhen und Text sind gleich. Prüfen: eingebettetes Scanbild
-  direkt auslesen statt die Seite zu rendern. 
+- «PDF lesen», Notenzahl: nach Build 412 noch 7–8 fehlende und ~13 zusätzliche Noten auf 32 Systemen (Tiefe Noten nahe dem Text,
+  Druckflecken, Custos am Zeilenende, Teile verzierter Neumen; beim Salve mater weicht zudem das Soll vom Druck ab).
+  ♭ wird noch nicht erkannt (dünne Striche fallen beim Filtern weg).
 - Alleluja-Vorlagen (wie Gloria Patri): recherchiert, zurückgestellt.
 - Schriftart der Initiale (Drop-Cap) wählbar machen (Idee 08/2026, nicht priorisiert).
 - Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).

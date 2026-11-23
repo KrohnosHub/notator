@@ -66,6 +66,7 @@ for (const f of fx) {
   const cases = fs.existsSync(casesDir) ? fs.readdirSync(casesDir).filter(c => fs.existsSync(path.join(casesDir, c, 'scan.pdf'))) : [];
   const has = cmd => { try { cp.execSync(cmd, {stdio: 'ignore'}); return true; } catch (e) { return false; } };
   if (!cases.length || !has('pdftoppm -v') || !has('python3 -c "import numpy, PIL"')) { console.log('Echte Seiten: übersprungen (keine Scans oder Werkzeuge)'); return; }
+  globalThis._pgNurPrototyp = true;                // nur der übertragene Prototyp, ohne die Ergänzungen ab Build 412
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pg-'));
   for (const c of cases) {
     const base = path.join(tmp, c);
@@ -85,6 +86,7 @@ for (const f of fx) {
     });
   }
   fs.rmSync(tmp, {recursive: true, force: true});
+  globalThis._pgNurPrototyp = false;
 })();
 
 console.log(bad ? bad + ' Fehler, ' + ok + ' ok' : 'Alle ' + ok + ' Prüfungen bestanden.');

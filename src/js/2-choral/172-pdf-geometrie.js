@@ -285,15 +285,33 @@ function pgAnalyseStaff(dark, st, g, ref) {
   const [aref, wref] = ref;
   const stepOf = (x, y) => (q[3] + off(x) - y) / hs;
   let notes = [];
+  const accepted = [], small = [];
   for (const b of blobs) {
     const w = b.x1 - b.x0 + 1, cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
-    if (b.x0 < x0 + PG_CLEF * gl) continue;                       // Schlüssel am Zeilenanfang
-    if (b.y0 <= top + 1 || b.y1 >= bot - 2) continue;              // ragt aus dem Streifen: Text, Titel
-    if (cx > x1 - 0.5 * gl) continue;                              // Custos / Schlussstrich
-    if (cy > ylo - 0.1 * gl || cy < yhi + 0.1 * gl) continue;      // in einer Textzeile
-    if (w < PG_WMIN * wref || b.area < 0.45 * aref) continue;      // Punkte, Reste, Flecken
-    b.wref = wref;
+    const why = b.x0 < x0 + PG_CLEF * gl ? 'Schlüsselzone'             // Schlüssel am Zeilenanfang
+      : (b.y0 <= top + 1 || b.y1 >= bot - 2) ? 'Streifenrand'            // ragt aus dem Streifen: Text, Titel
+      : cx > x1 - 0.5 * gl ? 'Zeilenende'                                 // Custos / Schlussstrich
+      : (cy > ylo - 0.1 * gl || cy < yhi + 0.1 * gl) ? 'Textzeile'       // liegt in einer Textzeile
+      : (w < PG_WMIN * wref || b.area < 0.45 * aref) ? 'klein' : '';      // Punkte, Reste, Flecken
+    if (why === 'klein' && b.area >= 0.15 * aref && b.y1 - b.y0 + 1 >= 0.22 * gl) small.push(b);
+    if (why) { pgDiag(why, b, st); continue; }
+    b.wref = wref; accepted.push(b);
     notes = notes.concat(pgSplitBlob(b, gl, hs, stepOf));
+  }
+  // Senkrechtes Notenpaar (z. B. Clivis, Pes mit Verbindungsstrich): Das Öffnen trennt die zweite Note oft nur als
+  // schmalen Rest ab, der als «klein» verworfen würde. Ein solcher Rest zählt als Note, wenn er direkt über oder unter
+  // einem anerkannten Notenkopf liegt (waagrecht überlappend, Lücke ≤ 0.35 Linienabstand) und mindestens eine Stufe
+  // höher oder tiefer sitzt. (Build 412; nicht im Python-Prototyp)
+  for (const b of (globalThis._pgNurPrototyp ? [] : small)) {
+    const cy = (b.y0 + b.y1) / 2, cx = (b.x0 + b.x1) / 2;
+    if (cy > q[3] + 0.9 * gl || cy < q[0] - 1.6 * gl) continue;           // Textzeile/Titel, keine Note
+    const nb = accepted.find(a => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) >= 0.3 * (b.x1 - b.x0 + 1)
+      && Math.max(a.y0 - b.y1, b.y0 - a.y1) <= 0.35 * gl && Math.abs((a.y0 + a.y1) / 2 - cy) >= 0.7 * hs);
+    if (!nb) continue;
+    // Lesereihenfolge: der Rest gehört hinter seinen Nachbarn (Clivis: obere, dann untere Note; Pes: untere, dann obere)
+    const x = Math.max(cx, (nb.x0 + nb.x1) / 2 + 0.25 * gl);
+    notes.push({x, y: cy, p: stepOf(cx, cy), kind: 'pair', w: b.x1 - b.x0 + 1, xa: b.x0, xb: b.x1});
+    pgDiag('als Paar-Note übernommen', b, st);
   }
   notes.sort((a, b) => a.x - b.x);
   const merged = [];                                               // Bruchstücke derselben Note zusammenfassen
@@ -320,8 +338,45 @@ function pgAnalyseStaff(dark, st, g, ref) {
     if (p < -3 || p > 9) continue;
     n.letter = PG_LET[p + 3]; out.push(n);
   }
-  st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref};
+  st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt};
+  if (!globalThis._pgNurPrototyp) pgMarkMoras(st, out);           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
+}
+
+// Diagnose: verworfene Tintenflecken sammeln, falls globalThis._pgDiag ein Array ist (Konsole/Test), sonst nichts tun
+function pgDiag(why, b, st) {
+  if (Array.isArray(globalThis._pgDiag)) globalThis._pgDiag.push({why, x0: b.x0, x1: b.x1, y0: b.y0, y1: b.y1, area: b.area, staff: st.lines[0]});
+}
+
+// Mora-Punkte (Build 412, nicht im Python-Prototyp): kleiner, kompakter Punkt rechts neben einem Notenkopf, in gleicher
+// Höhe oder im Zwischenraum darüber. Gesucht im ungefilterten Bild, Notenlinien ausgeblendet. Setzt n.mora = true.
+function pgMarkMoras(st, notes) {
+  const c = st._ctx, gl = c.gl, q = st.lines, reg = c.reg;
+  for (let i = 0; i < notes.length; i++) {
+    const n = notes[i], xr = n.xb !== undefined ? n.xb : n.x + 0.25 * gl;
+    const wx0 = Math.round(xr + 0.03 * gl) - c.xa, wx1 = Math.round(xr + 0.85 * gl) - c.xa;
+    const wy0 = Math.round(n.y - 0.8 * gl) - c.top, wy1 = Math.round(n.y + 0.35 * gl) - c.top;
+    if (wx0 < 0 || wy0 < 0 || wx1 > reg.w || wy1 > reg.h) continue;
+    const win = pgCrop(reg, wy0, wy1, wx0, wx1);
+    for (let x = 0; x < win.w; x++) {                                  // Notenlinien ausblenden
+      const ox = c.off(x + wx0 + c.xa);
+      for (const L of q) {
+        const yl = L + ox - c.top - wy0;
+        for (let y = Math.max(0, Math.floor(yl - c.lt / 2 - 1)); y <= Math.min(win.h - 1, Math.ceil(yl + c.lt / 2 + 1)); y++) win.a[y * win.w + x] = 0;
+      }
+    }
+    for (const runs of pgComponents(win)) {
+      const [x0, y0, x1, y1] = pgBox(runs), w = x1 - x0 + 1, h = y1 - y0 + 1;
+      if (w < 0.12 * gl || h < 0.12 * gl || w > 0.5 * gl || h > 0.5 * gl) continue;               // kein Punkt
+      if (x0 === 0 && runs.some(([y, a]) => a === 0 && wx0 > 0 && reg.a[(y + wy0) * reg.w + wx0 - 1])) continue;   // hängt an der Note
+      if (Math.max(w, h) / Math.min(w, h) > 1.8) continue;                                        // Strich (Episem, Iktus)
+      let area = 0; for (const r of runs) area += r[2] - r[1] + 1;
+      if (area / (w * h) < 0.5) continue;
+      const cx = (x0 + x1) / 2 + wx0 + c.xa;
+      if (notes.some((m, j) => j !== i && Math.abs(m.x - cx) < 0.3 * gl)) continue;              // gehört zu einer anderen Note
+      n.mora = true; break;
+    }
+  }
 }
 
 function pgSplitBlob(b, gl, hs, stepOf) {
@@ -360,7 +415,7 @@ function pgSplitBlob(b, gl, hs, stepOf) {
     const nstack = pgRound(hmed / hs);
     if (nstack >= 2 && hmed > 0.8 * gl) {
       let ink = 0; for (const c of t) for (let y = c[1]; y <= c[2]; y++) ink += sub[y * sw + c[0]];
-      if (ink / hts.reduce((a, v) => a + v, 0) < 0.8) continue;    // hohl: Vorzeichen, kein Notenpaar
+      if (ink / hts.reduce((a, v) => a + v, 0) < 0.8) { pgDiag('hohl', {x0: b.x0 + t[0][0], x1: b.x0 + t[t.length - 1][0], y0: b.y0, y1: b.y0 + sh, area: 0}, {lines: [0]}); continue; }
       const nh = 0.45 * gl;
       for (const yy of [ybot - nh / 2, ytop + nh / 2]) res.push({x: xm, y: Y(yy), p: stepOf(xm, Y(yy)), kind: 'stack'});
       continue;
@@ -661,7 +716,7 @@ function pgToGabcText(notes, bars, syls, gl) {
     let i = end;
     for (let j = U - 1; j >= 0; j--) { groups[i] = units[j].concat(groups[i]); if (j > 0) i = bk[j][i]; }
   }
-  let toks = syls.map((s, i) => [groups[i].length ? groups[i][0].x : s.x, i, s.text + '(' + groups[i].map(n => n.letter).join('') + ')', s.word]);
+  let toks = syls.map((s, i) => [groups[i].length ? groups[i][0].x : s.x, i, s.text + '(' + groups[i].map(n => n.letter + (n.mora ? '.' : '')).join('') + ')', s.word]);
   let m = -1e9;
   toks = toks.map(t => { m = Math.max(m, t[0]); return [m, t[1], t[2], t[3]]; });
   toks = toks.concat(bars.map(bb => [bb.x, 1e6, '(' + bb.type + ')', true]));
