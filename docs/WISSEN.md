@@ -148,6 +148,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Silbenzuordnung – deshalb liefert die KI diese Zeichen jetzt mit (`PG_SIGN_RE`), sie dienen nur der Zuordnung. Eine Regel
   «Textgruppen links der ersten Note weglassen» war falsch: dort steht auch echter Text ohne eigene Noten («Ma-» in Salve mater).
   Neusatz-Drucke (Surrexit) und GR-Satz mit F-Schlüssel werden fast fehlerfrei gelesen; schwierig bleiben blasse, handbeschriebene Scans.
+- **Gegenprobe 5 (Build 420, 23.11.2026):** ♭ am Systemanfang direkt nach dem Schlüssel (Antiphonale Monasticum, Gaudeamus)
+  fiel in die Schlüsselzone – die Sperrzone für ♭ ist jetzt 0.5 statt 1.2 Linienabstände. Zwei Soll-Dateien des Testsets hatten
+  diese ♭ nicht (Gaudeamus «no,», Surrexit «tu-i») – nachgetragen. **Soll-Lehre:** GregoBase schreibt Phrasenenden teils als Iktus +
+  Episem («f'_»), wo der Druck einen Mora-Punkt hat (Cantus selecti, Mittit) – vermeintliche Fehlfunde erst am Druck prüfen.
+  Bei schwer lesbaren Vorlagen (blass, handbeschrieben, melismatisch) lieber den Fall weglassen oder auf den sicher ablesbaren
+  Teil zuschneiden, als ein unsicheres Soll zu messen.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

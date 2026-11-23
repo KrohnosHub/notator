@@ -1,0 +1,34 @@
+{
+ "id": "verbum-caro",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Antiphonale Monasticum 1934, S. 248 (linke Hälfte der Doppelseite, zugeschnitten), Scan aus dem Drive des Nutzers",
+  "reference": "Verbum caro factum est.notator (Antiphonale Monasticum 1934, S. 248)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "b-vorzeichen",
+  "fliesstext-absaetze",
+  "buchscan",
+  "zugeschnitten",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 5 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Responsorium breve, 4 Systeme, darüber und darunter Fliesstext (Psalmverse in zwei Spalten, Capitulum mit Initiale «M», Rubriken). Doppelseite auf die linke Seite zugeschnitten (rechts zwei Versikel ohne Vorlage). Soll aus der Notator-Datei (gleiche Ausgabe), Text nach dem Druck (Fi-li-o); «*», «℣.» und «etc.» weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Verbum caro",
+   "mode": "6",
+   "clef": "c4",
+   "systems": [
+    "VEr(fg)bum(f) ca(f_e)ro(dc) fa(f)ctum(fgd) (ix)est,(f!gw!hih.) (;) (ix)Al(i)le(ivHG)lú(gh)ia,(f.) (,) al(dc~)",
+    "(ix)le(f.g!hwiHG'F)lú(ghf~)ia.(f.) (::) Ver(fg)bum.(f) (::) Et(f) ha(f)bi(f')tá(g)vit(f_e) in(dc) no(fgd)(ix)bis.(f!gw!hih.) (::)",
+    "(ix)Al(i)le(ivHG)lú(gh)ia.(f.) (::) Gló(f)ri(f)a(f) Pa(gh)tri,(f'_) (,) et(g) Fi(f_e)li(dc)o,(c.) (;) et(dc~) Spi(f)",
+    "(ix)rí(g!hwi)tu(ih)i(gh) San(g_[oh:h]f~)cto.(f.) (::) Ver(fg)bum.(f) (::)"
+   ]
+  }
+ ]
+}

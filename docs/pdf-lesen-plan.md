@@ -965,6 +965,26 @@ Notenzahl 66 %, Tonhöhen/Stück 94 %, Gruppierung 84 % (exakt 38 %), Silben 88 
 Stückzahl 100 %, Modus 81 %. Surrexit jetzt fehlerfrei, Puer natus Gruppierung 81 → 86 %. Einzelläufe – Streuung der KI beim
 Anfangsbuchstaben («U es Pétrus») und bei Akzenten liegt in derselben Grössenordnung wie die Unterschiede.
 
+### 7.24 Gegenprobe 5 und Build 420 (23.11.2026)
+
+Neue Fälle (Soll vor der Messung): `mittit-ad-virginem` (Cantus selecti, 12 Systeme, c2, Akkorde von Hand),
+`viderunt-graduale` (Graduels-Buch S. [14], auf das Graduale zugeschnitten, c3), `verbum-caro` (Antiphonale Monasticum S. 248,
+linke Hälfte, Fliesstext-Absätze). Graduale Romanum 1961 im Drive ist zu gross für den Download (> 10 MB).
+
+| Gegenprobe 5, echter KI-Aufruf | Build 419 (blind) |
+| --- | --- |
+| Systeme / Schlüssel / Stücke | 20 von 20 / 100 % / 100 % |
+| Notenzahl je System richtig | 80 % |
+| Tonhöhen je Stück | 98 % |
+| Gruppierung (exakt) | 95 % (55 %) |
+| Silben / Trennstriche | 91 % / 93 % |
+| Mora (nach Soll-Korrektur Mittit) | 82 / 97 % |
+
+Build 420: ♭ direkt nach dem Schlüssel. Alle 22 Fälle mit den gespeicherten KI-Antworten von Build 419 (`runs/mock-420-alle`):
+Notenzahl 68 %, Tonhöhen/Stück 95 %, Gruppierung 86 % (exakt 40 %), Silben 88 %, Trennstriche 76 %, Mora 81/92 %,
+♭ 88/96 % (Build 419: 74/97 %), Schlüssel 100 %, Stückzahl 100 %, Modus 79 %. Offen: eine verrutschte Silbenzuordnung in
+Mittit (System 2), Virga-Fehlmeldungen, Modus bei Hymnen/Sequenzen («6.» über der Initiale wird teils nicht gelesen).
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

@@ -1,0 +1,25 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VErbum caro factum est, Allelúia",
+   "mode": "6",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "VEr(fg)bum(f) ca(fe)ro(dc) fac(f)tum(fgd) (,) est,(ixfghih) (;) Al(ixi)le(ihg)lú(gh)ia,(f.) (,) al(dc)",
+    "le(fghihgf)lú(ghv)ia.(f.) (::) Ver(fg)bum.(f) (::) Et(f) ha(f)bi(f)tá(g)vit(fe) in(dc) no(fgd)bis.(ixfghih) (::)",
+    "Al(i)le(ihg)lú(gh)ia.(f.) etc.() (::) Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(fe)li(dc)o,(c.) (;) et(dc) Spi(f)",
+    "rí(ghi)tu(ih)i(gh) San(gf)cto.(f.) (::) Ver(fg)bum.(f) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2397,
+  "output_tokens": 211,
+  "costUsd": 0.006904
+ },
+ "durationMs": 6604
+}

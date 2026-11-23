@@ -1,0 +1,37 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Ad te levávi ánimam meam",
+   "mode": "8",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "Ad(gv) te(f) le(gh)vá(h)vi(g.) (,) á(gjj)ni(h)mam(gh) me(fg)am:(ghggf) (;)",
+    "De(h)us(jj) me(jjkj)us(j.) (,) in(fg) te(g) con(f)fí(fhji)do,(ih) (,)",
+    "non(jjj) e(hg)ru(ghffg)bé(ghg) (,) scam:(g.) (:) ne(j)que(jv.jjjhih) ir(h)rí(jj)de(ih)ant(jjj) me(g.) (,)",
+    "i(g)ni(g)mí(ghj)ci(jh) me(hf)i:(f.) (:) ét(fh)e(hg)nim(g.) u(g)ni(g)vér(gihi)si(g.) (,) qui(g) te(g) ex(hji)spé(ijkj)",
+    "ctant,(hih) (;) non(gh) con(h)fun(hfhg)dén(ghg)tur.(g.) (::) Vi(g)as(hg) tu(gj)as,(j) Dó(j)mi(j)ne,(j) de(ji)",
+    "món(jk)stra(k) mi(jk)hi:(j.) (:) et(hj) sé(hj)mi(j)tas(j) tu(j)as(jji) é(gh)do(ji)ce(h) me.(g.) (::)"
+   ]
+  },
+  {
+   "incipit": "Glória Patri, et Fílio, et",
+   "mode": "8",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "Gló(g)ri(hg)a(gj) Pa(j)tri,(j) et(j) Fí(j)li(j)o,(j.) (,) et(j) Spi(j)rí(ji)tu(jk)i(k) Sancto.(jkj.) (:) Sicut(jhhj) erat(jj) in(j)",
+    "prin(j)cí(j)pi(j)o,(j.) (,) et(ji) nunc,(jk) et(k) sem(jk)per,(j.) (:) et(jkmh) in(hj) saé(j)cu(j)la(j) sae(j)cu(jji.)ló(gh)rum.(ji) A(h)men.(ghdff.g.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3499,
+  "output_tokens": 409,
+  "costUsd": 0.011088
+ },
+ "durationMs": 5694
+}

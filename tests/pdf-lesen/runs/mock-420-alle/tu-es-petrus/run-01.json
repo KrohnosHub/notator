@@ -1,0 +1,23 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "U es Pétrus, et super",
+   "mode": "",
+   "clef": "c3",
+   "hasDropCap": false,
+   "systems": [
+    "U(ig) es(ij) Pé(i.)trus,(i) et(i) su(i)per(g) hanc(hg) pé(fffffheff)",
+    "tram(e.) æ(g)di(ghg)fi(f)cá(h)bo(g) (,) Ec(f)clé(ef)si(g)am(f) mé(ee)am.(e.)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 1933,
+  "output_tokens": 89,
+  "costUsd": 0.004756
+ },
+ "durationMs": 5285
+}

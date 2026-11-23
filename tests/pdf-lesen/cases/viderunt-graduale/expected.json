@@ -1,0 +1,34 @@
+{
+ "id": "viderunt-graduale",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Graduels, versets d'Alleluia et traits (Desclée), S. [14], oberer Teil der Seite (zugeschnitten), Scan aus dem Drive des Nutzers",
+  "reference": "vom Druck abgelesen (die Notator-Datei «Vidérunt omnes» ist die Communio)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c3",
+  "initiale",
+  "buchscan",
+  "rezitation",
+  "zugeschnitten",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 5 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Graduale «Ton plus orné», 4 Systeme, Kleinformat-Buch. Seite auf den Graduale-Teil zugeschnitten (das Alleluja mit Jubilus darunter war von Auge nicht verlässlich abzulesen). Soll von Claude mit Hilfslinien vom Druck abgelesen; Episeme/Iktus nicht übernommen, «*» und «℣.» weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Viderunt omnes",
+   "mode": "5",
+   "clef": "c3",
+   "systems": [
+    "VI(e)dé(fe)runt(eh) óm(h)nes(h) fí(h)nes(h) tér(h)rae(h) (,) sa(h)lu(h)tá(h)re(hg) Dé(hi)i(i)",
+    "nó(hi)stri :(h.) (:) ju(h)bi(h)lá(h)te(h) Dé(h)o,(h) óm(i)nis(g) tér(h)ra.(f.) (::) Nó(e)tum(fe) fé(eh)cit(h) Dó(h)",
+    "mi(h)nus(h) sa(h)lu(hg)tá(hi)re(i) sú(hi)um :(h.) (:) an(h)te(h) con(h)spé(h)ctum(h) gén(h)ti(h)um(h) re(h)ve(h)",
+    "lá(h)vit(h) ju(h)stí(i)ti(g)am(g) sú(h)am.(f.) (::)"
+   ]
+  }
+ ]
+}

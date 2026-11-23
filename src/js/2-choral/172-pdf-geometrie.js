@@ -447,7 +447,9 @@ function pgMarkFlats(st, notes) {
     const w = box[2] - box[0] + 1, h = box[3] - box[1] + 1;
     if (h < 0.9 * gl || h > 2.3 * gl || w < 0.28 * gl || w > 0.75 * gl) continue;
     const gx = box[0] + c.xa;
-    if (gx < st.x0 + PG_CLEF * gl) continue;                          // Schlüssel
+    // Build 420: nur noch 0.5 statt PG_CLEF Linienabstände sperren – ein ♭ direkt nach dem Schlüssel (Systemanfang, Verbum caro)
+    // fiel sonst weg; der Schlüssel selbst besteht die Formprüfung nicht, und ♭ gilt nur auf der b-Stufe (Build 418)
+    if (gx < st.x0 + 0.5 * gl) continue;
     const rowW = new Array(h).fill(0); let area = 0;
     for (const [y, a, b] of runs) { rowW[y - box[1]] += b - a + 1; area += b - a + 1; }
     const top = rowW.slice(0, Math.floor(0.4 * h)), bot = rowW.slice(Math.floor(0.55 * h));
