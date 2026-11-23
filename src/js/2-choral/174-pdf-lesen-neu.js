@@ -35,7 +35,11 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 'its word; look closely to tell a comma (with a small tail below the line) from a full stop.\n' +
 '- Leave out the asterisk *, crosses, verse numbers, and the signs ℣ ℟ and "Ps.".\n' +
 '- If a strip contains no chant text, return an empty string for it.\n' +
-'Return one entry per strip number 1..N.';
+'Return one entry per strip number 1..N.\n\n' +
+'Rows labelled "M<n>" (if any) are not chant text: they show the small annotation printed above the initial letter of ' +
+'strip n, usually the mode of the chant as a Roman or Arabic numeral, sometimes with other words (e.g. "VIII", "5", ' +
+'"1.", "R. br. VI", "Ant. 7"). For each such row return in "modes" the mode as an Arabic number 1–8 ("VIII" -> "8", ' +
+'"R. br. VI" -> "6"), or an empty string if no mode number is visible.';
 
 // PDF-Seite mit 300 dpi als Graustufenbild (L = 0.299 R + 0.587 G + 0.114 B, wie PIL)
 async function pgRenderPageGray(pdfDoc, pageNo) {
@@ -102,6 +106,10 @@ function pgStripsImage(page) {
       c = both;
     }
     c = pgScaled(c, c.width * PG_LINE_H / c.height, PG_LINE_H);
+    if (st.modeBox) {                                              // Modus-Angabe über der Initiale als eigene Zeile «M<n>»
+      const [a, b, x, y] = st.modeBox, m = pgGrayCanvas(page.img, a, b, x, y);
+      parts.push(['M' + (k + 1), pgScaled(m, m.width * PG_LINE_H / m.height, PG_LINE_H)]);
+    }
     if (c.width > PG_IMG_W - 70) pgSplitStrip(c, PG_IMG_W - 70).forEach(p => parts.push([k + 1, p]));
     else parts.push([k + 1, c]);
   });
@@ -118,11 +126,12 @@ function pgStripsImage(page) {
   return {b64: cv.toDataURL('image/png').split(',')[1], n: page.staves.length};
 }
 
-// Ein KI-Aufruf je Seite: Text je System. Gibt {lines, usage}.
+// Ein KI-Aufruf je Seite: Text je System und Modus je Initiale. Gibt {lines, modes: {n: '1'…'8'}, usage}.
 async function pgReadText(apiKey, b64, n) {
-  const schema = {type: 'object', properties: {lines: {type: 'array', items: {type: 'object',
-    properties: {n: {type: 'integer'}, text: {type: 'string'}}, required: ['n', 'text'], additionalProperties: false}}},
-    required: ['lines'], additionalProperties: false};
+  const row = (key, type) => ({type: 'array', items: {type: 'object', properties: {n: {type: 'integer'}, [key]: {type}},
+    required: ['n', key], additionalProperties: false}});
+  const schema = {type: 'object', properties: {lines: row('text', 'string'), modes: row('mode', 'string')},
+    required: ['lines', 'modes'], additionalProperties: false};
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
@@ -140,10 +149,11 @@ async function pgReadText(apiKey, b64, n) {
   if (r.stop_reason === 'refusal') throw new Error('KI hat die Anfrage abgelehnt');
   if (r.stop_reason === 'max_tokens') throw new Error('KI-Antwort abgeschnitten');
   const text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-  const got = {};
-  for (const e of (JSON.parse(text).lines || [])) got[e.n] = String(e.text || '');
+  const got = {}, modes = {}, ans = JSON.parse(text);
+  for (const e of (ans.lines || [])) got[e.n] = String(e.text || '');
+  for (const e of (ans.modes || [])) { const m = /[1-8]/.exec(String(e.mode || '')); if (m) modes[e.n] = m[0]; }
   const u = r.usage || {};
-  return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''),
+  return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''), modes,
     usage: {input: u.input_tokens || 0, output: u.output_tokens || 0, usd: ((u.input_tokens || 0) * PG_PRICE[0] + (u.output_tokens || 0) * PG_PRICE[1]) / 1e6}};
 }
 
@@ -162,6 +172,7 @@ function pgPieces(items) {
     const words = p.items.map(it => it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w));
     p.incipit = words.slice(0, 5).join(' ').replace(/[,.;:!?]+$/, '') || '(ohne Text)';
     p.hasDropCap = !!p.items[0].staff.dropcap;
+    p.mode = p.items[0].mode || '?';                               // Modus über der Initiale des ersten Systems
     const cl = p.items.map(it => it.staff.clef).filter(c => c), cnt = {};
     cl.forEach(c => { cnt[c] = (cnt[c] || 0) + 1; });
     p.clef = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || 'c4';
@@ -172,7 +183,10 @@ function pgPieceGabc(p, withHeader) {
   const lines = p.items.map(it => pgStaffGabc(it.staff, it.text) || '').filter(l => l.trim());
   let body = '(' + p.clef + ') ' + lines.join('\n');
   if (!/\(::\)\s*$/.test(body)) body += ' (::)';
-  return withHeader ? (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n' + body : body;
+  return withHeader ? pgGabcHeader(p) + body : body;
+}
+function pgGabcHeader(p) {
+  return (/^[1-8]$/.test(p.mode) ? 'annotation: ' + p.mode + '\n' : '') + (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n';
 }
 
 // GregoBase-Abgleich wie im bisherigen Weg: nur anbieten, nie automatisch. Gibt true, wenn aus GregoBase geladen wurde.
@@ -217,13 +231,13 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
     const res = await pgReadText(apiKey, strips.b64, strips.n);
     usd += res.usage.usd;
     console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
-    page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k])}));
+    page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
     page.img = null;
   }
   if (!items.length) { gregGst('Keine Notensysteme gefunden (Notenlinien nicht erkannt).'); return; }
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
-  window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, clef: p.clef, hasDropCap: p.hasDropCap,
+  window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,
     systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || '')}))};
   let choice = pieces[0].index;
   if (pieces.length > 1) {
@@ -238,7 +252,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const previousEntries = gregEntries;
   let gabc = null, loaded = 0;
   if (choice === 'MERGE') {
-    gabc = (pieces[0].hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n' + chosen.map(p => pgPieceGabc(p, false)).join('\n');
+    gabc = pgGabcHeader(pieces[0]) + chosen.map(p => pgPieceGabc(p, false)).join('\n');
     gregImportGABCString(gabc, {deferRender: true}); loaded = 1;
   } else {
     for (const p of chosen) {

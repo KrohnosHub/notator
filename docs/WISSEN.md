@@ -101,6 +101,8 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Stückgrenze = System mit Initiale. Messlauf über die echte
   Oberfläche: `tests/pdf-lesen/run-neu-playwright.js` (`--mock DIR` mit gespeicherten KI-Antworten = kostenlos;
   `--pdfjs DIR`, wenn cdnjs gesperrt ist – in der Cloud-Umgebung der Fall).
+- **Modus (Build 411):** nur die Angabe direkt über der Initiale (`pgModeBox`): als Zeile «M<n>» ins KI-Bild, Antwortfeld
+  `modes`. Testset: 4 von 7 Stücken richtig; bei Gaudeamus und Salve Regina steht dort keine Angabe.
 - **Neumenformen fehlen noch** (Quilisma, Liqueszenz, Oriscus, Episem, Mora …): wichtigstes offenes Thema, hohe Priorität
   (Matthias, 23.11.2026; siehe `NOTES.md`, Offen).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

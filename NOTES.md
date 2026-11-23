@@ -1,4 +1,4 @@
-# Notator – Stand Build 410 (23.11.2026)
+# Notator – Stand Build 411 (23.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–410 (Auszug)
+## Neu in Build 298–411 (Auszug)
 
+- **PDF lesen, Modus (411):** die kleine Angabe über der Initiale («VIII», «5», «1.», «R. br. VI») wird im selben KI-Aufruf gelesen und als Annotation übernommen. Steht der Modus woanders (z. B. «Intr. I» neben dem System), bleibt er leer.
 - **PDF lesen (410):** neue Erkennung ist Standard, der alte Vision-Weg (GABC je System per KI, OMR-Korrektur) ist entfernt; Schalter entfällt. `170-greg-pdf-background.js` von 2426 auf 523 Zeilen.
 - **PDF lesen, neue Erkennung (409, Schalter «Neue Erkennung (Test)» in der API-Key-Zeile):** Seite mit 300 dpi, Tonhöhen/Schlüssel/Trennstriche/Initialen geometrisch, Text per KI (ein Aufruf je Seite, Sonnet 5.5), Stückgrenzen an den Initialen, GregoBase-Angebot wie bisher. Ca. 6 s und 0.01 USD pro Seite. Ohne Schalter läuft der bisherige Weg. Neumenformen fehlen noch.
 - **PDF lesen, Geometrie (408):** Übertragung des Prototyps nach JavaScript (`src/js/2-choral/172-pdf-geometrie.js`): Systeme, Tonhöhen, Schlüssel, Trennstriche, Initialen, Textgruppen, Zuordnung Text → Noten. Noch nicht an der Oberfläche; Ergebnis auf dem Testset identisch mit Python, ca. 1 s pro Seite.

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-F5xa5PRCPupgbRTVvSe+b2h/J4nJNzOJPgB7DpKkdIw=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-Jge7o91NDbC8n+VlCl6rwNDtP2uZVLf1gotqyfJRNCc=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -6217,6 +6217,32 @@ function pgDropcapBox(dark, st, gl, others) {
   return [xa + best[0] - pad, ya + best[1] - pad, xa + best[2] + pad, ya + best[3] + pad];
 }
 
+// Modus-Angabe über der Initiale («VIII», «5», «1.»): kleine Teile direkt über dem Initialkasten, ohne Linien/Text
+// anderer Systeme. Gibt [x0, y0, x1, y1] (Seitenkoordinaten, mit Rand) oder null. (Nicht Teil des Python-Prototyps.)
+function pgModeBox(dark, st, gl, dc, others) {
+  if (!dc) return null;
+  const xa = Math.max(0, pgInt(dc[0] - gl)), xb = Math.min(dark.w, pgInt(dc[2] + gl));
+  const ya = Math.max(0, pgInt(dc[1] - 3 * gl)), yb = Math.min(dark.h, pgInt(dc[1] + 0.6 * gl));
+  if (xb - xa < gl || yb - ya < gl) return null;
+  const blocked = [[st.x0 - 0.2 * gl - xa, st.lines[0] - gl - ya, st.x1 - xa, st.lines[3] + 2.5 * gl - ya]];   // eigenes System (Schlüssel)
+  for (const o of others || []) {
+    if (o === st) continue;
+    const og = (o.lines[3] - o.lines[0]) / 3;
+    blocked.push([o.x0 - xa, o.lines[0] - og - ya, o.x1 - xa, o.lines[3] + 2.5 * og - ya]);
+  }
+  let box = null;
+  for (const runs of pgComponents(pgCrop(dark, ya, yb, xa, xb))) {
+    const b = pgBox(runs), h = b[3] - b[1] + 1, w = b[2] - b[0] + 1;
+    if (h < 0.15 * gl || h > 1.5 * gl || w > 3 * gl) continue;                 // Staub oder Teil der Initiale/Text
+    if (b[3] + ya > dc[1] + 0.25 * gl) continue;                               // reicht in die Initiale hinein
+    if (blocked.some(r => b[0] < r[2] && r[0] < b[2] && b[1] < r[3] && r[1] < b[3])) continue;
+    box = box ? [Math.min(box[0], b[0]), Math.min(box[1], b[1]), Math.max(box[2], b[2]), Math.max(box[3], b[3])] : b.slice();
+  }
+  if (!box) return null;
+  const pad = pgInt(0.3 * gl);
+  return [xa + box[0] - pad, ya + box[1] - pad, xa + box[2] + pad, ya + box[3] + pad];
+}
+
 // Tintengruppen der ersten Textzeile (Lücke ≥ 0.2 Linienabstand trennt), mit «endet auf Trennstrich»
 function pgTextChunks(dark, st, gl) {
   const yt = pgTextTop(dark, st, gl);
@@ -6383,7 +6409,7 @@ function pgAnalysePage(img) {
   const staves = sts.map((st, k) => {
     const {notes, gl} = pgAnalyseStaff(dark, st, g, ref);
     return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st),
-      dropcap: dcs[k], textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
+      dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
   });
   return {img: sv.img, staves, gap: g, angle: sv.ang, thr};
 }
@@ -6438,7 +6464,11 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 'its word; look closely to tell a comma (with a small tail below the line) from a full stop.\n' +
 '- Leave out the asterisk *, crosses, verse numbers, and the signs ℣ ℟ and "Ps.".\n' +
 '- If a strip contains no chant text, return an empty string for it.\n' +
-'Return one entry per strip number 1..N.';
+'Return one entry per strip number 1..N.\n\n' +
+'Rows labelled "M<n>" (if any) are not chant text: they show the small annotation printed above the initial letter of ' +
+'strip n, usually the mode of the chant as a Roman or Arabic numeral, sometimes with other words (e.g. "VIII", "5", ' +
+'"1.", "R. br. VI", "Ant. 7"). For each such row return in "modes" the mode as an Arabic number 1–8 ("VIII" -> "8", ' +
+'"R. br. VI" -> "6"), or an empty string if no mode number is visible.';
 
 // PDF-Seite mit 300 dpi als Graustufenbild (L = 0.299 R + 0.587 G + 0.114 B, wie PIL)
 async function pgRenderPageGray(pdfDoc, pageNo) {
@@ -6505,6 +6535,10 @@ function pgStripsImage(page) {
       c = both;
     }
     c = pgScaled(c, c.width * PG_LINE_H / c.height, PG_LINE_H);
+    if (st.modeBox) {                                              // Modus-Angabe über der Initiale als eigene Zeile «M<n>»
+      const [a, b, x, y] = st.modeBox, m = pgGrayCanvas(page.img, a, b, x, y);
+      parts.push(['M' + (k + 1), pgScaled(m, m.width * PG_LINE_H / m.height, PG_LINE_H)]);
+    }
     if (c.width > PG_IMG_W - 70) pgSplitStrip(c, PG_IMG_W - 70).forEach(p => parts.push([k + 1, p]));
     else parts.push([k + 1, c]);
   });
@@ -6521,11 +6555,12 @@ function pgStripsImage(page) {
   return {b64: cv.toDataURL('image/png').split(',')[1], n: page.staves.length};
 }
 
-// Ein KI-Aufruf je Seite: Text je System. Gibt {lines, usage}.
+// Ein KI-Aufruf je Seite: Text je System und Modus je Initiale. Gibt {lines, modes: {n: '1'…'8'}, usage}.
 async function pgReadText(apiKey, b64, n) {
-  const schema = {type: 'object', properties: {lines: {type: 'array', items: {type: 'object',
-    properties: {n: {type: 'integer'}, text: {type: 'string'}}, required: ['n', 'text'], additionalProperties: false}}},
-    required: ['lines'], additionalProperties: false};
+  const row = (key, type) => ({type: 'array', items: {type: 'object', properties: {n: {type: 'integer'}, [key]: {type}},
+    required: ['n', key], additionalProperties: false}});
+  const schema = {type: 'object', properties: {lines: row('text', 'string'), modes: row('mode', 'string')},
+    required: ['lines', 'modes'], additionalProperties: false};
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
@@ -6543,10 +6578,11 @@ async function pgReadText(apiKey, b64, n) {
   if (r.stop_reason === 'refusal') throw new Error('KI hat die Anfrage abgelehnt');
   if (r.stop_reason === 'max_tokens') throw new Error('KI-Antwort abgeschnitten');
   const text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-  const got = {};
-  for (const e of (JSON.parse(text).lines || [])) got[e.n] = String(e.text || '');
+  const got = {}, modes = {}, ans = JSON.parse(text);
+  for (const e of (ans.lines || [])) got[e.n] = String(e.text || '');
+  for (const e of (ans.modes || [])) { const m = /[1-8]/.exec(String(e.mode || '')); if (m) modes[e.n] = m[0]; }
   const u = r.usage || {};
-  return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''),
+  return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''), modes,
     usage: {input: u.input_tokens || 0, output: u.output_tokens || 0, usd: ((u.input_tokens || 0) * PG_PRICE[0] + (u.output_tokens || 0) * PG_PRICE[1]) / 1e6}};
 }
 
@@ -6565,6 +6601,7 @@ function pgPieces(items) {
     const words = p.items.map(it => it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w));
     p.incipit = words.slice(0, 5).join(' ').replace(/[,.;:!?]+$/, '') || '(ohne Text)';
     p.hasDropCap = !!p.items[0].staff.dropcap;
+    p.mode = p.items[0].mode || '?';                               // Modus über der Initiale des ersten Systems
     const cl = p.items.map(it => it.staff.clef).filter(c => c), cnt = {};
     cl.forEach(c => { cnt[c] = (cnt[c] || 0) + 1; });
     p.clef = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || 'c4';
@@ -6575,7 +6612,10 @@ function pgPieceGabc(p, withHeader) {
   const lines = p.items.map(it => pgStaffGabc(it.staff, it.text) || '').filter(l => l.trim());
   let body = '(' + p.clef + ') ' + lines.join('\n');
   if (!/\(::\)\s*$/.test(body)) body += ' (::)';
-  return withHeader ? (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n' + body : body;
+  return withHeader ? pgGabcHeader(p) + body : body;
+}
+function pgGabcHeader(p) {
+  return (/^[1-8]$/.test(p.mode) ? 'annotation: ' + p.mode + '\n' : '') + (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n';
 }
 
 // GregoBase-Abgleich wie im bisherigen Weg: nur anbieten, nie automatisch. Gibt true, wenn aus GregoBase geladen wurde.
@@ -6620,13 +6660,13 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
     const res = await pgReadText(apiKey, strips.b64, strips.n);
     usd += res.usage.usd;
     console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
-    page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k])}));
+    page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
     page.img = null;
   }
   if (!items.length) { gregGst('Keine Notensysteme gefunden (Notenlinien nicht erkannt).'); return; }
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
-  window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, clef: p.clef, hasDropCap: p.hasDropCap,
+  window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,
     systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || '')}))};
   let choice = pieces[0].index;
   if (pieces.length > 1) {
@@ -6641,7 +6681,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const previousEntries = gregEntries;
   let gabc = null, loaded = 0;
   if (choice === 'MERGE') {
-    gabc = (pieces[0].hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n' + chosen.map(p => pgPieceGabc(p, false)).join('\n');
+    gabc = pgGabcHeader(pieces[0]) + chosen.map(p => pgPieceGabc(p, false)).join('\n');
     gregImportGABCString(gabc, {deferRender: true}); loaded = 1;
   } else {
     for (const p of chosen) {
@@ -8045,7 +8085,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '410';
+const NOTATOR_BUILD_ID = '411';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

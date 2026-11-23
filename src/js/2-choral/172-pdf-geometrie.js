@@ -498,6 +498,32 @@ function pgDropcapBox(dark, st, gl, others) {
   return [xa + best[0] - pad, ya + best[1] - pad, xa + best[2] + pad, ya + best[3] + pad];
 }
 
+// Modus-Angabe über der Initiale («VIII», «5», «1.»): kleine Teile direkt über dem Initialkasten, ohne Linien/Text
+// anderer Systeme. Gibt [x0, y0, x1, y1] (Seitenkoordinaten, mit Rand) oder null. (Nicht Teil des Python-Prototyps.)
+function pgModeBox(dark, st, gl, dc, others) {
+  if (!dc) return null;
+  const xa = Math.max(0, pgInt(dc[0] - gl)), xb = Math.min(dark.w, pgInt(dc[2] + gl));
+  const ya = Math.max(0, pgInt(dc[1] - 3 * gl)), yb = Math.min(dark.h, pgInt(dc[1] + 0.6 * gl));
+  if (xb - xa < gl || yb - ya < gl) return null;
+  const blocked = [[st.x0 - 0.2 * gl - xa, st.lines[0] - gl - ya, st.x1 - xa, st.lines[3] + 2.5 * gl - ya]];   // eigenes System (Schlüssel)
+  for (const o of others || []) {
+    if (o === st) continue;
+    const og = (o.lines[3] - o.lines[0]) / 3;
+    blocked.push([o.x0 - xa, o.lines[0] - og - ya, o.x1 - xa, o.lines[3] + 2.5 * og - ya]);
+  }
+  let box = null;
+  for (const runs of pgComponents(pgCrop(dark, ya, yb, xa, xb))) {
+    const b = pgBox(runs), h = b[3] - b[1] + 1, w = b[2] - b[0] + 1;
+    if (h < 0.15 * gl || h > 1.5 * gl || w > 3 * gl) continue;                 // Staub oder Teil der Initiale/Text
+    if (b[3] + ya > dc[1] + 0.25 * gl) continue;                               // reicht in die Initiale hinein
+    if (blocked.some(r => b[0] < r[2] && r[0] < b[2] && b[1] < r[3] && r[1] < b[3])) continue;
+    box = box ? [Math.min(box[0], b[0]), Math.min(box[1], b[1]), Math.max(box[2], b[2]), Math.max(box[3], b[3])] : b.slice();
+  }
+  if (!box) return null;
+  const pad = pgInt(0.3 * gl);
+  return [xa + box[0] - pad, ya + box[1] - pad, xa + box[2] + pad, ya + box[3] + pad];
+}
+
 // Tintengruppen der ersten Textzeile (Lücke ≥ 0.2 Linienabstand trennt), mit «endet auf Trennstrich»
 function pgTextChunks(dark, st, gl) {
   const yt = pgTextTop(dark, st, gl);
@@ -664,7 +690,7 @@ function pgAnalysePage(img) {
   const staves = sts.map((st, k) => {
     const {notes, gl} = pgAnalyseStaff(dark, st, g, ref);
     return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st),
-      dropcap: dcs[k], textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
+      dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
   });
   return {img: sv.img, staves, gap: g, angle: sv.ang, thr};
 }

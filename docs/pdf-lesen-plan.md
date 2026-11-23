@@ -811,6 +811,13 @@ Messlauf über die echte Oberfläche mit den gespeicherten KI-Antworten von v5 (
 Nach dem Test durch Matthias: neue Erkennung ist der einzige Weg, der alte (Vision je System, OMR-Korrektur,
 `run-playwright.js`) ist entfernt. Messlauf über die Oberfläche (`runs/js-app-410`) identisch mit Build 409.
 
+### 7.15 Modus (Build 411, 23.11.2026)
+
+`pgModeBox` (172) sucht kleine Teile direkt über der Initiale (ohne eigenes und fremde Systeme); die Ausschnitte
+kommen als Zeilen «M<n>» ins KI-Bild, die KI gibt den Modus im Feld `modes` als Ziffer zurück. Echter Lauf über die
+Oberfläche (`runs/js-app-411`, 0.048 USD): Ave Maria 1, Salve mater 5, Surrexit 6, Hymnus 8 richtig; Gaudeamus
+(Stück 1) und Salve Regina leer, weil dort über der Initiale nichts steht (Modus insgesamt 4 von 7).
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

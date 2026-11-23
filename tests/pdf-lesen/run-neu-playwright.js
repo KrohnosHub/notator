@@ -3,10 +3,12 @@
 //   node tests/pdf-lesen/run-neu-playwright.js --series NAME [--run N] [--case FALL] [--mock DIR]
 // --mock DIR: statt der API die gespeicherten KI-Antworten DIR/ki-<fall>.json verwenden (kostenlos).
 // Ohne --mock: echter Aufruf, Key aus NOTATOR_API_KEY (Kosten ca. 0.01 USD pro Seite).
+// --live DIR: echter Aufruf, aber über curl (TLS über die CA-Bündel der Umgebung) statt aus dem Browser; die Antworten
+//   werden als DIR/ki-<fall>.json gespeichert und taugen danach für --mock.
 // --pdfjs DIR: pdf.js (3.11.174, Ordner build/ aus dem npm-Paket pdfjs-dist) lokal statt vom CDN, falls cdnjs gesperrt ist.
 const fs = require('fs'), path = require('path'), { chromium } = require('playwright');
 const arg = (n, d) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; };
-const ROOT = __dirname, series = arg('--series', 'neu-tmp'), run = +arg('--run', 1), mock = arg('--mock', null), pdfjs = arg('--pdfjs', null);
+const ROOT = __dirname, series = arg('--series', 'neu-tmp'), run = +arg('--run', 1), mock = arg('--mock', null), live = arg('--live', null), pdfjs = arg('--pdfjs', null);
 const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(ROOT, 'cases')).filter(c => !c.startsWith('_') && fs.existsSync(path.join(ROOT, 'cases', c, 'scan.pdf')));
 (async () => {
   const browser = await chromium.launch();
@@ -15,6 +17,24 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
     page.on('console', m => { if (/PDF lesen \(neu\)/.test(m.text())) console.log('   ', m.text().slice(0, 160)); });
     if (pdfjs) await page.route('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/*', route =>
       route.fulfill({status: 200, contentType: 'application/javascript', body: fs.readFileSync(path.join(pdfjs, path.basename(new URL(route.request().url()).pathname)))}));
+    if (live) {
+      fs.mkdirSync(live, {recursive: true});
+      await page.route('https://api.anthropic.com/**', async route => {
+        const req = route.request(), tmp = path.join(live, '_req.json');
+        fs.writeFileSync(tmp, req.postData());
+        const hdr = req.headers(), args = ['-sS', req.url(), '--data-binary', '@' + tmp];
+        for (const h of ['content-type', 'x-api-key', 'anthropic-version', 'anthropic-dangerous-direct-browser-access']) if (hdr[h]) args.push('-H', h + ': ' + hdr[h]);
+        const body = require('child_process').execFileSync('curl', args, {maxBuffer: 1 << 24}).toString();
+        const r = JSON.parse(body);
+        if (r.content) {
+          const ans = JSON.parse(r.content.filter(b => b.type === 'text').map(b => b.text).join(''));
+          usage = {input_tokens: r.usage.input_tokens, output_tokens: r.usage.output_tokens};
+          fs.writeFileSync(path.join(live, 'ki-' + c + '.json'), JSON.stringify({model: r.model, lines: ans.lines.map(e => e.text), modes: ans.modes || [],
+            usage: {...usage, costUsd: (usage.input_tokens * 2 + usage.output_tokens * 10) / 1e6}}, null, 1));
+        }
+        await route.fulfill({status: 200, contentType: 'application/json', body});
+      });
+    }
     if (mock) {
       await page.route('https://api.anthropic.com/**', async route => {
         const body = JSON.parse(route.request().postData()); const n = +(/N = (\d+)/.exec(body.messages[0].content[1].text) || [0, 0])[1];
@@ -22,7 +42,7 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
         if (ki.lines.length !== n) console.log('    Achtung: ' + n + ' Systeme angefragt, gespeicherte Antwort hat ' + ki.lines.length);
         usage = {input_tokens: ki.usage.input_tokens, output_tokens: ki.usage.output_tokens};
         await route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({type: 'message', stop_reason: 'end_turn',
-          content: [{type: 'text', text: JSON.stringify({lines: ki.lines.map((t, k) => ({n: k + 1, text: t}))})}], usage})});
+          content: [{type: 'text', text: JSON.stringify({lines: ki.lines.map((t, k) => ({n: k + 1, text: t})), modes: ki.modes || []})}], usage})});
       });
     }
     await page.goto('file://' + path.resolve(ROOT, '../../index.html'));
@@ -36,8 +56,8 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
     const all = await page.$('#modal-btns button:has-text("Stücke laden")'); if (all && await all.isVisible()) await all.click();
     const res = await page.evaluate(() => window._pgLetzteErkennung || null);
     if (!res) { console.log(c + ': kein Ergebnis'); await page.close(); continue; }
-    const out = {model: mock ? 'gespeichert (' + mock + ')' : 'claude-sonnet-5-5', effort: 'low', pipeline: 'Notator, neue Erkennung (pdf.js, 172/174)',
-      pieces: res.pieces.map(p => ({incipit: p.incipit, mode: '', clef: p.clef, hasDropCap: p.hasDropCap, systems: p.systems})),
+    const out = {model: mock ? 'gespeichert (' + mock + ')' : 'claude-sonnet-5-5' + (live ? ' (über curl)' : ''), effort: 'low', pipeline: 'Notator, neue Erkennung (pdf.js, 172/174)',
+      pieces: res.pieces.map(p => ({incipit: p.incipit, mode: p.mode === '?' ? '' : p.mode, clef: p.clef, hasDropCap: p.hasDropCap, systems: p.systems})),
       usage: {...usage, costUsd: res.usd}, durationMs: Date.now() - t0};
     const d = path.join(ROOT, 'runs', series, c); fs.mkdirSync(d, {recursive: true});
     fs.writeFileSync(path.join(d, 'run-' + String(run).padStart(2, '0') + '.json'), JSON.stringify(out, null, 1));

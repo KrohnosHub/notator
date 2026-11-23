@@ -26,12 +26,14 @@ for (const f of fx) {
   const mk = (dropcap, clef, text) => ({page: 1, text: pgSafeText(text), staff: {dropcap, clef, gl: 30, x0: 0, x1: 300,
     notes: [{x: 10, letter: 'f'}, {x: 100, letter: 'g'}], bars: [], chunks: [{x0: 0, x1: 60, hyphen: false}, {x0: 90, x1: 150, hyphen: false}]}});
   const items = [mk([0, 0, 9, 9], 'c4', 'SAl-ve Re-gí-na'), mk(null, 'c4', 'ma-ter (mi) {x}'), mk([0, 0, 9, 9], 'c3', 'A-ve <b>Ma</b>')];
+  items[0].mode = '5';
   check(items[1].text === 'ma-ter mi x', 'pgSafeText entfernt GABC-Zeichen: ' + items[1].text);
   const ps = pgPieces(items);
   check(ps.length === 2 && ps[0].systems === 2 && ps[1].systems === 1, 'pgPieces: Stückgrenze an der Initiale');
+  check(ps[0].mode === '5' && ps[1].mode === '?', 'pgPieces: Modus ' + ps[0].mode + ' / ' + ps[1].mode);
   check(ps[0].incipit === 'SAlve Regína mater mi x' && ps[1].clef === 'c3', 'pgPieces: Incipit/Schlüssel ' + ps[0].incipit + ' / ' + ps[1].clef);
   const g = pgPieceGabc(ps[0], true);
-  check(/^drop-cap: auto\n%%\n\n\(c4\) /.test(g) && /\(::\)$/.test(g) && !/[{}<>]/.test(g), 'pgPieceGabc: ' + g);
+  check(/^annotation: 5\ndrop-cap: auto\n%%\n\n\(c4\) /.test(g) && /\(::\)$/.test(g) && !/[{}<>]/.test(g), 'pgPieceGabc: ' + g);
 })();
 
 // 2. Synthetisches System: 4 Linien (Abstand 39 px), Do-Schlüssel auf Linie 4, Noten d f h e, Trennstrich, Text darunter
