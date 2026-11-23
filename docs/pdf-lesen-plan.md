@@ -837,6 +837,28 @@ ihrem Bereich zugeschlagen hat. Vorher (pdftoppm): 15 von 32 Systemen richtig, 2
 | Mora-Punkte gefunden / davon richtig | 0 % / – | **77 % / 80 %** |
 | Tonhöhen je Stück, Silben | 96 %, 89 % | 96 %, 88 % |
 
+### 7.17 Versuch: Neumenformen per KI (23.11.2026)
+
+8 Systeme (Gaudeamus 1, 3, 4; Salve Regina 5–9), je ein Bild mit nummerierten Notenköpfen; die KI bestimmt je Note
+Form, Episem, Iktus, ♭ davor (`tests/pdf-lesen/neumen/`). Trefferzahl gegen das Soll (gefunden / Soll, falsch+):
+
+| Zeichen | Sonnet 5.5 medium | Opus 5.5 medium |
+| --- | --- | --- |
+| Quilisma (4) | 1, +5 | 2, +0 |
+| Liqueszenz (6) | 0, +3 | 1, +1 |
+| Virga (9) | 1, +2 | 8, +12 |
+| Episem (10) | 3, +5 | 7, +5 |
+| Iktus (13) | 7, +0 | 11, +6 |
+| ♭ davor (3) | 1, +0 | 1, +1 |
+| Rhombus (0 im Soll) | +16 | +17 |
+| Kosten 8 Systeme | 0.11 USD | 0.21 USD (≈ 0.25 USD/Seite) |
+
+- Sonnet taugt dafür nicht. Opus erkennt Virga, Episem und Iktus brauchbar, Liqueszenz kaum; Kosten ≈ 25-mal das
+  Textlesen.
+- Das Soll ist hier unzuverlässig: Der Druck zeigt Rhomben (z. B. Salve Regina 8, Climacus), die GregoBase-Fassung
+  schreibt sie klein («hvgf» statt «hvGF»). Die «falschen» Rhomben und ein Teil der «falschen» Virgen sind vermutlich
+  richtig. Für eine belastbare Messung müsste das Soll für die Formen am Druck geprüft werden.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).
