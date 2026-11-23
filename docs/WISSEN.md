@@ -92,6 +92,8 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   nummerierte Zeile für sich bleibt – sonst zieht Sonnet gelegentlich Zeilen zusammen.
 - **Bildausschnitt grosszügig:** Der Textstreifen muss unten Unterlängen und Kommaschwänze enthalten, sonst werden
   Kommas als Punkte gelesen – das sieht aus wie ein Lesefehler der KI. Lange Zeilen teilen statt verkleinern.
+- **Neumenformen fehlen noch** (Quilisma, Liqueszenz, Oriscus, Episem, Mora …): wichtigstes offenes Thema, hohe Priorität
+  (Matthias, 23.11.2026; siehe `NOTES.md`, Offen).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
 
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)

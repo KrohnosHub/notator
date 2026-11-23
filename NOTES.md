@@ -104,6 +104,10 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 
 ## Offen / Ideen
 
+- **HOHE PRIORITÄT – «PDF lesen»: Neumenformen erkennen** (Entscheid Matthias 23.11.2026). Die neue geometrische Erkennung
+  liefert nur Tonhöhen, nach Silben gruppiert. Quilisma, Liqueszenz, Oriscus, Episem, Mora, Virga, Pes/Clivis-Formen
+  usw. fehlen; die Notenzahl je System stimmt erst bei 47 %. Ohne diese Formen ist das Ergebnis oft unbefriedigend.
+  Ansätze: Form der Tintenflecken auswerten (geometrisch) oder je System ein gezielter KI-Aufruf nur für die Formen.
 - Alleluja-Vorlagen (wie Gloria Patri): recherchiert, zurückgestellt.
 - Schriftart der Initiale (Drop-Cap) wählbar machen (Idee 08/2026, nicht priorisiert).
 - Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).
