@@ -1,4 +1,4 @@
-# Notator – Stand Build 409 (23.11.2026)
+# Notator – Stand Build 410 (23.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–409 (Auszug)
+## Neu in Build 298–410 (Auszug)
 
+- **PDF lesen (410):** neue Erkennung ist Standard, der alte Vision-Weg (GABC je System per KI, OMR-Korrektur) ist entfernt; Schalter entfällt. `170-greg-pdf-background.js` von 2426 auf 523 Zeilen.
 - **PDF lesen, neue Erkennung (409, Schalter «Neue Erkennung (Test)» in der API-Key-Zeile):** Seite mit 300 dpi, Tonhöhen/Schlüssel/Trennstriche/Initialen geometrisch, Text per KI (ein Aufruf je Seite, Sonnet 5.5), Stückgrenzen an den Initialen, GregoBase-Angebot wie bisher. Ca. 6 s und 0.01 USD pro Seite. Ohne Schalter läuft der bisherige Weg. Neumenformen fehlen noch.
 - **PDF lesen, Geometrie (408):** Übertragung des Prototyps nach JavaScript (`src/js/2-choral/172-pdf-geometrie.js`): Systeme, Tonhöhen, Schlüssel, Trennstriche, Initialen, Textgruppen, Zuordnung Text → Noten. Noch nicht an der Oberfläche; Ergebnis auf dem Testset identisch mit Python, ca. 1 s pro Seite.
 - **Silbentrennung (403):** automatische Trennung (Psalmton-Assistent, Strophen, «Text zuerst») nach Solesmes-Konvention: «be-ne-dí-cta», «San-ctus», «ó-mni-um», «no-stra»; eigener Test.
@@ -112,7 +113,7 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
   Ansätze: Form der Tintenflecken auswerten (geometrisch) oder je System ein gezielter KI-Aufruf nur für die Formen.
 - «PDF lesen», neue Erkennung: In der App (pdf.js) stimmen Notenzahl je System (31 statt 47 %) und Trennstriche (69 statt 76 %)
   seltener als im Prototyp (pdftoppm) – das Rendern glättet anders. Tonhöhen und Text sind gleich. Prüfen: eingebettetes Scanbild
-  direkt auslesen statt die Seite zu rendern. Danach Schalter zum Standard machen und den alten Weg entfernen (Build «406» im Plan).
+  direkt auslesen statt die Seite zu rendern. 
 - Alleluja-Vorlagen (wie Gloria Patri): recherchiert, zurückgestellt.
 - Schriftart der Initiale (Drop-Cap) wählbar machen (Idee 08/2026, nicht priorisiert).
 - Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).

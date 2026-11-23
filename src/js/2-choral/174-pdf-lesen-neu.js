@@ -1,24 +1,13 @@
-// ── «PDF lesen», neue Erkennung (Build 409, Schalter «Neue Erkennung (Test)») ───────────────────
+// ── «PDF lesen» (seit Build 410 der einzige Weg; eingeführt in Build 409 hinter einem Schalter) ─────────
 // Ablauf je Seite: mit 300 dpi rendern → Geometrie (172-pdf-geometrie.js: Systeme, Tonhöhen, Schlüssel, Trennstriche,
 // Initialen, Textgruppen) → Textzeilen als ein Bild → ein KI-Aufruf (Sonnet 5.5, effort low) liest den Text mit
 // Silbentrennung → Text auf die Noten legen → GABC. Stückgrenzen: ein System mit Initiale beginnt ein neues Stück.
 // Neumenformen (Quilisma, Liqueszenz, Oriscus, Episem …) erkennt dieser Weg noch nicht (Backlog, hohe Priorität).
-// Der bisherige Weg (170-greg-pdf-background.js) bleibt unverändert und ist ohne Schalter weiterhin aktiv.
+// Einstieg: gregLoadPDF (170-greg-pdf-background.js) lädt das PDF und ruft pgPdfLesenNeu auf.
 
-const PG_NEU_KEY = 'nt-pdf-neue-erkennung';
 const PG_MODEL = 'claude-sonnet-5-5';
 const PG_PRICE = [2.0, 10.0];            // USD je 1 Mio. Token (Eingabe, Ausgabe), Stand 11/2026
 const PG_DPI = 300, PG_MAX_PAGES = 6, PG_LINE_H = 64, PG_BOTTOM = 1.6, PG_IMG_W = 1600;
-
-function pgNeuAktiv() { try { return localStorage.getItem(PG_NEU_KEY) === '1'; } catch (e) { return false; } }
-function pgNeuSetzen(on) {
-  try { localStorage.setItem(PG_NEU_KEY, on ? '1' : '0'); } catch (e) { /* privates Fenster: Schalter wirkt nicht */ }
-}
-(function pgNeuInit() {
-  const set = () => { const cb = document.getElementById('pg-neu'); if (cb) cb.checked = pgNeuAktiv(); };
-  if (typeof document === 'undefined') return;                     // Node-Test
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', set); else set();
-})();
 
 const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of Latin chant text, cut from under a staff of ' +
 'square notation in a printed book. A strip may begin with a large (often decorated) initial letter, shown scaled ' +
@@ -210,20 +199,20 @@ async function pgTryGregoBase(p) {
   }
 }
 
-// Einstieg aus gregLoadPDF (Schalter an, API-Key vorhanden, kein eingebettetes GABC)
+// Einstieg aus gregLoadPDF (API-Key vorhanden, kein eingebettetes GABC)
 async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const t0 = Date.now();
   const pages = Math.min(pdfDoc.numPages, PG_MAX_PAGES);
   if (pdfDoc.numPages > PG_MAX_PAGES) gregGst('PDF hat ' + pdfDoc.numPages + ' Seiten — nur die ersten ' + PG_MAX_PAGES + ' werden gelesen.');
   const items = []; let usd = 0;
   for (let pg = 1; pg <= pages; pg++) {
-    gregGst('Neue Erkennung: Seite ' + pg + '/' + pages + ' – Notenlinien und Noten…');
+    gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Notenlinien und Noten…');
     await new Promise(r => setTimeout(r, 30));                       // Statuszeile zeichnen lassen
     const img = await pgRenderPageGray(pdfDoc, pg);
     const page = pgAnalysePage(img);
     console.log('PDF lesen (neu), Seite ' + pg + ': ' + page.staves.length + ' Systeme, Schräge ' + page.angle.toFixed(2) + '°, Linienabstand ' + page.gap + ' px, Schwelle ' + page.thr);
     if (!page.staves.length) continue;
-    gregGst('Neue Erkennung: Seite ' + pg + '/' + pages + ' – Text lesen (KI)…');
+    gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Text lesen (KI)…');
     const strips = pgStripsImage(page);
     const res = await pgReadText(apiKey, strips.b64, strips.n);
     usd += res.usage.usd;
@@ -268,6 +257,6 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   gregRefreshListNoRender();
   gregRender();
   if (target === 'new') { gregLibCurrentId = null; setTimeout(() => ntMarkClean(), 50); }
-  gregGst('Neue Erkennung: ' + loaded + ' Stück(e), ' + items.length + ' Systeme, ' + Math.round((Date.now() - t0) / 1000) + ' s, ca. ' + usd.toFixed(3) +
+  gregGst('PDF lesen: ' + loaded + ' Stück(e), ' + items.length + ' Systeme, ' + Math.round((Date.now() - t0) / 1000) + ' s, ca. ' + usd.toFixed(3) +
     ' USD. Neumenformen (Quilisma, Liqueszenz …) fehlen noch — bitte mit dem Original vergleichen.');
 }

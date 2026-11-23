@@ -806,6 +806,11 @@ Messlauf über die echte Oberfläche mit den gespeicherten KI-Antworten von v5 (
   stimmen Stückzahl und Systemzahl.
 - Notenzahl und Trennstriche: pdf.js glättet das eingebettete Scanbild anders als pdftoppm. Offener Punkt.
 
+### 7.14 Standard (Build 410, 23.11.2026)
+
+Nach dem Test durch Matthias: neue Erkennung ist der einzige Weg, der alte (Vision je System, OMR-Korrektur,
+`run-playwright.js`) ist entfernt. Messlauf über die Oberfläche (`runs/js-app-410`) identisch mit Build 409.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

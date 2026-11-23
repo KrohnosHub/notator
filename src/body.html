@@ -35,7 +35,6 @@
         <span title="Anthropic API-Key: console.anthropic.com → API Keys">&#128273; API-Key</span>
         <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird von Notator nicht gespeichert (der Browser kann ihn als Kennwort merken)" style="flex:1 1 140px;min-width:120px;font-size:11px;padding:2px 5px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
         <button class="b" data-onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="PDF-Datei wählen und einlesen">&#128196; PDF wählen …</button>
-        <label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer" title="Neue Erkennung (Test): Tonhöhen aus dem Bild gemessen, Text per KI – schneller und günstiger; Neumenformen (Quilisma, Liqueszenz …) fehlen noch"><input type="checkbox" id="pg-neu" data-onchange="pgNeuSetzen(this.checked)"> Neue Erkennung (Test)</label>
         <button class="b" data-onclick="gregPdfReadRow(false)" style="font-size:10px;padding:2px 6px" title="Zuklappen">&#10005;</button>
         <span style="flex-basis:100%;color:#6b8a60;font-size:9px">Key erhältlich unter console.anthropic.com → API Keys. Das Feld bleibt offen, bis du es zuklappst.</span>
       </div>

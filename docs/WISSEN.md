@@ -96,8 +96,9 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   verhalten (Test `tests/pdf-geometrie.test.js`). Stolperstellen beim Übertragen: PIL dreht bikubisch mit **a = −1**
   (nicht −0.5) – sonst kippen einzelne Notenköpfe; Python rundet .5 zur geraden Zahl (`pgRound`); im Node-Test
   `vm.runInThisContext` statt eigenem `vm`-Kontext, sonst wird die Bildverarbeitung rund 100-mal langsamer.
-- **In der App (Build 409):** `src/js/2-choral/174-pdf-lesen-neu.js`, Schalter «Neue Erkennung (Test)» (localStorage
-  `nt-pdf-neue-erkennung`). Stückgrenze = System mit Initiale; der Modus wird nicht gelesen. Messlauf über die echte
+- **In der App:** `src/js/2-choral/174-pdf-lesen-neu.js` (Build 409 hinter Schalter, seit Build 410 der einzige Weg;
+  Entscheid Matthias 23.11.2026). Der alte Vision-Weg ist entfernt (im Git-Verlauf bis Build 409).
+  Stückgrenze = System mit Initiale. Messlauf über die echte
   Oberfläche: `tests/pdf-lesen/run-neu-playwright.js` (`--mock DIR` mit gespeicherten KI-Antworten = kostenlos;
   `--pdfjs DIR`, wenn cdnjs gesperrt ist – in der Cloud-Umgebung der Fall).
 - **Neumenformen fehlen noch** (Quilisma, Liqueszenz, Oriscus, Episem, Mora …): wichtigstes offenes Thema, hohe Priorität

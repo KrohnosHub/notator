@@ -1,4 +1,4 @@
-// Messlauf für die NEUE Erkennung in Notator (Build 409+): lädt index.html, schaltet «Neue Erkennung (Test)» ein,
+// Messlauf für «PDF lesen» in Notator (Build 409+): lädt index.html,
 // liest cases/<fall>/scan.pdf über die echte Oberfläche (pdf.js) und schreibt runs/<serie>/<fall>/run-NN.json.
 //   node tests/pdf-lesen/run-neu-playwright.js --series NAME [--run N] [--case FALL] [--mock DIR]
 // --mock DIR: statt der API die gespeicherten KI-Antworten DIR/ki-<fall>.json verwenden (kostenlos).
@@ -27,7 +27,7 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
     }
     await page.goto('file://' + path.resolve(ROOT, '../../index.html'));
     await page.waitForTimeout(2500);
-    await page.evaluate(() => { try { closeModal(); } catch (e) {} localStorage.setItem('nt-pdf-neue-erkennung', '1'); });
+    await page.evaluate(() => { try { closeModal(); } catch (e) {} });
     await page.evaluate(k => { document.getElementById('greg-api-key').value = k; }, process.env.NOTATOR_API_KEY || 'sk-test');
     await page.setInputFiles('#greg-pdf-in', path.join(ROOT, 'cases', c, 'scan.pdf'));
     await page.waitForFunction(() => window._pgLetzteErkennung || /Fehler|Keine Notensysteme/.test((document.getElementById('greg-status') || {}).textContent || ''), null, {timeout: 180000});

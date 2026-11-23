@@ -9,7 +9,7 @@ tests/pdf-lesen/
   evaluate.js              Vergleich + Streuung (Node ≥ 18, keine Abhängigkeiten)
   lesetest/                Lesetest ausserhalb von Notator (Schnitt, Lineale, Aufruf je System)
   geometrie/               Tonhöhen aus dem Bild messen, ohne KI (Prototyp, Python + numpy + Pillow + pdftoppm)
-  run-playwright.js        Messlauf: steuert das unveränderte Notator, ruft die API auf
+  run-neu-playwright.js    Messlauf: steuert Notator (neue Erkennung), gespeicherte oder echte KI-Antworten
   cases/<fall>/scan.pdf    der Scan – liegt nur lokal, nicht im Repo (.gitignore)
   cases/<fall>/expected.json   erwartetes Ergebnis, von Hand geprüft
   cases/_vorlage/          Vorlage für expected.json (wird nicht ausgewertet)
@@ -66,26 +66,19 @@ NOTATOR_API_KEY=… GEOM_TEXT=ki python3 tests/pdf-lesen/geometrie/geom.py --ser
   kommt dort leer an; das Skript liest ihn nur noch als Ersatz. Die Umgebung «notator»
   installiert Tesseract und das SDK beim Start.
 
-## Messlauf (kostenpflichtig)
+## Messlauf über Notator (Build 409+)
 
 ```
-ANTHROPIC_API_KEY=… node tests/pdf-lesen/run-playwright.js \
-    --case ave-maria-1 --series s55-medium \
-    --model claude-sonnet-5-5 --effort medium \
-    --max-usd 1.5 --ledger /pfad/kosten.json
+node tests/pdf-lesen/run-neu-playwright.js --series NAME [--run N] [--case FALL] [--mock DIR] [--pdfjs DIR]
 ```
 
-- Braucht Playwright mit Chromium. Der Scan muss als `cases/<fall>/scan.pdf`
-  lokal vorliegen.
-- Ohne `--model` gehen die Aufrufe unverändert durch (Build wie er ist). Mit
-  `--model` werden sie unterwegs umgeschrieben: Modell ersetzt, `temperature`
-  entfernt, `max_tokens` 16000, `effort` gesetzt. `index.html` bleibt unberührt.
-- GregoBase wird übersprungen, bei mehreren Stücken werden alle gelesen.
-- `--max-usd` mit `--ledger` ist die Kostenbremse über mehrere Aufrufe hinweg.
-- Ein Lauf schreibt drei Serien: `<serie>` (Endergebnis), `<serie>-vor-geometrie`
-  (Konsens vor der Tonhöhen-Korrektur) und `<serie>-roh` (die 3 einzelnen
-  Durchläufe als Wiederholungsläufe, daraus die Streuung).
-- Der API-Key gehört in die Umgebung, nie in eine Datei im Repo.
+- Steuert das echte Notator (`index.html`) mit Playwright: PDF wählen, lesen, Ergebnis als
+  `runs/<serie>/<fall>/run-NN.json`. Der Scan muss als `cases/<fall>/scan.pdf` lokal vorliegen.
+- `--mock DIR`: gespeicherte KI-Antworten `DIR/ki-<fall>.json` statt API (kostenlos).
+  Ohne `--mock`: echter Aufruf mit `NOTATOR_API_KEY` (ca. 0.01 USD pro Seite).
+- `--pdfjs DIR`: pdf.js 3.11.174 lokal (Ordner `build/` des npm-Pakets `pdfjs-dist`), wenn cdnjs gesperrt ist.
+- Der frühere Messlauf `run-playwright.js` für den alten Vision-Weg ist mit Build 410 entfallen
+  (Serien `s46-build398`, `s55-medium`, `o55-medium` bleiben als Vergleich).
 
 ## Erwartetes Ergebnis (`expected.json`)
 

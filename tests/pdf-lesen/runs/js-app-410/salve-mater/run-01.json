@@ -1,0 +1,28 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/v5r1)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SAlve, mater misericórdiæ, Mater Dei",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "SAl(g)ve,(g) ma(j)ter(jk) mi(j)se(i)ri(h)cór(gh)di(g)æ,() Ma(e)ter(e) De(g)i,(g) et(f) ma(e)ter(d)",
+    "vé(c)ni(d)æ.(c) (:) Ma(c)ter(c) spe(d)i,(e) et(e) ma(d)ter(ef) grá(g)ti(g)æ,(g) (;) Ma(g)ter(g)",
+    "ple(h)na(ggf) sanc(f)tæ(g) læ(f)tí(ed)ti(e)æ,() O(dd) Ma()rí(c)a!() ij.() (::) Sal(g)ve(g) ma(j)ter..()",
+    "Sal(e)ve,(g) de(fe)cus(de) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e) (;) Sal(c)ve,(e) Vir(g)",
+    "go(hi) díg(j)ni(i)or(g) cé(h)te(f)ris,(g) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)",
+    "trans()gré(e)de(d)ris,(e) (;) Et(e) ál(d)ti(e)us(g) se(e)des(f) in(g) sú(h)pe()ris,(j) (,)",
+    "Ma(h)rí(kk)a.(j) Sal() (::) ve..(gg)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3286,
+  "output_tokens": 346,
+  "costUsd": 0.010032
+ },
+ "durationMs": 6453
+}
