@@ -777,6 +777,15 @@ Je Fall (Silben): Ave Maria 100/100/97, Surrexit 98/91/91, Salve mater
 92/92/92, Salve Regina 86/86/86, Gaudeamus 81/79/83 (mit «GAU-DE-A-MUS»).
 Kosten 0.043 USD für 5 Seiten.
 
+### 7.12 JavaScript-Fassung (Build 408, 23.11.2026)
+
+`src/js/2-choral/172-pdf-geometrie.js` überträgt Geometrie, Initialen, Textgruppen und die Zuordnung Text → Noten
+aus `geom.py`, `ocr.py` und `text_ki.py`. Vergleich auf den 5 Scans mit `geometrie/dump.py`: alle 36 Systeme gleich
+(Noten, Schlüssel, Trennstriche, Initialen, Textgruppen, GABC); mit den gespeicherten KI-Antworten von v5
+(`runs/js-geo-v1`) dieselben Werte wie `ki-s55-low-v5`. Rund 1 s pro Seite in Node.
+Wichtig war die bikubische Drehung mit a = −1 wie in PIL: mit a = −0.5 kippten einzelne Notenköpfe
+(Notenzahl 41 statt 47 %, Trennstriche 71 statt 76 %).
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

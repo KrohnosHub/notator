@@ -1,4 +1,4 @@
-# Notator – Stand Build 407 (22.11.2026)
+# Notator – Stand Build 408 (23.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -7,13 +7,14 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 ## Aufbau
 
 - Code in `src/` (CSS, `body.html`, JS in `1-start/`, `2-choral/`, `3-orgel-und-mehr/`, `vendor/exsurge.js`); `python3 build.py` erzeugt `index.html`.
-- Tests: `tests/gd-core.test.js`, `tests/silbentrennung.test.js`, `tests/begleitsatz.test.js`, `tests/visual/run.js` (Bildvergleich); GitHub Action «Tests» bei jedem Push.
+- Tests: `tests/gd-core.test.js`, `tests/silbentrennung.test.js`, `tests/pdf-geometrie.test.js`, `tests/begleitsatz.test.js`, `tests/visual/run.js` (Bildvergleich); GitHub Action «Tests» bei jedem Push.
 - Content-Security-Policy mit Skript-Hashes (setzt `build.py`), keine Inline-Handler (`tools/handlers.py`).
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–403 (Auszug)
+## Neu in Build 298–408 (Auszug)
 
+- **PDF lesen, Geometrie (408):** Übertragung des Prototyps nach JavaScript (`src/js/2-choral/172-pdf-geometrie.js`): Systeme, Tonhöhen, Schlüssel, Trennstriche, Initialen, Textgruppen, Zuordnung Text → Noten. Noch nicht an der Oberfläche; Ergebnis auf dem Testset identisch mit Python, ca. 1 s pro Seite.
 - **Silbentrennung (403):** automatische Trennung (Psalmton-Assistent, Strophen, «Text zuerst») nach Solesmes-Konvention: «be-ne-dí-cta», «San-ctus», «ó-mni-um», «no-stra»; eigener Test.
 - **Strophen: Note ohne Silbe (404):** «~» im Strophentext gilt auch mitten im Wort («memori~ále»: Silbe davor mit «-», Note bleibt leer); in der Vorschau eine Note antippen setzt/entfernt «~».
 - **Strophen-Nummern (405):** Beim erneuten Bearbeiten (Text untereinander) bleiben die Nummern «2.», «3.» … erhalten, auch wenn die Vorlage selbst keine «1.» trägt.

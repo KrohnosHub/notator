@@ -25,6 +25,8 @@ jobs:
         run: python3 tools/gd-core-sync.py --check
       - name: gd-core-Tests
         run: node tests/gd-core.test.js
+      - name: PDF lesen – Geometrie (Zuordnung und synthetisches Notenbild)
+        run: node tests/pdf-geometrie.test.js
       - name: Silbentrennung (Solesmes-Konvention)
         run: node tests/silbentrennung.test.js
       - name: Begleitsatz-Tests (Regeln + Schnappschuss; nach gewollter Änderung --update)

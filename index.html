@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-0ApFZJOM4udy4TiVq59m7gvRAJU2E2JRjGu3jSgmEBs=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-FOwYw/WF42/GbsVXuvrlAGL2EE1DUC+2z46XA8xCYPM=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -7620,6 +7620,690 @@ function gregExtractGABC(text) {
   return null;
 }
 
+// ── «PDF lesen», geometrischer Teil (Build 408) ─────────────────────────
+// Übertragung des Python-Prototyps tests/pdf-lesen/geometrie/ (geom.py, ocr.py, text_ki.py) nach JavaScript.
+// Misst aus einem Seitenbild (Graustufen, ca. 300 dpi): Notensysteme, Notenköpfe → Tonhöhen, Schlüssel,
+// Trennstriche, Initialen und die Tintengruppen der Textzeile; legt einen (von der KI gelesenen) Text auf die
+// Noten und erzeugt je System eine GABC-Zeile. Neumenformen (Quilisma, Liqueszenz …) erkennt es nicht.
+// Reine Rechenfunktionen ohne DOM – derselbe Code läuft im Browser und im Node-Test (tests/pdf-geometrie.test.js).
+// Bilder: {w, h, a: Uint8Array} (Grauwerte 0–255); Masken: {w, h, a: Uint8Array} (1 = Tinte).
+
+const PG_LET = 'abcdefghijklm';     // d = unterste Linie (Index 3), j = oberste (Index 9)
+const PG_THR_LINES = 140;           // Grauwert-Schwelle für die Liniensuche
+const PG_CLEF = 1.2, PG_WMIN = 0.6, PG_UNIT_GAP = 0.8;
+
+// Python-Hilfen: round (Banker's Rounding), Median, lineare Interpolation mit Randbegrenzung
+function pgRound(x) {
+  const f = Math.floor(x), d = x - f;
+  if (Math.abs(d - 0.5) < 1e-9) return (f % 2 === 0) ? f : f + 1;
+  return Math.round(x);
+}
+function pgMedian(v) {
+  if (!v.length) return NaN;
+  const s = Array.from(v).sort((a, b) => a - b), n = s.length;
+  return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
+}
+function pgInterp(x, xs, ys) {
+  if (x <= xs[0]) return ys[0];
+  if (x >= xs[xs.length - 1]) return ys[ys.length - 1];
+  let i = 1; while (xs[i] < x) i++;
+  return ys[i - 1] + (ys[i] - ys[i - 1]) * (x - xs[i - 1]) / (xs[i] - xs[i - 1]);
+}
+const pgInt = Math.trunc;
+
+function pgMask(w, h) { return {w, h, a: new Uint8Array(w * h)}; }
+function pgThreshold(img, thr) {
+  const m = pgMask(img.w, img.h);
+  for (let i = 0; i < img.a.length; i++) m.a[i] = img.a[i] < thr ? 1 : 0;
+  return m;
+}
+// Ausschnitt wie numpy-Slicing m[y0:y1, x0:x1] (Grenzen werden begrenzt)
+function pgCrop(m, y0, y1, x0, x1) {
+  y0 = Math.max(0, Math.min(m.h, y0)); y1 = Math.max(y0, Math.min(m.h, y1));
+  x0 = Math.max(0, Math.min(m.w, x0)); x1 = Math.max(x0, Math.min(m.w, x1));
+  const r = pgMask(x1 - x0, y1 - y0);
+  for (let y = 0; y < r.h; y++) r.a.set(m.a.subarray((y0 + y) * m.w + x0, (y0 + y) * m.w + x1), y * r.w);
+  return r;
+}
+function pgRowMean(m) {
+  const out = new Float64Array(m.h);
+  for (let y = 0; y < m.h; y++) { let s = 0; for (let x = 0; x < m.w; x++) s += m.a[y * m.w + x]; out[y] = m.w ? s / m.w : 0; }
+  return out;
+}
+function pgAnyRow(m, y, xa, xb) { for (let x = Math.max(0, xa); x < Math.min(m.w, xb); x++) if (m.a[y * m.w + x]) return true; return false; }
+
+// Drehung um die Bildmitte, gegen den Uhrzeigersinn um ang Grad, bikubisch wie PIL Image.rotate(BICUBIC, a = -1), Rand weiss
+function pgCubic(t) {
+  const a = -1.0; t = Math.abs(t);              // PIL (Geometry.c) rechnet mit a = -1
+  return t < 1 ? ((a + 2) * t - (a + 3)) * t * t + 1 : t < 2 ? (((t - 5) * t + 8) * t - 4) * a : 0;
+}
+function pgRotate(img, ang) {
+  const r = ang * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+  const w = img.w, h = img.h, cx = w / 2, cy = h / 2, out = {w, h, a: new Uint8Array(w * h)};
+  const wx = new Float64Array(4), wy = new Float64Array(4);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const dx = x + 0.5 - cx, dy = y + 0.5 - cy;
+      const xs = c * dx - s * dy + cx, ys = s * dx + c * dy + cy;     // Quellpunkt (Pixelmitten bei +0.5)
+      if (xs < 0 || ys < 0 || xs >= w || ys >= h) { out.a[y * w + x] = 255; continue; }
+      const fx = xs - 0.5, fy = ys - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy);
+      for (let k = 0; k < 4; k++) { wx[k] = pgCubic(fx - (x0 - 1 + k)); wy[k] = pgCubic(fy - (y0 - 1 + k)); }
+      let v = 0;
+      for (let j = 0; j < 4; j++) {
+        const yy = Math.min(h - 1, Math.max(0, y0 - 1 + j)); let row = 0;
+        for (let k = 0; k < 4; k++) row += wx[k] * img.a[yy * w + Math.min(w - 1, Math.max(0, x0 - 1 + k))];
+        v += wy[j] * row;
+      }
+      out.a[y * w + x] = v < 0 ? 0 : v > 255 ? 255 : Math.round(v);
+    }
+  }
+  return out;
+}
+
+// Otsu-Schwelle und Median der Grauwerte (über das Histogramm)
+function pgOtsu(img) {
+  const h = new Float64Array(256); for (let i = 0; i < img.a.length; i++) h[img.a[i]]++;
+  let w = 0, m = 0, best = -1, arg = 0; const W = img.a.length; let M = 0;
+  for (let i = 0; i < 256; i++) M += h[i] * i;
+  for (let t = 0; t < 255; t++) {
+    w += h[t]; m += h[t] * t;
+    const wf = W - w; if (w <= 0 || wf <= 0) continue;
+    const v = w * wf * Math.pow(m / w - (M - m) / wf, 2);
+    if (v > best) { best = v; arg = t; }
+  }
+  return arg + 1;
+}
+function pgMedianGray(img) {
+  const h = new Float64Array(256); for (let i = 0; i < img.a.length; i++) h[img.a[i]]++;
+  const n = img.a.length; let acc = 0, lo = -1, hi = -1;
+  for (let i = 0; i < 256; i++) {
+    acc += h[i];
+    if (lo < 0 && acc >= Math.floor((n - 1) / 2) + 1) lo = i;
+    if (hi < 0 && acc >= Math.floor(n / 2) + 1) { hi = i; break; }
+  }
+  return n % 2 ? hi : (lo + hi) / 2;
+}
+
+// ── Notenlinien und Systeme ─────────────────────────────────────────────
+function pgLineCands(dark, lo, hi) {
+  const xa = pgInt(dark.w * lo), xb = pgInt(dark.w * hi), cnt = new Float64Array(dark.h);
+  for (let y = 0; y < dark.h; y++) { let s = 0; for (let x = xa; x < xb; x++) s += dark.a[y * dark.w + x]; cnt[y] = s; }
+  const top = Array.from(cnt).sort((a, b) => a - b).slice(-20);
+  const peak = top.reduce((a, b) => a + b, 0) / top.length;
+  const cl = [];
+  for (let y = 0; y < dark.h; y++) {
+    if (!(cnt[y] > 0.45 * peak)) continue;
+    const last = cl.length ? cl[cl.length - 1] : null;
+    if (last && y - last[last.length - 1] <= 2) last.push(y); else cl.push([y]);
+  }
+  return cl.filter(c => c.length <= 12).map(c => (c[0] + c[c.length - 1]) / 2);
+}
+function pgGroup(lines) {
+  const gaps = [];
+  for (let i = 0; i + 1 < lines.length; i++) { const d = lines[i + 1] - lines[i]; if (d > 12 && d < 60) gaps.push(d); }
+  gaps.sort((a, b) => a - b);
+  if (!gaps.length) return {out: [], g: 0};
+  const g = gaps[Math.floor(gaps.length / 2)], out = [];
+  let i = 0;
+  while (i + 3 < lines.length) {
+    const q = lines.slice(i, i + 4);
+    if ([0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - g) < 0.25 * g)) { out.push(q); i += 4; } else i++;
+  }
+  return {out, g};
+}
+function pgStaves(img) {
+  let dark = pgThreshold(img, PG_THR_LINES);
+  const L = pgGroup(pgLineCands(dark, 0.25, 0.40)).out, R = pgGroup(pgLineCands(dark, 0.60, 0.75)).out;
+  let ang = 0;
+  let pairs = R.length ? L.map(l => [l, R.reduce((b, r) => Math.abs(r[0] - l[0]) < Math.abs(b[0] - l[0]) ? r : b, R[0])]) : [];
+  pairs = pairs.filter(([l, r]) => Math.abs(r[0] - l[0]) < 30);
+  if (pairs.length) {
+    const dy = pgMedian(pairs.map(([l, r]) => r[0] - l[0]));
+    ang = Math.atan2(dy, 0.35 * img.w) * 180 / Math.PI;
+    if (Math.abs(ang) > 1e-6) { img = pgRotate(img, ang); dark = pgThreshold(img, PG_THR_LINES); }
+  }
+  const {out, g} = pgGroup(pgLineCands(dark, 0.30, 0.70));
+  const sts = [];
+  for (const q of out) {
+    const cnt = new Int32Array(dark.w);
+    for (const yy of q) {
+      const y = pgRound(yy);
+      for (let x = 0; x < dark.w; x++) {
+        for (let r = Math.max(0, y - 4); r < Math.min(dark.h, y + 5); r++) if (dark.a[r * dark.w + x]) { cnt[x]++; break; }
+      }
+    }
+    let best = [0, 0], st0 = null, last = null;
+    for (let x = 0; x < dark.w; x++) {
+      if (cnt[x] < 4) continue;
+      if (st0 === null) st0 = x;
+      else if (x - last > 40) { if (last - st0 > best[1] - best[0]) best = [st0, last]; st0 = x; }
+      last = x;
+    }
+    if (last !== null && last - st0 > best[1] - best[0]) best = [st0, last];
+    sts.push({lines: q, x0: best[0], x1: best[1]});
+  }
+  return {img, sts, g, ang};
+}
+
+// ── Morphologie (Strich-Kerne, wie geom.py _erode1/_dilate1) ────────────
+function pgLine1(m, k, axis, erode) {
+  // erode: out[i] = UND über a[i-d], dilate: out[i] = ODER über a[i+d], d = -(k//2) … k-k//2-1; ausserhalb = 0
+  const out = pgMask(m.w, m.h), lo = -Math.floor(k / 2), hi = k - Math.floor(k / 2) - 1;
+  const n = axis === 1 ? m.w : m.h, cnt = axis === 1 ? m.h : m.w;
+  const pre = new Int32Array(n + 1);
+  for (let j = 0; j < cnt; j++) {
+    const at = i => axis === 1 ? m.a[j * m.w + i] : m.a[i * m.w + j];
+    pre[0] = 0; for (let i = 0; i < n; i++) pre[i + 1] = pre[i] + at(i);
+    for (let i = 0; i < n; i++) {
+      let a, b, v;
+      if (erode) { a = i - hi; b = i - lo; v = (a >= 0 && b < n && pre[b + 1] - pre[a] === b - a + 1) ? 1 : 0; }
+      else { a = Math.max(0, i + lo); b = Math.min(n - 1, i + hi); v = pre[b + 1] - pre[a] > 0 ? 1 : 0; }
+      if (axis === 1) out.a[j * m.w + i] = v; else out.a[i * m.w + j] = v;
+    }
+  }
+  return out;
+}
+function pgOpening(m, kw, kh) {
+  const e = pgLine1(pgLine1(m, kw, 1, true), kh, 0, true);
+  return pgLine1(pgLine1(e, kw, 1, false), kh, 0, false);
+}
+
+// Zusammenhangskomponenten (8er-Nachbarschaft), lauflängenbasiert. Gibt Liste von Läufen [y, x0, x1] je Komponente.
+function pgComponents(m) {
+  const parent = [];
+  const find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  const runs = []; let prev = [];
+  for (let y = 0; y < m.h; y++) {
+    const cur = []; let x = 0; const row = y * m.w;
+    while (x < m.w) {
+      if (!m.a[row + x]) { x++; continue; }
+      const x0 = x; while (x < m.w && m.a[row + x]) x++; const x1 = x - 1;
+      let lab = null;
+      for (const [px0, px1, pl] of prev) {
+        if (px0 <= x1 + 1 && px1 >= x0 - 1) {
+          const r = find(pl);
+          if (lab === null) lab = r; else if (r !== lab) parent[r] = lab;
+        }
+      }
+      if (lab === null) { lab = parent.length; parent.push(lab); }
+      cur.push([x0, x1, lab]); runs.push([y, x0, x1, lab]);
+    }
+    prev = cur;
+  }
+  const comps = new Map();
+  for (const [y, x0, x1, lab] of runs) {
+    const r = find(lab);
+    if (!comps.has(r)) comps.set(r, []);
+    comps.get(r).push([y, x0, x1]);
+  }
+  return Array.from(comps.values());
+}
+function pgBox(runs) {
+  let y0 = Infinity, y1 = -Infinity, x0 = Infinity, x1 = -Infinity;
+  for (const [y, a, b] of runs) { if (y < y0) y0 = y; if (y > y1) y1 = y; if (a < x0) x0 = a; if (b > x1) x1 = b; }
+  return [x0, y0, x1, y1];
+}
+
+// ── Lokale Linienlage (Restschräge, Wellen im Scan) ─────────────────────
+function pgLineOffsets(dark, st, g) {
+  const q = st.lines, x0 = st.x0, x1 = st.x1, step = pgInt(2 * g), half = pgInt(3 * g);
+  const thick = [];
+  let centers = [];
+  for (let c = x0 + half; c < x1 - half + 1; c += step) centers.push(c);
+  if (!centers.length) centers = [Math.floor((x0 + x1) / 2)];
+  const mid = Math.floor(centers.length / 2);
+  const order = centers.slice(mid).concat(centers.slice(0, mid).reverse());
+  const est = new Map();
+  for (const cx of order) {
+    const nb = [cx - step, cx + step].filter(c => est.has(c)).map(c => est.get(c));
+    let last = nb.length ? nb[0] : 0.0;
+    const ds = [];
+    for (const y of q) {
+      const yc = y + last, r = pgInt(0.3 * g), lo = pgRound(yc) - r;
+      const xa = Math.max(0, cx - half), xb = Math.min(dark.w, cx + half);
+      if (lo < 0 || xb <= xa) continue;
+      const rows = Math.min(2 * r + 1, dark.h - lo); if (rows <= 0) continue;
+      const cnt = []; let mx = 0;
+      for (let k = 0; k < rows; k++) { let s = 0; for (let x = xa; x < xb; x++) s += dark.a[(lo + k) * dark.w + x]; cnt.push(s); if (s > mx) mx = s; }
+      if (mx < 0.4 * (xb - xa)) continue;
+      const top = []; let t5 = 0;
+      cnt.forEach((v, k) => { if (v > 0.7 * mx) top.push(k); if (v > 0.5 * mx) t5++; });
+      ds.push(lo + top.reduce((a, b) => a + b, 0) / top.length - y); thick.push(t5);
+    }
+    if (ds.length) last = pgMedian(ds);
+    est.set(cx, last);
+  }
+  const xs = Array.from(est.keys()).sort((a, b) => a - b), offs = xs.map(x => est.get(x));
+  const t = thick.length ? pgMedian(thick) : 0.1 * g;
+  return {off: x => pgInterp(x, xs, offs), t};
+}
+
+// ── Notenköpfe ─────────────────────────────────────────────────────────
+function pgAnalyseStaff(dark, st, g, ref) {
+  const q = st.lines, x0 = st.x0, x1 = st.x1;
+  const gl = (q[3] - q[0]) / 3, hs = gl / 2;
+  const {off, t: lt} = pgLineOffsets(dark, st, gl);
+  const top = Math.max(0, pgInt(q[0] - 2.2 * gl)), bot = Math.min(dark.h, pgInt(q[3] + 1.9 * gl));
+  const xa = Math.max(0, x0 - pgInt(0.3 * gl)), xb = Math.min(dark.w, x1 + pgInt(0.3 * gl));
+  const reg = pgCrop(dark, top, bot, xa, xb);
+  const kh = Math.max(pgRound(lt) + 3, pgRound(0.17 * gl)), kw = Math.max(kh, pgRound(0.2 * gl));
+  const op = pgOpening(reg, kw, kh);
+  const dens = pgRowMean(reg);
+  const minR = (a, b) => { let m = Infinity; for (let i = a; i < b; i++) m = Math.min(m, dens[i]); return m; };
+  let ylo = bot, yhi = top;
+  for (let y = pgInt(q[3] + 0.6 * gl) - top; y < reg.h - 3; y++) if (minR(y, y + 4) > 0.12) { ylo = top + y; break; }
+  for (let y = pgInt(q[0] - 0.6 * gl) - top; y > 3; y--) if (minR(y - 3, y + 1) > 0.12) { yhi = top + y; break; }
+  const blobs = [];
+  for (const runs of pgComponents(op)) {
+    const [bx0, by0, bx1, by1] = pgBox(runs);
+    let area = 0; for (const r of runs) area += r[2] - r[1] + 1;
+    const sw = bx1 - bx0 + 1, sh = by1 - by0 + 1, sub = new Uint8Array(sw * sh);
+    for (const [y, a, b] of runs) for (let x = a; x <= b; x++) sub[(y - by0) * sw + x - bx0] = 1;
+    blobs.push({x0: bx0 + xa, x1: bx1 + xa, y0: by0 + top, y1: by1 + top, area, sub, sw, sh});
+  }
+  const inner = blobs.filter(b => b.y0 > q[0] - 1.6 * gl && b.y1 < q[3] + 1.2 * gl && x0 + 1.5 * gl < b.x0 && b.x1 < x1 - 0.8 * gl);
+  const sizes = inner.map(b => [b.area, b.x1 - b.x0 + 1]);
+  if (!ref) return {sizes, gl};
+  const [aref, wref] = ref;
+  const stepOf = (x, y) => (q[3] + off(x) - y) / hs;
+  let notes = [];
+  for (const b of blobs) {
+    const w = b.x1 - b.x0 + 1, cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+    if (b.x0 < x0 + PG_CLEF * gl) continue;                       // Schlüssel am Zeilenanfang
+    if (b.y0 <= top + 1 || b.y1 >= bot - 2) continue;              // ragt aus dem Streifen: Text, Titel
+    if (cx > x1 - 0.5 * gl) continue;                              // Custos / Schlussstrich
+    if (cy > ylo - 0.1 * gl || cy < yhi + 0.1 * gl) continue;      // in einer Textzeile
+    if (w < PG_WMIN * wref || b.area < 0.45 * aref) continue;      // Punkte, Reste, Flecken
+    b.wref = wref;
+    notes = notes.concat(pgSplitBlob(b, gl, hs, stepOf));
+  }
+  notes.sort((a, b) => a.x - b.x);
+  const merged = [];                                               // Bruchstücke derselben Note zusammenfassen
+  for (const n of notes) {
+    const m = merged.length ? merged[merged.length - 1] : null;
+    if (m && n.kind === 'note' && m.kind === 'note' && Math.abs(n.p - m.p) < 0.7
+        && n.xa - m.xb < 0.25 * wref && n.xb - m.xa + 1 <= 1.35 * wref) {
+      const wa = m.w, wb = n.w;
+      m.y = (m.y * wa + n.y * wb) / (wa + wb); m.p = (m.p * wa + n.p * wb) / (wa + wb);
+      m.xb = n.xb; m.x = (m.xa + m.xb) / 2; m.w = wa + wb;
+    } else merged.push(n);
+  }
+  notes = merged;
+  const ordered = [];
+  for (let i = 0; i < notes.length;) {                            // übereinander: von unten nach oben
+    let j = i + 1;
+    while (j < notes.length && notes[j].x - notes[i].x < 0.22 * gl) j++;
+    ordered.push(...notes.slice(i, j).sort((a, b) => b.y - a.y));
+    i = j;
+  }
+  const out = [];
+  for (const n of ordered) {
+    const p = pgRound(n.p);
+    if (p < -3 || p > 9) continue;
+    n.letter = PG_LET[p + 3]; out.push(n);
+  }
+  st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref};
+  return {notes: out, gl};
+}
+
+function pgSplitBlob(b, gl, hs, stepOf) {
+  const {sub, sw, sh} = b, wref = b.wref;
+  const cols = [];
+  for (let x = 0; x < sw; x++) {
+    let a = -1, z = -1;
+    for (let y = 0; y < sh; y++) if (sub[y * sw + x]) { if (a < 0) a = y; z = y; }
+    if (a >= 0) cols.push([x, a, z]);
+  }
+  let done = [];
+  for (const c of cols) {
+    if (done.length) {
+      const t = done[done.length - 1], [, pa, pc] = t[t.length - 1];
+      if (Math.abs((c[1] + c[2]) / 2 - (pa + pc) / 2) < 0.16 * gl && Math.abs((c[2] - c[1]) - (pc - pa)) < 0.3 * gl) { t.push(c); continue; }
+    }
+    done.push([c]);
+  }
+  if (!done.some(t => t.length >= 0.5 * wref)) done = [cols];
+  const res = [];
+  for (const t of done) {
+    const ws = t.length;
+    if (ws < 0.5 * wref) continue;
+    const mids = t.map(c => (c[1] + c[2]) / 2), hts = t.map(c => c[2] - c[1] + 1);
+    const n3 = Math.max(1, Math.floor(ws / 4));
+    const cs = pgMedian(mids.slice(0, n3)), ce = pgMedian(mids.slice(-n3)), hmed = pgMedian(hts);
+    const X = i => b.x0 + t[i < 0 ? t.length + i : i][0], Y = v => b.y0 + v;
+    if (Math.abs(ce - cs) > 0.8 * hs && ws > 2.4 * wref) {         // Schrägbalken: Anfang und Ende
+      const xa = X(0) + 0.2 * gl, xb = X(-1) - 0.2 * gl;
+      res.push({x: xa, y: Y(cs), p: stepOf(xa, Y(cs)), kind: 'bar'});
+      res.push({x: xb, y: Y(ce), p: stepOf(xb, Y(ce)), kind: 'bar'});
+      continue;
+    }
+    let xm = (X(0) + X(-1)) / 2;
+    const ytop = pgMedian(t.map(c => c[1])), ybot = pgMedian(t.map(c => c[2]));
+    const nstack = pgRound(hmed / hs);
+    if (nstack >= 2 && hmed > 0.8 * gl) {
+      let ink = 0; for (const c of t) for (let y = c[1]; y <= c[2]; y++) ink += sub[y * sw + c[0]];
+      if (ink / hts.reduce((a, v) => a + v, 0) < 0.8) continue;    // hohl: Vorzeichen, kein Notenpaar
+      const nh = 0.45 * gl;
+      for (const yy of [ybot - nh / 2, ytop + nh / 2]) res.push({x: xm, y: Y(yy), p: stepOf(xm, Y(yy)), kind: 'stack'});
+      continue;
+    }
+    const n = ws > 1.5 * wref ? pgRound(ws / wref) : 1;           // mehrere aneinander stossende Noten
+    for (let k = 0; k < n; k++) {
+      const part = t.slice(Math.floor(k * ws / n), Math.floor((k + 1) * ws / n));
+      const d5 = Math.floor(part.length / 5);
+      let core = part.slice(d5, part.length - d5); if (!core.length) core = part;
+      const ym = pgMedian(core.map(c => (c[1] + c[2]) / 2));
+      const xa = b.x0 + part[0][0], xb = b.x0 + part[part.length - 1][0];
+      xm = (xa + xb) / 2;
+      res.push({x: xm, y: Y(ym), p: stepOf(xm, Y(ym)), kind: 'note', w: part.length, xa, xb});
+    }
+  }
+  return res;
+}
+
+// ── Schlüssel und Trennstriche ──────────────────────────────────────────
+function pgFindClef(st) {
+  const c = st._ctx, gl = c.gl, q = st.lines, x0 = st.x0;
+  const bl = c.blobs.filter(b => b.x0 < x0 + 0.6 * gl && b.x1 > x0 - 0.2 * gl
+    && b.y0 > q[0] - 1.4 * gl && b.y1 < q[3] + 1.4 * gl && b.area > 0.3 * c.wref * c.wref);
+  if (!bl.length) return '';
+  const ya = Math.min(...bl.map(b => b.y0)), yb = Math.max(...bl.map(b => b.y1));
+  const xa = Math.min(...bl.map(b => b.x0)), xb = Math.max(...bl.map(b => b.x1));
+  const sub = pgCrop(c.op, ya - c.top, yb - c.top + 1, xa - c.xa, xb - c.xa + 1);
+  const rows = []; let tot = 0, wsum = 0, mx = 0;
+  for (let y = 0; y < sub.h; y++) { let s = 0; for (let x = 0; x < sub.w; x++) s += sub.a[y * sub.w + x]; rows.push(s); tot += s; wsum += s * y; if (s > mx) mx = s; }
+  let ym = ya + wsum / Math.max(1, tot);
+  // Do-Schlüssel: zwei Blöcke, die Linie läuft durch die Lücke dazwischen
+  const rs = []; let s0 = -1;
+  for (let y = 0; y <= rows.length; y++) {
+    const on = y < rows.length && rows[y] > 0.15 * Math.max(1, mx);
+    if (on && s0 < 0) s0 = y;
+    if (!on && s0 >= 0) { if (y - s0 >= 0.2 * gl) rs.push([s0, y - 1]); s0 = -1; }
+  }
+  if (rs.length >= 2) {
+    const big = rs.slice().sort((a, b) => (b[1] - b[0]) - (a[1] - a[0])).slice(0, 2).sort((a, b) => a[0] - b[0]);
+    ym = ya + (big[0][1] + big[1][0]) / 2;
+  }
+  const p = c.stepOf((xa + xb) / 2, ym);
+  const line = Math.floor(p / 2 + 0.5) + 1;
+  if (line < 1 || line > 4) return '';
+  return ((xb - xa) > 1.9 * c.wref ? 'f' : 'c') + line;
+}
+
+function pgFindBars(st) {
+  const c = st._ctx, gl = c.gl, q = st.lines, x0 = st.x0;
+  const ra = Math.max(0, pgInt(q[0] - 0.9 * gl) - c.top), rb = pgInt(q[3] + 0.9 * gl) - c.top;
+  const reg = pgCrop(c.reg, ra, rb, 0, c.reg.w);
+  const k = Math.max(5, pgRound(0.55 * gl));
+  const v = pgLine1(pgLine1(reg, k, 0, true), k, 0, false);           // nur senkrechte Läufe ≥ 0.55 Linienabstand
+  const near = pgLine1(pgLine1(pgCrop(c.op, ra, rb, 0, c.op.w), 2 * pgInt(0.3 * gl) + 1, 1, false), 2 * pgInt(0.15 * gl) + 1, 0, false);
+  let bars = [];
+  for (const runs of pgComponents(v)) {
+    const [bx0, by0, bx1, by1] = pgBox(runs);
+    if (bx1 - bx0 + 1 > 0.35 * gl) continue;                          // zu breit: Initiale, Notenstapel
+    const cx = (bx0 + bx1) / 2 + c.xa;
+    if (cx < x0 + PG_CLEF * gl) continue;
+    let tot = 0, hit = 0;
+    for (const [y, a, b] of runs) { tot += b - a + 1; for (let x = a; x <= b; x++) hit += near.a[y * near.w + x]; }
+    if (hit > 0.25 * tot) continue;                                    // hängt an einem Notenkopf: Hals
+    const m = pgInt(0.3 * gl), g2 = 2;
+    let asym = 0;
+    for (let y = by0; y <= by1; y++) {
+      const l = pgAnyRow(reg, y, Math.max(0, bx0 - m), Math.max(0, bx0 - g2)), r = pgAnyRow(reg, y, bx1 + g2 + 1, bx1 + m + 1);
+      if (l !== r) asym++;
+    }
+    if ((by1 - by0 + 1) < 1.4 * gl && asym / (by1 - by0 + 1) > 0.4) continue;   // b-Vorzeichen, Custos
+    const L = (by1 - by0 + 1) / gl, pm = c.stepOf(cx, (by0 + by1) / 2 + ra + c.top);
+    let t;
+    if (L >= 2.5) t = ':';
+    else if (L >= 1.4 && pm > 0.5 && pm < 5.5) t = ';';
+    else if (L >= 0.5 && L < 1.4 && pm >= 4.5) t = ',';
+    else continue;
+    bars.push({x: cx, type: t});
+  }
+  bars.sort((a, b) => a.x - b.x);
+  const out = [];
+  for (const b of bars) {
+    const l = out[out.length - 1];
+    if (l && b.x - l.x < 0.8 * gl) { if (b.type === ':' && (l.type === ':' || l.type === '::')) l.type = '::'; continue; }
+    out.push(b);
+  }
+  return out;
+}
+
+// ── Textzeile und Initiale ──────────────────────────────────────────────
+function pgTextTop(dark, st, gl) {
+  const q = st.lines, xa = pgInt(st.x0), xb = pgInt(st.x1);
+  const ya = pgInt(q[3] + 0.6 * gl), yb = Math.min(dark.h, pgInt(q[3] + 5 * gl));
+  const dens = pgRowMean(pgCrop(dark, ya, yb, xa, xb));
+  const k = Math.max(4, pgInt(0.3 * gl));
+  for (let y = 0; y < dens.length - k; y++) {
+    let mn = Infinity; for (let i = y; i < y + k; i++) mn = Math.min(mn, dens[i]);
+    if (mn > 0.07) { while (y > 0 && dens[y - 1] > 0.02) y--; return ya + y; }
+  }
+  return null;
+}
+
+function pgDropcapBox(dark, st, gl, others) {
+  const q = st.lines, yt0 = pgTextTop(dark, st, gl);
+  const yt = yt0 !== null && yt0 !== 0 ? yt0 : pgInt(q[3] + 2 * gl);
+  const xa = Math.max(0, pgInt(st.x0 - 16 * gl)), xb = pgInt(st.x0 - 0.1 * gl);
+  const ya = Math.max(0, pgInt(q[0] - 3.5 * gl)), yb = pgInt(Math.min(dark.h, yt + 2.5 * gl));
+  if (xb - xa < gl) return null;
+  const blocked = [];
+  for (const o of others || []) {
+    if (o === st) continue;
+    const og = (o.lines[3] - o.lines[0]) / 3;
+    blocked.push([o.x0 - xa, o.lines[0] - og - ya, o.x1 - xa, o.lines[3] + 2.5 * og - ya]);
+  }
+  const inOther = b => blocked.some(r => b[0] < r[2] && r[0] < b[2] && b[1] < r[3] && r[1] < b[3]);
+  const ybx = pgInt(Math.min(dark.h, yb + 6 * gl));                    // grosse Zier-Initialen reichen ins nächste System
+  let best = null; const boxes = [];
+  for (const runs of pgComponents(pgCrop(dark, ya, ybx, xa, xb))) {
+    const b = pgBox(runs); boxes.push(b);
+    if (b[1] < yb - ya && b[3] - b[1] >= 2.5 * gl && !inOther(b) && (!best || b[3] - b[1] > best[3] - best[1])) best = b.slice();
+  }
+  if (!best) return null;
+  // Verzierte Initialen bestehen aus mehreren Teilen: alle grösseren Teile dazunehmen, die den Kasten berühren
+  const m = 0.3 * gl, mv = 1.5 * gl;
+  for (let grown = true; grown;) {
+    grown = false;
+    for (const b of boxes) {
+      if (Math.max(b[3] - b[1], b[2] - b[0]) < 0.3 * gl || inOther(b)) continue;
+      if (b[0] > best[2] + m || b[2] < best[0] - m || b[1] > best[3] + mv || b[3] < best[1] - mv) continue;
+      if (b[3] < best[1] && b[3] - b[1] < 1.2 * gl) continue;          // kleine Angabe darüber (Modus «VIII», «5»)
+      const nb = [Math.min(best[0], b[0]), Math.min(best[1], b[1]), Math.max(best[2], b[2]), Math.max(best[3], b[3])];
+      if (nb.some((v, i) => v !== best[i])) { best = nb; grown = true; }
+    }
+  }
+  const pad = pgInt(0.3 * gl);
+  return [xa + best[0] - pad, ya + best[1] - pad, xa + best[2] + pad, ya + best[3] + pad];
+}
+
+// Tintengruppen der ersten Textzeile (Lücke ≥ 0.2 Linienabstand trennt), mit «endet auf Trennstrich»
+function pgTextChunks(dark, st, gl) {
+  const yt = pgTextTop(dark, st, gl);
+  if (yt === null) return [];
+  const xa = Math.max(0, pgInt(st.x0 - 0.5 * gl)), xb = Math.min(dark.w, pgInt(st.x1 + 0.5 * gl));
+  let band = pgCrop(dark, pgInt(yt), Math.min(dark.h, pgInt(yt + 1.3 * gl)), xa, xb);
+  let dens = pgRowMean(band), yb = dens.length;
+  for (let y = pgInt(0.5 * gl); y < dens.length; y++) if (dens[y] < 0.01) { yb = y; break; }
+  band = pgCrop(band, 0, yb, 0, band.w); dens = dens.slice(0, yb);
+  if (!band.h || !band.w) return [];
+  const dmax = Math.max(...dens), body = [];
+  dens.forEach((d, i) => { if (d > 0.5 * dmax) body.push(i); });
+  const bt = body[0], bb = body[body.length - 1];
+  const runs = []; let s0 = -1;
+  for (let x = 0; x <= band.w; x++) {
+    let on = false;
+    if (x < band.w) for (let y = 0; y < band.h; y++) if (band.a[y * band.w + x]) { on = true; break; }
+    if (on && s0 < 0) s0 = x;
+    if (!on && s0 >= 0) { runs.push([s0, x - 1]); s0 = -1; }
+  }
+  const groups = [];
+  for (const [a, b] of runs) {
+    const g = groups[groups.length - 1];
+    if (g && a - g[g.length - 1][1] < 0.2 * gl) g.push([a, b]); else groups.push([[a, b]]);
+  }
+  const out = [];
+  for (const g of groups) {
+    const [a, b] = g[g.length - 1];
+    let r0 = -1, r1 = -1;
+    for (let y = 0; y < band.h; y++) if (pgAnyRow(band, y, a, b + 1)) { if (r0 < 0) r0 = y; r1 = y; }
+    let hy = false;
+    if (r0 >= 0) {
+      const h = r1 - r0 + 1, mid = (r0 + r1) / 2;
+      hy = h < 0.22 * gl && bt + 0.15 * (bb - bt) < mid && mid < bb - 0.15 * (bb - bt) && (b - a) < 0.6 * gl;
+    }
+    if (g.length === 1 && hy) { if (out.length) out[out.length - 1].hyphen = true; continue; }
+    const x1 = hy && g.length > 1 ? g[g.length - 2][1] : g[g.length - 1][1];   // Trennstrich nicht zur Breite zählen
+    out.push({x0: g[0][0] + xa, x1: x1 + xa, hyphen: hy});
+  }
+  return out;
+}
+
+// ── Text auf Tintengruppen und Noten legen ──────────────────────────────
+function pgCleanLine(t) { return String(t || '').trim().replace(/-\s+(?=\S)/g, '-'); }
+
+function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
+  const syls = [];
+  for (const w of text.split(/\s+/)) {
+    if (!/\p{L}/u.test(w)) continue;
+    const parts = w.split('-').filter(p => p);
+    parts.forEach((p, k) => syls.push({text: p, word: k === 0, wend: k === parts.length - 1,
+      n: p.replace(/[^\p{L}\p{N}_]/gu, '').length || 1}));
+  }
+  if (!syls.length) return [];
+  if (dropcap && syls[0].n > 0) syls[0].n -= 1;                       // erster Buchstabe steht als Initiale ausserhalb
+  const S = syls.length, C = chunks.length;
+  if (C === 0) return null;
+  const cw = chunks.reduce((s, c) => s + c.x1 - c.x0, 0) / Math.max(1, syls.reduce((s, x) => s + x.n, 0));
+  const INF = 1e18, L = 4, SKIP = 1.0;
+  const f = Array.from({length: S + 1}, () => new Array(C + 1).fill(INF));
+  const bk = Array.from({length: S + 1}, () => new Array(C + 1).fill(null));
+  f[0][0] = 0;
+  if (syls[0].n === 0) { f[1][0] = 0; bk[1][0] = ['drop']; }        // Initiale ist eine ganze Silbe («A-ve»)
+  for (let i = 0; i <= S; i++) {
+    for (let j = 0; j <= C; j++) {
+      if (f[i][j] >= INF) continue;
+      if (j < C && f[i][j] + SKIP < f[i][j + 1]) { f[i][j + 1] = f[i][j] + SKIP; bk[i][j + 1] = ['skip', i, j]; }
+      if (j >= C) continue;
+      const c = chunks[j], w = c.x1 - c.x0;
+      for (let r = 1; r <= L && i + r <= S; r++) {
+        const run = syls.slice(i, i + r);
+        const est = cw * run.reduce((s, x) => s + x.n, 0);
+        let cost = Math.abs(w - est) / Math.max(cw * 2.5, 1e-6);
+        cost += 2.0 * run.slice(1).filter(x => x.word).length;          // Gruppe über eine Wortgrenze
+        if (c.hyphen && run[r - 1].wend) cost += 0.5;
+        if (!c.hyphen && !run[r - 1].wend) cost += 0.3;
+        if (f[i][j] + cost < f[i + r][j + 1]) { f[i + r][j + 1] = f[i][j] + cost; bk[i + r][j + 1] = ['take', i, j, r]; }
+      }
+    }
+  }
+  let j = 0;
+  for (let jj = 1; jj <= C; jj++) if (f[S][jj] + SKIP * (C - jj) < f[S][j] + SKIP * (C - j)) j = jj;
+  let i = S; const assign = new Map();
+  while (i > 0 || j > 0) {
+    const b = bk[i][j];
+    if (!b) break;
+    if (b[0] === 'drop') break;
+    if (b[0] === 'skip') { i = b[1]; j = b[2]; continue; }
+    assign.set(b[2], [b[1], b[3]]); i = b[1]; j = b[2];
+  }
+  for (const [cj, [pi, r]] of assign) {
+    const c = chunks[cj], run = syls.slice(pi, pi + r), tot = run.reduce((s, x) => s + x.n, 0);
+    let pos = 0;
+    for (const s of run) {
+      s.x = c.x0 + (c.x1 - c.x0) * pos / Math.max(1, tot);
+      s.x1 = c.x0 + (c.x1 - c.x0) * (pos + s.n) / Math.max(1, tot); pos += s.n;
+    }
+  }
+  syls.forEach((s, k) => {                                              // Silben ohne Gruppe zwischen die Nachbarn
+    if (s.x !== undefined) return;
+    let left = chunks[0].x0 - gl;
+    for (let q = k - 1; q >= 0; q--) if (syls[q].x !== undefined) { left = syls[q].x1; break; }
+    s.x = left + 0.1 * gl; s.x1 = s.x + 0.5 * gl;
+  });
+  return syls.map(s => ({text: s.text, x: s.x, x1: s.x1, word: s.word}));
+}
+
+// GABC-Zeile: Notengruppen (Lücke > 0.8 Linienabstand) per dynamischer Programmierung monoton auf die Silben verteilen
+function pgToGabcText(notes, bars, syls, gl) {
+  if (!syls || !syls.length) return null;
+  const units = [];
+  for (const n of notes) {
+    const u = units[units.length - 1];
+    if (u && n.x - u[u.length - 1].x <= PG_UNIT_GAP * gl) u.push(n); else units.push([n]);
+  }
+  const S = syls.length, U = units.length;
+  const a = syls.map(s => s.x - 0.4 * gl), b = a.map((v, i) => i + 1 < S ? a[i + 1] : 1e9);
+  a[0] = -1e9;
+  const cost = (j, i) => { const x = units[j][0].x; return (a[i] <= x && x < b[i]) ? 0 : Math.min(Math.abs(x - a[i]), Math.abs(x - b[i])) / gl; };
+  const P = 0.8, INF = 1e18, groups = syls.map(() => []);
+  if (U) {
+    const f = Array.from({length: U}, () => new Array(S).fill(INF)), bk = Array.from({length: U}, () => new Array(S).fill(-1));
+    for (let i = 0; i < S; i++) f[0][i] = cost(0, i) + P * i;
+    for (let j = 1; j < U; j++) {
+      let M = INF, Mk = -1;
+      for (let i = 0; i < S; i++) {
+        let cand = f[j - 1][i], ci = i;
+        if (Mk >= 0 && M + P * (i - 1) < cand) { cand = M + P * (i - 1); ci = Mk; }
+        f[j][i] = cand + cost(j, i); bk[j][i] = ci;
+        if (f[j - 1][i] - P * i < M) { M = f[j - 1][i] - P * i; Mk = i; }
+      }
+    }
+    let end = 0;
+    for (let i = 1; i < S; i++) if (f[U - 1][i] + P * (S - 1 - i) < f[U - 1][end] + P * (S - 1 - end)) end = i;
+    let i = end;
+    for (let j = U - 1; j >= 0; j--) { groups[i] = units[j].concat(groups[i]); if (j > 0) i = bk[j][i]; }
+  }
+  let toks = syls.map((s, i) => [groups[i].length ? groups[i][0].x : s.x, i, s.text + '(' + groups[i].map(n => n.letter).join('') + ')', s.word]);
+  let m = -1e9;
+  toks = toks.map(t => { m = Math.max(m, t[0]); return [m, t[1], t[2], t[3]]; });
+  toks = toks.concat(bars.map(bb => [bb.x, 1e6, '(' + bb.type + ')', true]));
+  toks.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+  let out = '';
+  toks.forEach((t, i) => { out += (i && (t[3] || t[2][0] === '(' || toks[i - 1][2][0] === '(') ? ' ' : '') + t[2]; });
+  return out;
+}
+
+// ── Ganze Seite ─────────────────────────────────────────────────────────
+// img: Graustufenbild der Seite (~300 dpi). Gibt {img (entzerrt), staves: [{lines, x0, x1, gl, notes, bars, clef,
+// dropcap, chunks}], gap, angle, thr}.
+function pgAnalysePage(img) {
+  const sv = pgStaves(img);
+  const thr = pgInt((pgOtsu(sv.img) + pgMedianGray(sv.img)) / 2);
+  const dark = pgThreshold(sv.img, thr), sts = sv.sts, g = sv.g;
+  let sizes = [];
+  for (const st of sts) sizes = sizes.concat(pgAnalyseStaff(dark, st, g, null).sizes);
+  const ref = sizes.length ? [pgMedian(sizes.map(s => s[0])), pgMedian(sizes.map(s => s[1]))] : [0.2 * g * g, 0.45 * g];
+  const dcs = [];
+  for (const st of sts) {
+    let d = pgDropcapBox(dark, st, (st.lines[3] - st.lines[0]) / 3, sts);
+    if (d && dcs.some(p => p && d[0] < p[2] && p[0] < d[2] && d[1] < p[3] && p[1] < d[3])) d = null;   // Teil einer schon gefundenen
+    dcs.push(d);
+  }
+  const staves = sts.map((st, k) => {
+    const {notes, gl} = pgAnalyseStaff(dark, st, g, ref);
+    return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st),
+      dropcap: dcs[k], textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
+  });
+  return {img: sv.img, staves, gap: g, angle: sv.ang, thr};
+}
+
+// GABC-Zeile eines Systems aus dem gelesenen Text (Silben mit «-», Wörter mit Leerzeichen)
+function pgStaffGabc(staff, text) {
+  const t = pgCleanLine(text);
+  let syls = pgSyllablesFromChunks(t, staff.chunks, staff.gl, !!staff.dropcap);
+  if (syls === null) {                                                   // keine Textgruppen: gleichmässig verteilen
+    const parts = [];
+    t.split(/\s+/).filter(w => /\p{L}/u.test(w)).forEach(w => w.split('-').filter(p => p).forEach((p, k) => parts.push({text: p, word: k === 0})));
+    const span = staff.x1 - staff.x0;
+    syls = parts.map((p, i) => ({text: p.text, word: p.word, x: staff.x0 + span * i / Math.max(1, parts.length), x1: 0}));
+  }
+  if (!syls.length) syls = [{text: '', x: staff.x0, x1: staff.x0, word: true}];
+  return pgToGabcText(staff.notes, staff.bars, syls, staff.gl);
+}
 // ── Self-test: known-good GABC roundtrip cases ──────────────────
 // Guards against regressions in gregImportGABCString()/gregEntriesToBody()
 // — several of the bugs found across many rounds of testing (accidentals
@@ -9002,7 +9686,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '407';
+const NOTATOR_BUILD_ID = '408';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

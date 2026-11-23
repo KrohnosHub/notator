@@ -92,6 +92,10 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   nummerierte Zeile für sich bleibt – sonst zieht Sonnet gelegentlich Zeilen zusammen.
 - **Bildausschnitt grosszügig:** Der Textstreifen muss unten Unterlängen und Kommaschwänze enthalten, sonst werden
   Kommas als Punkte gelesen – das sieht aus wie ein Lesefehler der KI. Lange Zeilen teilen statt verkleinern.
+- **JS-Fassung (Build 408):** `src/js/2-choral/172-pdf-geometrie.js`, Funktionen `pg…`. Muss sich wie der Python-Prototyp
+  verhalten (Test `tests/pdf-geometrie.test.js`). Stolperstellen beim Übertragen: PIL dreht bikubisch mit **a = −1**
+  (nicht −0.5) – sonst kippen einzelne Notenköpfe; Python rundet .5 zur geraden Zahl (`pgRound`); im Node-Test
+  `vm.runInThisContext` statt eigenem `vm`-Kontext, sonst wird die Bildverarbeitung rund 100-mal langsamer.
 - **Neumenformen fehlen noch** (Quilisma, Liqueszenz, Oriscus, Episem, Mora …): wichtigstes offenes Thema, hohe Priorität
   (Matthias, 23.11.2026; siehe `NOTES.md`, Offen).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
