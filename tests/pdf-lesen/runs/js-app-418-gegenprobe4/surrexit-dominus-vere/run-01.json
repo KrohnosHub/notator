@@ -1,0 +1,24 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SUrréxit Dóminus vere: Allelúia, allelúia",
+   "mode": "7",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "SUr(f)ré(f)xit(f) Dó(g)mi(f)nus(e) ve(g)re:(h.) (;) Al(h)le(hg)lú(g)ia,(f) al(d)le(fg)lú(gf)ia.(f.) (::)",
+    "Et() ap(f)pá(f)ru(gf)it(fegh.) (::) Si()mó()ni.()",
+    "Gló(f)ri(f)a(e) Pa(g)tri,(h) (,) et(h) Fí(ixhi)li(h)o,(h) (,) et(h) Spi(h)rí(h)tu(g)i(h) Sanc(gf)to.(f.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2184,
+  "output_tokens": 171,
+  "costUsd": 0.006078
+ },
+ "durationMs": 6516
+}

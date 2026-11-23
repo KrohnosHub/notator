@@ -1,0 +1,31 @@
+{
+ "id": "surrexit-dominus-vere",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Liber antiphonarius 1960, S. 37 (Neusatz), Datei aus dem Drive des Nutzers",
+  "reference": "Surrexit Dominus vere.notator",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "neusatz",
+  "rote-rubriken",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 4 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Sauberer Neusatz (keine Scan-Störungen), 3 Systeme, rote Hinweise «rep. Alleluja», «rep. Surréxit» rechts neben den Systemen. Soll aus der Notator-Datei, gegen den Druck geprüft; «℣.» und «*» weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Surrexit Dominus vere",
+   "mode": "7",
+   "clef": "c4",
+   "systems": [
+    "SUr(f)ré(f)xit(f) Dó(g)mi(f)nus(e') ve(g)re:(h.) (;) Al(h)le(h_g)lú(g)ia,(f_') al(d)le(f_g)lú(gf~)ia.(f.) (::)",
+    "Et(f) ap(f)pá(g)ru(f)it(f) Si(e')mó(g)ni.(h.) (::)",
+    "Gló(f)ri(f)a(e') Pa(g)tri,(h_') (,) et(h) (ix)Fí(hi)li(h)o,(h_') (,) et(h) Spi(h)rí(h')tu(g)i(h') San(gf~)cto.(f.) (::)"
+   ]
+  }
+ ]
+}

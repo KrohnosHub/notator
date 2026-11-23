@@ -140,6 +140,14 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   am Rand sind keine Initiale (Mindestbreite 0.6 Linienabstände). Vergleich mit Build 416: alle älteren Fälle unverändert.
   Der Prototyp-Vergleich (`tests/pdf-geometrie.test.js`) lässt seither 1 Note/Textgruppe Unterschied je System als Hinweis zu
   (Rundungs-Grenzfall bei ad-te-levavi).
+- **Gegenprobe 4 (Build 418/419, 23.11.2026):** Handschriftliche Akkordbuchstaben über den Systemen sind auf vielen Blättern
+  von Matthias (Campion, Vox clara, Dominus dixit): «B», «Es» ergaben falsche ♭, Federstriche falsche Divisiones minimae.
+  Seither ♭ nur auf der b-Stufe des Schlüssels (`pgBSteps`, beide Oktaven) und Divisio minima nur ab 0.05 Linienabständen
+  mittlerer Strichbreite (gedruckt 0.09–0.21; die Regel spart netto 5 von 63 Trennstrich-Fehlern, kostet aber einzelne feine
+  echte Striche). Was die KI auf Anweisung weglässt (Strophennummer, ℣, Ps.), steht trotzdem als Tinte im Bild und verschob die
+  Silbenzuordnung – deshalb liefert die KI diese Zeichen jetzt mit (`PG_SIGN_RE`), sie dienen nur der Zuordnung. Eine Regel
+  «Textgruppen links der ersten Note weglassen» war falsch: dort steht auch echter Text ohne eigene Noten («Ma-» in Salve mater).
+  Neusatz-Drucke (Surrexit) und GR-Satz mit F-Schlüssel werden fast fehlerfrei gelesen; schwierig bleiben blasse, handbeschriebene Scans.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

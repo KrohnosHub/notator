@@ -1,0 +1,33 @@
+{
+ "id": "dominus-dixit",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "sanctamissa.org, Weihnachten Mitternachtsmesse (Seite 1 von 4), Ausdruck mit Handnotizen aus dem Drive des Nutzers",
+  "reference": "Dominus dixit ad me.notator (GregoBase, Graduale Romanum 1961)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "fa-schluessel",
+  "f3",
+  "initiale",
+  "handschriftliche-akkorde",
+  "kopf-und-fusstext",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 4 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Erster Fall mit F-Schlüssel (f3). Handschriftliche Akkorde über allen Systemen, Kopfzeilen und eine Graduale-Angabe als reiner Text. Soll aus der Notator-Datei, Text nach dem Druck (DOmi-nus, dí-xit, mé-us, gén-tes, Pá-tri); «*» und «Ps.» weggelassen. Nicht Note für Note geprüft.",
+ "pieces": [
+  {
+   "incipit": "Dominus dixit",
+   "mode": "2",
+   "clef": "f3",
+   "systems": [
+    "DO(fh/ih)mi(hhh)nus(f.) (,) dí(f!hh)xit(f!hh) ad(eg~) me :(f.) (;) Fí(fgf)li(fe)us(f) mé(h_g)us(h_i)",
+    "es(fgF'E) tu,(e.) (:) é(fh/ih)go(hhh) hó(f/hhh)di(fe)e(e.) (,) gé(fge)nu(hh)i(ivH'G/h) te.(f.) (::) Qua(e)re(fe)",
+    "fre(eh)mu(hg)é(hi)runt(i) gén(hi)tes :(h.) (:) et(hf~) pó(fh)pu(h)li(h) me(h)di(h)tá(h)ti(h') sunt(i) in(hf)á(h)ni(ge)a?(fgf.) (::)",
+    "Gló(e)ri(fe)a(eh) Pá(h)tri.(h) (::) E(h') u(i) o(hf) u(h) a(ge) e.(fgf.) (::)"
+   ]
+  }
+ ]
+}

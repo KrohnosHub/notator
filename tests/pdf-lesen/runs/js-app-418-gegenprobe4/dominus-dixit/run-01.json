@@ -1,0 +1,25 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "DOminus dixit ad me: Filius",
+   "mode": "",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "DO(fhih) (,) mi(hhh)nus(f) di(fhh)xit(fhh) (,) ad(eg) me:(f) (,) Fi(fgf)li(fe)us(f) mé(hg) (,) us(hi.)",
+    "es(fgfe) tu,(e) (:) é(fhih)go(hhh) hó(fhhh)di(fe)e(e) (,) (,) gé(fge) (,) nu(hhihgh) (,) i(f) (,) te.() (::) Qua(e)re(fe)",
+    "fre(ehf)mu(hg)é(hi)runt(i) gén(hi)tes:(h.) et(hv) pó()pu(fh)li(h) me(h)di(h)tá(h)ti(hh) sunt(i) in(hf)á(h)ni(ge) (,) a?(fgf.) (:)",
+    "Gló(e)ri(fde)a(eh) Pá(h)tri.(hfv) E(h) u(i) o(hf) u(h) a(ge) e.(fgf) (;)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2358,
+  "output_tokens": 196,
+  "costUsd": 0.006676
+ },
+ "durationMs": 8205
+}

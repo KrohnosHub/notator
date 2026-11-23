@@ -1,0 +1,31 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Roráte, cæli, désuper, et nubes",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "Ro(f)rá(gh)te,(h.) cæ(k)li,(j) dé(ixji)su(h)per,(hg.) (;) et(h) (,) nu(ixi)bes(h) plu(gf)ant(e) ju(fe)stum.(d.) (::)",
+    "Ne(f) i(g)ra()cá()ris,(h) Dó()mi()ne,(h.) ne(h) ul(h)tra() me(hh)mí(h)ne(h)ris() (;)",
+    "i(g)ni(i)qui() (;) tá(g)tis:(f.) (:) ec(h)ce(i) cí() (,) vi(j)tas() Sanc() (,) ti(j.) fac()ta(j)",
+    "est(j) de(j)sér(j)ta:(j.) (,) Si(j)on(j) de(j)sér(jk)ta(j) (,) fac(ixji)ta(h) est:(h.) (;)",
+    "Je()rú()sa()lem(h.) de(ixgi)so(h)lá()ta() est:(f.) (:) do()mus(h) sanc()ti() (;)",
+    "fi(hh)ca()ti(h)ó(h)nis(h) tu(h)æ(h.) et(h) gló(h)ri(g)æ(j) tu(ji)æ,(h.) (;)",
+    "u(f)bi(gh) lau(h)da()vé(h)runt(ixhi) te() pa(h)tres(h.) no(gf)stri.(efe) Ro()rá()te.(d.) (::)",
+    "Pec(f)cá(gh)vi(h)mus,(h.) et(h) fac(h)ti(h) su(h)mus(h) tam(h)quam(gg) im(h) (,) mún(ixhi)dus(h) nos,(h.) (;)",
+    "et(h) ce(g)cí(f)di(e)mus() (;) qua(h)si(h) fó(h)li()um(g) u(i)ni(h)vér(hv)si:(f.) (:) et(h) i(ixi)ni(j) (,)",
+    "qui(j)tá()tes(j) no() (,) stræ() qua(j)si(j) ven(j)tus(j) abs(k)tu(j)lé(j)runt(h) nos:()"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 4833,
+  "output_tokens": 514,
+  "costUsd": 0.014806
+ },
+ "durationMs": 10635
+}

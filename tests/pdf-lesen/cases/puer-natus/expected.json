@@ -1,0 +1,42 @@
+{
+ "id": "puer-natus",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Chants of the Church 1956, Nr. 3 (Seite 1 von 2), Scan aus dem Drive des Nutzers",
+  "reference": "Puer natus in Béthlehem.notator (Chants of the Church 1956, S. 129)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "strophen-mit-eigenen-noten",
+  "kleiner-druck",
+  "kehrvers-als-text",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 4 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Kleiner, dichter Druck, 13 Systeme: Strophe 1 mit Kehrvers «In cordis jubilo» (3 Systeme), dann Strophen 2–6 mit je zwei Systemen und derselben Melodie; «℟. In cordis.» steht danach nur als Text und fehlt im Soll, ebenso Strophennummern. Melodie aus der Notator-Datei (gleiche Ausgabe), Strophentexte vom Druck; Akzente nach dem Druck.",
+ "pieces": [
+  {
+   "incipit": "Puer natus in Bethlehem",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "PU(d)er(f') na(f)tus(e') in(f) Béth(g')le(f)hem,(e') al(d)le(f')lú(e)ia :(d.) (;) Un(d)de(f') gau(g)det(h')",
+    "Je(g)rú(h')sa(g)lem,(f.) (;) al(f)le(f')lú(f)ia,(f') al(h)le(g')lú(f)ia.(e.) (::) In(d) cor(f')dis(g) jú(h')(ix)bi(i)lo(j.) (,) Chri(j)",
+    "stum(f') na(f)tum(f') ad(h)o(g')ré(f)mus,(e.) (;) Cum(d) no(f')vo(f) cán(e')ti(e)co.(d.) (::)",
+    "As(d)súmp(f')sit(f) car(e')nem(f) Fí(g')li(f)us,(e') al(d)le(f')lú(e)ia,(d.) (;) De(d)i(f') Pa(g)tris(h') al(g)tís(h')",
+    "si(g)mus,(f.) (;) al(f)le(f')lú(f)ia,(f') al(h)le(g')lú(f)ia.(e.) (::)",
+    "Per(d) Ga(f')bri(f)é(e')lem(f) nún(g')ti(f)um,(e') al(d)le(f')lú(e)ia,(d.) (;) Vir(d)go(f') con(g)cé(h')pit(g) Fí(h')",
+    "li(g)um,(f.) (;) al(f)le(f')lú(f)ia,(f') al(h)le(g')lú(f)ia.(e.) (::)",
+    "Tam(d)quam(f') spon(f)sus(e') de(f) thá(g')la(f)mo,(e') al(d)le(f')lú(e)ia,(d.) (;) Pro(d)cés(f')sit(g) Ma(h')tris(g)",
+    "ú(h')te(g)ro,(f.) (;) al(f)le(f')lú(f)ia,(f') al(h)le(g')lú(f)ia.(e.) (::)",
+    "Hic(d) ja(f')cet(f) in(e') prae(f)sé(g')pi(f)o,(e') al(d)le(f')lú(e)ia,(d.) (;) Qui(d) re(f')gnat(g) si(h')ne(g) tér(h')",
+    "mi(g)no,(f.) (;) al(f)le(f')lú(f)ia,(f') al(h)le(g')lú(f)ia.(e.) (::)",
+    "Et(d) An(f')ge(f)lus(e') pa(f)stó(g')ri(f)bus,(e') al(d)le(f')lú(e)ia,(d.) (;) Re(d)vé(f')lat(g) quod(h') sit(g) Dó(h')",
+    "mi(g)nus,(f.) (;) al(f)le(f')lú(f)ia,(f') al(h)le(g')lú(f)ia.(e.) (::)"
+   ]
+  }
+ ]
+}

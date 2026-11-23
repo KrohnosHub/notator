@@ -170,6 +170,13 @@ function pgColumnSplit(img) {
   const xs = []; cross.forEach((n, k) => { if (n === mn) xs.push(k); });
   return xa + xs[Math.floor(xs.length / 2)];
 }
+// GABC-Buchstaben der Tonstufe h/b für einen Schlüssel (beide Oktaven): c4 → i (b), c3 → g, c2 → e, f3 → d/k …
+function pgBSteps(clef) {
+  const m = /^([cf])b?([1-4])$/.exec(clef || '');
+  if (!m) return '';
+  const k = 'abcdefghijklm'.indexOf('dfhj'[+m[2] - 1]) + (m[1] === 'c' ? -1 : 3);   // b eine Stufe unter c bzw. drei über f
+  return ['abcdefghijklm'[k - 7], 'abcdefghijklm'[k], 'abcdefghijklm'[k + 7]].filter(Boolean).join('');
+}
 // Graubild-Ausschnitt (Spalte)
 function pgCropGray(img, x0, x1) {
   const w = x1 - x0, a = new Uint8Array(w * img.h);
@@ -626,6 +633,11 @@ function pgFindBars(st) {
     else if (L >= 1.4 && pm > 0.5 && pm < 5.5) t = ';';
     else if (L >= 0.5 && L < 1.4 && pm >= 4.5) t = ',';
     else continue;
+    // Build 419 (nicht im Prototyp): eine Divisio minima endet knapp über der obersten Linie; ein Strich, der über den
+    // Suchbereich (0.9 Linienabstände) hinausragt, ist Handschrift (Akkordzeichen über dem System, Dominus dixit)
+    if (t === ',' && by0 <= 1 && !globalThis._pgNurPrototyp) continue;
+    // … ebenso ein kurzer Strich unter 0.07 Linienabständen mittlerer Breite: gedruckte Divisio minima 0.09–0.21, Feder/Bleistift dünner
+    if (t === ',' && !globalThis._pgNurPrototyp && tot / (by1 - by0 + 1) < 0.05 * gl) continue;
     bars.push({x: cx, type: t});
   }
   bars.sort((a, b) => a.x - b.x);
@@ -758,11 +770,14 @@ function pgTextChunks(dark, st, gl) {
 }
 
 // ── Text auf Tintengruppen und Noten legen ──────────────────────────────
+const PG_SIGN_RE = /^(\d+\.?|[℣℟]\.?|[VR]\/\.?|Ps\.)$/i;
 function pgCleanLine(t) { return String(t || '').trim().replace(/-\s+(?=\S)/g, '-'); }
 
 function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
   const syls = [];
   for (const w of text.split(/\s+/)) {
+    // Build 419: Strophennummern, ℣ ℟ und «Ps.» liefert die KI mit – sie belegen ihre Textgruppe und werden danach entfernt
+    if (!globalThis._pgNurPrototyp && PG_SIGN_RE.test(w)) { syls.push({text: w, word: true, wend: true, sign: true, n: w.length}); continue; }
     if (!/\p{L}/u.test(w)) continue;
     const parts = w.split('-').filter(p => p);
     parts.forEach((p, k) => syls.push({text: p, word: k === 0, wend: k === parts.length - 1,
@@ -819,7 +834,7 @@ function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
     for (let q = k - 1; q >= 0; q--) if (syls[q].x !== undefined) { left = syls[q].x1; break; }
     s.x = left + 0.1 * gl; s.x1 = s.x + 0.5 * gl;
   });
-  return syls.map(s => ({text: s.text, x: s.x, x1: s.x1, word: s.word}));
+  return syls.map(s => ({text: s.text, x: s.x, x1: s.x1, word: s.word, sign: !!s.sign}));
 }
 
 // Note als GABC: ♭ davor, Buchstabe, Virga, Mora
@@ -894,19 +909,33 @@ function pgAnalysePage(img) {
     return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st), odd: st.odd,
       dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
   }).filter(s => !s.odd || s.clef);      // abweichend grosses oder nur am Rand gefundenes System: nur mit Schlüssel (Build 417)
+  // ♭ nur auf der b-Stufe des Schlüssels (Build 418, nicht im Prototyp): alle Fehlfunde der Gegenproben lagen anderswo
+  // (handschriftliche Akkordbuchstaben «B»/«Es», Bleistift), alle richtigen auf dieser Stufe
+  if (!globalThis._pgNurPrototyp) for (const s of staves) {
+    if (!pgBSteps(s.clef)) continue;
+    for (const n of s.notes) if (n.flat && !pgBSteps(s.clef).includes(n.flat)) delete n.flat;
+  }
   return {img: sv.img, staves, gap: g, angle: sv.ang, thr};
 }
 
 // GABC-Zeile eines Systems aus dem gelesenen Text (Silben mit «-», Wörter mit Leerzeichen)
 function pgStaffGabc(staff, text) {
   const t = pgCleanLine(text);
-  let syls = pgSyllablesFromChunks(t, staff.chunks, staff.gl, !!staff.dropcap);
+  // Build 419 (nicht im Prototyp): Textgruppen rechts vom letzten Schlussstrich und von der letzten Note tragen keine Silbe
+  // (roter Hinweis «rep. Alleluja» bei Surrexit, den die KI weglässt)
+  let chunks = staff.chunks;
+  if (!globalThis._pgNurPrototyp && staff.notes.length) {
+    const end = Math.max(...staff.notes.map(n => n.x), ...staff.bars.filter(b => b.type === '::').map(b => b.x));
+    if (staff.bars.some(b => b.type === '::' && b.x >= end - 1)) chunks = chunks.filter(c => c.x0 <= end + 0.5 * staff.gl);
+  }
+  let syls = pgSyllablesFromChunks(t, chunks, staff.gl, !!staff.dropcap);
   if (syls === null) {                                                   // keine Textgruppen: gleichmässig verteilen
     const parts = [];
     t.split(/\s+/).filter(w => /\p{L}/u.test(w)).forEach(w => w.split('-').filter(p => p).forEach((p, k) => parts.push({text: p, word: k === 0})));
     const span = staff.x1 - staff.x0;
     syls = parts.map((p, i) => ({text: p.text, word: p.word, x: staff.x0 + span * i / Math.max(1, parts.length), x1: 0}));
   }
+  syls = syls.filter(x => !x.sign);                                      // Strophennummer, ℣, Ps.: nur für die Zuordnung
   if (!syls.length) syls = [{text: '', x: staff.x0, x1: staff.x0, word: true}];
   return pgToGabcText(staff.notes, staff.bars, syls, staff.gl);
 }

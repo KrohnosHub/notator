@@ -943,6 +943,28 @@ gedrehter Randtext). Ungeeignet: Requiem (moderner Satz).
 
 Offen: Virga-Fehlmeldungen (Campion-Druck), ♭ im feinen Druck (Rorate), Trennstriche 67 %.
 
+### 7.23 Gegenprobe 4 und Build 419 (23.11.2026)
+
+Vor Gegenprobe 4 umgesetzt (Build 418, aus Gegenprobe 2/3): ♭ nur auf der b-Stufe des Schlüssels – ♭-Treffsicherheit im Testset
+80 → 100 %, Gegenprobe 2 62 → 100 %, Gegenprobe 3 64 → 100 %, sonst unverändert.
+
+Neue Fälle (Soll vor der Messung): `surrexit-dominus-vere` (Neusatz), `puer-natus` (13 Systeme, Strophen mit eigenen Noten),
+`dominus-dixit` (erster F-Schlüssel, handschriftliche Akkorde). Verworfen: Ave maris stella feierlich (zu blass, überschrieben),
+Adoremus Schott (8. Ton, alter Scan – Soll von Auge nicht verlässlich), Jesu dulcis memoria, Requiem (moderne Notation).
+
+| Gegenprobe 4, echter KI-Aufruf | Build 418 (blind) |
+| --- | --- |
+| Systeme / Schlüssel / Stücke | 20 von 20 / 100 % / 100 % |
+| Notenzahl je System richtig | 85 % |
+| Tonhöhen je Stück | 98 % |
+| Silben / Trennstriche | 89 % / 55 % |
+
+Daraus Build 419: Strophennummern, ℣, Ps. von der KI mitliefern lassen (nur für die Zuordnung); Text hinter dem letzten Doppelstrich
+ohne Silbe; dünne Handschriftstriche keine Divisio minima. Alle 19 Fälle, echter KI-Aufruf (`runs/js-app-419-alle`, 0.17 USD):
+Notenzahl 66 %, Tonhöhen/Stück 94 %, Gruppierung 84 % (exakt 38 %), Silben 88 %, Trennstriche 73 %, ♭ 81/97 %, Schlüssel und
+Stückzahl 100 %, Modus 81 %. Surrexit jetzt fehlerfrei, Puer natus Gruppierung 81 → 86 %. Einzelläufe – Streuung der KI beim
+Anfangsbuchstaben («U es Pétrus») und bei Akzenten liegt in derselben Grössenordnung wie die Unterschiede.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

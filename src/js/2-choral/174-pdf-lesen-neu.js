@@ -33,7 +33,8 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 '"Al-le-lú-ia".\n' +
 '- Keep accents (á é í ó ú ý ǽ) and the ligatures æ œ exactly as printed. Keep punctuation (, . ; : ! ?) at the end of ' +
 'its word; look closely to tell a comma (with a small tail below the line) from a full stop.\n' +
-'- Leave out the asterisk *, crosses, verse numbers, and the signs ℣ ℟ and "Ps.".\n' +
+'- Leave out the asterisk * and crosses. Keep verse numbers (e.g. "2."), the signs ℣ ℟ and "Ps." as separate words ' +
+'exactly where they are printed (they help to place the syllables and are removed afterwards).\n' +
 '- If a strip contains no chant text, return an empty string for it.\n' +
 'Return one entry per strip number 1..N.\n\n' +
 'Rows labelled "M<n>" (if any) are not chant text: they show the small annotation printed above the initial letter of ' +
@@ -169,7 +170,7 @@ function pgPieces(items) {
     p.items.push(it); p.systems++; if (!p.pages.includes(it.page)) p.pages.push(it.page);
   }
   for (const p of pieces) {
-    const words = p.items.map(it => it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w));
+    const words = p.items.map(it => it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w));
     p.incipit = words.slice(0, 5).join(' ').replace(/[,.;:!?]+$/, '') || '(ohne Text)';
     p.hasDropCap = !!p.items[0].staff.dropcap;
     p.mode = p.items[0].mode || '?';                               // Modus über der Initiale des ersten Systems
