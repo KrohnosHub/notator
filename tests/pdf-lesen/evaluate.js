@@ -38,7 +38,8 @@ function notesOf(pitchField) {
   const letters = (s.match(/[a-mA-M]/g) || []).map(c => c.toLowerCase());
   const moras = (s.match(/\./g) || []).length;
   const moraRuns = (s.match(/\.+/g) || []).length;   // gedruckte Mora-Punkte ≈ Folgen von Punkten («g..» = 1)
-  return { letters, accidentals, moras, moraRuns };
+  const virgas = (s.match(/[vV]/g) || []).length, ictus = (s.match(/'/g) || []).length, episemas = (s.match(/_+/g) || []).length;
+  return { letters, accidentals, moras, moraRuns, virgas, ictus, episemas };
 }
 
 function normText(t, stripAccents) {
@@ -58,7 +59,7 @@ function parseSystemLine(line) {
     clefs: [],          // im Text gefundene Schluessel
     accidentals: 0,
     moras: 0,
-    moraRuns: 0,
+    moraRuns: 0, virgas: 0, ictus: 0, episemas: 0,
   };
   const re = /([^\s(]*)\(([^)]*)\)/g;
   let m, prevEnd = 0;
@@ -71,7 +72,7 @@ function parseSystemLine(line) {
     const n = notesOf(field);
     out.accidentals += n.accidentals;
     out.moras += n.moras;
-    out.moraRuns += n.moraRuns;
+    out.moraRuns += n.moraRuns; out.virgas += n.virgas; out.ictus += n.ictus; out.episemas += n.episemas;
     if (!text && !n.letters.length) continue; // leere/unbekannte Klammer
     out.syllables.push(normText(text, false));
     out.syllablesPlain.push(normText(text, true).replace(/[^a-z0-9]/g, ''));
@@ -147,6 +148,9 @@ function compareSystem(expLine, actLine) {
     morasOk: e.moras === a.moras,
     moraSoll: e.moraRuns, moraIst: a ? a.moraRuns : 0, moraHit: Math.min(e.moraRuns, a ? a.moraRuns : 0),
     accSoll: e.accidentals, accIst: a ? a.accidentals : 0, accHit: Math.min(e.accidentals, a ? a.accidentals : 0),
+    virSoll: e.virgas, virIst: a ? a.virgas : 0, virHit: Math.min(e.virgas, a ? a.virgas : 0),
+    ictSoll: e.ictus, ictIst: a ? a.ictus : 0, ictHit: Math.min(e.ictus, a ? a.ictus : 0),
+    epiSoll: e.episemas, epiIst: a ? a.episemas : 0, epiHit: Math.min(e.episemas, a ? a.episemas : 0),
     missing: !actLine,
   };
 }
@@ -224,6 +228,9 @@ function summarize(comparisons) {
     bars: mean(sys.map(s => s.bars)),
     moraRecall: ratio(sys, 'moraHit', 'moraSoll'), moraPrecision: ratio(sys, 'moraHit', 'moraIst'),
     accRecall: ratio(sys, 'accHit', 'accSoll'), accPrecision: ratio(sys, 'accHit', 'accIst'),
+    virRecall: ratio(sys, 'virHit', 'virSoll'), virPrecision: ratio(sys, 'virHit', 'virIst'),
+    ictRecall: ratio(sys, 'ictHit', 'ictSoll'), ictPrecision: ratio(sys, 'ictHit', 'ictIst'),
+    epiRecall: ratio(sys, 'epiHit', 'epiSoll'), epiPrecision: ratio(sys, 'epiHit', 'epiIst'),
     systemsMissing: share(sys, s => s.missing),
     pieces: pcs.length,
     pieceCountOk: share(comparisons, c => c.pieceCountOk),
@@ -341,6 +348,7 @@ function printSummary(title, s) {
   console.log('  Wortgrenzen                     ' + pct(s.wordBreaks));
   console.log('  Trennstriche                    ' + pct(s.bars));
   console.log('  Mora-Punkte  gefunden ' + pct(s.moraRecall) + '  davon richtig ' + pct(s.moraPrecision) + '   ♭/♮  gefunden ' + pct(s.accRecall) + '  davon richtig ' + pct(s.accPrecision));
+  console.log('  Virga  gefunden ' + pct(s.virRecall) + ' richtig ' + pct(s.virPrecision) + '   Iktus  gefunden ' + pct(s.ictRecall) + ' richtig ' + pct(s.ictPrecision) + '   Episem  gefunden ' + pct(s.epiRecall) + ' richtig ' + pct(s.epiPrecision));
   console.log('  Schlüssel                       ' + pct(s.clefOk));
   console.log('  Stückgrenzen: Anzahl Stücke     ' + pct(s.pieceCountOk) + '   Systemzahl je Stück ' + pct(s.systemCountOk));
   console.log('  Incipit                         ' + pct(s.incipitOk) + '   Modus ' + pct(s.modeOk));

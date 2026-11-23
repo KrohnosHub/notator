@@ -859,6 +859,20 @@ Form, Episem, Iktus, ♭ davor (`tests/pdf-lesen/neumen/`). Trefferzahl gegen da
   schreibt sie klein («hvgf» statt «hvGF»). Die «falschen» Rhomben und ein Teil der «falschen» Virgen sind vermutlich
   richtig. Für eine belastbare Messung müsste das Soll für die Formen am Druck geprüft werden.
 
+### 7.18 Kostengrenze und geometrische Zeichen (Build 413, 23.11.2026)
+
+Entscheid Matthias: höchstens 0.10 USD pro Seite – Neumenformen per KI entfallen. Geometrisch versucht
+(`runs/js-geo-v4`, `runs/js-app-413`):
+
+| Zeichen | gefunden | davon richtig | Entscheid |
+| --- | --- | --- | --- |
+| Mora (Build 412) | 77 % | 80 % | bleibt |
+| Virga (frei endender Hals rechts) | 20–30 % | 75–100 % | übernommen |
+| Iktus (Strich unter/über dem Kopf) | 13 % | 18 % | verworfen |
+| Episem (waagrechter Strich) | 60–100 % | 4–7 % | verworfen (Linienreste, Hilfslinien) |
+
+Die Bewertung zeigt jetzt auch Virga, Iktus und Episem.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

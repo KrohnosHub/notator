@@ -339,13 +339,38 @@ function pgAnalyseStaff(dark, st, g, ref) {
     n.letter = PG_LET[p + 3]; out.push(n);
   }
   st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt};
-  if (!globalThis._pgNurPrototyp) pgMarkMoras(st, out);           // Test gegen den Python-Prototyp: ohne Ergänzungen
+  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); pgMarkVirga(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
 }
 
 // Diagnose: verworfene Tintenflecken sammeln, falls globalThis._pgDiag ein Array ist (Konsole/Test), sonst nichts tun
 function pgDiag(why, b, st) {
   if (Array.isArray(globalThis._pgDiag)) globalThis._pgDiag.push({why, x0: b.x0, x1: b.x1, y0: b.y0, y1: b.y1, area: b.area, staff: st.lines[0]});
+}
+
+// Virga (Build 413, nicht im Python-Prototyp): dünner Strich am rechten Rand des Kopfs nach unten, der frei endet
+// (endet er an einer anderen Note, ist es ein Verbindungsstrich). Setzt n.virga. Iktus und Episem wurden ebenso versucht,
+// aber verworfen: zu viele Fehlmeldungen (Linienreste, Hilfslinien, Hälse; Plan 7.18).
+function pgMarkVirga(st, notes) {
+  const c = st._ctx, gl = c.gl, reg = c.reg;
+  notes.forEach((n, i) => {
+    if (n.kind === 'bar') return;
+    const xb = n.xb !== undefined ? n.xb : n.x + 0.25 * gl;      // ungefiltert gemessen, Linien zählen als Tinte
+    {
+      const bx0 = Math.round(xb - 0.15 * gl) - c.xa, bx1 = Math.round(xb + 0.12 * gl) - c.xa, bw = bx1 - bx0 + 1;
+      let y = Math.round(n.y + 0.3 * gl) - c.top, len = 0, thin = 0;
+      if (bx0 >= 0 && bx1 < reg.w) {
+        for (; y < reg.h; y++) {
+          let k = 0; for (let x = bx0; x <= bx1; x++) k += reg.a[y * reg.w + x];
+          if (!k) break;
+          len++; if (k <= 0.6 * bw) thin++;
+        }
+        const end = n.y + 0.3 * gl + len;
+        if (len >= 0.6 * gl && thin >= 0.5 * len && len <= 2.2 * gl
+            && !notes.some((m, j) => j !== i && Math.abs(m.x - xb) < 0.6 * gl && m.y > n.y + 0.3 * gl && m.y < end + 0.35 * gl)) n.virga = true;
+      }
+    }
+  });
 }
 
 // Mora-Punkte (Build 412, nicht im Python-Prototyp): kleiner, kompakter Punkt rechts neben einem Notenkopf, in gleicher
@@ -686,6 +711,9 @@ function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
   return syls.map(s => ({text: s.text, x: s.x, x1: s.x1, word: s.word}));
 }
 
+// Note als GABC: Buchstabe, Virga, Mora
+function pgNoteGabc(n) { return n.letter + (n.virga ? 'v' : '') + (n.mora ? '.' : ''); }
+
 // GABC-Zeile: Notengruppen (Lücke > 0.8 Linienabstand) per dynamischer Programmierung monoton auf die Silben verteilen
 function pgToGabcText(notes, bars, syls, gl) {
   if (!syls || !syls.length) return null;
@@ -716,7 +744,7 @@ function pgToGabcText(notes, bars, syls, gl) {
     let i = end;
     for (let j = U - 1; j >= 0; j--) { groups[i] = units[j].concat(groups[i]); if (j > 0) i = bk[j][i]; }
   }
-  let toks = syls.map((s, i) => [groups[i].length ? groups[i][0].x : s.x, i, s.text + '(' + groups[i].map(n => n.letter + (n.mora ? '.' : '')).join('') + ')', s.word]);
+  let toks = syls.map((s, i) => [groups[i].length ? groups[i][0].x : s.x, i, s.text + '(' + groups[i].map(pgNoteGabc).join('') + ')', s.word]);
   let m = -1e9;
   toks = toks.map(t => { m = Math.max(m, t[0]); return [m, t[1], t[2], t[3]]; });
   toks = toks.concat(bars.map(bb => [bb.x, 1e6, '(' + bb.type + ')', true]));

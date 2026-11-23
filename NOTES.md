@@ -1,4 +1,4 @@
-# Notator – Stand Build 412 (23.11.2026)
+# Notator – Stand Build 413 (23.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–412 (Auszug)
+## Neu in Build 298–413 (Auszug)
 
+- **PDF lesen, Virga (413):** Hals am rechten Notenrand, der frei endet, wird als Virga übernommen (Testset: 20 % gefunden, keine Fehlmeldung). Iktus und Episem per Geometrie verworfen (zu viele Fehlmeldungen); Neumenformen per KI wegen der Kostengrenze (max. 0.10 USD/Seite) nicht umgesetzt.
 - **PDF lesen, Notenzahl und Mora (412):** abgetrennte zweite Note senkrechter Paare (Clivis/Pes) wird nicht mehr als «zu klein» verworfen; Mora-Punkte werden erkannt. Testset in der App: Notenzahl je System richtig 63 % (vorher 31 %), Mora-Punkte 77 % gefunden.
 - **PDF lesen, Modus (411):** die kleine Angabe über der Initiale («VIII», «5», «1.», «R. br. VI») wird im selben KI-Aufruf gelesen und als Annotation übernommen. Steht der Modus woanders (z. B. «Intr. I» neben dem System), bleibt er leer.
 - **PDF lesen (410):** neue Erkennung ist Standard, der alte Vision-Weg (GABC je System per KI, OMR-Korrektur) ist entfernt; Schalter entfällt. `170-greg-pdf-background.js` von 2426 auf 523 Zeilen.
@@ -109,10 +110,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 
 ## Offen / Ideen
 
-- **HOHE PRIORITÄT – «PDF lesen»: Neumenformen erkennen** (Entscheid Matthias 23.11.2026). Die neue geometrische Erkennung
-  liefert nur Tonhöhen, nach Silben gruppiert. Quilisma, Liqueszenz, Oriscus, Episem, Mora, Virga, Pes/Clivis-Formen
-  usw. fehlen; die Notenzahl je System stimmt erst bei 47 %. Ohne diese Formen ist das Ergebnis oft unbefriedigend.
-  Ansätze: Form der Tintenflecken auswerten (geometrisch) oder je System ein gezielter KI-Aufruf nur für die Formen.
+- «PDF lesen», Neumenformen: Mora (412) und Virga (413) geometrisch. Quilisma, Liqueszenz, Oriscus, Rhombus, Iktus, Episem,
+  ♭ werden nicht erkannt – per KI zu teuer (Kostengrenze 0.10 USD/Seite, Entscheid Matthias 23.11.2026), geometrisch bisher
+  zu unzuverlässig. Nacharbeit von Hand.
 - «PDF lesen», Notenzahl: nach Build 412 noch 7–8 fehlende und ~13 zusätzliche Noten auf 32 Systemen (Tiefe Noten nahe dem Text,
   Druckflecken, Custos am Zeilenende, Teile verzierter Neumen; beim Salve mater weicht zudem das Soll vom Druck ab).
   ♭ wird noch nicht erkannt (dünne Striche fallen beim Filtern weg).

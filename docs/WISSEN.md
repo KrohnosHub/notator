@@ -111,8 +111,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   die Ergänzungen ab (Vergleich mit dem Python-Prototyp im Test).
 - **Soll-Fassungen und Zeichen:** GregoBase-Soll lässt teils Mora-Punkte weg (Salve mater: keine), Bewertung zählt dort
   richtige Funde als falsch. `[ll:1]`, `[oh:h]` u. ä. in GABC sind keine Noten.
-- **Neumenformen fehlen noch** (Quilisma, Liqueszenz, Oriscus, Episem, Mora …): wichtigstes offenes Thema, hohe Priorität
-  (Matthias, 23.11.2026; siehe `NOTES.md`, Offen).
+- **Kostengrenze (Entscheid Matthias 23.11.2026):** «PDF lesen» darf höchstens **0.10 USD pro Seite** kosten. Neumenformen
+  per KI (Opus ≈ 0.25 USD/Seite, Sonnet ≈ 0.13 USD und ungenau, Versuch 7.17) lohnen sich nicht, weil ohnehin keine
+  100 % erreicht werden – nur geometrisch (kostenlos) erkennen; Rest von Hand.
+- **Neumenformen (Stand Build 413):** geometrisch erkannt werden Mora-Punkte (77 % gefunden, 80 % richtig) und Virga
+  (frei endender Hals rechts; 20 % gefunden, keine Fehlmeldung). Iktus und Episem geometrisch versucht und verworfen
+  (Linienreste, Hilfslinien und Hälse sehen gleich aus: 7–18 % richtig). Lieber ein Zeichen weglassen als falsch setzen.
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
 
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)
