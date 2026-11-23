@@ -1,4 +1,4 @@
-# Notator – Stand Build 413 (23.11.2026)
+# Notator – Stand Build 414 (23.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–413 (Auszug)
+## Neu in Build 298–414 (Auszug)
 
+- **PDF lesen, ♭ und tiefe Noten (414):** ♭ wird geometrisch erkannt (Testset in der App: 89 % gefunden, 80 % richtig); tiefe Noten direkt nach dem Schlüssel werden nicht mehr als Schlüssel verworfen. Notenzahl je System richtig: 66 %.
 - **PDF lesen, Virga (413):** Hals am rechten Notenrand, der frei endet, wird als Virga übernommen (Testset: 20 % gefunden, keine Fehlmeldung). Iktus und Episem per Geometrie verworfen (zu viele Fehlmeldungen); Neumenformen per KI wegen der Kostengrenze (max. 0.10 USD/Seite) nicht umgesetzt.
 - **PDF lesen, Notenzahl und Mora (412):** abgetrennte zweite Note senkrechter Paare (Clivis/Pes) wird nicht mehr als «zu klein» verworfen; Mora-Punkte werden erkannt. Testset in der App: Notenzahl je System richtig 63 % (vorher 31 %), Mora-Punkte 77 % gefunden.
 - **PDF lesen, Modus (411):** die kleine Angabe über der Initiale («VIII», «5», «1.», «R. br. VI») wird im selben KI-Aufruf gelesen und als Annotation übernommen. Steht der Modus woanders (z. B. «Intr. I» neben dem System), bleibt er leer.
@@ -110,12 +111,12 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 
 ## Offen / Ideen
 
-- «PDF lesen», Neumenformen: Mora (412) und Virga (413) geometrisch. Quilisma, Liqueszenz, Oriscus, Rhombus, Iktus, Episem,
-  ♭ werden nicht erkannt – per KI zu teuer (Kostengrenze 0.10 USD/Seite, Entscheid Matthias 23.11.2026), geometrisch bisher
+- «PDF lesen», Neumenformen: Mora (412), Virga (413), ♭ (414) geometrisch. Quilisma, Liqueszenz, Oriscus, Rhombus, Iktus, Episem
+  werden nicht erkannt – per KI zu teuer (Kostengrenze 0.10 USD/Seite, Entscheid Matthias 23.11.2026), geometrisch bisher
   zu unzuverlässig. Nacharbeit von Hand.
 - «PDF lesen», Notenzahl: nach Build 412 noch 7–8 fehlende und ~13 zusätzliche Noten auf 32 Systemen (Tiefe Noten nahe dem Text,
   Druckflecken, Custos am Zeilenende, Teile verzierter Neumen; beim Salve mater weicht zudem das Soll vom Druck ab).
-  ♭ wird noch nicht erkannt (dünne Striche fallen beim Filtern weg).
+  Custos per Tonhöhe (= erste Note des nächsten Systems) erkennen versucht: entfernt echte Schlussnoten, verworfen.
 - Alleluja-Vorlagen (wie Gloria Patri): recherchiert, zurückgestellt.
 - Schriftart der Initiale (Drop-Cap) wählbar machen (Idee 08/2026, nicht priorisiert).
 - Teilen: sehr lange Stücke ergeben lange Links (Alleluia ≈ 2600 Zeichen).

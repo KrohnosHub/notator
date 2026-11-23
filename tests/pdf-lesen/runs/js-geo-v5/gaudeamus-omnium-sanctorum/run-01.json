@@ -1,0 +1,41 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "low",
+ "pipeline": "src/js/2-choral/172-pdf-geometrie.js (JS) + gespeicherte KI-Antwort aus ki-s55-low-v5",
+ "pieces": [
+  {
+   "incipit": "Gaudeamus omnes in Domino",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "GAU(c)DE(d)A(ixdhiv)MUS(h.) (,) o(hg)mnes(hg) in(fg) Dó(gjh)mi(ixhghihi)",
+    "no,(i.h.) (;) di(h)em(fg) fe(g)stum(gff) ce(dg)le(gff)brán(dg)tes(dxgff) (,)",
+    "sub(f) ho(g)nó(ghgjh)re(ghg.) San(f)ctó(h)rum(gjj) óm(h)ni(hih)um:(h.) (:) de(fg) quo(fg)rum(f) so(f)le(g)",
+    "mni(g)tá(ghgjh)te(ghg.) (,) gau(fg)dent(f) An(fgh)ge(ghgfefgffh)li,(g.f.) (;) et(f) col(g)láu(ghjhg)dant(hg.) (,)",
+    "Fí(fge)li(f)um(fghfgfe) De(defef)i.(ed.) Ex() (::) sul(f)tá(gh)te(hh) ju(hj)sti(h) in(h) Dó(h)mi(hg)",
+    "no:(g.h.) re() (:) ctos(gfgh) de(h)cet(h) col(hjh)lau(g)dá(f)ti(fff)o.(d.) (:)",
+    "GLó(f)ri(gh)a(h) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h.) (,) et(h) Spi(h)rí(hj)tu(h)i(h) San(hg)cto.(g.h.) (:)",
+    "Sic(gf)ut(gh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h.) (,) et(h) nunc,(hj) et(h) sem(hg)per,(g.h.) (:) et(gf) in(gh)"
+   ]
+  },
+  {
+   "incipit": "saecula saeculorum Amen",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": null,
+   "systems": [
+    "saé(h)cu(h)la(h) sae(h)cu(hjh)ló(g)rum.(f) A(fff)men.(d.) vel() (::) E(h) u(hjh) o(g) u(f) a(fg) e.(h.) (::)",
+    "vel() E(h) u(hjh) o(g) u(f) a(fff) e.(dcd.f.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2822,
+  "output_tokens": 409,
+  "costUsd": 0.009734,
+  "model": "claude-sonnet-5-5",
+  "ms": 3730
+ },
+ "durationMs": 0
+}

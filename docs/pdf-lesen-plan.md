@@ -873,6 +873,20 @@ Entscheid Matthias: höchstens 0.10 USD pro Seite – Neumenformen per KI entfal
 
 Die Bewertung zeigt jetzt auch Virga, Iktus und Episem.
 
+### 7.19 ♭, tiefe Noten nach dem Schlüssel, Custos (Build 414, 23.11.2026)
+
+- **♭:** Teile ohne Notenlinien mit gleichem linken Rand zusammensetzen, Form prüfen (oben Hals ≤ 0.25, unten Bauch
+  ≥ 0.3 Linienabstände, hohl), Tonhöhe aus dem Bauch, an die nächste Note rechts. App: 89 % gefunden, 80 % richtig.
+- **Schlüsselzone:** Flecken unter der untersten Linie gelten dort als Noten (ein Schlüssel liegt nie so tief): +1 System.
+- **Custos** über die Tonhöhe (= erste Note des nächsten Systems): 1 Treffer, 3 echte Schlussnoten fälschlich entfernt –
+  verworfen.
+
+| App (pdf.js), Soll-Stückaufteilung | Build 412 | Build 414 |
+| --- | --- | --- |
+| Notenzahl je System richtig | 63 % | **66 %** |
+| ♭ gefunden / davon richtig | 0 % / – | **89 % / 80 %** |
+| Mora / Virga gefunden | 77 % / – | 77 % / 20 % |
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

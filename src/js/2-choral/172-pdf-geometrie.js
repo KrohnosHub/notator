@@ -288,7 +288,9 @@ function pgAnalyseStaff(dark, st, g, ref) {
   const accepted = [], small = [];
   for (const b of blobs) {
     const w = b.x1 - b.x0 + 1, cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
-    const why = b.x0 < x0 + PG_CLEF * gl ? 'Schlüsselzone'             // Schlüssel am Zeilenanfang
+    // Schlüsselzone: Ein Schlüssel liegt nie unter der untersten Linie – tiefere Noten dort gelten (Build 414, nicht im Prototyp)
+    const belowClef = !globalThis._pgNurPrototyp && stepOf(cx, cy) < -0.5;
+    const why = (b.x0 < x0 + PG_CLEF * gl && !belowClef) ? 'Schlüsselzone'             // Schlüssel am Zeilenanfang
       : (b.y0 <= top + 1 || b.y1 >= bot - 2) ? 'Streifenrand'            // ragt aus dem Streifen: Text, Titel
       : cx > x1 - 0.5 * gl ? 'Zeilenende'                                 // Custos / Schlussstrich
       : (cy > ylo - 0.1 * gl || cy < yhi + 0.1 * gl) ? 'Textzeile'       // liegt in einer Textzeile
@@ -339,13 +341,58 @@ function pgAnalyseStaff(dark, st, g, ref) {
     n.letter = PG_LET[p + 3]; out.push(n);
   }
   st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt};
-  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); pgMarkVirga(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
+  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
 }
 
 // Diagnose: verworfene Tintenflecken sammeln, falls globalThis._pgDiag ein Array ist (Konsole/Test), sonst nichts tun
 function pgDiag(why, b, st) {
   if (Array.isArray(globalThis._pgDiag)) globalThis._pgDiag.push({why, x0: b.x0, x1: b.x1, y0: b.y0, y1: b.y1, area: b.area, staff: st.lines[0]});
+}
+
+// ♭ (Build 414, nicht im Prototyp): dünner Hals oben, hohler Bauch unten, links vor einer Note. Im Bild ohne Notenlinien
+// zerfällt das Zeichen an der Linie in Teile; übereinanderliegende Teile mit gleichem linken Rand werden zusammengesetzt.
+// Setzt n.flat = Tonbuchstabe des Bauchs bei der ersten Note rechts davon.
+function pgMarkFlats(st, notes) {
+  const c = st._ctx, gl = c.gl, q = st.lines;
+  const y0 = Math.max(0, Math.round(q[0] - 1.6 * gl) - c.top), y1 = Math.min(c.reg.h, Math.round(q[3] + 1.0 * gl) - c.top);
+  const win = pgCrop(c.reg, y0, y1, 0, c.reg.w);
+  for (let x = 0; x < win.w; x++) {                                  // Notenlinien ausblenden
+    const o = c.off(x + c.xa);
+    for (const L of q) {
+      const yl = L + o - c.top - y0;
+      for (let y = Math.max(0, Math.floor(yl - c.lt / 2 - 1)); y <= Math.min(win.h - 1, Math.ceil(yl + c.lt / 2 + 1)); y++) win.a[y * win.w + x] = 0;
+    }
+  }
+  const parts = pgComponents(win).map(r => { const b = pgBox(r); return {b, runs: r}; })
+    .filter(p => p.b[2] - p.b[0] + 1 <= 0.8 * gl && p.b[3] - p.b[1] + 1 <= 2.4 * gl);
+  parts.sort((a, b) => a.b[1] - b.b[1]);
+  const used = new Set();
+  for (let i = 0; i < parts.length; i++) {
+    if (used.has(i)) continue;
+    let runs = parts[i].runs.slice(), box = parts[i].b.slice();
+    for (let j = i + 1; j < parts.length; j++) {                     // darunterliegende Teile mit gleichem linken Rand
+      const b = parts[j].b;
+      if (used.has(j) || Math.abs(b[0] - box[0]) > 0.15 * gl || b[1] - box[3] > c.lt + 0.25 * gl) continue;
+      runs = runs.concat(parts[j].runs); box = [Math.min(box[0], b[0]), box[1], Math.max(box[2], b[2]), Math.max(box[3], b[3])]; used.add(j);
+    }
+    const w = box[2] - box[0] + 1, h = box[3] - box[1] + 1;
+    if (h < 0.9 * gl || h > 2.3 * gl || w < 0.28 * gl || w > 0.75 * gl) continue;
+    const gx = box[0] + c.xa;
+    if (gx < st.x0 + PG_CLEF * gl) continue;                          // Schlüssel
+    const rowW = new Array(h).fill(0); let area = 0;
+    for (const [y, a, b] of runs) { rowW[y - box[1]] += b - a + 1; area += b - a + 1; }
+    const top = rowW.slice(0, Math.floor(0.4 * h)), bot = rowW.slice(Math.floor(0.55 * h));
+    if (!top.length || !bot.length || Math.max(...top) > 0.25 * gl || Math.max(...bot) < 0.3 * gl) continue;   // oben Hals, unten Bauch
+    if (area / (w * h) > 0.5) continue;                               // hohl, kein Notenkopf
+    const belly = []; rowW.forEach((v, k) => { if (k >= 0.4 * h && v >= 0.25 * gl) belly.push(k); });
+    if (!belly.length) continue;
+    const by = box[1] + y0 + c.top + (belly[0] + belly[belly.length - 1]) / 2, bx = (box[0] + box[2]) / 2 + c.xa;
+    const p = pgRound(c.stepOf(bx, by));
+    if (p < -3 || p > 9) continue;
+    const next = notes.find(n => n.x > box[2] + c.xa - 0.1 * gl && n.x < box[2] + c.xa + 1.8 * gl);
+    if (next && !next.flat) next.flat = PG_LET[p + 3];
+  }
 }
 
 // Virga (Build 413, nicht im Python-Prototyp): dünner Strich am rechten Rand des Kopfs nach unten, der frei endet
@@ -711,8 +758,8 @@ function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
   return syls.map(s => ({text: s.text, x: s.x, x1: s.x1, word: s.word}));
 }
 
-// Note als GABC: Buchstabe, Virga, Mora
-function pgNoteGabc(n) { return n.letter + (n.virga ? 'v' : '') + (n.mora ? '.' : ''); }
+// Note als GABC: ♭ davor, Buchstabe, Virga, Mora
+function pgNoteGabc(n) { return (n.flat ? n.flat + 'x' : '') + n.letter + (n.virga ? 'v' : '') + (n.mora ? '.' : ''); }
 
 // GABC-Zeile: Notengruppen (Lücke > 0.8 Linienabstand) per dynamischer Programmierung monoton auf die Silben verteilen
 function pgToGabcText(notes, bars, syls, gl) {

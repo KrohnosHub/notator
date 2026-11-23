@@ -117,6 +117,10 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - **Neumenformen (Stand Build 413):** geometrisch erkannt werden Mora-Punkte (77 % gefunden, 80 % richtig) und Virga
   (frei endender Hals rechts; 20 % gefunden, keine Fehlmeldung). Iktus und Episem geometrisch versucht und verworfen
   (Linienreste, Hilfslinien und Hälse sehen gleich aus: 7–18 % richtig). Lieber ein Zeichen weglassen als falsch setzen.
+- **♭ (Build 414):** im Bild ohne Notenlinien zerfällt das Zeichen an der Linie in Hals und Bauch – Teile mit gleichem linken
+  Rand wieder zusammensetzen (Lücke bis Liniendicke + 0.25 Linienabstand). Tonhöhe aus dem Bauch, gehört zur nächsten Note.
+- **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
+  aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
 
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)
