@@ -887,6 +887,25 @@ Die Bewertung zeigt jetzt auch Virga, Iktus und Episem.
 | ♭ gefunden / davon richtig | 0 % / – | **89 % / 80 %** |
 | Mora / Virga gefunden | 77 % / – | 77 % / 20 % |
 
+### 7.20 Gegenprobe auf neuen Seiten (Build 415, 23.11.2026)
+
+Zwei neue Fälle aus dem Drive, an denen nichts eingestellt wurde: `parce-domine` (Cantus Selecti, 8 Systeme, Strophen,
+englische Randspalte) und `tu-es-petrus` (2 Systeme, darunter eine handgeschriebene Notenzeile). Soll aus den
+Notator-Dateien des Nutzers. Ungeeignet waren Kyrie XII (Orgelsatz, 5 Linien) und Ostende nobis (Scan: Antiphon,
+Datei: Alleluja).
+
+| App (pdf.js), echter KI-Aufruf | Testset (Build 414) | Gegenprobe (Build 414) | Gegenprobe (Build 415) |
+| --- | --- | --- | --- |
+| Notenzahl je System richtig | 66 % | 30 % | **60 %** |
+| Tonhöhen je Stück | 96 % | 80 % | **86 %** |
+| Silben / Trennstriche | 88 % / 69 % | 89 % / 93 % | 89 % / 93 % |
+| Mora / ♭ (gefunden / richtig) | 77/80 %, 89/80 % | 88/95 %, 100/90 % | gleich |
+
+- Die handgeschriebene Zeile wird nicht als System erkannt; Text, Trennstriche, Mora, ♭, Schlüssel halten.
+- Fehler: Die Paar-Regel (7.16) machte aus Iktus-Strichen 35 Zusatznoten. Formregel (Notenrest annähernd
+  quadratisch) behebt das; Testset dadurch 66 → 63 %. Die Gegenprobe ist für diese Regel nicht mehr «blind».
+- Restliche Zusatznoten: am Systemende (Tu es Petrus), neben ♭ (Parce Domine).
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

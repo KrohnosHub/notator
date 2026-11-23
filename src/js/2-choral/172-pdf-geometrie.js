@@ -307,6 +307,9 @@ function pgAnalyseStaff(dark, st, g, ref) {
   for (const b of (globalThis._pgNurPrototyp ? [] : small)) {
     const cy = (b.y0 + b.y1) / 2, cx = (b.x0 + b.x1) / 2;
     if (cy > q[3] + 0.9 * gl || cy < q[0] - 1.6 * gl) continue;           // Textzeile/Titel, keine Note
+    // Notenrest ist ungefähr quadratisch; ein Iktus-Strich ist schmal und doppelt so hoch (Gegenprobe Parce Domine, Build 415)
+    const bw = b.x1 - b.x0 + 1, bh = b.y1 - b.y0 + 1;
+    if (bw < 0.23 * gl || bw > 0.4 * gl || bh / bw < 0.85 || bh / bw > 1.7) continue;
     const nb = accepted.find(a => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) >= 0.3 * (b.x1 - b.x0 + 1)
       && Math.max(a.y0 - b.y1, b.y0 - a.y1) <= 0.35 * gl && Math.abs((a.y0 + a.y1) / 2 - cy) >= 0.7 * hs);
     if (!nb) continue;

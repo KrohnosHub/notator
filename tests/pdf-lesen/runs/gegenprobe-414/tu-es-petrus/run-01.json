@@ -1,0 +1,23 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Tu es Pétrus, et super",
+   "mode": "",
+   "clef": "c3",
+   "hasDropCap": false,
+   "systems": [
+    "Tu(ig) es(ij) Pé(i.)trus,(i) (,) et(i) su(i)per(g) hanc(hg) pé(fffffheff)",
+    "tram(e.) æ(g)di(ghg)fi(f)cá(h)bo(g) (,) Ec(f)clé(ef)si(g)am(f) me(ee)am.(e.)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 1894,
+  "output_tokens": 89,
+  "costUsd": 0.004678
+ },
+ "durationMs": 7515
+}

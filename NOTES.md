@@ -1,4 +1,4 @@
-# Notator – Stand Build 414 (23.11.2026)
+# Notator – Stand Build 415 (23.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–414 (Auszug)
+## Neu in Build 298–415 (Auszug)
 
+- **PDF lesen, Gegenprobe (415):** zwei neue Testseiten (Parce Domine, Tu es Petrus) ohne Einstellen gemessen; die Paar-Regel aus 412 hielt dort Iktus-Striche für Noten (43 Zusatznoten). Jetzt muss der Notenrest ungefähr quadratisch sein: Gegenprobe Notenzahl 30 → 60 %, Testset 63 %.
 - **PDF lesen, ♭ und tiefe Noten (414):** ♭ wird geometrisch erkannt (Testset in der App: 89 % gefunden, 80 % richtig); tiefe Noten direkt nach dem Schlüssel werden nicht mehr als Schlüssel verworfen. Notenzahl je System richtig: 66 %.
 - **PDF lesen, Virga (413):** Hals am rechten Notenrand, der frei endet, wird als Virga übernommen (Testset: 20 % gefunden, keine Fehlmeldung). Iktus und Episem per Geometrie verworfen (zu viele Fehlmeldungen); Neumenformen per KI wegen der Kostengrenze (max. 0.10 USD/Seite) nicht umgesetzt.
 - **PDF lesen, Notenzahl und Mora (412):** abgetrennte zweite Note senkrechter Paare (Clivis/Pes) wird nicht mehr als «zu klein» verworfen; Mora-Punkte werden erkannt. Testset in der App: Notenzahl je System richtig 63 % (vorher 31 %), Mora-Punkte 77 % gefunden.

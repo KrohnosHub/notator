@@ -119,6 +119,13 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   (Linienreste, Hilfslinien und Hälse sehen gleich aus: 7–18 % richtig). Lieber ein Zeichen weglassen als falsch setzen.
 - **♭ (Build 414):** im Bild ohne Notenlinien zerfällt das Zeichen an der Linie in Hals und Bauch – Teile mit gleichem linken
   Rand wieder zusammensetzen (Lücke bis Liniendicke + 0.25 Linienabstand). Tonhöhe aus dem Bauch, gehört zur nächsten Note.
+- **Gegenprobe (Build 415, 23.11.2026):** Regeln, die nur am Testset entstehen, überprüfen. Auf zwei neuen Seiten
+  (Parce Domine, Tu es Petrus; `cases/`) hielt die Paar-Regel Iktus-Striche (schmal, doppelt so hoch wie breit) für Noten.
+  Seither: Notenrest 0.23–0.40 Linienabstände breit, Höhe/Breite 0.85–1.7. Eine Regel «Note im ♭-Kasten entfernen»
+  half der Gegenprobe, schadete aber dem Testset (falsche ♭ entfernen echte Noten) – verworfen.
+  Neue Testseiten: Scans im Drive-Ordner über «Notator», Soll aus der gleichnamigen `.notator`-Datei im Unterordner
+  (in Notator laden, `gregBuildGABC()`, auf die gedruckten Systeme verteilen, Akzente nach dem Druck). Achtung: gleicher
+  Name heisst nicht gleiches Stück (Ostende nobis: Antiphon im Scan, Alleluja in der Datei), Orgelsätze sind keine Quadratnotation.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

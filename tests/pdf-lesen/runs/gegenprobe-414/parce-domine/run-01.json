@@ -1,0 +1,29 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "PArce Dómine, párce pópulo túo",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "PAr(h)ce(h) Dó(h)mi(g)ne,(g.f.) (,) pár(h)ce(h) pó(h)pu(g)lo(gf) tú(gf)o:(e.d.) (;) ne(f) in(e) æ(f)tér(g)",
+    "num(h.) i(e)ras(f)cá(gf)ris(e) nó(fe)bis.(d.) (::)",
+    "Flec(h)tá(h)mus(g) í(h)ram(iixji) vín(h)di(gf)cem,(fd) (,) Plo(g.)ré(ixi)mus(i) an(hf)te(f) Jú(ge)di(g)cem;(g.h.) (;)",
+    "Cla(j)mé(k)mus(h) ó(ixi)re(h) súp(g)pli(f)ci,(f.) (,) Di(ec)cá(f)mus(ge) óm(h)nes(dc) cér(f)nu(fe)i:(d.) (::)",
+    "Nó(hg)stris(h) má(ge)lis(h) of(ixi)fén(h)di(gf)mus(fe) (,) Tú(g)am(ixig) Dé(ixi)us(hg) cle(f)mén(g)ti(g)am(g.h.) (;)",
+    "Ef(j)fún(k)de(h) nó(ixi)bis(h) dé(g)su(f)per(f.) (,) Re(e)mís(f)sor(g) in(h)dul(d)gén(ffe)ti(d.)am.() (::)",
+    "Dans(h) tém(h)pus(g) ac(h)cep(ixig)tá(h)bi(gf)le,(f) (,) Da(g) la(ixi)cri(i)má(hg)rum(f) rí(ge)vu(g)lis(g.h.) (;)",
+    "La(j)vá(ki)re(h) cór(iixiih)dis(h) víc(g)ti(f)mam,(f.) (,) Quam(ec) læ(f)ta(g) a(g)dú(h)rat(dc) cá(f)ri(fe)tas.(d.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2996,
+  "output_tokens": 432,
+  "costUsd": 0.010312
+ },
+ "durationMs": 12052
+}

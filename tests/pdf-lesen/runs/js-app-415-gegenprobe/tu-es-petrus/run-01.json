@@ -1,0 +1,23 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-gegen)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Tu es Petrus",
+   "mode": "",
+   "clef": "c3",
+   "hasDropCap": null,
+   "systems": [
+    "Tu(ig) es(ij) Pé(i.)trus,(i) (,) et(i) su(i)per(g) hanc(hg) pé(fffffheff)",
+    "tram(e.) æ(g)di(ghg)fi(f)cá(h)bo(g) (,) Ec(f)clé(ef)si(g)am(f) me(ee)am.(e.)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 1894,
+  "output_tokens": 89,
+  "costUsd": 0.004678
+ },
+ "durationMs": 5538
+}

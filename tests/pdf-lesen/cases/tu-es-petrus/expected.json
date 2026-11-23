@@ -1,0 +1,29 @@
+{
+ "id": "tu-es-petrus",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Antiphon «Tu es Petrus» (Ant. 7), Bild aus einem Blog, ausgedruckt und gescannt; Scan aus dem Drive des Nutzers",
+  "reference": "Tu es Petrus.notator (Liber Usualis 1961, S. 1515)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "handschrift-unter-den-noten",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe (23.11.2026): an diesem Fall wurde nichts eingestellt. Soll aus der Notator-Datei des Nutzers, auf die 2 gedruckten Systeme verteilt; «E u o u a e» der Datei steht nicht im Druck und fehlt. Unter den Noten steht eine handgeschriebene Notenzeile (kein Soll) – sie darf nicht als System erkannt werden.",
+ "pieces": [
+  {
+   "incipit": "Tu es Petrus",
+   "mode": "7",
+   "clef": "c3",
+   "systems": [
+    "TU(i_[oh:h]g) es(i_[uh:l]j) Pé(i.)trus,(i.) * (,) et(i) su(i')per(g) hanc(h_g) pé(e.)",
+    "tram(e.) (;) ae(g)di(ghg)fi(f')cá(h)bo(g'_[oh:h]) (,) Ec(f)clé(e_[uh:l]f)si(g)am(f) mé(e.)am.(e.) (::)"
+   ]
+  }
+ ]
+}

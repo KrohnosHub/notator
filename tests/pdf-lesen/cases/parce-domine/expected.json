@@ -1,0 +1,38 @@
+{
+ "id": "parce-domine",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Cantus Selecti 1957, S. 47*–48* (Seite 1 von 2), Scan aus dem Drive des Nutzers",
+  "reference": "Parce Domine.notator (GregoBase 3038)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "b-vorzeichen",
+  "strophen",
+  "kehrvers-als-text",
+  "englische-randspalte",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe (23.11.2026): an diesem Fall wurde nichts eingestellt. Soll aus der Notator-Datei des Nutzers (GregoBase-Fassung), von Claude auf die 8 gedruckten Systeme verteilt; Akzente nach dem Druck angepasst (párce, tú-o, nó-bis, óre, ómnes, Nó-stris, Tú-am, Dé-us, tém-pus, cór-dis, læ-ta), Verse-Nummern und (Z) entfernt. Nicht Note für Note geprüft. Die Kehrvers-Zeilen «R. Párce Dómine.» stehen nur als Text im Druck und fehlen im Soll.",
+ "pieces": [
+  {
+   "incipit": "Parce Domine",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "PAr(h')ce(h) Dó(h')mi(g)ne,(g.f.) (,) pár(h')ce(h) pó(h')pu(g)lo(gf) tú(gf)o :(e.d.) (;) ne(f') in(e) æ(f')tér(g)",
+    "num(h.) i(e')ra(f)scá(gf)ris(e) nó(fe)bis.(d.) (::)",
+    "Fle(h')ctá(h)mus(g') í(h)(ix)ram(i') vín(h)di(gf)cem,(f'_) (,) Plo(g)(ix)ré(i')mus(i) an(h')te(f) Jú(g')di(g)cem;(g.h.) (;)",
+    "Cla(j)mé(k')mus(h) (ix)ó(i')re(h) súp(g')pli(f)ci,(f.) (,) Di(e')cá(f)mus(g') óm(h)nes(d') cér(f)nu(fe)i :(d.) (::)",
+    "Nó(h')stris(h) má(g')lis(h) (ix)of(i')fén(h)di(gf)mus(f'_) (,) Tú(g)(ix)am(i') Dé(i)us(h') cle(f)mén(g')ti(g)am(g.h.) (;)",
+    "Ef(j)fún(k')de(h) (ix)nó(i')bis(h) dé(g')su(f)per(f.) (,) Re(e')mís(f)sor(g') in(h)dul(d')gén(f)ti(fe)am.(d.) (::)",
+    "Dans(h') tém(h)pus(g') ac(h)(ix)ce(i')ptá(h)bi(gf)le,(f'_) (,) Da(g) (ix)la(i')cri(i)má(h')rum(f) rí(g')vu(g)lis(g.h.) (;)",
+    "La(j)vá(k')re(h) (ix)cór(i')dis(h) ví(g')cti(f)mam,(f.) (,) Quam(e') læ(f)ta(g') ad(g)ú(h)rat(d') cá(f)ri(fe)tas.(d.) (::)"
+   ]
+  }
+ ]
+}
