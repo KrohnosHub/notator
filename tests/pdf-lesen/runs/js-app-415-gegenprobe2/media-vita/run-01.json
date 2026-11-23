@@ -1,0 +1,32 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "sti éos. Sáncte etc. Ad",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "sti(gfgh) é(egff)os.(f.e.) (::) Sánc(hjixg)te(hihggfd.) etc.() (::) Ad(dh) te(gh) cla(h)ma(hj)vé(ixihg.hijih)"
+   ]
+  },
+  {
+   "incipit": "tis nóstris juste iráus, Sáncte",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "tis() nó()stris() jus()te() i()rá(h)us,() Sánc()te(j) fór()tis,(ixg) s,() Sánc(hihgg)te() mi()sé()ri()cors() Sal(d)vá(efgffed)",
+    "e() trá(gfgh)das(egff) nos.(f.e.) (::) In(c) te(dhgh) spe(h)ra(h)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2184,
+  "output_tokens": 164,
+  "costUsd": 0.006008
+ },
+ "durationMs": 8288
+}

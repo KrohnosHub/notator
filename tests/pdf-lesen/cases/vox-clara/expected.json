@@ -1,0 +1,40 @@
+{
+ "id": "vox-clara",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Society of St. Bede, Hymnus «Vox clara ecce intonat», dominikanische Melodie (Seite 1 von 2), Doppelseite, Scan aus dem Drive des Nutzers",
+  "reference": "vom Druck abgelesen (die Notator-Datei enthält die monastische Melodie, c3)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "zwei-spalten",
+  "strophen-unter-noten",
+  "handschriftliche-akkorde",
+  "notenkoepfe-mit-strich",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 2 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Zwei Spalten (Doppelseite): links 8, rechts 2 Systeme, rechts darunter englische Übersetzung. Handschriftliche Akkordbuchstaben (Am, G, E …) über den Systemen, Notenköpfe des Caeciliae-Fonts mit kleinem Strich (keine Virga). Die Notator-Datei hat eine andere Melodie (monastisch, c3); das Soll hat Claude mit eingezeichneten Hilfslinien vom Druck abgelesen (c4, Silbe für Silbe). Kursive, nicht gesungene Vokale (éminus, æthere) zählen nicht als eigene Silbe. Strophennummern weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Vox clara",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "VOX(e) Cla(c)ra(e) ec(g)ce(h) ín(i)to(h)nat,(h) (::) Ob(g)scú(h)ra(i) quæ(j)que(ihg) ín(h)cre(i)",
+    "pat:(h) (:) Pel(h)lán(h)tur(i) é(g)minus(eg) sóm(f)ni(e)a,(d) (;) Ab(e) æ(c)there(e) Chri(g)stus(h) pró(i)",
+    "mi(h)cat.(h) (::) Mens(e) jam(c) re(e)súr(g)gat(h) tór(i)pi(h)da,(h) (;) Quæ(g) sor(h)de(i) ex(j)stat(ihg)",
+    "sáu(h)ci(i)a:(h) (:) Si(h)dus(h) re(i)fúl(g)get(eg) jam(f) no(e)vum,(d) (;) Ut(e) tol(c)lat(e) om(g)ne(h) nó(i)xi(h)",
+    "um.(h) (::) E(e) sur(c)sum(e) A(g)gnus(h) mít(i)ti(h)tur(h) (;) La(g)xa(h)re(i) gra(j)tis(ihg) dé(h)bi(i)tum:(h) (:)",
+    "Om(h)nes(h) pro(i) in(g)dul(eg)gén(f)ti(e)a,(d) (;) Vo(e)cem(c) de(e)mus(g) cum(h) lá(i)cri(h)mis:(h) (::)",
+    "Se(e)cún(c)do(e) ut(g) cum(h) fúl(i)se(h)rit,(h) (;) Mun(g)dúm(h)que(i) hor(j)ror(ihg) cín(h)xe(i)rit,(h) (:)",
+    "Non(h) pro(h) re(i)á(g)tu(eg) pú(f)ni(e)at,(d) (;) Sed(e) pi(c)us(e) nos(g) tunc(h) pró(i)te(h)gat.(h) (::)",
+    "Laus,(e) ho(c)nor,(e) vir(g)tus,(h) gló(i)ri(h)a(h) (;) De(g)o(h) Pa(i)tri(j) et(ihg) Fí(h)li(i)o,(h) (:) San(h)",
+    "cto(h) si(i)mul(g) Pa(eg)rá(f)cli(e)to,(d) (;) In(e) sem(c)pi(e)tér(g)na(h) sǽ(i)cu(h)la.(h) (::) A(hih)men.(gh) (::)"
+   ]
+  }
+ ]
+}

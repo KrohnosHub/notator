@@ -126,6 +126,13 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Neue Testseiten: Scans im Drive-Ordner über «Notator», Soll aus der gleichnamigen `.notator`-Datei im Unterordner
   (in Notator laden, `gregBuildGABC()`, auf die gedruckten Systeme verteilen, Akzente nach dem Druck). Achtung: gleicher
   Name heisst nicht gleiches Stück (Ostende nobis: Antiphon im Scan, Alleluja in der Datei), Orgelsätze sind keine Quadratnotation.
+- **Gegenprobe 2 (Build 416, 23.11.2026):** Systemsuche hatte drei Annahmen, die das Testset nie verletzte: eine Spalte je Seite,
+  ein Linienabstand je Seite (±25 %), Systeme reichen über die Seitenmitte. Seither: Doppelseite teilen, wenn in der Mitte (40–60 %)
+  eine Stelle liegt, durch die fast kein System läuft (`pgColumnSplit`; Toleranz 0.3 Linienabstände wegen Schräge); Linienabstand je
+  System (70–160 % des Seitenwerts – die handgeschriebene Zeile bei Tu es Petrus hat 62 %, das gedruckte Gloria bei Signum magnum 74 %);
+  zusätzlich links/rechts nach Linien suchen. Typischer Abstand nur aus gleichmässigen Vierergruppen: pdf.js liefert Textzeilen
+  (englische Übersetzung) als Linienkandidaten, die den Median verdarben – mit pdftoppm trat das nicht auf, also immer **in der App** messen.
+  Ein Druck mit gleichem Titel kann eine andere Melodie haben (Vox clara: dominikanisch c4 im Scan, monastisch c3 in der Datei) – Soll dann vom Druck ablesen.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

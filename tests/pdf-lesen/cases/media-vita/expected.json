@@ -1,0 +1,40 @@
+{
+ "id": "media-vita",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Deutsches Gesangbuch (Nr. 436, nach Cantus Selecti 1957, S. 41*), Doppelseite, Scan aus dem Drive des Nutzers",
+  "reference": "Media vita.notator (GregoBase 3973)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "b-vorzeichen",
+  "zwei-spalten",
+  "schraeg",
+  "deutsche-uebersetzung",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 2 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Zwei Spalten (Doppelseite), leicht schräg gescannt. Soll aus der Notator-Datei (GregoBase), auf die 10 gedruckten Systeme verteilt (links 6, rechts 4); Akzente nach dem Druck (ví-ta, mór-te, sú-mus, quǽ-ri-mus, nó-stris, trá-das, Sán-cte, pá-tres, é-os). «V/. 1.», «V/. 2.», «*» und «etc.» weggelassen; im Druck sind die Kehrverse nach den Versen nur angedeutet («Sáncte etc.»). Stichprobe System 1 gegen den Druck geprüft, sonst nicht Note für Note.",
+ "pieces": [
+  {
+   "incipit": "Media vita",
+   "mode": "4",
+   "clef": "c4",
+   "systems": [
+    "ME(d)di(e)a(f') ví(g)ta(f.e.) (,) in(dh) mór(h)te(gf) sú(ghg'/ge)mus :(e.) (;) quem(dh) quǽ(h')ri(g)",
+    "mus(ghg) ad(fe)ju(fgf)tó(g.)rem,(g.) (;) ni(gvFD)si(fgh) te(gh) Dó(gf)mi(egf/f)ne?(e/ef.) (:) qui(d) pro(e') pec(f)cá(g')",
+    "tis(f) nó(f/fvE'D)stris(e.d.) (;) ju(d!f'h)ste(g.) i(g)rá(g_[oh:h]f/gh)sce(egf/f)ris :(f.e.) (:) Sán(h_)(ix)cte(g./hiHG'/gvFD.) Dé(efg)",
+    "us,(f.e.) (;) Sán(h_)(ix)cte(g./hiHG'/gvFD.) fór(efg)tis,(f.e.) (;) Sán(h_)(ix)cte(g./hiHG'/g) mi(d)sé(e')ri(f)cors(g') Sal(f)vá(fvED)",
+    "tor,(e.d.) (;) a(f')má(h)ræ(g') mór(g)ti(d'_) (,) ne(g) trá(g_[oh:h]f/gh)das(egf/f) nos.(f.e.) (::) In(dh) te(gh) spe(h)ra(h)",
+    "vé(ix)(ivHG./hi!jvIH)runt(h.) (,) pá(fh)tres(hgh) nó(fv_ED'/e)stri;(d.) (;) spe(fvED)ra(ef)vé(gh)runt,(g.) (,) et(h) li(hj)be(h)rá(hvGF'ED'/g)",
+    "sti(g_[oh:h]f/gh) é(egf/f)os.(f.e.) (::) Sán(h_)(ix)cte(g./hiHG'/gvFD.) (::) Ad(dh) te(gh) cla(h)ma(h)vé(ix)(ivHG./hi!jvIH)",
+    "runt(h.) (,) pá(fh)tres(hgh) nó(fv_ED'/e)stri;(d.) (;) cla(fvED)ma(ef)vé(gh)runt,(g.) (,) et(hj) non(h) sunt(hvGF'ED'/g) con(g_[oh:h]f/gh)",
+    "fú(egf/f)si.(f.e.) (::) Sán(h_)(ix)cte(g./hiHG'/gvFD.) (::) Gló(dh)ri(gh)a(h) Pá(ix)(ivHG./hi!jvIH)tri,(h.) (,) et(fh) Fí(hgh)",
+    "li(fv_ED'/e)o,(d.) (;) et(fvED) Spi(ef)rí(gh)tu(g)i(g_[oh:h]f/gh) Sán(egf/f)cto.(f.e.) (::) Sán(h_)(ix)cte(g./hiHG'/gvFD.) (::)"
+   ]
+  }
+ ]
+}

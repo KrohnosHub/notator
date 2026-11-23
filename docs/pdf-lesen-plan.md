@@ -906,6 +906,24 @@ Datei: Alleluja).
   quadratisch) behebt das; Testset dadurch 66 → 63 %. Die Gegenprobe ist für diese Regel nicht mehr «blind».
 - Restliche Zusatznoten: am Systemende (Tu es Petrus), neben ♭ (Parce Domine).
 
+### 7.21 Gegenprobe 2: Doppelseiten und Systemgrössen (Build 416, 23.11.2026)
+
+Drei neue Fälle, Soll vor der ersten Messung geschrieben: `media-vita` (Doppelseite, schräg, deutsche Übersetzung),
+`signum-magnum` (Introitus + kleineres Gloria Patri, englische Interlinear-Übersetzung, Bleistift), `vox-clara` (Doppelseite,
+handschriftliche Akkorde; Soll vom Druck abgelesen, da die Notator-Datei eine andere Melodie hat). Ungeeignet: Jesu dulcis memoria (moderne Notation).
+
+| App (pdf.js), echter KI-Aufruf | Build 415 | Build 416 |
+| --- | --- | --- |
+| Gefundene Systeme | 15 von 28 | 28 von 28 |
+| Notenzahl je System richtig | 11 % | **68 %** |
+| Tonhöhen je Stück | 43 % | **98 %** |
+| Silben / Trennstriche | 17 % / 24 % | 94 % / 92 % |
+| Mora (gefunden/richtig) | 17/92 % | 91/97 % |
+| Modus | 25 % | 75 % (Vox clara: «HYMN I.» nicht gelesen) |
+
+Ursachen und Abhilfe: siehe `docs/WISSEN.md` (Gegenprobe 2). Testset und Gegenprobe 1 mit gespeicherten KI-Antworten: unverändert.
+Kosten: Doppelseite = zwei KI-Aufrufe (je ca. 0.01 USD). `run-neu-playwright.js` speichert dafür je Aufruf eine Antwortdatei.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

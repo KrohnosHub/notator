@@ -1,0 +1,44 @@
+{
+ "id": "signum-magnum",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal (ccwatershed.org), Introitus Mariä Himmelfahrt (Seite 1 von 3), Scan aus dem Drive des Nutzers",
+  "reference": "Signum magnum.notator (GregoBase 23); Gloria Patri vom Druck abgelesen",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "englische-interlinear-uebersetzung",
+  "bleistift-notizen",
+  "zwei-stuecke",
+  "gegenprobe"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Gegenprobe 2 (23.11.2026): an diesem Fall wurde nichts eingestellt; Soll vor der ersten Messung geschrieben. Zwei Stücke auf der Seite: Introitus (6 Systeme, Initiale S, «Mode VII» darüber) und Gloria Patri (2 Systeme, Initiale G, «VII»). Unter jeder Textzeile eine englische Wort-für-Wort-Übersetzung, über System 1 Bleistift-Notizen. Introitus aus der Notator-Datei (GregoBase), «*» und «Ps.» weggelassen. Gloria Patri fehlt in der Datei (nur «Gloria Patri. E u o u a e») und ist von Claude vom Druck abgelesen – unsicherer als der Rest, nicht Note für Note geprüft.",
+ "pieces": [
+  {
+   "incipit": "Signum magnum",
+   "mode": "7",
+   "clef": "c3",
+   "systems": [
+    "SI(ef)GNUM(f) ma(fdfe)gnum(e.) (,) ap(fh)pá(hhh)ru(h)it(hji)",
+    "in(ih/hf!gwh) cae(efe___)lo :(e.) (:) mú(ef/hgh)li(h)er(h') a(h)mí(h)cta(fh)",
+    "so(h)le,(hg/hif/fe.) (;) et(e) lu(ef/hg)na(h') sub(g) pé(gh'i)di(i)bus(ijHF'/gwh) e(hi)jus,(h.) (:) et(hg) in(h)",
+    "cá(hji)pi(h)te(hhh) e(e!g'hf/fd~)jus(d.) (;) co(e)ró(ef)na(e') stel(e)lá(e)rum(e.f!gwh!iv'1) du(ih/hf!gwh')ó(e)de(efe___)cim.(e.) (::)",
+    "Can(ehg)tá(hi)te(i) Dó(i)mi(i)no(i) cán(ik)ti(j)cum(j) no(ji)vum :(i.j.) (:) qui(ig)a(hi) mi(i)ra(i)bí(i!jwk)",
+    "li(i')a(h) fe(hhh)cit.(f.e.) (::)"
+   ]
+  },
+  {
+   "incipit": "Gloria Patri",
+   "mode": "7",
+   "clef": "c3",
+   "systems": [
+    "GLó(ehg)ri(hi)a(i) Pá(i)tri,(i) et(i) Fí(i)li(i)o,(i.) (,) et(i) Spi(i)rí(ik)tu(j)i(j) Sán(ji)cto.(i.j.) (:) Si(ig)cut(hi) é(i)rat(i) in(i)",
+    "prin(i)cí(i)pi(i)o,(i.) (,) et(i) nunc,(ik) et(j) sem(ji)per,(i.j.) (:) et(ig) in(hi) saé(i)cu(i)la(i) sae(i)cu(i!jwk)ló(i')rum.(h) A(hhh)men.(f.e.) (::)"
+   ]
+  }
+ ]
+}

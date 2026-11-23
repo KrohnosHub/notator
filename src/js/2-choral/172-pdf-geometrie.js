@@ -121,13 +121,59 @@ function pgGroup(lines) {
   for (let i = 0; i + 1 < lines.length; i++) { const d = lines[i + 1] - lines[i]; if (d > 12 && d < 60) gaps.push(d); }
   gaps.sort((a, b) => a - b);
   if (!gaps.length) return {out: [], g: 0};
-  const g = gaps[Math.floor(gaps.length / 2)], out = [];
+  let g = gaps[Math.floor(gaps.length / 2)];
+  const out = [];
+  // Ab Build 416 (nicht im Prototyp): typischer Abstand nur aus Vierergruppen mit gleichmässigem Abstand – Zeilen eines
+  // Fliesstexts (englische Übersetzung neben den Noten, pdf.js) lieferten sonst viele kleine Abstände und verdrängten die Systeme
+  if (!globalThis._pgNurPrototyp) {
+    const ms = [];
+    for (let i = 0; i + 3 < lines.length; i++) {
+      const q = lines.slice(i, i + 4), m = (q[3] - q[0]) / 3;
+      if (m > 12 && m < 60 && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)) ms.push(m);
+    }
+    if (ms.length) { ms.sort((a, b) => a - b); g = ms[Math.floor(ms.length / 2)]; }
+  }
+  // Ab Build 416 (nicht im Prototyp): jedes System nach seinem eigenen Linienabstand prüfen – kleinere Systeme auf derselben
+  // Seite (Gloria Patri unter einem Introitus: 74 %) wichen sonst um mehr als 25 % vom Seitenwert ab und fielen weg.
+  // Untergrenze 70 %: eine handgeschriebene Zeile (Tu es Petrus, 62 %) bleibt draussen.
+  const own = !globalThis._pgNurPrototyp;
   let i = 0;
   while (i + 3 < lines.length) {
-    const q = lines.slice(i, i + 4);
-    if ([0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - g) < 0.25 * g)) { out.push(q); i += 4; } else i++;
+    const q = lines.slice(i, i + 4), m = (q[3] - q[0]) / 3;
+    const ok = own ? m > 0.7 * g && m < 1.6 * g && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)
+      : [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - g) < 0.25 * g);
+    if (ok) { out.push(q); i += 4; } else i++;
   }
   return {out, g};
+}
+
+// Doppelseite / zwei Spalten (Build 416, nicht im Prototyp): x der Spaltengrenze oder null.
+// Kriterium: In beiden Hälften liegen Systeme, und in der Seitenmitte gibt es eine Stelle, durch die (fast) keines läuft.
+function pgColumnSplit(img) {
+  if (globalThis._pgNurPrototyp) return null;
+  const dark = pgThreshold(img, PG_THR_LINES), hw = pgInt(img.w / 2);
+  const gL = pgGroup(pgLineCands(pgCrop(dark, 0, dark.h, 0, hw), 0.4, 0.6)).out;            // schmales Band: wenig Einfluss der Schräge
+  const gR = pgGroup(pgLineCands(pgCrop(dark, 0, dark.h, hw, dark.w), 0.4, 0.6)).out;
+  if (gL.length < 2 || gR.length < 2) return null;
+  const qs = gL.concat(gR), xa = pgInt(0.4 * img.w), xb = pgInt(0.6 * img.w), cross = [];
+  for (let x = xa; x < xb; x++) {
+    let n = 0;
+    for (const q of qs) {                          // Toleranz 0.3 Linienabstände: Schräge zwischen Messband und Mitte
+      const tol = pgRound(0.3 * (q[3] - q[0]) / 3);
+      if (q.every(yy => { const y = pgRound(yy); for (let r = Math.max(0, y - tol); r < Math.min(dark.h, y + tol + 1); r++) if (dark.a[r * dark.w + x]) return true; return false; })) n++;
+    }
+    cross.push(n);
+  }
+  const mn = Math.min(...cross);
+  if (mn > 0.2 * qs.length) return null;
+  const xs = []; cross.forEach((n, k) => { if (n === mn) xs.push(k); });
+  return xa + xs[Math.floor(xs.length / 2)];
+}
+// Graubild-Ausschnitt (Spalte)
+function pgCropGray(img, x0, x1) {
+  const w = x1 - x0, a = new Uint8Array(w * img.h);
+  for (let y = 0; y < img.h; y++) a.set(img.a.subarray(y * img.w + x0, y * img.w + x1), y * w);
+  return {w, h: img.h, a};
 }
 function pgStaves(img) {
   let dark = pgThreshold(img, PG_THR_LINES);
@@ -141,6 +187,16 @@ function pgStaves(img) {
     if (Math.abs(ang) > 1e-6) { img = pgRotate(img, ang); dark = pgThreshold(img, PG_THR_LINES); }
   }
   const {out, g} = pgGroup(pgLineCands(dark, 0.30, 0.70));
+  // Kurze Systeme (z. B. Schluss eines Stücks nur links, Build 416, nicht im Prototyp): auch links und rechts suchen
+  if (!globalThis._pgNurPrototyp) {
+    for (const [lo, hi] of [[0.05, 0.30], [0.70, 0.95]]) {
+      for (const q of pgGroup(pgLineCands(dark, lo, hi)).out) {
+        const m = (q[3] - q[0]) / 3;
+        if (m > 0.7 * g && m < 1.6 * g && !out.some(o => q[0] < o[3] + m && o[0] < q[3] + m)) out.push(q);
+      }
+    }
+    out.sort((a, b) => a[0] - b[0]);
+  }
   const sts = [];
   for (const q of out) {
     const cnt = new Int32Array(dark.w);
@@ -812,8 +868,15 @@ function pgAnalysePage(img) {
   const thr = pgInt((pgOtsu(sv.img) + pgMedianGray(sv.img)) / 2);
   const dark = pgThreshold(sv.img, thr), sts = sv.sts, g = sv.g;
   let sizes = [];
-  for (const st of sts) sizes = sizes.concat(pgAnalyseStaff(dark, st, g, null).sizes);
-  const ref = sizes.length ? [pgMedian(sizes.map(s => s[0])), pgMedian(sizes.map(s => s[1]))] : [0.2 * g * g, 0.45 * g];
+  // Ab Build 416 (nicht im Prototyp): Notenkopfgrössen relativ zum Linienabstand des Systems, damit kleinere Systeme
+  // auf derselben Seite nicht als «zu klein» verworfen werden
+  const rel = !globalThis._pgNurPrototyp, glOf = st => (st.lines[3] - st.lines[0]) / 3;
+  for (const st of sts) {
+    const k = rel ? glOf(st) : 1;
+    sizes = sizes.concat(pgAnalyseStaff(dark, st, g, null).sizes.map(([a, w]) => [a / (k * k), w / k]));
+  }
+  const ref0 = sizes.length ? [pgMedian(sizes.map(s => s[0])), pgMedian(sizes.map(s => s[1]))] : rel ? [0.2, 0.45] : [0.2 * g * g, 0.45 * g];
+  const refOf = st => { const k = rel ? glOf(st) : 1; return [ref0[0] * k * k, ref0[1] * k]; };
   const dcs = [];
   for (const st of sts) {
     let d = pgDropcapBox(dark, st, (st.lines[3] - st.lines[0]) / 3, sts);
@@ -821,7 +884,7 @@ function pgAnalysePage(img) {
     dcs.push(d);
   }
   const staves = sts.map((st, k) => {
-    const {notes, gl} = pgAnalyseStaff(dark, st, g, ref);
+    const {notes, gl} = pgAnalyseStaff(dark, st, g, refOf(st));
     return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st),
       dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
   });

@@ -1,0 +1,26 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SIGNUM magnum appáruit in caelo",
+   "mode": "7",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "SIGNUM(eff) (,) ma(fdfe)gnum(e.) (,) (,) ap(fh)pá(hhh)ru(h)it(hji)",
+    "in(ihhfh) cae(efe)lo:(e.) (:) mú(efhgh)li(h)er(h) a(h)mí(h)cta(fh)",
+    "so(h)le,(hghiffxfe.) et(e) lu(efhg)na(h) sub(g) pé(ghi)di(i)bus(ijhfgh) e(hi)jus,(h.) (:) et(hg) in(h)",
+    "cá(hji)pi(h)te(hhh) e(eghffv)jus(d.) (;) co(e)ró(ef)na(e) stel(e)lá(e)rum(efhiv) du(ihhfh)ó(e)de(efe)cim.(e.) (::)",
+    "Can(ehg)tá(hi)te(i) Dó(i)mi(i)no(i) cán(ik)ti(j)cum(j) no(ji)vum:(i.j.) (:) qui(ig)a(hi) mi(i)ra(i)bí(ikv)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2532,
+  "output_tokens": 232,
+  "costUsd": 0.007384
+ },
+ "durationMs": 7877
+}

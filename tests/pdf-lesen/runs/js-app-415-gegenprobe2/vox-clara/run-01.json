@@ -1,0 +1,28 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "cto simul Paráclito, In sempitérna",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": false,
+   "systems": [
+    "cto(h) si(i)mul(g) Pa(eg)rá(f)cli(e)to,(d) (;) In(e) sem(c)pi(e)tér(g)na(h) sǽ(i)cu(h)la.(h) (::) A(hih)men.(gh) (::)",
+    "mi(h)cat.(kxh) (,) (::) Mens(e) jam(c) re(e)súr(g)gat(h) tór(i)pi(h)da,(h) (;) Quæ(g) sor(h)de(i) ex(j)stat(ihg)",
+    "sáu(h)ci(i)a:(h) (:) Si(h)dus(h) re(i)fúl(g)get(eg) jam(f) no(e)vum,(d) (;) Ut(e) tol(c)lat(e) om(g)ne(h) nó(i)xi(h)",
+    "um.(h) (::) E(e) sur(c)sum(e) Ag(g)nus(h) mít(i)ti(h)tur(h) (;) La(g)xa(h)re(i) gra(j)tis(ihg) dé(h)bi(i)tum:(h) (:)",
+    "Om(h)nes(h) pro(i) in(g)dul(eg)gén(f)ti(e)a,(d) (;) Vo(e)cem(c) de(e)mus(g) cum(h) lá(i)cri(h)mis:(h) (::)",
+    "Se(e)cún(c)do(e) ut(g) cum(h) fúl(i)se(h)rit,(h) (;) Mun(g)dúm(h)que(i) hor(j)ror(ihg) cín(h)xe(i)rit,(h) (:)",
+    "Non(h) pro(h) re(i)á(g)tu(eg) pú(f)ni(e)at,(d) (;) Sed(e) pi(c)us(e) nos(g) tunc(h) pró(i)te(h)gat.(h) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2648,
+  "output_tokens": 390,
+  "costUsd": 0.009196
+ },
+ "durationMs": 9052
+}

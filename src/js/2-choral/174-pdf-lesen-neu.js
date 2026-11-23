@@ -222,17 +222,21 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   for (let pg = 1; pg <= pages; pg++) {
     gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Notenlinien und Noten…');
     await new Promise(r => setTimeout(r, 30));                       // Statuszeile zeichnen lassen
-    const img = await pgRenderPageGray(pdfDoc, pg);
-    const page = pgAnalysePage(img);
-    console.log('PDF lesen (neu), Seite ' + pg + ': ' + page.staves.length + ' Systeme, Schräge ' + page.angle.toFixed(2) + '°, Linienabstand ' + page.gap + ' px, Schwelle ' + page.thr);
-    if (!page.staves.length) continue;
-    gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Text lesen (KI)…');
-    const strips = pgStripsImage(page);
-    const res = await pgReadText(apiKey, strips.b64, strips.n);
-    usd += res.usage.usd;
-    console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
-    page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
-    page.img = null;
+    const full = await pgRenderPageGray(pdfDoc, pg);
+    // Doppelseite: jede Spalte für sich lesen (Build 416), links vor rechts
+    const split = pgColumnSplit(full), cols = split ? [pgCropGray(full, 0, split), pgCropGray(full, split, full.w)] : [full];
+    for (const img of cols) {
+      const page = pgAnalysePage(img);
+      console.log('PDF lesen (neu), Seite ' + pg + (split ? ' (Spalte ' + (img === cols[0] ? 1 : 2) + ')' : '') + ': ' + page.staves.length + ' Systeme, Schräge ' + page.angle.toFixed(2) + '°, Linienabstand ' + page.gap + ' px, Schwelle ' + page.thr);
+      if (!page.staves.length) continue;
+      gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Text lesen (KI)…');
+      const strips = pgStripsImage(page);
+      const res = await pgReadText(apiKey, strips.b64, strips.n);
+      usd += res.usage.usd;
+      console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
+      page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
+      page.img = null;
+    }
   }
   if (!items.length) { gregGst('Keine Notensysteme gefunden (Notenlinien nicht erkannt).'); return; }
   const pieces = pgPieces(items);

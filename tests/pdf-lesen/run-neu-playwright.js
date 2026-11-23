@@ -13,7 +13,9 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
 (async () => {
   const browser = await chromium.launch();
   for (const c of cases) {
-    const page = await browser.newPage(); const t0 = Date.now(); let usage = {input_tokens: 0, output_tokens: 0};
+    const page = await browser.newPage(); const t0 = Date.now(); let usage = {input_tokens: 0, output_tokens: 0}, call = 0;
+    // Doppelseiten (Build 416) lesen jede Spalte mit eigenem KI-Aufruf: Antwort k ≥ 2 liegt in ki-<fall>-<k>.json
+    const kiFile = (dir, k) => path.join(dir, 'ki-' + c + (k > 1 ? '-' + k : '') + '.json');
     page.on('console', m => { if (/PDF lesen \(neu\)/.test(m.text())) console.log('   ', m.text().slice(0, 160)); });
     if (pdfjs) await page.route('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/*', route =>
       route.fulfill({status: 200, contentType: 'application/javascript', body: fs.readFileSync(path.join(pdfjs, path.basename(new URL(route.request().url()).pathname)))}));
@@ -28,9 +30,10 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
         const r = JSON.parse(body);
         if (r.content) {
           const ans = JSON.parse(r.content.filter(b => b.type === 'text').map(b => b.text).join(''));
-          usage = {input_tokens: r.usage.input_tokens, output_tokens: r.usage.output_tokens};
-          fs.writeFileSync(path.join(live, 'ki-' + c + '.json'), JSON.stringify({model: r.model, lines: ans.lines.map(e => e.text), modes: ans.modes || [],
-            usage: {...usage, costUsd: (usage.input_tokens * 2 + usage.output_tokens * 10) / 1e6}}, null, 1));
+          const u = {input_tokens: r.usage.input_tokens, output_tokens: r.usage.output_tokens};
+          usage = {input_tokens: usage.input_tokens + u.input_tokens, output_tokens: usage.output_tokens + u.output_tokens};
+          fs.writeFileSync(kiFile(live, ++call), JSON.stringify({model: r.model, lines: ans.lines.map(e => e.text), modes: ans.modes || [],
+            usage: {...u, costUsd: (u.input_tokens * 2 + u.output_tokens * 10) / 1e6}}, null, 1));
         }
         await route.fulfill({status: 200, contentType: 'application/json', body});
       });
@@ -38,11 +41,12 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
     if (mock) {
       await page.route('https://api.anthropic.com/**', async route => {
         const body = JSON.parse(route.request().postData()); const n = +(/N = (\d+)/.exec(body.messages[0].content[1].text) || [0, 0])[1];
-        const ki = JSON.parse(fs.readFileSync(path.join(mock, 'ki-' + c + '.json'), 'utf8'));
+        const ki = JSON.parse(fs.readFileSync(kiFile(mock, ++call), 'utf8'));
         if (ki.lines.length !== n) console.log('    Achtung: ' + n + ' Systeme angefragt, gespeicherte Antwort hat ' + ki.lines.length);
-        usage = {input_tokens: ki.usage.input_tokens, output_tokens: ki.usage.output_tokens};
+        usage = {input_tokens: usage.input_tokens + ki.usage.input_tokens, output_tokens: usage.output_tokens + ki.usage.output_tokens};
         await route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({type: 'message', stop_reason: 'end_turn',
-          content: [{type: 'text', text: JSON.stringify({lines: ki.lines.map((t, k) => ({n: k + 1, text: t})), modes: ki.modes || []})}], usage})});
+          content: [{type: 'text', text: JSON.stringify({lines: ki.lines.map((t, k) => ({n: k + 1, text: t})), modes: ki.modes || []})}],
+          usage: {input_tokens: ki.usage.input_tokens, output_tokens: ki.usage.output_tokens}})});
       });
     }
     await page.goto('file://' + path.resolve(ROOT, '../../index.html'));
