@@ -214,6 +214,7 @@ function pgStaves(img) {
     out.sort((a, b) => a[0] - b[0]);
   }
   const sts = [];
+  let five = 0;
   for (const q of out) {
     const cnt = new Int32Array(dark.w);
     for (const yy of q) {
@@ -231,8 +232,27 @@ function pgStaves(img) {
     }
     if (last !== null && last - st0 > best[1] - best[0]) best = [st0, last];
     const m = (q[3] - q[0]) / 3;
+    // Fünfte Linie direkt im Bild prüfen (Build 427, nicht im Prototyp): eine Zeile im Linienabstand ober- oder unterhalb, die
+    // fast die ganze Systembreite durchgehend bedeckt. Fotokopien moderner Noten (Benedictus, Christus vincit) liefern die fünfte
+    // Linie oft nicht als Kandidat (schief, blass) – die Seitenregel in pgGroup griff dann nicht.
+    if (!globalThis._pgNurPrototyp) {
+      const cover = yc => { let bestC = 0;
+        for (let y = pgRound(yc - 0.25 * m); y <= pgRound(yc + 0.25 * m); y++) {
+          if (y < 2 || y >= dark.h - 2) continue;
+          let hit = 0;
+          for (let x = best[0]; x <= best[1]; x++) { for (let r = y - 1; r <= y + 1; r++) if (dark.a[r * dark.w + x]) { hit++; break; } }
+          bestC = Math.max(bestC, hit / Math.max(1, best[1] - best[0] + 1));
+        }
+        return bestC; };
+      // relativ zu den eigenen vier Linien: blasse Kopien haben auch blasse Linien; Textzeilen bedecken deutlich weniger
+      const own = pgMedian(q.map(yy => cover(yy))), cv = Math.max(cover(q[3] + m), cover(q[0] - m));
+      if (best[1] - best[0] > 4 * m && cv > 0.85 * own) five++;
+    }
     sts.push({lines: q, x0: best[0], x1: best[1], odd: !globalThis._pgNurPrototyp && (!!q.side || m < 0.8 * g || m > 1.25 * g)});
   }
+  // Mehrheit der Systeme mit fünf Linien: moderne Notation, keine Choralnoten (Meldung in 174). Einzelne Treffer kommen auch bei
+  // Choral vor (Trennlinie unter dem letzten System, handgeschriebene Zeile darunter) – deshalb nur mit klarer Mehrheit.
+  if (five && five > sts.length / 2) { globalThis._pgFuenfLinien = true; sts.length = 0; }
   return {img, sts, g, ang};
 }
 

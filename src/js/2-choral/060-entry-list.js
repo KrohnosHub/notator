@@ -83,9 +83,10 @@ function ntApiKeyChanged() {
 }
 function ntApiKeySaved() { try { return localStorage.getItem(NT_API_KEY_LS) || ''; } catch (e) { return ''; } }
 // «PDF lesen»: mit gespeichertem Key direkt die Datei wählen (die Zeile öffnet sich trotzdem, um den Key zu ändern)
+// Öffnet die Zeile mit API-Feld und «PDF wählen»; die Dateiauswahl startet erst dort (Wunsch Matthias 24.11.2026, Build 427)
 function gregPdfReadStart() {
   gregPdfReadRow(true);
-  if (ntApiKeyLoad()) document.getElementById('greg-pdf-in').click();
+  ntApiKeyLoad();
 }
 function gregPdfReadClick() {
   if (document.getElementById('greg-pdf-read-row').style.display !== 'none') { gregPdfReadRow(false); return; }

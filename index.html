@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-8dMvlyKqXdbnq7lfsijP8nzoP6h30ZAZVlAYym1nzNI=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-Yi8pmK5w50ZH/MPYzQTRrjOPpd25DkQJR3zcT92yffo=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -2870,9 +2870,10 @@ function ntApiKeyChanged() {
 }
 function ntApiKeySaved() { try { return localStorage.getItem(NT_API_KEY_LS) || ''; } catch (e) { return ''; } }
 // «PDF lesen»: mit gespeichertem Key direkt die Datei wählen (die Zeile öffnet sich trotzdem, um den Key zu ändern)
+// Öffnet die Zeile mit API-Feld und «PDF wählen»; die Dateiauswahl startet erst dort (Wunsch Matthias 24.11.2026, Build 427)
 function gregPdfReadStart() {
   gregPdfReadRow(true);
-  if (ntApiKeyLoad()) document.getElementById('greg-pdf-in').click();
+  ntApiKeyLoad();
 }
 function gregPdfReadClick() {
   if (document.getElementById('greg-pdf-read-row').style.display !== 'none') { gregPdfReadRow(false); return; }
@@ -5968,6 +5969,7 @@ function pgStaves(img) {
     out.sort((a, b) => a[0] - b[0]);
   }
   const sts = [];
+  let five = 0;
   for (const q of out) {
     const cnt = new Int32Array(dark.w);
     for (const yy of q) {
@@ -5985,8 +5987,27 @@ function pgStaves(img) {
     }
     if (last !== null && last - st0 > best[1] - best[0]) best = [st0, last];
     const m = (q[3] - q[0]) / 3;
+    // Fünfte Linie direkt im Bild prüfen (Build 427, nicht im Prototyp): eine Zeile im Linienabstand ober- oder unterhalb, die
+    // fast die ganze Systembreite durchgehend bedeckt. Fotokopien moderner Noten (Benedictus, Christus vincit) liefern die fünfte
+    // Linie oft nicht als Kandidat (schief, blass) – die Seitenregel in pgGroup griff dann nicht.
+    if (!globalThis._pgNurPrototyp) {
+      const cover = yc => { let bestC = 0;
+        for (let y = pgRound(yc - 0.25 * m); y <= pgRound(yc + 0.25 * m); y++) {
+          if (y < 2 || y >= dark.h - 2) continue;
+          let hit = 0;
+          for (let x = best[0]; x <= best[1]; x++) { for (let r = y - 1; r <= y + 1; r++) if (dark.a[r * dark.w + x]) { hit++; break; } }
+          bestC = Math.max(bestC, hit / Math.max(1, best[1] - best[0] + 1));
+        }
+        return bestC; };
+      // relativ zu den eigenen vier Linien: blasse Kopien haben auch blasse Linien; Textzeilen bedecken deutlich weniger
+      const own = pgMedian(q.map(yy => cover(yy))), cv = Math.max(cover(q[3] + m), cover(q[0] - m));
+      if (best[1] - best[0] > 4 * m && cv > 0.85 * own) five++;
+    }
     sts.push({lines: q, x0: best[0], x1: best[1], odd: !globalThis._pgNurPrototyp && (!!q.side || m < 0.8 * g || m > 1.25 * g)});
   }
+  // Mehrheit der Systeme mit fünf Linien: moderne Notation, keine Choralnoten (Meldung in 174). Einzelne Treffer kommen auch bei
+  // Choral vor (Trennlinie unter dem letzten System, handgeschriebene Zeile darunter) – deshalb nur mit klarer Mehrheit.
+  if (five && five > sts.length / 2) { globalThis._pgFuenfLinien = true; sts.length = 0; }
   return {img, sts, g, ang};
 }
 
@@ -7006,8 +7027,10 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
     }
   }
   if (!items.length) {
-    gregGst(globalThis._pgFuenfLinien ? 'Keine Choralnoten gefunden: Das PDF enthält Fünfliniensysteme (moderne Notation) – «PDF lesen» liest nur Quadratnotation auf vier Linien.'
-      : 'Keine Notensysteme gefunden (Notenlinien nicht erkannt).');
+    const msg = globalThis._pgFuenfLinien ? 'Keine Choralnoten gefunden: Das PDF enthält Fünfliniensysteme (moderne Notation) – «PDF lesen» liest nur Quadratnotation auf vier Linien.'
+      : 'Keine Notensysteme gefunden (Notenlinien nicht erkannt).';
+    gregGst(msg);
+    if (typeof showModal === 'function') showModal('PDF lesen', msg);      // Statuszeile wird auf dem Handy leicht übersehen
     return;
   }
   const pieces = pgPieces(items);
@@ -8431,7 +8454,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '426';
+const NOTATOR_BUILD_ID = '427';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

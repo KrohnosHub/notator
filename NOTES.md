@@ -1,4 +1,4 @@
-# Notator – Stand Build 426 (24.11.2026)
+# Notator – Stand Build 427 (24.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–426 (Auszug)
+## Neu in Build 298–427 (Auszug)
 
+- **PDF lesen (427):** Fotokopien moderner Noten (Benedictus, Christus vincit – Meldung Matthias) werden jetzt erkannt: die fünfte Linie wird direkt im Bild gesucht (relativ zur Deutlichkeit der eigenen Linien) und mit Mehrheit der Systeme entschieden; Meldung zusätzlich als Dialog, kein KI-Aufruf. «PDF lesen» öffnet nur noch die Zeile mit dem API-Feld; die Dateiauswahl startet erst mit «PDF wählen».
 - **PDF lesen, Runde 10 (426):** Bei PDFs mit moderner Notation (Fünfliniensysteme) erklärt die Statuszeile jetzt, dass nur Quadratnotation gelesen wird (geprüft mit drei Blättern aus dem Drive, kein KI-Aufruf). Runde 10 blind: Neumentyp 94 %, Silben 95 %.
 - **PDF lesen, Runde 9 (425):** Fehlende Silbentrennungen der KI («cre-ásti», «VExíl») werden mit der Notator-Silbentrennung ergänzt; hat die KI zwei Zeilen in eine geschrieben (Zierinitiale über zwei Systeme), wird der Text aufgeteilt; Seiten mit Fünfliniensystemen (moderne Noten) liefern «Keine Notensysteme» statt Unsinn. Über alle 31 Fälle: Gruppierung exakt 51 → 57 %, Silben 87 → 89 %.
 - **PDF lesen, Runde 8 (424):** Noten auf Hilfslinien über dem System werden gelesen (eine lange Hilfslinie galt als Textzeile); Noten ab «l» zählen nur mit Hilfslinie (Handschrift über dem System). Runde 8 blind: Notenzahl 92 %, Tonhöhen 99 %, Neumentyp 95 %.

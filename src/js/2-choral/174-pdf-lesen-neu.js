@@ -262,8 +262,10 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
     }
   }
   if (!items.length) {
-    gregGst(globalThis._pgFuenfLinien ? 'Keine Choralnoten gefunden: Das PDF enthält Fünfliniensysteme (moderne Notation) – «PDF lesen» liest nur Quadratnotation auf vier Linien.'
-      : 'Keine Notensysteme gefunden (Notenlinien nicht erkannt).');
+    const msg = globalThis._pgFuenfLinien ? 'Keine Choralnoten gefunden: Das PDF enthält Fünfliniensysteme (moderne Notation) – «PDF lesen» liest nur Quadratnotation auf vier Linien.'
+      : 'Keine Notensysteme gefunden (Notenlinien nicht erkannt).';
+    gregGst(msg);
+    if (typeof showModal === 'function') showModal('PDF lesen', msg);      // Statuszeile wird auf dem Handy leicht übersehen
     return;
   }
   const pieces = pgPieces(items);

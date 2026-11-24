@@ -183,6 +183,11 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - **Bilanz Runden 6–10 (Builds 422–426):** über alle 33 Fälle Notenzahl 70 → 72 %, Gruppierung exakt 43 → 57 %, Neumentyp je Silbe
   91 → 93 % (bei richtiger Notenzahl stimmt der Verlauf zu 99 %), Silben 89 %, Schlüssel 100 %. Torculus/Porrectus-Verwechslungen:
   1 von 782 Neumen im ganzen Testset.
+- **Moderne Noten (Build 427, Meldung Matthias 24.11.2026):** Bei schiefen, blassen Fotokopien fehlt die fünfte Linie unter den
+  Linienkandidaten, und oft wird nur ein einziges System gefunden – die Seitenregel aus Build 425 (≥ 2 Systeme) griff nicht. Jetzt
+  wird die fünfte Linie im Bild gesucht: Bedeckung der Zeile im Linienabstand ≥ 85 % der Bedeckung der eigenen Linien. Einzelne
+  Treffer gibt es auch bei Choral (Trennlinie unter dem letzten System bei Virgo Dei Genitrix, Handschriftzeile bei Tu es Petrus) –
+  deshalb gilt die Seite nur bei klarer Mehrheit als moderne Notation. Wunsch Matthias: Dateiauswahl erst über «PDF wählen».
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
