@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "O gloriósa Vírginum, Sublímis ínter",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "O(h) glo()ri(e.d)ó()sa() Vír(j)gi(h)num,() (;) Su()blí(kv)mis(k) ín(ji)ter(h) sí(ih)de(g)ra:(h.)",
+    "Qui(k) te(k) cre(i)á(k)vit,(klv) pár(jv)vu(hi)lum(i.g.) (;) Lac(ji)tén(jk)te(i) nú(i)tris(h) ú(ih)be()re.(g)",
+    "Quod() Hé(h)va(ed) trí(g)stis(hj) ábs(ji)tu(h)lit,(i.) (;) Tu(hk) réd(k)dis(i) ál(ji)mo(h) gér(ih)mi()ne(g)",
+    "In(k)trent(k) ut(i) á()stra(kl) flé(ji)bi(hi)les,(ihg.) (;) Caé(ji)li(jk) re(i)clú(ji)dis(h) cár(ih)di(g)nes.(h.) (::)",
+    "Tu(h) Ré(hg)gis(e) ál(g)ti(hj) já(ji)nu(h)a,(i.) (;) Et(hk) áu(k)la(i) lú(ji)cis(h) fúl(ih)gi(g)da:(h.) (:)",
+    "Ví(k)tam(k) dá(i)tam(k) per(klk) Vír(ji)gi(hi)nem,(ihg.) (;) Gén(ji)tes(jk) re(i)dém(ji)ptae,(h) pláu(ih)",
+    "di(g)te.(h.) (::) Jé(h)su,(hg) tí(ed)bi(g) sit(hj) gló(ji)ri(h)a,(i.) (;) Qui(hk) ná(k)tus(i) es(ji) de(h) Vír(ih)",
+    "gi(g)ne,(h.) (:) Cum(k) Pa()tre(k) et(i) ál(k)mo(klk) Spí(ji)ri(hi)tu,(ihg.) (;) In(ji) sem(jk)pi(i)tér(ji)na(h)",
+    "sae(ih)cu(g)la.(h.) (::) A(hih)men.(g.h.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3224,
+  "output_tokens": 479,
+  "costUsd": 0.011238
+ },
+ "durationMs": 9631
+}

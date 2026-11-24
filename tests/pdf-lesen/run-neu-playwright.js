@@ -42,7 +42,9 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
     if (mock) {
       await page.route('https://api.anthropic.com/**', async route => {
         const body = JSON.parse(route.request().postData()); const n = +(/N = (\d+)/.exec(body.messages[0].content[1].text) || [0, 0])[1];
-        const ki = JSON.parse(fs.readFileSync(kiFile(mock, ++call), 'utf8'));
+        const f = kiFile(mock, ++call);
+        // Zweiter Aufruf derselben Seite (Build 429: fehlende Zeile nochmals lesen) ohne gespeicherte Antwort: wie der erste antworten
+        const ki = JSON.parse(fs.readFileSync(fs.existsSync(f) ? f : kiFile(mock, call - 1), 'utf8'));
         if (ki.lines.length !== n) console.log('    Achtung: ' + n + ' Systeme angefragt, gespeicherte Antwort hat ' + ki.lines.length);
         usage = {input_tokens: usage.input_tokens + ki.usage.input_tokens, output_tokens: usage.output_tokens + ki.usage.output_tokens};
         await route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({type: 'message', stop_reason: 'end_turn',

@@ -1,4 +1,4 @@
-# Notator – Stand Build 428 (24.11.2026)
+# Notator – Stand Build 429 (24.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–428 (Auszug)
+## Neu in Build 298–429 (Auszug)
 
+- **PDF lesen (429):** zweiter Durchgang: jede Seite wird mit drei Helligkeitsschwellen gelesen, je Note entscheidet die Mehrheit; graue (gerasterte) Notenköpfe werden ergänzt. Wo die Durchgänge abweichen, setzt Notator eine Notiz «⚠ prüfen» (nicht im PDF). Modus: die KI liefert die Angabe über der Initiale wörtlich («2.», «HYMN I.», «Intr. 2.»), Notator rechnet um. Lässt die KI eine Textzeile aus, wird die Seite einmal nachgelesen. Silben ohne Vokal («Ma-tré-m-que») werden zusammengefügt; ♭ nach dem Schlüssel des ganzen Stücks; Virga abgeschaltet (mehr falsche als richtige). Über 30 Fälle: Notenzahl 71 → 74 %, Gruppierung exakt 55 → 61 %, Silben 88 → 91 %, Modus 69 → 81–84 %.
 - **PDF lesen (428):** Bei moderner Notation erschien statt der Meldung «Fehler: Cannot read properties of undefined» – der Dialog wurde ohne Knöpfe aufgerufen. Behoben (Dialoge ohne Knopfangabe bekommen «OK»); Meldungen einfacher formuliert.
 - **PDF lesen (427):** Fotokopien moderner Noten (Benedictus, Christus vincit – Meldung Matthias) werden jetzt erkannt: die fünfte Linie wird direkt im Bild gesucht (relativ zur Deutlichkeit der eigenen Linien) und mit Mehrheit der Systeme entschieden; Meldung zusätzlich als Dialog, kein KI-Aufruf. «PDF lesen» öffnet nur noch die Zeile mit dem API-Feld; die Dateiauswahl startet erst mit «PDF wählen».
 - **PDF lesen, Runde 10 (426):** Bei PDFs mit moderner Notation (Fünfliniensysteme) erklärt die Statuszeile jetzt, dass nur Quadratnotation gelesen wird (geprüft mit drei Blättern aus dem Drive, kein KI-Aufruf). Runde 10 blind: Neumentyp 94 %, Silben 95 %.
@@ -124,7 +125,7 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 
 ## Offen / Ideen
 
-- «PDF lesen», Neumenformen: Mora (412), Virga (413), ♭ (414) geometrisch. Quilisma, Liqueszenz, Oriscus, Rhombus, Iktus, Episem
+- «PDF lesen», Neumenformen: Mora (412), ♭ (414) geometrisch; Virga (413) seit 429 abgeschaltet. Quilisma, Liqueszenz, Oriscus, Rhombus, Iktus, Episem
   werden nicht erkannt – per KI zu teuer (Kostengrenze 0.10 USD/Seite, Entscheid Matthias 23.11.2026), geometrisch bisher
   zu unzuverlässig. Nacharbeit von Hand.
 - «PDF lesen», Notenzahl: nach Build 412 noch 7–8 fehlende und ~13 zusätzliche Noten auf 32 Systemen (Tiefe Noten nahe dem Text,

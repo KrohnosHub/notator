@@ -189,6 +189,19 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Treffer gibt es auch bei Choral (Trennlinie unter dem letzten System bei Virgo Dei Genitrix, Handschriftzeile bei Tu es Petrus) –
   deshalb gilt die Seite nur bei klarer Mehrheit als moderne Notation. Wunsch Matthias: Dateiauswahl erst über «PDF wählen».
 - **Build 428 (24.11.2026):** Der Dialog aus Build 427 stürzte ab (`showModal(title, body)` ohne Knopfliste → `btns.forEach`); der App-Test hatte nur den Dialogtext geprüft, nicht die Statuszeile danach. Lehre: bei Meldungs-Tests auch auf `pageerror`/Konsolenfehler achten. `showModal` setzt jetzt «OK», wenn keine Knöpfe angegeben sind.
+- **Zweiter Durchgang (Build 429, 24.11.2026, Auftrag Matthias):** Testscans und KI-Antworten liegen nur in der Cloud-Umgebung einer
+  Sitzung – in einer neuen Sitzung aus dem Drive neu holen (Ordner `1na4i6KGlePisA8ENF0tQU6mOdrBnd_PO`, Quelle steht in `expected.json`
+  unter `source`; zugeschnittene Fälle per CropBox mit pypdf nachschneiden). «Audi benigne», «Viderunt» und «Surrexit/Ad cenam» liessen
+  sich nicht eindeutig wiederfinden (fehlen in der Messung). Abstimmung über drei Schwellen (Hauptschwelle ±18): Hauptnote bleibt bei
+  2 von 3; ergänzt wird nur, was der **helle** Durchgang an der Stelle eines verworfenen «kleinen» Rests sieht (graue Köpfe,
+  O gloriosa +22 %), nicht über der obersten Linie (Akkordbuchstaben). Funde nur der Zusatzdurchgänge ohne Rest waren Striche.
+  Breitenregeln trennen echte und falsche Ergänzungen nicht (beide 0.5–0.7 der Kopfbreite). Markierung «⚠ prüfen»: 70 % der
+  markierten Systeme haben einen Notenfehler (unmarkiert 37 %), erfasst aber nur gut ein Drittel der Fehler.
+  **Modus:** Die KI rechnete «2.», «HYMN I.», «Intr. 2.» nicht um und lieferte leer – jetzt wörtlich liefern lassen, umrechnen in
+  `pgModeFromText`. Modus links neben dem ersten System ohne Initiale (Ubi caritas «VI») und kleine Initialen (Tu es Petrus) offen.
+  **Virga** abgeschaltet (`globalThis._pgVirga` schaltet ein): 12 % gefunden, 39 % richtig; strengere Halslänge machte es schlechter.
+  **Mock-Läufe:** Die KI lässt manchmal eine Zeile aus; gespeicherte Antworten müssen die Zeilennummer behalten (früher verschob
+  sich danach alles). Für Vergleiche immer beide Fassungen mit denselben gespeicherten Antworten messen (Mock gegen Mock).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

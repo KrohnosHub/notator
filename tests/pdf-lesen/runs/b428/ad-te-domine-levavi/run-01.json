@@ -1,0 +1,25 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Ad te, Dómine, levávi ánimam",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "Ad(f) te,(gh) Dó(h)mi(h)ne,(h) le(h)vá(h)vi(h) á(ixi)ni(h)mam(h) me(g)am:(h.) (;)",
+    "De(h)us(h) me(h)us,(h) in(h) te(g) con(f)fí(gh)do,(g.) (::) non(h) e(h)ru(h)bés(h)cam:(h) (,)",
+    "ne(h)que(h) ir(h)rí(h)de(h)ant(h) me(h) i(h)ni(h)mí(h)ci(h) me(h)i:(g) (,) é(h)te(h)nim(h) u(h)",
+    "ni(h)vér(h)si,(h) qui(h) te(ixi) ex(h)spé(g)ctant,(h.) (;) non(h) con(g)fun(f)dén(gh)tur.(g.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2470,
+  "output_tokens": 208,
+  "costUsd": 0.00702
+ },
+ "durationMs": 7649
+}

@@ -1,0 +1,30 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Ad cœnam Agni próvidi, Et",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "Ad(hjhg) cœ(jijk)nam(jih) (,) (,) A(h)gni(hgef) pró(gegfkhkh)vi(hg)di,(efg) Et(eg) sto(fefd.) (;) lis(ee) al(dc)bis(g)",
+    "Per() quam(f) fra()cta(e) sunt(d.) (;) tár()ta(e)ra,() Re()dém(e)pta(dc) plebs(g) cán()di(gh)di,(j) Post(j) tráns(ih) (,) i(jk)tum(j) ma()ris(dvefik) Ru(gh)bri,(j) Chri(j)sto(ih) (,) ca()pti(jk)vá(j)ta,(hg) Réd()di(i)ta(hi) vi()tæ() præ(h)mi(h)a.(g) (;) Con(h)súr(j)git(hg) Chris(ji)",
+    "to() ca(hg)ná(i)mus(hi) Prin(h)ci(h)pi.(g.) (:) Cu(h)jus(j) cor(hg)pus(ji) sanc(jk)tis(j)si(i)mum,(h.bcfhlik) in(jk) tu(j)mu(ij)lo,(h) (,) Vic(h)tor(hg) re(ef)dit(gh) de(eg) bá(f)ra(e)thro,(d.) (;) Ty(e)rán(e)num(dc)",
+    "In(h) a(hg)ra(ef) cru(g)cis(eg) tór(f)ri(ef)dum.(d.) (;) Cru(e)ó(e)re(dc) e(g)jus(gh) ró(j)se(j)o(ihcvflhk) (,) tru(g)dens(gh) vin(j)cu(j)lo,(ih) (,) Et(jk) Pa(j)ra(hg)di(i)sum(hij) ré(h)se(h)rans.(g) (,) Qué(h)su(j)",
+    "Gu(jk)stán(j)do(hg) vi(i)vi(hi)mus(h) De(h)o.(g) (;) Pro(h)téc(j)ti(hg) Pas(jij)chæ(jk) vés(j)pe(i)re(hdfhlik) (,) mus,(hgh) Auc(ji)tor(jk) ó(j)mni(i)um,(h) (,) In(h) hoc(hgh) pas(ef)chá(g)li(eg) gáu(f)di(e)o(d.) (;)",
+    "A(h) de(hg)va(ef)stán(g)te(eg) An(f)ge(ef)lo,(d.) (;) E(e)rép(e)ti(dcd) de(g) du(gh)ris(j)si(j)mo(hihdvhk) (,) Ab(e) om(e)ni(cd) mor(g)tis(gh) im(j)pe(j)tu(ih) Tu(jk)um(j) de(hfg)fén(i)de(hi) pó(h)pu(h)lum.(g.) (;)",
+    "Pha(jk)ra(j)ó(hg)nis(i) im(hi)pé(h)ri(h)o.(g) (::) Jam(h) Pas(j)cha(hg) no(ji)strum(jk) Chris(j)tus(fhkhk) Gló(h)ri(j)a(hg) ti(ji)bi(jk) Dó(j)mi(i)ne.(h) (,) Qui(h) sur(hg)re(ef)xi()sti(g) a(eg) mór(f)tu(e)is.(d.)",
+    "tus(i) est,(hv) Qui(h) im(hfg)mo(ef)lá(g)tus(eg) A(f)gnus(e) est,(d.) (;) Sin(e)ce(edc)ri(gh)tá(gh)tis(j) á(j.)zy(mhk) (;) Cum(e) Pa()tre(e) et(dc) Sanc(g)to(gh) Spi(j)ri(j)tu,(ih) (,) In(jk) sem(j)pi(hg)tér(i)na(h.i.)",
+    "ma.() Ca()ro() e()jus(ijh) ob()lá(jk)ta(j) est.(hg) O(i) ve()re(hi) di(h)gna(h.) hó()sti(g.h)a,() (;) sǽ()cu()la(h) A(j)men(hghjijkjihbdfhkgikhhgghgf.g.) (,) (::) (:) (:)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 4384,
+  "output_tokens": 783,
+  "costUsd": 0.016598
+ },
+ "durationMs": 11693
+}

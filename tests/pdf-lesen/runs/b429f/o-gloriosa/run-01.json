@@ -1,0 +1,41 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "O gloriósa Vírginum, Sublímis ínter",
+   "mode": "2",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "O(h) glo()ri(e.d)ó()sa() Vír()gi(h)num,() (;) Sub(k)lí(k)mis(i) ín(ji)ter(h) sí(ih)de(g)ra:(h.)",
+    "Qui(k) te(k) cre(i)á(k)vit,(kl) pár(j)vu(hi)lum(i.g.) (;) Lac(ji)tén(jk)te(i) nú(ji)tris(h) ú(ih)be()re.(g)",
+    "Quod() Hé(h)va(ed) trí(g)stis(hj) áb(ji)stu(h)lit,(i.) (;) Tu(hk) réd(k)dis(i) ál(ji)mo(h) gér(ih)mi()ne(g)",
+    "In(k)trent(k) ut(i) á()stra(kl) flé(ji)bi(hi)les,(ihg.) (;) Caé(ji)li(jk) re(i)clú(ji)dis(h) cár(ih)di(g)nes.(h.) (::)",
+    "Tu(h) Ré(hg)gis(ed) ál(g)ti(hj) já(ji)nu(h)a,(i.) (;) Et(hk) áu(k)la(i) lú(ji)cis(h) fúl(ih)gi(g)da:(h.) (:)",
+    "Ví(k)tam(k) dá(i)tam(k) per(klk) Vír(ji)gi(hi)nem,(ihg.) (;) Gén(ji)tes(jk) re(i)démp(ji)tae,(h) pláu(ih)",
+    "di(g)te.(h.) (::) Jé(h)su,(hg) tí(ed)bi(g) sit(hj) gló(ji)ri(h)a,(i.) (;) Qui(hk) ná(k)tus(i) es(ji) de(h) Vír(ih)",
+    "gi(g)ne,(h.) (:) Cum(k) Pa()tre(k) et(i) ál(k)mo(klk) Spí(ji)ri(hi)tu,(ihg.) (;) In(ji) sem(jk)pi(i)té(ji)rna(h)",
+    "saé(ih)cu(g)la.(h.) (::) A(hih)men.(g.h.) (::)"
+   ],
+   "unsure": [
+    4,
+    3,
+    3,
+    3,
+    3,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3189,
+  "output_tokens": 480,
+  "costUsd": 0.011178
+ },
+ "durationMs": 6393
+}

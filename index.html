@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-Adi9NUCvYYNIYnNwX8HtsE/F5fDaBclTBnz9FWQbbjs=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-Lj/vLtH8KWmjIXYM/TcEo6GGEvzhqBgLTfUZM/UtLuY=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -6208,7 +6208,7 @@ function pgAnalyseStaff(dark, st, g, ref) {
     for (let i = out.length - 1; i >= 0; i--) if (pgRound(out[i].p) >= 8 && !hasLedger(out[i])) { pgDiag('über dem System ohne Hilfslinie', {x0: out[i].x, x1: out[i].x, y0: out[i].y, y1: out[i].y, area: 0}, st); out.splice(i, 1); }
   }
   st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt};
-  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
+  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
 }
 
@@ -6264,7 +6264,8 @@ function pgMarkFlats(st, notes) {
   }
 }
 
-// Virga (Build 413, nicht im Python-Prototyp): dünner Strich am rechten Rand des Kopfs nach unten, der frei endet
+// Virga (Build 413, nicht im Python-Prototyp; seit Build 429 abgeschaltet, Schalter globalThis._pgVirga: auf 31 Fällen nur
+// 12 % gefunden und 39 % richtig – mehr falsche als richtige Zeichen): dünner Strich am rechten Rand des Kopfs nach unten, der frei endet
 // (endet er an einer anderen Note, ist es ein Verbindungsstrich). Setzt n.virga. Iktus und Episem wurden ebenso versucht,
 // aber verworfen: zu viele Fehlmeldungen (Linienreste, Hilfslinien, Hälse; Plan 7.18).
 function pgMarkVirga(st, notes) {
@@ -6579,7 +6580,12 @@ function pgResyllabify(text) {
   if (globalThis._pgNurPrototyp || typeof ntPtSyllabify !== 'function') return text;
   return String(text || '').split(/(\s+)/).map(w => {
     if (/^\s*$/.test(w) || PG_SIGN_RE.test(w)) return w;
-    const parts = w.split('-');
+    let parts = w.split('-');
+    // Silbe ohne Vokal gibt es im Latein nicht («Ma-tré-m-que», KI-Lesefehler bei Mittit, Build 429): an die vorige Silbe hängen
+    for (let k = parts.length - 1; k >= 0 && parts.length > 1; k--) {
+      if (!/\p{L}/u.test(parts[k]) || /[aeiouyæœáéíóúýǽàèìòùäëïöüAEIOUYÆŒÁÉÍÓÚÝǼ]/.test(parts[k])) continue;
+      if (k > 0) { parts[k - 1] += parts[k]; parts.splice(k, 1); } else { parts[1] = parts[0] + parts[1]; parts.splice(0, 1); }
+    }
     return parts.map((part, pi) => {
       const m = /^([^\p{L}]*)([\p{L}]*)([^\p{L}]*)$/u.exec(part);
       if (!m || m[2].length < 3) return part;
@@ -6707,10 +6713,44 @@ function pgToGabcText(notes, bars, syls, gl) {
 // ── Ganze Seite ─────────────────────────────────────────────────────────
 // img: Graustufenbild der Seite (~300 dpi). Gibt {img (entzerrt), staves: [{lines, x0, x1, gl, notes, bars, clef,
 // dropcap, chunks}], gap, angle, thr}.
-function pgAnalysePage(img) {
-  const sv = pgStaves(img);
-  const thr = pgInt((pgOtsu(sv.img) + pgMedianGray(sv.img)) / 2);
-  const dark = pgThreshold(sv.img, thr), sts = sv.sts, g = sv.g;
+// Zweiter Durchgang (Build 429, nicht im Prototyp): dieselbe Seite mit hellerer und dunklerer Schwelle lesen und je Note
+// abstimmen. Gibt die Notenliste des Hauptdurchgangs zurück, ergänzt/bereinigt nach Mehrheit, und die Stellen, an denen
+// sich die Durchgänge nicht einig waren (x-Positionen, für die Markierung «bitte prüfen»).
+const PG_VOTE_DELTA = 18;                                   // Grauwert-Abstand der Zusatzdurchgänge zur Hauptschwelle
+function pgSameNote(a, b, gl) { return Math.abs(a.x - b.x) < 0.3 * gl && Math.abs(a.p - b.p) < 0.6; }
+function pgVoteNotes(base, alts, gl, lightIdx, smallAt, wref) {
+  const hits = n => alts.filter(al => al.some(m => pgSameNote(n, m, gl))).length;
+  const out = [], unsure = [];
+  for (const n of base) {
+    const h = hits(n);
+    if (h === alts.length) { out.push(n); continue; }
+    unsure.push(n.x);
+    if (h >= 1) out.push(n);                                // 2 von 3: bleibt
+  }
+  // Noten, die beide Zusatzdurchgänge sehen, der Hauptdurchgang aber nicht; dazu Noten nur im hellen Durchgang, wo der
+  // Hauptdurchgang an derselben Stelle einen zu kleinen Rest verworfen hat (graue, gerasterte Notenköpfe – O gloriosa)
+  const extra = [];
+  alts.forEach((al, k) => al.forEach(m => {
+    if (base.some(n => pgSameNote(n, m, gl)) || extra.some(e => pgSameNote(e, m, gl))) return;
+    const others = alts.filter((o, j) => j !== k && o.some(x => pgSameNote(x, m, gl))).length;
+    if (k !== lightIdx && others === 0) return;              // nur in einem Zusatzdurchgang (dunkel) gesehen
+    unsure.push(m.x);
+    // Ergänzt wird nur, was der helle Durchgang an der Stelle eines verworfenen Rests sieht. Funde beider Zusatzdurchgänge
+    // ohne Rest im Hauptdurchgang werden nur als «unsicher» markiert.
+    // Nicht über der obersten Linie: dort stehen handschriftliche Akkordbuchstaben (Mittit), die hell kräftiger werden
+    if (k === lightIdx && smallAt(m) && pgRound(m.p) <= 6) {
+      extra.push(m);
+      if (Array.isArray(globalThis._pgVoteLog)) globalThis._pgVoteLog.push({x: Math.round(m.x), y: Math.round(m.y), letter: m.letter, why: others >= 1 ? 'beide' : 'hell+Rest', w: m.w});
+    }
+  }));
+  for (const m of extra) {                                   // nach x einsortieren, Reihenfolge des Hauptdurchgangs bleibt
+    let i = out.length; while (i > 0 && out[i - 1].x > m.x) i--;
+    out.splice(i, 0, m);
+  }
+  return {notes: out, unsure};
+}
+
+function pgSizeRef(dark, sts, g) {
   let sizes = [];
   // Ab Build 416 (nicht im Prototyp): Notenkopfgrössen relativ zum Linienabstand des Systems, damit kleinere Systeme
   // auf derselben Seite nicht als «zu klein» verworfen werden
@@ -6721,7 +6761,16 @@ function pgAnalysePage(img) {
     sizes = sizes.concat(pgAnalyseStaff(dark, st, g, null).sizes.map(([a, w]) => [a / (k * k), w / k]));
   }
   const ref0 = sizes.length ? [pgMedian(sizes.map(s => s[0])), pgMedian(sizes.map(s => s[1]))] : rel ? [0.2, 0.45] : [0.2 * g * g, 0.45 * g];
-  const refOf = st => { const k = rel ? glOf(st) : 1; return [ref0[0] * k * k, ref0[1] * k]; };
+  return st => { const k = rel ? glOf(st) : 1; return [ref0[0] * k * k, ref0[1] * k]; };
+}
+
+function pgAnalysePage(img) {
+  const sv = pgStaves(img);
+  const thr = pgInt((pgOtsu(sv.img) + pgMedianGray(sv.img)) / 2);
+  const dark = pgThreshold(sv.img, thr), sts = sv.sts, g = sv.g;
+  const refOf = pgSizeRef(dark, sts, g);
+  const vote = !globalThis._pgNurPrototyp && !globalThis._pgEinDurchgang;
+  const alts = vote ? [thr - PG_VOTE_DELTA, thr + PG_VOTE_DELTA].map(t => { const d = pgThreshold(sv.img, t); return {d, refOf: pgSizeRef(d, sts, g)}; }) : [];
   const dcs = [];
   for (const st of sts) {
     let d = pgDropcapBox(dark, st, (st.lines[3] - st.lines[0]) / 3, sts);
@@ -6729,17 +6778,37 @@ function pgAnalysePage(img) {
     dcs.push(d);
   }
   const staves = sts.map((st, k) => {
-    const {notes, gl} = pgAnalyseStaff(dark, st, g, refOf(st));
-    return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st), odd: st.odd,
+    const altNotes = alts.map(a => { const r = pgAnalyseStaff(a.d, st, g, a.refOf(st)).notes; r.forEach(n => { n.alt = true; }); return r; });
+    const diag0 = globalThis._pgDiag; let small = [];
+    if (vote) globalThis._pgDiag = small;                   // verworfene «kleine» Reste des Hauptdurchgangs merken
+    let {notes, gl} = pgAnalyseStaff(dark, st, g, refOf(st)); // Hauptdurchgang zuletzt: st._ctx gehört zu ihm
+    if (vote) { globalThis._pgDiag = diag0; if (Array.isArray(diag0)) diag0.push(...small); }
+    let unsure = [];
+    if (vote) {
+      small = small.filter(s => s.why === 'klein');
+      const smallAt = m => small.some(s => m.x >= s.x0 - 0.2 * gl && m.x <= s.x1 + 0.2 * gl && m.y >= s.y0 - 0.3 * gl && m.y <= s.y1 + 0.3 * gl);
+      ({notes, unsure} = pgVoteNotes(notes, altNotes, gl, 1, smallAt, st._ctx && st._ctx.wref));
+    }
+    return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, unsure, bars: pgFindBars(st), clef: pgFindClef(st), odd: st.odd,
       dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
   }).filter(s => !s.odd || s.clef);      // abweichend grosses oder nur am Rand gefundenes System: nur mit Schlüssel (Build 417)
   // ♭ nur auf der b-Stufe des Schlüssels (Build 418, nicht im Prototyp): alle Fehlfunde der Gegenproben lagen anderswo
   // (handschriftliche Akkordbuchstaben «B»/«Es», Bleistift), alle richtigen auf dieser Stufe
   if (!globalThis._pgNurPrototyp) for (const s of staves) {
+    for (const n of s.notes) if (n.flat) n.flatRaw = n.flat;          // für pgApplyClef (Schlüssel des ganzen Stücks, Build 429)
     if (!pgBSteps(s.clef)) continue;
     for (const n of s.notes) if (n.flat && !pgBSteps(s.clef).includes(n.flat)) delete n.flat;
   }
   return {img: sv.img, staves, gap: g, angle: sv.ang, thr};
+}
+
+// Schlüssel des ganzen Stücks (Mehrheit) auf ein System übertragen (Build 429): Ein Bleistiftstrich neben dem Schlüssel liess
+// einzelne Systeme als F-Schlüssel erscheinen; der ♭-Filter (nur b-Stufe) lief dann mit der falschen Stufe und warf echte ♭ weg.
+function pgApplyClef(staff, clef) {
+  if (!clef || staff.clef === clef) return;
+  staff.clefRaw = staff.clef; staff.clef = clef;
+  const bs = pgBSteps(clef);
+  for (const n of staff.notes) { if (n.flatRaw && (!bs || bs.includes(n.flatRaw))) n.flat = n.flatRaw; else if (bs) delete n.flat; }
 }
 
 // GABC-Zeile eines Systems aus dem gelesenen Text (Silben mit «-», Wörter mit Leerzeichen)
@@ -6804,9 +6873,8 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 '- If a strip contains no chant text, return an empty string for it.\n' +
 'Return one entry per strip number 1..N.\n\n' +
 'Rows labelled "M<n>" (if any) are not chant text: they show the small annotation printed above the initial letter of ' +
-'strip n, usually the mode of the chant as a Roman or Arabic numeral, sometimes with other words (e.g. "VIII", "5", ' +
-'"1.", "R. br. VI", "Ant. 7"). For each such row return in "modes" the mode as an Arabic number 1–8 ("VIII" -> "8", ' +
-'"R. br. VI" -> "6"), or an empty string if no mode number is visible.';
+'strip n (e.g. "2.", "VIII", "HYMN I.", "Intr. 2.", "Ant. 7. e", "R. br. VI"). For each such row return in "modes" ' +
+'exactly the characters printed there (Roman numerals stay Roman), or an empty string if the row is blank.';
 
 // PDF-Seite mit 300 dpi als Graustufenbild (L = 0.299 R + 0.587 G + 0.114 B, wie PIL)
 async function pgRenderPageGray(pdfDoc, pageNo) {
@@ -6918,10 +6986,21 @@ async function pgReadText(apiKey, b64, n) {
   const text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   const got = {}, modes = {}, ans = JSON.parse(text);
   for (const e of (ans.lines || [])) got[e.n] = String(e.text || '');
-  for (const e of (ans.modes || [])) { const m = /[1-8]/.exec(String(e.mode || '')); if (m) modes[e.n] = m[0]; }
+  for (const e of (ans.modes || [])) { const m = pgModeFromText(e.mode); if (m) modes[e.n] = m; }
   const u = r.usage || {};
   return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''), modes,
     usage: {input: u.input_tokens || 0, output: u.output_tokens || 0, usd: ((u.input_tokens || 0) * PG_PRICE[0] + (u.output_tokens || 0) * PG_PRICE[1]) / 1e6}};
+}
+
+// Modus aus der gedruckten Angabe über der Initiale (Build 429): «2.», «HYMN I.», «Intr. 2.», «Ant. 7. e», «R. br. VI» → '1'…'8'.
+// Vorher sollte die KI selbst umrechnen und lieferte bei «2.», «HYMN I.», «Intr. 2.» leere Felder.
+function pgModeFromText(t) {
+  const R = {I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8};
+  for (const tok of String(t || '').split(/[\s.,;:()]+/)) {
+    if (/^[1-8]$/.test(tok)) return tok;
+    if (R[tok.toUpperCase()] && /^[IVX]+$/i.test(tok) && (tok === tok.toUpperCase() || tok.length > 1)) return String(R[tok.toUpperCase()]);
+  }
+  return '';
 }
 
 // Fremder Text (KI-Antwort) → nur Zeichen, die im GABC als Silbentext unbedenklich sind
@@ -6929,6 +7008,15 @@ function pgSafeText(t) { return String(t || '').replace(/[()[\]{}<>%|\\]/g, ' ')
 
 // Die KI hat zwei Zeilen in eine geschrieben und die nächste leer gelassen (grosse Zierinitiale über zwei Systeme, Vexilla
 // Regis; Build 425): den Text nach der Breite der Textgruppen beider Systeme an einer Silbengrenze aufteilen.
+// Vorzeile enthält deutlich mehr Text, als unter ihr Platz hat (dann hat die KI zwei Zeilen zusammengezogen, pgRepairMerged
+// teilt sie). Massstab: Buchstaben je Pixel Textbreite, Median über die übrigen Zeilen der Seite.
+function pgChunkWidth(st) { return (st.chunks || []).reduce((s, c) => s + c.x1 - c.x0, 0); }
+function pgLooksMerged(lines, staves, k) {
+  const len = t => String(t || '').replace(/[-\s]/g, '').length;
+  const r = pgMedian(lines.map((t, i) => len(t) && pgChunkWidth(staves[i]) ? len(t) / pgChunkWidth(staves[i]) : null).filter(v => v !== null));
+  const w = pgChunkWidth(staves[k]);
+  return !!(r && w && len(lines[k]) > 1.4 * r * w);
+}
 function pgRepairMerged(lines, staves) {
   const width = st => (st.chunks || []).reduce((s, c) => s + c.x1 - c.x0, 0);
   for (let k = 0; k + 1 < staves.length; k++) {
@@ -6962,6 +7050,7 @@ function pgPieces(items) {
     const cl = p.items.map(it => it.staff.clef).filter(c => c), cnt = {};
     cl.forEach(c => { cnt[c] = (cnt[c] || 0) + 1; });
     p.clef = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || 'c4';
+    if (cnt[p.clef] > cl.length / 2) p.items.forEach(it => pgApplyClef(it.staff, p.clef));   // Ausreisser angleichen (Build 429)
   }
   return pieces;
 }
@@ -6970,6 +7059,33 @@ function pgPieceGabc(p, withHeader) {
   let body = '(' + p.clef + ') ' + lines.join('\n');
   if (!/\(::\)\s*$/.test(body)) body += ' (::)';
   return withHeader ? pgGabcHeader(p) + body : body;
+}
+// Unsichere Stellen markieren (zweiter Durchgang, Build 429): je System mit Abweichungen zwischen den Durchgängen eine Notiz
+// «⚠ prüfen» an der ersten betroffenen Note (Notizen erscheinen standardmässig nicht im PDF). Die Note wird über die Zahl der
+// Tonhöhen gefunden, weil der Import Neumen in mehrere Einträge aufteilt. Gibt die Zahl der markierten Systeme zurück.
+function pgMarkUnsure(pieces) {
+  const marks = [];                                               // Index der Tonhöhe im Abschnitt
+  let base = 0;
+  for (const p of pieces) for (const it of p.items) {
+    const st = it.staff, xs = st.unsure || [];
+    if (xs.length) {
+      const first = Math.min(...xs);
+      let k = st.notes.findIndex(n => n.x >= first - 0.3 * st.gl);
+      if (k < 0) k = Math.max(0, st.notes.length - 1);
+      marks.push(base + k);
+    }
+    base += st.notes.length;
+  }
+  if (!marks.length) return 0;
+  let pitch = 0, noteIdx = -1; const anchors = [];
+  for (const e of gregEntries) {
+    if (e.type !== 'note' || !e.pitches || !e.pitches.length) continue;
+    noteIdx++;
+    const a = pitch; pitch += e.pitches.length;
+    marks.forEach(m => { if (m >= a && m < pitch && !anchors.includes(noteIdx)) anchors.push(noteIdx); });
+  }
+  anchors.forEach(i => gregEntries.push({type: 'comment', text: '⚠ prüfen', anchorNoteIdx: i, dx: 0, dy: -30, pgUnsure: true}));
+  return anchors.length;
 }
 function pgGabcHeader(p) {
   return (/^[1-8]$/.test(p.mode) ? 'annotation: ' + p.mode + '\n' : '') + (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n';
@@ -7021,6 +7137,17 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       const res = await pgReadText(apiKey, strips.b64, strips.n);
       usd += res.usage.usd;
       console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
+      // Zweiter KI-Aufruf nur bei Bedarf (Build 429): Zeile leer, obwohl unter dem System Text steht (≥ 3 Textgruppen) und
+      // die Vorzeile nicht zusammengezogen ist – die KI hatte bei Gaudeamus und Terribilis je eine Zeile ausgelassen.
+      const missing = res.lines.map((t, k) => !String(t).trim() && (page.staves[k].chunks || []).length >= 3
+        && !(k > 0 && pgLooksMerged(res.lines, page.staves, k - 1)) ? k : -1).filter(k => k >= 0);
+      if (missing.length) {
+        gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – fehlende Zeilen nochmals lesen (KI)…');
+        const res2 = await pgReadText(apiKey, strips.b64, strips.n);
+        usd += res2.usage.usd;
+        for (const k of missing) if (String(res2.lines[k] || '').trim()) res.lines[k] = res2.lines[k];
+        console.log('PDF lesen (neu), Seite ' + pg + ': zweiter KI-Aufruf für Zeile(n) ' + missing.map(k => k + 1).join(', ') + ', ' + res2.usage.usd.toFixed(4) + ' USD');
+      }
       pgRepairMerged(res.lines, page.staves);
       page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
       page.img = null;
@@ -7037,7 +7164,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
   window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,
-    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || '')}))};
+    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || ''), unsure: p.items.map(it => (it.staff.unsure || []).length)}))};
   let choice = pieces[0].index;
   if (pieces.length > 1) {
     choice = await gregPickPieceModal(pieces);
@@ -7049,16 +7176,16 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   if (target === 'new' && !(await ntConfirmDiscard())) { gregGst('Abgebrochen.'); return; }
   if (target === 'new') gregCollapseSections();
   const previousEntries = gregEntries;
-  let gabc = null, loaded = 0;
+  let gabc = null, loaded = 0, unsureN = 0;
   if (choice === 'MERGE') {
     gabc = pgGabcHeader(pieces[0]) + chosen.map(p => pgPieceGabc(p, false)).join('\n');
-    gregImportGABCString(gabc, {deferRender: true}); loaded = 1;
+    gregImportGABCString(gabc, {deferRender: true}); loaded = 1; unsureN += pgMarkUnsure(chosen);
   } else {
     for (const p of chosen) {
       if (loaded > 0) gregAddSection();
       const gb = await pgTryGregoBase(p);
       if (gb === 'cancel') { gregGst('Abgebrochen.'); if (!loaded) { gregEntries = previousEntries; } break; }
-      if (!gb) gregImportGABCString(pgPieceGabc(p, true), {deferRender: true});
+      if (!gb) { gregImportGABCString(pgPieceGabc(p, true), {deferRender: true}); unsureN += pgMarkUnsure([p]); }
       loaded++;
       if (gregEntries.length > 200 && !(await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Das Ergebnis hat ' + gregEntries.length + ' Einträge — ungewöhnlich viel für ein Stück. Trotzdem laden?'))) {
         gregEntries = previousEntries; gregGst('Abgebrochen.'); return;
@@ -7071,7 +7198,8 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   gregRender();
   if (target === 'new') { gregLibCurrentId = null; setTimeout(() => ntMarkClean(), 50); }
   gregGst('PDF lesen: ' + loaded + ' Stück(e), ' + items.length + ' Systeme, ' + Math.round((Date.now() - t0) / 1000) + ' s, ca. ' + usd.toFixed(3) +
-    ' USD. Neumenformen (Quilisma, Liqueszenz …) fehlen noch — bitte mit dem Original vergleichen.');
+    ' USD.' + (unsureN ? ' ' + unsureN + ' unsichere Stelle(n) mit «⚠ prüfen» markiert.' : '') +
+    ' Neumenformen (Quilisma, Liqueszenz …) fehlen noch — bitte mit dem Original vergleichen.');
 }
 // ── Self-test: known-good GABC roundtrip cases ──────────────────
 // Guards against regressions in gregImportGABCString()/gregEntriesToBody()
@@ -8455,7 +8583,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '428';
+const NOTATOR_BUILD_ID = '429';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

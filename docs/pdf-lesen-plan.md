@@ -985,6 +985,24 @@ Notenzahl 68 %, Tonhöhen/Stück 95 %, Gruppierung 86 % (exakt 40 %), Silben 88 
 ♭ 88/96 % (Build 419: 74/97 %), Schlüssel 100 %, Stückzahl 100 %, Modus 79 %. Offen: eine verrutschte Silbenzuordnung in
 Mittit (System 2), Virga-Fehlmeldungen, Modus bei Hymnen/Sequenzen («6.» über der Initiale wird teils nicht gelesen).
 
+### 7.25 Zweiter Durchgang, Modus, offene Punkte (Build 429, 24.11.2026)
+
+Ausgangslage Build 428 (30 Fälle, gleiche gespeicherte KI-Antworten): Notenzahl 71 %, Tonhöhen 94 %, Gruppierung exakt 55 %,
+Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
+
+- Zweiter Durchgang (Schwelle −18 / +18, Abstimmung je Note, `pgVoteNotes`): Notenzahl 71 → 73 %, Gruppierung exakt 55 → 57 %;
+  O gloriosa +22, Dominus dabit/Verbum caro +25, Unus militum +17; schlechter Parce Domine −12, Salve Regina −11 (je eine
+  Zusatznote). Varianten «Funde beider Zusatzdurchgänge ergänzen» und «Mindestbreite 0.7» verworfen.
+- Markierung «⚠ prüfen» (`pgMarkUnsure`, Notiz an der ersten betroffenen Note): markiert & Fehler 32, markiert & ok 14,
+  unmarkiert & Fehler 58, unmarkiert & ok 99 Systeme.
+- Schlüssel des Stücks für den ♭-Filter (`pgApplyClef`): im Testset ohne Wirkung (kein solcher Fall), schützt gegen Bleistift am Schlüssel.
+- Virga abgeschaltet; Silben ohne Vokal zusammengefügt; Modus wörtlich von der KI, Umrechnung in Notator.
+- Zweiter KI-Aufruf nur, wenn eine Zeile leer bleibt, unter der ≥ 3 Textgruppen stehen und die Vorzeile nicht übervoll ist
+  (Kosten +0.01 USD nur dann).
+- Ergebnis Build 429 (Mock mit neuen KI-Antworten): Notenzahl 74 %, Tonhöhen 96 %, Gruppierung exakt 61 %, Neumentyp 94 %,
+  Silben 91 %, Trennstriche 77 %, Modus 81–84 % (schwankt mit der KI), ♭ 89/93 %.
+- Offen: Modus ohne Initiale (links vom System), kleine Initialen (Tu es Petrus), Zusatznoten aus Iktus/Episem bei Parce Domine.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

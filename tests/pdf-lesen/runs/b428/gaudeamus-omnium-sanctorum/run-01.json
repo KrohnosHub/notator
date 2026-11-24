@@ -1,0 +1,39 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "GAUDEAMUS omnes in Dómi no",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "GAU(c)DE(d)A(ixdhiv)MUS(h.) (,) o(hg)mnes(hg) in(fg) Dó(gjh.)mi(ixhgh.ihi)",
+    "no,(ixi.h.) (;) di(h)em(f) fe(g)stum(gff) ce(dg)le(gff)brán(dg)tes(gff)",
+    "sub(f) ho(g)nó(ghjh)re(ghg.) San(f)ctó(h)rum(gjj) óm(h)ni(hih)um:(h.) (:) de(fg) quo(fg)rum(f) sol(f)e(g)",
+    "mni(g)tá(ghgjh)te(ghg.) (,) gau(fg)dent(f) An(fgh)ge(ghgfefgfg)li,(g.f.) (;) et(f) col(g)láu(ghjhg)dant(hg.) (,)",
+    "Fí(fge)li(f)um(fghfgfe) De(defef)i.(e.d.) (::) Ex(f)sul(gh)tá(h)te(h) ju(hj)sti(h) in(h) Dó(h)mi(hg)",
+    "no:(g.h.) (:) re(gf)ctos(gh) de(h)cet(h) col(hjh)lau(g)dá(f)ti(fff)o.(d.) (:)"
+   ]
+  },
+  {
+   "incipit": "GLória Patri, et Fílio, et",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "GLó(f)ri(gh)a(h) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h.) (,) et(h) Spi(h)rí(hj)tu(h)i(h) Sa(h)ncto.(g.h.) (:)",
+    "Sic(gf)ut(gh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h.) (,) et(h) nunc,(hj) et(h) sem(hg)per,(g.h.) (:) et(gf) in(gh)",
+    "sae(h)cu(h)la(h) sae(h)cu(hjh)ló(g)rum.(f) A(fff)men.(d.) vel() (::) E(h) u(hjh) o(g) u(f) a(fg) e.(h.) (::)",
+    "(hhjhgffffdcd.f.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3224,
+  "output_tokens": 417,
+  "costUsd": 0.010618
+ },
+ "durationMs": 8609
+}
