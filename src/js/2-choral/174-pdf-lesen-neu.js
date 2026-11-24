@@ -240,6 +240,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const pages = Math.min(pdfDoc.numPages, PG_MAX_PAGES);
   if (pdfDoc.numPages > PG_MAX_PAGES) gregGst('PDF hat ' + pdfDoc.numPages + ' Seiten — nur die ersten ' + PG_MAX_PAGES + ' werden gelesen.');
   const items = []; let usd = 0;
+  globalThis._pgFuenfLinien = false;
   for (let pg = 1; pg <= pages; pg++) {
     gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Notenlinien und Noten…');
     await new Promise(r => setTimeout(r, 30));                       // Statuszeile zeichnen lassen
@@ -260,7 +261,11 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       page.img = null;
     }
   }
-  if (!items.length) { gregGst('Keine Notensysteme gefunden (Notenlinien nicht erkannt).'); return; }
+  if (!items.length) {
+    gregGst(globalThis._pgFuenfLinien ? 'Keine Choralnoten gefunden: Das PDF enthält Fünfliniensysteme (moderne Notation) – «PDF lesen» liest nur Quadratnotation auf vier Linien.'
+      : 'Keine Notensysteme gefunden (Notenlinien nicht erkannt).');
+    return;
+  }
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
   window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,

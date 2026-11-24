@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-h/6KKzChHFIYLNoBOF0qpO3wUn3ZiJf4Y1UBpNN3OmI=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-8dMvlyKqXdbnq7lfsijP8nzoP6h30ZAZVlAYym1nzNI=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -5906,7 +5906,7 @@ function pgGroup(lines) {
   }
   // Seite mit überwiegend Fünfliniensystemen (Regina caeli mit Orgelsatz ergab sonst 16 «Systeme» mit Unsinn): kein Choral.
   // Pro Seite entschieden – eine einzelne Textzeile im Linienabstand unter einem System ist keine fünfte Linie (Puer natus).
-  if (own && fives >= 2 && fives >= 0.6 * out.length) return {out: [], g};
+  if (own && fives >= 2 && fives >= 0.6 * out.length) { globalThis._pgFuenfLinien = true; return {out: [], g}; }
   return {out, g};
 }
 
@@ -6984,6 +6984,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const pages = Math.min(pdfDoc.numPages, PG_MAX_PAGES);
   if (pdfDoc.numPages > PG_MAX_PAGES) gregGst('PDF hat ' + pdfDoc.numPages + ' Seiten — nur die ersten ' + PG_MAX_PAGES + ' werden gelesen.');
   const items = []; let usd = 0;
+  globalThis._pgFuenfLinien = false;
   for (let pg = 1; pg <= pages; pg++) {
     gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Notenlinien und Noten…');
     await new Promise(r => setTimeout(r, 30));                       // Statuszeile zeichnen lassen
@@ -7004,7 +7005,11 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       page.img = null;
     }
   }
-  if (!items.length) { gregGst('Keine Notensysteme gefunden (Notenlinien nicht erkannt).'); return; }
+  if (!items.length) {
+    gregGst(globalThis._pgFuenfLinien ? 'Keine Choralnoten gefunden: Das PDF enthält Fünfliniensysteme (moderne Notation) – «PDF lesen» liest nur Quadratnotation auf vier Linien.'
+      : 'Keine Notensysteme gefunden (Notenlinien nicht erkannt).');
+    return;
+  }
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
   window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,
@@ -8426,7 +8431,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '425';
+const NOTATOR_BUILD_ID = '426';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

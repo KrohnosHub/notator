@@ -176,6 +176,13 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Textgruppen teilen. Fünfliniensysteme: pro Seite entscheiden (≥ 60 % der Systeme mit fünfter Linie) – eine Textzeile im Linienabstand
   unter einem System hatte bei Puer natus sonst ein System gelöscht. Bleistiftnotizen neben dem Schlüssel können ihn als F-Schlüssel
   erscheinen lassen; fürs Stück zählt die Mehrheit der Systeme.
+- **Runde 10 (Build 426, 24.11.2026):** Gerasterte (graue) Notenköpfe werden von pdf.js hell dargestellt; die zweite Note einer
+  Clivis zerfällt dann zu einem 10×10-px-Rest (O gloriosa). Eine Regel «Rest rechts tiefer neben einem Notenkopf = Note» half dort,
+  erzeugte aber in 11 älteren Fällen Zusatznoten (Notenzahl 73 → 65 %) – verworfen. Offene Richtung: Schwelle/Schliessen für helle
+  Notenköpfe statt Regel für Reste. Moderne Noten (Puer natus, Dies irae, Regina caeli mit Orgelsatz) werden sauber abgewiesen.
+- **Bilanz Runden 6–10 (Builds 422–426):** über alle 33 Fälle Notenzahl 70 → 72 %, Gruppierung exakt 43 → 57 %, Neumentyp je Silbe
+  91 → 93 % (bei richtiger Notenzahl stimmt der Verlauf zu 99 %), Silben 89 %, Schlüssel 100 %. Torculus/Porrectus-Verwechslungen:
+  1 von 782 Neumen im ganzen Testset.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

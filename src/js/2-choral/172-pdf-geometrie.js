@@ -152,7 +152,7 @@ function pgGroup(lines) {
   }
   // Seite mit überwiegend Fünfliniensystemen (Regina caeli mit Orgelsatz ergab sonst 16 «Systeme» mit Unsinn): kein Choral.
   // Pro Seite entschieden – eine einzelne Textzeile im Linienabstand unter einem System ist keine fünfte Linie (Puer natus).
-  if (own && fives >= 2 && fives >= 0.6 * out.length) return {out: [], g};
+  if (own && fives >= 2 && fives >= 0.6 * out.length) { globalThis._pgFuenfLinien = true; return {out: [], g}; }
   return {out, g};
 }
 

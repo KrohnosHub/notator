@@ -1,0 +1,38 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "TErríbilis est locus iste: hic",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "TEr(f)rí(f)bi(e)lis(c) est(cef) (,) lo(h)cus(hhh) i(kxhihh)ste:(g.f.) hic(e) do(efg)mus(igge)",
+    "De(efghgf)i(ef) est,(f.) et(fh) por(h)ta(ghi) cae(ih)li:(hihhefe.) (:) et(e) vo(f)cá(fhih)bi(hkxhh.)tur(fgece.)",
+    "au(cef)la(fhhegf) De(fgf)i.(f.) T.P.() (;) Al()le(ef)lú(hg)ia,(hih) al(hhhffe.) (,) le(fhgghf)lú(fgf)ia.(f.)",
+    "Quam(e) di(fe)léc(eh)ta() ta(h)ber(h)ná(h)cu(h)la(h) tu(h)a,(h) Dó(h)mi(hg)ne(hi) vir(i)tú(hi)tum!(h.) (:)",
+    "con(hv)cu(fh)pí(h)scit,(h) et(h) dé(h)fi(h)cit(h) á(h)ni(h)ma(h) me(h)a(h) (,) in(h) á(h)tri(i)a(hf) Dó(h)mi(ge)",
+    "GLó(fgf)ri()a() (,) Pa()tri,() et() Fí()li()o,() et() Spi()rí()tu()i() San()"
+   ]
+  },
+  {
+   "incipit": "cto. Sicut erat in princípio",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "cto.(e) Sic(fe)ut(eh) e(h)rat(h) in(h) prin(h)cí(h)pi()o,(h.) et(h) nunc,(h) et(hg) sem(hii)per,(hi)",
+    "et(h.) (:) in(hf) sæ(fhh)cu(h)la(h) sae(hhhh.hg)cu(hiihih.) (,)",
+    "ló(hffh)rum.(hhh) A(hi)men.(hfhgefgf) (,)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3224,
+  "output_tokens": 420,
+  "costUsd": 0.010648
+ },
+ "durationMs": 5653
+}

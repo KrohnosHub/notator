@@ -1,0 +1,38 @@
+{
+ "id": "o-gloriosa",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Gesangbuch Nr. 141 (Hymnus O gloriosa Virginum), Drive des Nutzers",
+  "reference": "GregoBase 2885 (LU S. 1314)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "strophen-fortlaufend",
+  "handschriftliche-akkorde",
+  "torculus",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 10 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Hymnus, 9 Systeme, Strophen fortlaufend, Akkorde von Hand über den ersten zwei Systemen. Soll aus GregoBase (LU), Text nach dem Druck (Hé-va, áb-stu-lit, re-démp-tae, Caé-li, Jé-su), Strophennummern weggelassen.",
+ "pieces": [
+  {
+   "incipit": "O gloriosa Virginum",
+   "mode": "2",
+   "clef": "c4",
+   "systems": [
+    "O(h) glo(h_g)ri(e[ll:1]d)ó(g)sa(hj) Vír(ji)gi(h)num,(i.) (;) Sub(hk)lí(k)mis(i) ín(ji)ter(h) sí(ih)de(g)ra :(h.) (:)",
+    "Qui(k) te(k') cre(i)á(k)vit,(klk) pár(ji)vu(hi)lum(ivHG.) (;) La(ji)ctén(jk)te(i) nú(ji)tris(h) ú(ih)be(g)re.(h.) (::)",
+    "Quod(h) Hé(h_g)va(e[ll:1]d) trí(g)stis(hj) áb(ji)stu(h)lit,(i.) (;) Tu(hk) réd(k)dis(i) ál(ji)mo(h) gér(ih)mi(g)ne :(h.) (:)",
+    "In(k)trent(k') ut(i) á(k)stra(klk) flé(ji)bi(hi)les,(ivHG.) (;) Caé(ji)li(jk) re(i)clú(ji)dis(h) cár(ih)di(g)nes.(h.) (::)",
+    "Tu(h) Ré(h_g)gis(e[ll:1]d) ál(g)ti(hj) já(ji)nu(h)a,(i.) (;) Et(hk) áu(k)la(i) lú(ji)cis(h) fúl(ih)gi(g)da :(h.) (:)",
+    "Ví(k)tam(k') dá(i)tam(k) per(klk) Vír(ji)gi(hi)nem,(ivHG.) (;) Gén(ji)tes(jk) re(i)démp(ji)tae,(h) pláu(ih)",
+    "di(g)te.(h.) (::) Jé(h)su,(h_g) tí(e[ll:1]d)bi(g) sit(hj) gló(ji)ri(h)a,(i.) (;) Qui(hk) ná(k)tus(i) es(ji) de(h) Vír(ih)",
+    "gi(g)ne,(h.) (:) Cum(k) Pa(k')tre(i) et(i) ál(k)mo(klk) Spí(ji)ri(hi)tu,(ivHG.) (;) In(ji) sem(jk)pi(i)tér(ji)na(h)",
+    "saé(ih)cu(g)la.(h.) (::) A(hih)men.(gh..) (::)"
+   ]
+  }
+ ]
+}
