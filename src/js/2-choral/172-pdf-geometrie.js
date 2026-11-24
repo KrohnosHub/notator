@@ -161,7 +161,7 @@ function pgGroup(lines) {
       const t = lines.slice(i, i + 3), d1 = t[1] - t[0], d2 = t[2] - t[1], mm = (t[2] - t[0]) / 3;
       const near = (d, v) => Math.abs(d - v) < 0.15 * mm;
       if (mm > 0.7 * g && mm < 1.4 * g && (near(d1, mm) && near(d2, 2 * mm) || near(d1, 2 * mm) && near(d2, mm))) {
-        out.push(near(d1, mm) ? [t[0], t[1], t[1] + mm, t[2]] : [t[0], t[0] + mm, t[1], t[2]]); i += 3; continue;
+        out.push(Object.assign(near(d1, mm) ? [t[0], t[1], t[1] + mm, t[2]] : [t[0], t[0] + mm, t[1], t[2]], {inferred: true})); i += 3; continue;
       }
     }
     i++;
@@ -192,6 +192,11 @@ function pgColumnSplit(img) {
   const mn = Math.min(...cross);
   if (mn > 0.2 * qs.length) return null;
   const xs = []; cross.forEach((n, k) => { if (n === mn) xs.push(k); });
+  // Build 430: eine schmale Lücke in allen Linien ist Satz in zwei Hälften (Ave maris stella), kein Bundsteg – längste
+  // zusammenhängende Lücke muss mindestens 1.5 Linienabstände breit sein
+  const glT = pgMedian(qs.map(q => (q[3] - q[0]) / 3));
+  let run = 0, best = 0; cross.forEach(n => { run = n === mn ? run + 1 : 0; best = Math.max(best, run); });
+  if (best < 1.5 * glT) return null;
   return xa + xs[Math.floor(xs.length / 2)];
 }
 // GABC-Buchstaben der Tonstufe h/b für einen Schlüssel (beide Oktaven): c4 → i (b), c3 → g, c2 → e, f3 → d/k …
@@ -250,26 +255,51 @@ function pgStaves1(img) {
         if (m > PG_SYS_MIN * g && m < PG_SYS_MAX * g && !out.some(o => q[0] < o[3] + m && o[0] < q[3] + m)) { q.side = true; out.push(q); }
       }
     }
+    // Build 430: blasse Linien in einem Teil der Seite (Ave maris stella, untere Hälfte) – mit hellerer Schwelle nachsuchen;
+    // so gefundene Systeme gelten nur mit erkanntem Schlüssel (side → odd, pgAnalysePage)
+    if (!globalThis._pgErsatz) {
+      const light = pgThreshold(img, 200);
+      globalThis._pgErsatz = true;                            // 3 von 4 Linien zulassen (nur für diese Nachsuche)
+      let extra;
+      try { extra = pgGroup(pgLineCands(light, 0.30, 0.70, 0.25)).out; } finally { globalThis._pgErsatz = false; }
+      for (const q of extra) {
+        const m = (q[3] - q[0]) / 3;
+        if (m > PG_SYS_MIN * g && m < PG_SYS_MAX * g && !out.some(o => q[0] < o[3] + m && o[0] < q[3] + m)) { q.side = true; q.light = true; out.push(q); }
+      }
+    }
     out.sort((a, b) => a[0] - b[0]);
   }
   const sts = [];
   let five = 0;
-  for (const q of out) {
-    const cnt = new Int32Array(dark.w);
+  let lightMask = null;
+  // waagrechte Ausdehnung: längster Lauf, in dem alle Linien Tinte haben. Build 430 (nicht im Prototyp): zusätzlich mit heller
+  // Schwelle messen und den längeren Lauf nehmen – blasse Linien enden sonst mitten im System (Ave maris stella)
+  const extent = q => {
+    const a = extent1(q, dark);
+    if (globalThis._pgNurPrototyp || globalThis._pgErsatz) return a;
+    const b = extent1(q, lightMask || (lightMask = pgThreshold(img, 200)));
+    return b[1] - b[0] > 1.15 * (a[1] - a[0]) ? b : a;
+  };
+  const extent1 = (q, dk) => {
+    const cnt = new Int32Array(dk.w);
     for (const yy of q) {
       const y = pgRound(yy);
-      for (let x = 0; x < dark.w; x++) {
-        for (let r = Math.max(0, y - 4); r < Math.min(dark.h, y + 5); r++) if (dark.a[r * dark.w + x]) { cnt[x]++; break; }
+      for (let x = 0; x < dk.w; x++) {
+        for (let r = Math.max(0, y - 4); r < Math.min(dk.h, y + 5); r++) if (dk.a[r * dk.w + x]) { cnt[x]++; break; }
       }
     }
     let best = [0, 0], st0 = null, last = null;
     for (let x = 0; x < dark.w; x++) {
-      if (cnt[x] < (globalThis._pgErsatz ? 3 : 4)) continue;
+      if (cnt[x] < (globalThis._pgErsatz || q.inferred ? 3 : 4)) continue;      // ergänzte Linie: 3 von 4 genügen
       if (st0 === null) st0 = x;
-      else if (x - last > (globalThis._pgErsatz ? 160 : 40)) { if (last - st0 > best[1] - best[0]) best = [st0, last]; st0 = x; }   // Ersatzweg: gestrichelte Linien (Build 430)
+      else if (x - last > (globalThis._pgErsatz || q.inferred ? 160 : 40)) { if (last - st0 > best[1] - best[0]) best = [st0, last]; st0 = x; }   // Ersatzweg: gestrichelte Linien (Build 430)
       last = x;
     }
     if (last !== null && last - st0 > best[1] - best[0]) best = [st0, last];
+    return best;
+  };
+  for (let q of out) {
+    let best = extent(q);
     const m = (q[3] - q[0]) / 3;
     // Fünfte Linie direkt im Bild prüfen (Build 427, nicht im Prototyp): eine Zeile im Linienabstand ober- oder unterhalb, die
     // fast die ganze Systembreite durchgehend bedeckt. Fotokopien moderner Noten (Benedictus, Christus vincit) liefern die fünfte
@@ -284,8 +314,17 @@ function pgStaves1(img) {
         }
         return bestC; };
       // relativ zu den eigenen vier Linien: blasse Kopien haben auch blasse Linien; Textzeilen bedecken deutlich weniger
-      const own = pgMedian(q.map(yy => cover(yy))), cv = Math.max(cover(q[3] + m), cover(q[0] - m));
+      const own = pgMedian(q.map(yy => cover(yy))), cUp = cover(q[0] - m), cDn = cover(q[3] + m), cv = Math.max(cUp, cDn);
       if (best[1] - best[0] > 4 * m && cv > 0.85 * own) five++;
+      // Build 430: eine Linie im Linienabstand neben dem System (Strich unter der Übersetzungszeile, Asperges) wurde als Notenlinie
+      // genommen und die echte äusserste Linie weggelassen. Die Seite, auf der zwischen den Linien keine Tinte liegt, ist aussen.
+      const ink = (ya, yb) => { let n = 0; const a = pgRound(ya + 0.25 * m), b = pgRound(yb - 0.25 * m);
+        for (let y = Math.max(0, a); y <= Math.min(dark.h - 1, b); y++) for (let x = best[0]; x <= best[1]; x += 2) n += dark.a[y * dark.w + x];
+        return n; };
+      let nq = null;
+      if (cDn > 0.85 * own && cUp < 0.85 * own && ink(q[3], q[3] + m) > 2 * ink(q[0], q[1]) + 20) nq = [q[1], q[2], q[3], q[3] + m];
+      else if (cUp > 0.85 * own && cDn < 0.85 * own && ink(q[0] - m, q[0]) > 2 * ink(q[2], q[3]) + 20) nq = [q[0] - m, q[0], q[1], q[2]];
+      if (nq) { q = Object.assign(nq, {side: q.side, inferred: q.inferred, light: q.light}); best = extent(q); }
     }
     sts.push({lines: q, x0: best[0], x1: best[1], odd: !globalThis._pgNurPrototyp && (!!q.side || m < 0.8 * g || m > 1.25 * g)});
   }
@@ -743,6 +782,9 @@ function pgFindBars(st) {
     // Build 419 (nicht im Prototyp): eine Divisio minima endet knapp über der obersten Linie; ein Strich, der über den
     // Suchbereich (0.9 Linienabstände) hinausragt, ist Handschrift (Akkordzeichen über dem System, Dominus dixit)
     if (t === ',' && by0 <= 1 && !globalThis._pgNurPrototyp) continue;
+    // Build 430: eine gedruckte Divisio minima reicht bis in den Zwischenraum unter der obersten Linie (untere Stufe 4.9–5.1);
+    // Striche, die schon über der Linie enden (≥ 5.5), sind Unterlängen der Textzeile darüber (Asperges, Signum magnum)
+    if (t === ',' && !globalThis._pgNurPrototyp && pm - L > 5.5) continue;
     // … ebenso ein kurzer Strich unter 0.07 Linienabständen mittlerer Breite: gedruckte Divisio minima 0.09–0.21, Feder/Bleistift dünner
     if (t === ',' && !globalThis._pgNurPrototyp && tot / (by1 - by0 + 1) < 0.05 * gl) continue;
     bars.push({x: cx, type: t});
@@ -794,7 +836,10 @@ function pgDropcapBox(dark, st, gl, others) {
     const b = pgBox(runs); boxes.push(b);
     // Build 417 (nicht im Prototyp): mindestens 0.6 Linienabstände breit – senkrechte Scannerstreifen am Rand sind keine Initiale
     const narrow = !globalThis._pgNurPrototyp && b[2] - b[0] + 1 < 0.6 * gl;
-    if (b[1] < yb - ya && b[3] - b[1] >= 2.5 * gl && !narrow && !inOther(b) && (!best || b[3] - b[1] > best[3] - best[1])) best = b.slice();
+    // Build 430: auch kleine Initialen (1.3–2.5 Linienabstände, Asperges «A», Tu es Petrus «T»), wenn sie auf Höhe der Textzeile stehen
+    const small = !globalThis._pgNurPrototyp && yt0 !== null && b[3] - b[1] >= 1.3 * gl && b[2] - b[0] + 1 >= 0.8 * gl
+      && b[3] + ya > yt - 0.3 * gl && b[3] + ya < yt + 1.8 * gl && b[1] + ya > q[0] + 1.5 * gl;
+    if (b[1] < yb - ya && (b[3] - b[1] >= 2.5 * gl || small) && !narrow && !inOther(b) && (!best || b[3] - b[1] > best[3] - best[1])) best = b.slice();
   }
   if (!best) return null;
   // Verzierte Initialen bestehen aus mehreren Teilen: alle grösseren Teile dazunehmen, die den Kasten berühren

@@ -1011,6 +1011,11 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - Gesamt (36 Fälle, Mock): Notenzahl 75 %, Tonhöhen 95 %, Gruppierung exakt 62 %, Neumentyp 95 %, Silben 90 %, Trennstriche 81 %.
 - «⚠ prüfen» mit Silben ohne Noten: markiert & Fehler 43, markiert & ok 24, unmarkiert & Fehler 52, unmarkiert & ok 103.
 
+### 7.27 Runde 13 (Build 431, 25.11.2026)
+
+- Neue Fälle: ascendens-christus (AM, Responsorium breve, schmale Spalte), ave-maris-stella (Linienlücke Mitte, blasse untere Hälfte), asperges (kleine Initiale, Strich unter der Übersetzung).
+- Blind/nachher: Notenzahl 43/70 %, Tonhöhen 74/91 %, Gruppierung exakt 35/57 %, Silben 64/82 %; ältere Fälle unverändert.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

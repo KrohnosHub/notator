@@ -1,0 +1,43 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Ave máris stélla, Déi máter",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": false,
+   "systems": [
+    "A(h.)ve(hi) má(g)ris(hi) stél(k)la,(jihgh.) Dé(h)i(h) má(de)ter(g) álm(fe)",
+    "Sú(d)mens(hi) il(g)lud(hi) a(k)ve(jihgh.) Ga(h)bri(h)è(de)lis(g) ó(fe)re.(d)",
+    "Sól(d)ve(hi) vin(g)cla(hi) ré(k)is,(jihgh.) pró(h)fer(h) lú(de)men(g) caè(f)",
+    "é()sta() pú(k)ram.(jihgh.) i(h)ter(h) pá(de)ra(g) tú(fe)",
+    "Sit(d) laus(hi) Dé(g)o(hi) Pá(k)tri.(jihgh.) súm(h)mo(h) Chri(de)sto(g) c()",
+    "A(ded)men.(c.d.)",
+    "a.() at(f)que(e) sem(g)per(h) vir(h)go.(defedc) fé(cxe)lix(g) caé(e)li(f) pór(e)ta.(d.)",
+    "fún()da(e) nos(g) in(h) pá(h)ce.(defedc) mú(e)tans(g) Hé(e)vae(f) nó(e)men.(d.)",
+    "cis() má(f)la(e) nó(g)stra(h) pél(h)le(defedc) bó(e)na(g) cun(e)cta(f) pó(e)sce.(d.)",
+    "lum,() ut(f) vi(e)dé(g)ntes(h) Jé(h)sum(defedc) sem(e)per(g) col(e)lae(f)té(e)mur.(d.)"
+   ],
+   "unsure": [
+    2,
+    0,
+    4,
+    3,
+    1,
+    1,
+    5,
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 4928,
+  "output_tokens": 411,
+  "costUsd": 0.013966
+ },
+ "durationMs": 10614
+}

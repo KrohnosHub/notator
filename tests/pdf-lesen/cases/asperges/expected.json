@@ -1,0 +1,37 @@
+{
+ "id": "asperges",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Asperges II (Antiphon 4. Ton mit Ps. 50 und Gloria, deutsches Gesangbuch mit Übersetzung), Drive des Nutzers («Asperges 2.pdf»)",
+  "reference": "GregoBase 142 (GR 1961 S. 4*), Text nach dem Druck",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "kleine-initiale",
+  "deutsche-uebersetzung",
+  "psalmvers",
+  "gloria-patri",
+  "strich-unter-textzeile",
+  "schraeg"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 13 (25.11.2026): blind gemessen, Soll danach aus GregoBase 142 (gleiche Melodie wie der Druck). «*», «Ps. 50,3» und Fussnote «1» weggelassen. Kleine Initiale «A-» (keine Zierinitiale), über System 4 ein dünner Strich unter der Übersetzungszeile im Linienabstand. «sicut» hier nach dem Druck «Sí-cut».",
+ "pieces": [
+  {
+   "incipit": "Asperges me",
+   "mode": "4",
+   "clef": "c4",
+   "systems": [
+    "A(f)spér(fe)ges(de) me,(e.) (,) Dó(e)mi(g)ne,(gh) hys(ixhi)só(h)po,(gf) et(gh)",
+    "mun(gf)dá(ef)bor:(ed..) (:) la(cd)vá(fe)bis(fg) me,(g.) (,) et(g) sú(ixhi)per(h) ní(g)vem(gf~) de(gh)al(gf~)bá(e.)bor.(e.) (::)",
+    "Mi(h)se(gh)ré(h)re(h) mé(g)i(h) Dé(i)us,(h.) (:) se(h)cún(h)dum(h) mág(h)nam(h)",
+    "mi(h)se(h)ri(h)cór(g)di(h)am(ih) tu(gf)am.(e.) (::) Glo(h)ri(gh)a(h) Pá(h)tri,(h) et(h) Fí(h)li(h)o,(h.)",
+    "et(h) Spi(h)rí(h)tu(g)i(h) Sanc(i)to.(h.) (:) Sí(h)cut(gh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h.)",
+    "et(h) nunc,(g) et(h) sém(i)per,(h.) (:) et(h) in(h) sæ(h)cu(h)la(h) sæ(h)cu(g)ló(h)rum.(ih) A(gf)men.(e.) (::)"
+   ]
+  }
+ ]
+}

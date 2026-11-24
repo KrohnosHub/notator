@@ -1,0 +1,38 @@
+{
+ "id": "ave-maris-stella",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Hymnus «Ave maris stella» (feierlich, LU), jede Strophe ein System, Drive des Nutzers",
+  "reference": "GregoBase 2232 (LU S. 1259), Text nach dem Druck",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "hymnus",
+  "strophen-je-system",
+  "blasse-linien",
+  "linienluecke-mitte",
+  "handschriftliche-akkorde"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 13 (25.11.2026): blind gemessen (fälschlich als Doppelseite geteilt, weil alle Linien in der Mitte eine schmale Lücke haben), Soll danach aus GregoBase 2232. Strophennummern weggelassen, Ictus/Episeme der Vorlage weggelassen (nicht gedruckt). Untere Systeme mit sehr blassen Linien.",
+ "pieces": [
+  {
+   "incipit": "Ave maris stella",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "A(d)ve(hi) má(g)ris(hi) stél(k)la,(jvIHGh.) (,) Dé(h)i(h) má(de)ter(g) ál(fe)ma,(d.) (;) at(f)que(e) sem(g)per(h) vír(h)go,(d!ew!fvEDC) (,) fé(e)lix(g) caé(e)li(f) pór(e)ta.(d.) (::)",
+    "Sú(d)mens(hi) il(g)lud(hi) a(k)ve(jvIHGh.) (,) Ga(h)bri(h)è(de)lis(g) ó(fe)re,(d.) (;) fún(f)da(e) nos(g) in(h) pá(h)ce,(d!ew!fvEDC) (,) mú(e)tans(g) Hé(e)vae(f) nó(e)men.(d.) (::)",
+    "Sól(d)ve(hi) vin(g)cla(hi) ré(k)is,(jvIHGh.) (,) pró(h)fer(h) lú(de)men(g) caé(fe)cis,(d.) (;) má(f)la(e) nó(g)stra(h) pél(h)le,(d!ew!fvEDC) (,) bó(e)na(g) cun(e)cta(f) pó(e)sce.(d.) (::)",
+    "Món(d)stra(hi) te(g) és(g)se(hi) má(k)trem,(jvIHGh.) (,) sú(h)mat(h) per(de) te(g) pré(fe)ces,(d.) (;) qui(f) pro(e) nó(g)bis(h) ná(h)tus,(d!ew!fvEDC) (,) tú(e)lit(g) és(e)se(f) tú(e)us.(d.) (::)",
+    "Vír(d)go(hi) sin(g)gu(hi)lá(k)ris,(jvIHGh.) (,) in(h)ter(h) ó(de)mnes(g) mí(fe)tis,(d.) (;) nos(f) cúl(e)pis(g) so(h)lú(h)tos,(d!ew!fvEDC) (,) mí(e)tes(g) fac(e) et(f) cá(e)stos.(d.) (::)",
+    "Ví(d)tam(hi) praé(g)sta(hi) pú(k)ram,(jvIHGh.) (,) i(h)ter(h) pá(de)ra(g) tú(fe)tum,(d.) (;) ut(f) vi(e)dén(g)tes(h) Jé(h)sum,(d!ew!fvEDC) (,) sem(e)per(g) col(e)lae(f)té(e)mur.(d.) (::)",
+    "Sit(d) laus(hi) Dé(g)o(hi) Pá(k)tri,(jvIHGh.) (,) súm(h)mo(h) Chri(de)sto(g) dé(fe)cus,(d.) (;) Spí(f)ri(e)tu(g)i(h) Sán(h)cto,(d!ew!fvEDC) (,) trí(e)bus(g) hó(e)nor(f) ú(e)nus.(d.) (::)",
+    "A(ded)men.(c.d.) (::)"
+   ]
+  }
+ ]
+}

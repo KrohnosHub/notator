@@ -1,4 +1,4 @@
-# Notator – Stand Build 430 (25.11.2026)
+# Notator – Stand Build 431 (25.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–430 (Auszug)
+## Neu in Build 298–431 (Auszug)
 
+- **PDF lesen (431, Runde 13):** Linienlücke in der Seitenmitte gilt nicht mehr als Doppelseite (Ave maris stella); blasse Systeme werden mit hellerer Schwelle nachgesucht und mit beiden Schwellen vermessen; kleine Initialen (Asperges «A», Tu es Petrus «T»); ein Strich im Linienabstand neben dem System wird nicht mehr als Notenlinie genommen (Asperges: Tonhöhen in System 4 waren 2–3 Stufen zu tief); Unterlängen der Textzeile über dem System sind keine Divisio minima. Runde 13 blind → nachher: Notenzahl 43 → 70 %, Silben 64 → 82 %.
 - **PDF lesen (430, Meldungen Matthias + Runden 11/12):** «Ps.», «Vs.»/℣ und ℟ erscheinen im Ergebnis (kursiv bzw. V/., R/.), «Ps.» hinter dem Doppelstrich; beim Laden «als ein Stück» kein zweiter Schlüssel vor dem Gloria, wenn er gleich ist; über das Systemende getrennte Wörter bleiben ein Wort. «⚠ prüfen» zusätzlich bei Silben ohne Noten (erfasst jetzt 45 % der fehlerhaften Systeme). Kurze Systeme mitten in der Zeile, bis 8 Silben je Textgruppe, zerfallene Trennstriche in blassen Kopien, Custos ≠ Mora, gedrehter Randtext, falsch verteilte KI-Zeilen («N+»), Ersatzweg für blasse/gestrichelte/schräge Linien (Conditor alme: 0 → 6 von 8 Systemen). Runde 11 blind → nachher: Notenzahl 79 → 95 %, Silben 80 → 97 %; Runde 12: 52 → 64 %, Silben 65 → 78 %.
 - **PDF lesen (429):** zweiter Durchgang: jede Seite wird mit drei Helligkeitsschwellen gelesen, je Note entscheidet die Mehrheit; graue (gerasterte) Notenköpfe werden ergänzt. Wo die Durchgänge abweichen, setzt Notator eine Notiz «⚠ prüfen» (nicht im PDF). Modus: die KI liefert die Angabe über der Initiale wörtlich («2.», «HYMN I.», «Intr. 2.»), Notator rechnet um. Lässt die KI eine Textzeile aus, wird die Seite einmal nachgelesen. Silben ohne Vokal («Ma-tré-m-que») werden zusammengefügt; ♭ nach dem Schlüssel des ganzen Stücks; Virga abgeschaltet (mehr falsche als richtige). Über 30 Fälle: Notenzahl 71 → 74 %, Gruppierung exakt 55 → 61 %, Silben 88 → 91 %, Modus 69 → 81–84 %.
 - **PDF lesen (428):** Bei moderner Notation erschien statt der Meldung «Fehler: Cannot read properties of undefined» – der Dialog wurde ohne Knöpfe aufgerufen. Behoben (Dialoge ohne Knopfangabe bekommen «OK»); Meldungen einfacher formuliert.

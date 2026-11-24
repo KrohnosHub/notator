@@ -1,0 +1,47 @@
+{
+ "id": "ascendens-christus",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Antiphonale Monasticum 1934, S. 505–506 (In Ascensione Domini, Responsorium breve VI und Tonus simplex), schmale Spalte mit Zierinitialen, Drive des Nutzers",
+  "reference": "GregoBase 10282 (AM S. 505), 10283 (AM S. 506)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "initiale-gross",
+  "responsorium-breve",
+  "kurze-systeme",
+  "zwei-stuecke",
+  "schmale-spalte",
+  "fliesstext-oben"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 13 (25.11.2026): blind gemessen, Soll danach aus GregoBase (gleiche Ausgabe). Zwei Stücke: Responsorium breve (5 Systeme, die ersten zwei kurz neben der Zier-Initiale A) und Tonus simplex (4 Systeme, Initiale A, «R. br. VI»). ℣ und «*» weggelassen; Ictus/Episeme der Vorlage weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Ascendens Christus",
+   "mode": "6",
+   "clef": "c4",
+   "systems": [
+    "A(f)SCEN(fg)DENS(f) Chri(f)stus(fe) in(dc) al(fgd)",
+    "tum,(ixf!gw!hih.) (;) Al(ixi)le(ivHG)lú(gh)ia,(f.) (,) al(dc~)",
+    "le(ixf.g!hwiHGF)lú(ghf~)ia.(f.) (::) A(f)scén(fg)dens.(f) (::) Cap(f)tí(g)vam(f) du(gh)xit(f) (,) cap(f)ti(fe)vi(dc)",
+    "tá(fgd)tem.(ixf!gw!hih.) (::) Al(ixi)le(ivHG)lú(gh)ia,(f.) (,) al(dc~)le(ixf.g!hwiHGF)lú(ghf~)ia.(f.) (::) Gló(f)ri(f)a(f)",
+    "Pa(gh)tri,(f) (,) et(g) Fí(fe)li(dc)o,(c.) (;) et(dc~) Spi(f)rí(ixg!hwi)tu(ih)i(gh) Sanc(gf~)to.(f.) (::) A(f)scén(fg)dens.(f) (::)"
+   ]
+  },
+  {
+   "incipit": "Ascendens Christus",
+   "mode": "6",
+   "clef": "c4",
+   "systems": [
+    "A(f)scén(f)dens(f) Chri(g)stus(f) in(e) al(g)tum,(h.) (;) Al(h)le(hg)lú(g)ia,(f) al(d)le(fg)",
+    "lú(gf~)ia.(f.) (::) A(f)scén(f)dens.(f) (::) Cap(d)tí(f)vam(f) du(g)xit(f) cap(f)ti(f)vi(e)tá(g)tem.(h.) (::) Al(h)",
+    "le(hg)lú(g)ia.(f) (::) Gló(f)ri(f)a(e) Pa(g)tri,(h) et(h) Fí(ixhi)li(h)o,(h) (,) et(h) Spi(h)rí(h)tu(g)i(h) San(gf~)",
+    "cto.(f.) (::) A(f)scén(f)dens.(f) (::)"
+   ]
+  }
+ ]
+}

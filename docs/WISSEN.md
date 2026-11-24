@@ -211,6 +211,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   rechts der letzten Note zählen nicht); die KI schlägt die Fortsetzungszeile «N+» manchmal der nächsten Zeile zu (zu kurze + zu lange
   Zeile → nach Breite neu verteilen). Ersatzweg nur bei 0 Systemen: Schräge per Projektion, Schwelle 200, Linienschwelle 0.25, System
   auch aus 3 von 4 Linien – die fünf Blätter mit moderner Notation werden weiter abgewiesen. «Sic-ut» ist die Trennung der Choralbücher.
+- **Runde 13 (Build 431, 25.11.2026):** Manche Drucke setzen jedes System in zwei Hälften – alle Linien haben in der Mitte eine schmale Lücke;
+  ein Bundsteg ist mindestens 1.5 Linienabstände breit. Auf blassen Seiten fehlen einzelne Linien nur in einem Teil der Seite: Nachsuche
+  mit Schwelle 200 und 3-von-4-Linien, solche Systeme nur mit Schlüssel; Ausdehnung mit beiden Schwellen messen (längere gilt). Eine
+  Linie im Linienabstand neben dem System (Strich unter der Übersetzung) kann als Notenlinie genommen werden: aussen ist die Seite ohne
+  Tinte zwischen den Linien. Grössere Lücken in den Linien zuzulassen half Asperges, schob aber bei Gaudeamus das System in die
+  Zierinitiale – verworfen. Echte Divisio minima endet unten bei Stufe 4.9–5.1, Unterlängen der Textzeile darüber bei ≥ 5.8.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

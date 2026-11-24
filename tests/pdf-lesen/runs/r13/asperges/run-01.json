@@ -1,0 +1,35 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "spérges me, Dómine, hyssópo, et",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": false,
+   "systems": [
+    "spér(ffe)ges(de) me,(e.) (,) Dó(e)mi(g)ne,(gh) hys(hhi)só(h)po,(gf) et(gh)",
+    "mun(gf)dá(ef)bor:(e.d.) (:) la(cd)vá(fe)bis(fg) me,(g.) (,) et(g) sú(h)per(h) ní(g)vem(gf) de(gh)al(gf)bá(ee)bor.(e.) (::)",
+    "<i>Ps.</i>() Mi(h)se(gh)ré(h)re(h) mé(g)i(h) Dé(i)us,(h) (:) se(h)cún(h)dum(h) mág(h)nam(h)",
+    "ri()cór(e)di(f)am(gf) (,) tu(ed)am.(c.) (::) Gló(f) (,) ri(ef)a(f) (,) Pá(f) (,) tri,(f) (,) et() Fí(f) (,) li(f)o,(f.)",
+    "et(h) Spi(h)rí(h)tu(g)i(h) Sanc(i)to.(h.) (:) Sí(h)cut(gh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h.)",
+    "et(h) nunc,(g) et(h) sém(i)per,(h.) (:) et(h) in(h) sæ(h)cu(h)la(h) sæ(h)cu(g)ló(h)rum.(ih) A(gf)men.(e.) (::)"
+   ],
+   "unsure": [
+    0,
+    7,
+    2,
+    6,
+    0,
+    4
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2638,
+  "output_tokens": 307,
+  "costUsd": 0.008346
+ },
+ "durationMs": 8799
+}
