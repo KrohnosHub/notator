@@ -54,7 +54,7 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
     await page.evaluate(() => { try { closeModal(); } catch (e) {} });
     await page.evaluate(k => { document.getElementById('greg-api-key').value = k; }, process.env.NOTATOR_API_KEY || 'sk-test');
     await page.setInputFiles('#greg-pdf-in', path.join(ROOT, 'cases', c, 'scan.pdf'));
-    await page.waitForFunction(() => window._pgLetzteErkennung || /Fehler|Keine Notensysteme/.test((document.getElementById('greg-status') || {}).textContent || ''), null, {timeout: 180000});
+    await page.waitForFunction(() => window._pgLetzteErkennung || /Fehler|Keine Notenlinien|moderne Noten/.test((document.getElementById('greg-status') || {}).textContent || ''), null, {timeout: 180000});
     // Stückwahl: alle Stücke getrennt übernehmen (falls der Dialog erscheint)
     await page.waitForTimeout(500);
     const all = await page.$('#modal-btns button:has-text("Stücke laden")'); if (all && await all.isVisible()) await all.click();

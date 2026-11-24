@@ -9,7 +9,7 @@ function showModal(title,body,btns){
   const mbP=document.createElement('p');mbP.style.cssText='font-size:12px;color:var(--ink2);white-space:pre-line';mbP.textContent=body==null?'':String(body);
   document.getElementById('modal-body').replaceChildren(mbP);
   const bEl=document.getElementById('modal-btns');bEl.innerHTML='';
-  btns.forEach(b=>{
+  (btns||[{label:'OK',fn:closeModal}]).forEach(b=>{   // ohne Knöpfe: «OK» (Build 428; vorher Absturz)
     const btn=document.createElement('button');
     btn.className='b';btn.textContent=b.label;
     btn.onclick=b.fn;bEl.appendChild(btn);

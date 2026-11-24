@@ -262,10 +262,11 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
     }
   }
   if (!items.length) {
-    const msg = globalThis._pgFuenfLinien ? 'Keine Choralnoten gefunden: Das PDF enthält Fünfliniensysteme (moderne Notation) – «PDF lesen» liest nur Quadratnotation auf vier Linien.'
-      : 'Keine Notensysteme gefunden (Notenlinien nicht erkannt).';
+    const msg = globalThis._pgFuenfLinien
+      ? 'Dieses PDF enthält moderne Noten (fünf Notenlinien). «PDF lesen» kann nur gregorianische Choralnoten (Quadratnoten auf vier Linien) lesen.'
+      : 'Keine Notenlinien gefunden. «PDF lesen» kann nur gregorianische Choralnoten (Quadratnoten auf vier Linien) lesen. Bei blassen oder schiefen Scans hilft ein schärferer Scan.';
     gregGst(msg);
-    if (typeof showModal === 'function') showModal('PDF lesen', msg);      // Statuszeile wird auf dem Handy leicht übersehen
+    if (typeof showModal === 'function') showModal('PDF lesen', msg, [{label: 'OK', fn: closeModal}]);      // Statuszeile wird auf dem Handy leicht übersehen
     return;
   }
   const pieces = pgPieces(items);

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-Yi8pmK5w50ZH/MPYzQTRrjOPpd25DkQJR3zcT92yffo=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-Adi9NUCvYYNIYnNwX8HtsE/F5fDaBclTBnz9FWQbbjs=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -855,7 +855,7 @@ function showModal(title,body,btns){
   const mbP=document.createElement('p');mbP.style.cssText='font-size:12px;color:var(--ink2);white-space:pre-line';mbP.textContent=body==null?'':String(body);
   document.getElementById('modal-body').replaceChildren(mbP);
   const bEl=document.getElementById('modal-btns');bEl.innerHTML='';
-  btns.forEach(b=>{
+  (btns||[{label:'OK',fn:closeModal}]).forEach(b=>{   // ohne Knöpfe: «OK» (Build 428; vorher Absturz)
     const btn=document.createElement('button');
     btn.className='b';btn.textContent=b.label;
     btn.onclick=b.fn;bEl.appendChild(btn);
@@ -7027,10 +7027,11 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
     }
   }
   if (!items.length) {
-    const msg = globalThis._pgFuenfLinien ? 'Keine Choralnoten gefunden: Das PDF enthält Fünfliniensysteme (moderne Notation) – «PDF lesen» liest nur Quadratnotation auf vier Linien.'
-      : 'Keine Notensysteme gefunden (Notenlinien nicht erkannt).';
+    const msg = globalThis._pgFuenfLinien
+      ? 'Dieses PDF enthält moderne Noten (fünf Notenlinien). «PDF lesen» kann nur gregorianische Choralnoten (Quadratnoten auf vier Linien) lesen.'
+      : 'Keine Notenlinien gefunden. «PDF lesen» kann nur gregorianische Choralnoten (Quadratnoten auf vier Linien) lesen. Bei blassen oder schiefen Scans hilft ein schärferer Scan.';
     gregGst(msg);
-    if (typeof showModal === 'function') showModal('PDF lesen', msg);      // Statuszeile wird auf dem Handy leicht übersehen
+    if (typeof showModal === 'function') showModal('PDF lesen', msg, [{label: 'OK', fn: closeModal}]);      // Statuszeile wird auf dem Handy leicht übersehen
     return;
   }
   const pieces = pgPieces(items);
@@ -8454,7 +8455,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '427';
+const NOTATOR_BUILD_ID = '428';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

@@ -188,6 +188,7 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   wird die fünfte Linie im Bild gesucht: Bedeckung der Zeile im Linienabstand ≥ 85 % der Bedeckung der eigenen Linien. Einzelne
   Treffer gibt es auch bei Choral (Trennlinie unter dem letzten System bei Virgo Dei Genitrix, Handschriftzeile bei Tu es Petrus) –
   deshalb gilt die Seite nur bei klarer Mehrheit als moderne Notation. Wunsch Matthias: Dateiauswahl erst über «PDF wählen».
+- **Build 428 (24.11.2026):** Der Dialog aus Build 427 stürzte ab (`showModal(title, body)` ohne Knopfliste → `btns.forEach`); der App-Test hatte nur den Dialogtext geprüft, nicht die Statuszeile danach. Lehre: bei Meldungs-Tests auch auf `pageerror`/Konsolenfehler achten. `showModal` setzt jetzt «OK», wenn keine Knöpfe angegeben sind.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
