@@ -952,10 +952,38 @@ function pgToGabcText(notes, bars, syls, gl) {
 // ── Ganze Seite ─────────────────────────────────────────────────────────
 // img: Graustufenbild der Seite (~300 dpi). Gibt {img (entzerrt), staves: [{lines, x0, x1, gl, notes, bars, clef,
 // dropcap, chunks}], gap, angle, thr}.
-function pgAnalysePage(img) {
-  const sv = pgStaves(img);
-  const thr = pgInt((pgOtsu(sv.img) + pgMedianGray(sv.img)) / 2);
-  const dark = pgThreshold(sv.img, thr), sts = sv.sts, g = sv.g;
+// Zweiter Durchgang (Build 429, nicht im Prototyp): dieselbe Seite mit hellerer und dunklerer Schwelle lesen und je Note
+// abstimmen. Gibt die Notenliste des Hauptdurchgangs zurück, ergänzt/bereinigt nach Mehrheit, und die Stellen, an denen
+// sich die Durchgänge nicht einig waren (x-Positionen, für die Markierung «bitte prüfen»).
+const PG_VOTE_DELTA = 18;                                   // Grauwert-Abstand der Zusatzdurchgänge zur Hauptschwelle
+function pgSameNote(a, b, gl) { return Math.abs(a.x - b.x) < 0.3 * gl && Math.abs(a.p - b.p) < 0.6; }
+function pgVoteNotes(base, alts, gl, lightIdx, smallAt) {
+  const hits = n => alts.filter(al => al.some(m => pgSameNote(n, m, gl))).length;
+  const out = [], unsure = [];
+  for (const n of base) {
+    const h = hits(n);
+    if (h === alts.length) { out.push(n); continue; }
+    unsure.push(n.x);
+    if (h >= 1) out.push(n);                                // 2 von 3: bleibt
+  }
+  // Noten, die beide Zusatzdurchgänge sehen, der Hauptdurchgang aber nicht; dazu Noten nur im hellen Durchgang, wo der
+  // Hauptdurchgang an derselben Stelle einen zu kleinen Rest verworfen hat (graue, gerasterte Notenköpfe – O gloriosa)
+  const extra = [];
+  alts.forEach((al, k) => al.forEach(m => {
+    if (base.some(n => pgSameNote(n, m, gl)) || extra.some(e => pgSameNote(e, m, gl))) return;
+    const others = alts.filter((o, j) => j !== k && o.some(x => pgSameNote(x, m, gl))).length;
+    if (k !== lightIdx && others === 0) return;              // nur in einem Zusatzdurchgang (dunkel) gesehen
+    unsure.push(m.x);
+    if (others >= 1 || (k === lightIdx && smallAt(m))) extra.push(m);
+  }));
+  for (const m of extra) {                                   // nach x einsortieren, Reihenfolge des Hauptdurchgangs bleibt
+    let i = out.length; while (i > 0 && out[i - 1].x > m.x) i--;
+    out.splice(i, 0, m);
+  }
+  return {notes: out, unsure};
+}
+
+function pgSizeRef(dark, sts, g) {
   let sizes = [];
   // Ab Build 416 (nicht im Prototyp): Notenkopfgrössen relativ zum Linienabstand des Systems, damit kleinere Systeme
   // auf derselben Seite nicht als «zu klein» verworfen werden
@@ -966,7 +994,16 @@ function pgAnalysePage(img) {
     sizes = sizes.concat(pgAnalyseStaff(dark, st, g, null).sizes.map(([a, w]) => [a / (k * k), w / k]));
   }
   const ref0 = sizes.length ? [pgMedian(sizes.map(s => s[0])), pgMedian(sizes.map(s => s[1]))] : rel ? [0.2, 0.45] : [0.2 * g * g, 0.45 * g];
-  const refOf = st => { const k = rel ? glOf(st) : 1; return [ref0[0] * k * k, ref0[1] * k]; };
+  return st => { const k = rel ? glOf(st) : 1; return [ref0[0] * k * k, ref0[1] * k]; };
+}
+
+function pgAnalysePage(img) {
+  const sv = pgStaves(img);
+  const thr = pgInt((pgOtsu(sv.img) + pgMedianGray(sv.img)) / 2);
+  const dark = pgThreshold(sv.img, thr), sts = sv.sts, g = sv.g;
+  const refOf = pgSizeRef(dark, sts, g);
+  const vote = !globalThis._pgNurPrototyp && !globalThis._pgEinDurchgang;
+  const alts = vote ? [thr - PG_VOTE_DELTA, thr + PG_VOTE_DELTA].map(t => { const d = pgThreshold(sv.img, t); return {d, refOf: pgSizeRef(d, sts, g)}; }) : [];
   const dcs = [];
   for (const st of sts) {
     let d = pgDropcapBox(dark, st, (st.lines[3] - st.lines[0]) / 3, sts);
@@ -974,17 +1011,37 @@ function pgAnalysePage(img) {
     dcs.push(d);
   }
   const staves = sts.map((st, k) => {
-    const {notes, gl} = pgAnalyseStaff(dark, st, g, refOf(st));
-    return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, bars: pgFindBars(st), clef: pgFindClef(st), odd: st.odd,
+    const altNotes = alts.map(a => { const r = pgAnalyseStaff(a.d, st, g, a.refOf(st)).notes; r.forEach(n => { n.alt = true; }); return r; });
+    const diag0 = globalThis._pgDiag; let small = [];
+    if (vote) globalThis._pgDiag = small;                   // verworfene «kleine» Reste des Hauptdurchgangs merken
+    let {notes, gl} = pgAnalyseStaff(dark, st, g, refOf(st)); // Hauptdurchgang zuletzt: st._ctx gehört zu ihm
+    if (vote) { globalThis._pgDiag = diag0; if (Array.isArray(diag0)) diag0.push(...small); }
+    let unsure = [];
+    if (vote) {
+      small = small.filter(s => s.why === 'klein');
+      const smallAt = m => small.some(s => m.x >= s.x0 - 0.2 * gl && m.x <= s.x1 + 0.2 * gl && m.y >= s.y0 - 0.3 * gl && m.y <= s.y1 + 0.3 * gl);
+      ({notes, unsure} = pgVoteNotes(notes, altNotes, gl, 1, smallAt));
+    }
+    return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, unsure, bars: pgFindBars(st), clef: pgFindClef(st), odd: st.odd,
       dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
   }).filter(s => !s.odd || s.clef);      // abweichend grosses oder nur am Rand gefundenes System: nur mit Schlüssel (Build 417)
   // ♭ nur auf der b-Stufe des Schlüssels (Build 418, nicht im Prototyp): alle Fehlfunde der Gegenproben lagen anderswo
   // (handschriftliche Akkordbuchstaben «B»/«Es», Bleistift), alle richtigen auf dieser Stufe
   if (!globalThis._pgNurPrototyp) for (const s of staves) {
+    for (const n of s.notes) if (n.flat) n.flatRaw = n.flat;          // für pgApplyClef (Schlüssel des ganzen Stücks, Build 429)
     if (!pgBSteps(s.clef)) continue;
     for (const n of s.notes) if (n.flat && !pgBSteps(s.clef).includes(n.flat)) delete n.flat;
   }
   return {img: sv.img, staves, gap: g, angle: sv.ang, thr};
+}
+
+// Schlüssel des ganzen Stücks (Mehrheit) auf ein System übertragen (Build 429): Ein Bleistiftstrich neben dem Schlüssel liess
+// einzelne Systeme als F-Schlüssel erscheinen; der ♭-Filter (nur b-Stufe) lief dann mit der falschen Stufe und warf echte ♭ weg.
+function pgApplyClef(staff, clef) {
+  if (!clef || staff.clef === clef) return;
+  staff.clefRaw = staff.clef; staff.clef = clef;
+  const bs = pgBSteps(clef);
+  for (const n of staff.notes) { if (n.flatRaw && (!bs || bs.includes(n.flatRaw))) n.flat = n.flatRaw; else if (bs) delete n.flat; }
 }
 
 // GABC-Zeile eines Systems aus dem gelesenen Text (Silben mit «-», Wörter mit Leerzeichen)

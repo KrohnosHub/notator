@@ -5,6 +5,7 @@
 // Ohne --mock: echter Aufruf, Key aus NOTATOR_API_KEY (Kosten ca. 0.01 USD pro Seite).
 // --live DIR: echter Aufruf, aber über curl (TLS über die CA-Bündel der Umgebung) statt aus dem Browser; die Antworten
 //   werden als DIR/ki-<fall>.json gespeichert und taugen danach für --mock.
+// --set NAME[,NAME]: globale Schalter setzen (z. B. _pgEinDurchgang).
 // --pdfjs DIR: pdf.js (3.11.174, Ordner build/ aus dem npm-Paket pdfjs-dist) lokal statt vom CDN, falls cdnjs gesperrt ist.
 const fs = require('fs'), path = require('path'), { chromium } = require('playwright');
 const arg = (n, d) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; };
@@ -49,6 +50,8 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
           usage: {input_tokens: ki.usage.input_tokens, output_tokens: ki.usage.output_tokens}})});
       });
     }
+    // --set NAME[,NAME]: globale Schalter vor dem Laden setzen (z. B. _pgEinDurchgang = ohne zweiten Durchgang, Build 429)
+    if (arg('--set', null)) await page.addInitScript(names => { for (const n of names.split(',')) globalThis[n] = true; }, arg('--set'));
     await page.goto('file://' + path.resolve(ROOT, '../../index.html'));
     await page.waitForTimeout(2500);
     await page.evaluate(() => { try { closeModal(); } catch (e) {} });

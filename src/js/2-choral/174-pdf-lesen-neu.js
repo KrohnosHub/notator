@@ -197,6 +197,7 @@ function pgPieces(items) {
     const cl = p.items.map(it => it.staff.clef).filter(c => c), cnt = {};
     cl.forEach(c => { cnt[c] = (cnt[c] || 0) + 1; });
     p.clef = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || 'c4';
+    if (cnt[p.clef] > cl.length / 2) p.items.forEach(it => pgApplyClef(it.staff, p.clef));   // Ausreisser angleichen (Build 429)
   }
   return pieces;
 }
@@ -205,6 +206,33 @@ function pgPieceGabc(p, withHeader) {
   let body = '(' + p.clef + ') ' + lines.join('\n');
   if (!/\(::\)\s*$/.test(body)) body += ' (::)';
   return withHeader ? pgGabcHeader(p) + body : body;
+}
+// Unsichere Stellen markieren (zweiter Durchgang, Build 429): je System mit Abweichungen zwischen den Durchgängen eine Notiz
+// «⚠ prüfen» an der ersten betroffenen Note (Notizen erscheinen standardmässig nicht im PDF). Die Note wird über die Zahl der
+// Tonhöhen gefunden, weil der Import Neumen in mehrere Einträge aufteilt. Gibt die Zahl der markierten Systeme zurück.
+function pgMarkUnsure(pieces) {
+  const marks = [];                                               // Index der Tonhöhe im Abschnitt
+  let base = 0;
+  for (const p of pieces) for (const it of p.items) {
+    const st = it.staff, xs = st.unsure || [];
+    if (xs.length) {
+      const first = Math.min(...xs);
+      let k = st.notes.findIndex(n => n.x >= first - 0.3 * st.gl);
+      if (k < 0) k = Math.max(0, st.notes.length - 1);
+      marks.push(base + k);
+    }
+    base += st.notes.length;
+  }
+  if (!marks.length) return 0;
+  let pitch = 0, noteIdx = -1; const anchors = [];
+  for (const e of gregEntries) {
+    if (e.type !== 'note' || !e.pitches || !e.pitches.length) continue;
+    noteIdx++;
+    const a = pitch; pitch += e.pitches.length;
+    marks.forEach(m => { if (m >= a && m < pitch && !anchors.includes(noteIdx)) anchors.push(noteIdx); });
+  }
+  anchors.forEach(i => gregEntries.push({type: 'comment', text: '⚠ prüfen', anchorNoteIdx: i, dx: 0, dy: -30, pgUnsure: true}));
+  return anchors.length;
 }
 function pgGabcHeader(p) {
   return (/^[1-8]$/.test(p.mode) ? 'annotation: ' + p.mode + '\n' : '') + (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n';
@@ -272,7 +300,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
   window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,
-    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || '')}))};
+    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || ''), unsure: p.items.map(it => (it.staff.unsure || []).length)}))};
   let choice = pieces[0].index;
   if (pieces.length > 1) {
     choice = await gregPickPieceModal(pieces);
@@ -284,16 +312,16 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   if (target === 'new' && !(await ntConfirmDiscard())) { gregGst('Abgebrochen.'); return; }
   if (target === 'new') gregCollapseSections();
   const previousEntries = gregEntries;
-  let gabc = null, loaded = 0;
+  let gabc = null, loaded = 0, unsureN = 0;
   if (choice === 'MERGE') {
     gabc = pgGabcHeader(pieces[0]) + chosen.map(p => pgPieceGabc(p, false)).join('\n');
-    gregImportGABCString(gabc, {deferRender: true}); loaded = 1;
+    gregImportGABCString(gabc, {deferRender: true}); loaded = 1; unsureN += pgMarkUnsure(chosen);
   } else {
     for (const p of chosen) {
       if (loaded > 0) gregAddSection();
       const gb = await pgTryGregoBase(p);
       if (gb === 'cancel') { gregGst('Abgebrochen.'); if (!loaded) { gregEntries = previousEntries; } break; }
-      if (!gb) gregImportGABCString(pgPieceGabc(p, true), {deferRender: true});
+      if (!gb) { gregImportGABCString(pgPieceGabc(p, true), {deferRender: true}); unsureN += pgMarkUnsure([p]); }
       loaded++;
       if (gregEntries.length > 200 && !(await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Das Ergebnis hat ' + gregEntries.length + ' Einträge — ungewöhnlich viel für ein Stück. Trotzdem laden?'))) {
         gregEntries = previousEntries; gregGst('Abgebrochen.'); return;
@@ -306,5 +334,6 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   gregRender();
   if (target === 'new') { gregLibCurrentId = null; setTimeout(() => ntMarkClean(), 50); }
   gregGst('PDF lesen: ' + loaded + ' Stück(e), ' + items.length + ' Systeme, ' + Math.round((Date.now() - t0) / 1000) + ' s, ca. ' + usd.toFixed(3) +
-    ' USD. Neumenformen (Quilisma, Liqueszenz …) fehlen noch — bitte mit dem Original vergleichen.');
+    ' USD.' + (unsureN ? ' ' + unsureN + ' unsichere Stelle(n) mit «⚠ prüfen» markiert.' : '') +
+    ' Neumenformen (Quilisma, Liqueszenz …) fehlen noch — bitte mit dem Original vergleichen.');
 }
