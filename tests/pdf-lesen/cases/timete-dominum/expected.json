@@ -1,0 +1,35 @@
+{
+ "id": "timete-dominum",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal, Communio Allerheiligen (vereinfachte Melodie), Seite 1 von 2, Drive des Nutzers («Timete Dominum – Choral.pdf»)",
+  "reference": "vom Druck abgelesen (vereinfachte Campion-Melodie, nicht GR)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c3",
+  "initiale",
+  "rezitation",
+  "englische-interlinear-uebersetzung",
+  "handschriftliche-akkorde",
+  "fliesstext-neben-system",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 8 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Vereinfachte Communio mit Vers, 4 Systeme (das letzte kurz, daneben englischer Fliesstext), Modus VIII, Akkorde von Hand. Soll von Claude mit Hilfslinien abgelesen; «Vs.» weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Timete Dominum",
+   "mode": "8",
+   "clef": "c3",
+   "systems": [
+    "TI(e)mé(f)te(h) Dó(h)mi(h)num,(h) o(h)mnes(h) san(h)cti(h) e(i)jus:(h.) (;)",
+    "quó(h)ni(h)am(h) ni(h)hil(h) de(h)ëst(h) ti(h)mén(h)ti(g)bus(h) e(f)um.(e.) (::)",
+    "In(h)qui(h)rén(h)tes(h) au(h)tem(h) Dó(i)mi(h)num,(h.) (;) non(h) de(h)fí(h)",
+    "ci(h)ent(h) om(g)ni(h) bo(f)no.(e.) (::)"
+   ]
+  }
+ ]
+}

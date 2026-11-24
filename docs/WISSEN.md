@@ -165,6 +165,11 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Psalmvers/Gloria 33 px Linienabstand) – erlaubt sind jetzt 45–220 % des typischen Abstands (`PG_SYS_MIN/MAX`), Abstände bis 100 px;
   abweichende Systeme (unter 80 % oder über 125 %) gelten weiter nur mit erkanntem Schlüssel. Prototyp-Vergleich: 1 Trennstrich
   Unterschied je System gilt als Hinweis (Grenzfall auf der Liber-Seite Terribilis, schon vor Build 423).
+- **Runde 8 (Build 424, 24.11.2026):** Die «– Choral.pdf»-Dateien im Drive sind Campion-Scans (pdf-lib), keine Notator-Exporte;
+  teils vereinfachte Melodien (Soll dann vom Druck). Über dem System: eine lange Hilfslinie war dicht genug, um als Textzeile zu
+  gelten – oberhalb braucht eine Textzeile jetzt 0.3 Linienabstände Höhe; unterhalb unverändert (sonst Text als Noten, Ave Maria).
+  Noten ab Stufe l brauchen eine seitlich überstehende Hilfslinie (sonst Handschrift). Neumentyp-Fehler sind über alle 28 Fälle
+  weiter v. a. fehlende/überzählige Einzelnoten an Silbengrenzen, nicht vertauschte Reihenfolge.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

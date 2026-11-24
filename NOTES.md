@@ -1,4 +1,4 @@
-# Notator – Stand Build 423 (24.11.2026)
+# Notator – Stand Build 424 (24.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–423 (Auszug)
+## Neu in Build 298–424 (Auszug)
 
+- **PDF lesen, Runde 8 (424):** Noten auf Hilfslinien über dem System werden gelesen (eine lange Hilfslinie galt als Textzeile); Noten ab «l» zählen nur mit Hilfslinie (Handschrift über dem System). Runde 8 blind: Notenzahl 92 %, Tonhöhen 99 %, Neumentyp 95 %.
 - **PDF lesen, Runde 7 (423):** Systeme bis 2.2-mal grösser als der typische Linienabstand werden gefunden (Campion druckt Antiphonen fast doppelt so gross wie Psalmvers und Gloria; bei Salve sancta Parens fehlte der ganze Introitus). Runde 7: Notenzahl 52 → 78 %, Tonhöhen/Stück 87 → 99 %.
 - **PDF lesen, Runde 6 (422):** Auswertung misst jetzt den Neumentyp je Silbe (Torculus/Porrectus …). Silben ohne Noten werden bei der Zuordnung stärker bestraft – verrutschte Zuordnungen erzeugten falsche Neumentypen (Neumentyp 91 → 93 %, Gruppierung exakt 43 → 50 %). F-Schlüssel ab 1.5 statt 1.9 Notenkopfbreiten (Liber-Hymnen). KI trennt das erste Wort nach der Initiale («SE-dé-bit»).
 - **API-Key merken (421):** Neben dem API-Feld von «PDF lesen» ein Häkchen «merken»: Der Key bleibt im Browser gespeichert (pro Gerät einmal eingeben); mit gespeichertem Key öffnet «PDF lesen» direkt die Dateiauswahl. Häkchen weg = Key gelöscht.

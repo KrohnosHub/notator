@@ -1,0 +1,35 @@
+{
+ "id": "dominus-dabit",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal, Communio 1. Adventssonntag, oberer Teil (Communio und erster Vers; zugeschnitten), Drive des Nutzers («Dominus dabit – Choral.pdf»)",
+  "reference": "GregoBase 16370 (Triplex, Communio und Psalmvers)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale-gross-verziert",
+  "porrectus",
+  "englische-interlinear-uebersetzung",
+  "psalmvers",
+  "randspalte",
+  "zugeschnitten",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 8 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Communio (2 Systeme, Zierinitiale D, Modus I) und erster Psalmvers (2 Systeme, links englische Randspalte). Zweiter Vers und Gloria weggeschnitten. Soll aus GregoBase-Triplex (GR); Text nach dem Druck (Ja-cob), «*» und «Vs.» weggelassen, «Dóminus.» am Versende steht ohne Noten. Ob Campion den Vers genau nach GR setzt, ist nicht Note für Note geprüft.",
+ "pieces": [
+  {
+   "incipit": "Dominus dabit",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "DO(ff)mi(fhg)nus(ghFE/fvEDC/dc..) (,) da(ff)bit(ffg) be(fd)ni(f)gni(gh)tá(hj!kvJH)tem:(h.) (:) et(h)",
+    "ter(ghg)ra(ef) no(ghhg)stra(g.) (;) da(hv./fhg/hvFED)bit(dfddc.) (,) fru(fg)ctum(e_d/fgFEf) su(ded___)um.(d.) (::)",
+    "Com(f)pla(gh)cu(h)í(h)sti(h) ti(h)bi,(h) Dó(h)mi(h)ne,(h) in(h) ter(hj)ra(h) tu(hg)a,(gh..) (:)",
+    "con(gf)ver(gh)tí(h)sti(h) cap(h)ti(h)vi(hjh)tá(g)tem(f) Ja(fff)cob.(d.) (::) Dó()mi()nus.()"
+   ]
+  }
+ ]
+}

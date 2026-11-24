@@ -1,0 +1,33 @@
+{
+ "id": "ad-te-domine-levavi",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal, Offertorium 10. Sonntag nach Pfingsten (vereinfachte Melodie), Drive des Nutzers («Ad te Domine levavi – Choral.pdf»)",
+  "reference": "vom Druck abgelesen (vereinfachte Campion-Melodie, nicht GR)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "rezitation",
+  "englische-interlinear-uebersetzung",
+  "b-vorzeichen",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 8 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Vereinfachtes Offertorium (fast nur Rezitationston), 4 Systeme, Modus I, zwei ♭. Soll von Claude mit Hilfslinien abgelesen.",
+ "pieces": [
+  {
+   "incipit": "Ad te Domine levavi",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "AD(f) te,(gh) Dó(h)mi(h)ne,(h) le(h)vá(h)vi(h) á(ixi)ni(h)mam(h) me(g)am:(h.) (;)",
+    "De(h)us(h) me(h)us,(h) in(h) te(g) con(f)fí(gh)do,(g.) (::) non(h) e(h)ru(h)bé(h)scam:(h) (,)",
+    "ne(h)que(h) ir(h)rí(h)de(h)ant(h) me(h) in(h)i(h)mí(h)ci(h) me(h)i:(g) (,) é(h)te(h)nim(h) u(h)",
+    "ni(h)vér(h)si,(h) qui(h) te(ixi) ex(h)spé(g)ctant,(h.) (;) non(h) con(g)fun(f)dén(gh)tur.(g.) (::)"
+   ]
+  }
+ ]
+}

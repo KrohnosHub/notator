@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-ISlZhd+i25Kn9Or4iLKL7Dpt5hu8jg+n6TgH8b3RbMU=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-9fZC8M7wOW84b/7O36eHYYcVx0hnlQgdKOSKR49Tk+g=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -6091,8 +6091,11 @@ function pgAnalyseStaff(dark, st, g, ref) {
   const dens = pgRowMean(reg);
   const minR = (a, b) => { let m = Infinity; for (let i = a; i < b; i++) m = Math.min(m, dens[i]); return m; };
   let ylo = bot, yhi = top;
-  for (let y = pgInt(q[3] + 0.6 * gl) - top; y < reg.h - 3; y++) if (minR(y, y + 4) > 0.12) { ylo = top + y; break; }
-  for (let y = pgInt(q[0] - 0.6 * gl) - top; y > 3; y--) if (minR(y - 3, y + 1) > 0.12) { yhi = top + y; break; }
+  // Textzeile = mindestens 4 Zeilen dicht; ab Build 424 (nicht im Prototyp) oberhalb mindestens 0.3 Linienabstände hoch: eine lange
+  // Hilfslinie über dem System (Mittit ad Virginem, Noten l/m) galt sonst als Textzeile, und die Noten darauf fielen weg.
+  const tw = globalThis._pgNurPrototyp ? 4 : Math.max(4, pgRound(0.3 * gl));
+  for (let y = pgInt(q[3] + 0.6 * gl) - top; y < reg.h - 3; y++) if (minR(y, y + 4) > 0.12) { ylo = top + y; break; }   // unten unverändert (Text dicht unter dem System)
+  for (let y = pgInt(q[0] - 0.6 * gl) - top; y > tw - 1; y--) if (minR(y - tw + 1, y + 1) > 0.12) { yhi = top + y; break; }
   const blobs = [];
   for (const runs of pgComponents(op)) {
     const [bx0, by0, bx1, by1] = pgBox(runs);
@@ -6164,6 +6167,19 @@ function pgAnalyseStaff(dark, st, g, ref) {
     const p = pgRound(n.p);
     if (p < -3 || p > 9) continue;
     n.letter = PG_LET[p + 3]; out.push(n);
+  }
+  // Noten auf/über der ersten Hilfslinie oben (Stufe ≥ 8: l, m) brauchen eine Hilfslinie, die seitlich über den Notenkopf
+  // hinausreicht (Build 424, nicht im Prototyp): sonst ist es Handschrift über dem System (Akkordbuchstaben, Terribilis)
+  if (!globalThis._pgNurPrototyp) {
+    const hasLedger = n => {
+      const yL = pgRound(q[3] + off(n.x) - 8 * hs) - top, r = Math.max(1, pgRound(lt));
+      const side = (xa0, xb0) => { let hit = 0, all = 0;
+        for (let x = pgRound(xa0) - xa; x <= pgRound(xb0) - xa; x++) { if (x < 0 || x >= reg.w) continue; all++;
+          for (let y = Math.max(0, yL - r); y <= Math.min(reg.h - 1, yL + r); y++) if (reg.a[y * reg.w + x]) { hit++; break; } }
+        return all && hit / all > 0.6; };
+      return side(n.x + 0.6 * wref, n.x + 0.9 * wref) || side(n.x - 0.9 * wref, n.x - 0.6 * wref);
+    };
+    for (let i = out.length - 1; i >= 0; i--) if (pgRound(out[i].p) >= 8 && !hasLedger(out[i])) { pgDiag('über dem System ohne Hilfslinie', {x0: out[i].x, x1: out[i].x, y0: out[i].y, y1: out[i].y, area: 0}, st); out.splice(i, 1); }
   }
   st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt};
   if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
@@ -8366,7 +8382,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '423';
+const NOTATOR_BUILD_ID = '424';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
