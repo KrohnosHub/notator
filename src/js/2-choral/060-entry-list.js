@@ -61,6 +61,37 @@ function gregPdfReadRow(open) {
   row.style.display = want ? 'flex' : 'none';
   if (want) { const k = document.getElementById('greg-api-key'); if (k && !k.value) setTimeout(() => k.focus(), 30); }
 }
+// API-Key für «PDF lesen» merken (Build 421): im localStorage dieses Browsers, nur wenn «merken» angehakt ist.
+// Hinweis: gleiche Origin wie Schola-Planer/Gesangs-App (siehe Sicherheit in CLAUDE.md) – wie das Google-Token.
+const NT_API_KEY_LS = 'notator-anthropic-api-key';
+function ntApiKeyLoad() {
+  let k = '';
+  try { k = localStorage.getItem(NT_API_KEY_LS) || ''; } catch (e) {}
+  const f = document.getElementById('greg-api-key'), cb = document.getElementById('greg-api-key-save');
+  if (f && k && !f.value) f.value = k;
+  if (cb) cb.checked = !!k;
+  return k;
+}
+function ntApiKeyChanged() {
+  const f = document.getElementById('greg-api-key'), cb = document.getElementById('greg-api-key-save');
+  if (!f || !cb) return;
+  const k = f.value.trim();
+  try {
+    if (cb.checked && k) localStorage.setItem(NT_API_KEY_LS, k);
+    else if (!cb.checked) localStorage.removeItem(NT_API_KEY_LS);
+  } catch (e) {}
+}
+function ntApiKeySaved() { try { return localStorage.getItem(NT_API_KEY_LS) || ''; } catch (e) { return ''; } }
+// «PDF lesen»: mit gespeichertem Key direkt die Datei wählen (die Zeile öffnet sich trotzdem, um den Key zu ändern)
+function gregPdfReadStart() {
+  gregPdfReadRow(true);
+  if (ntApiKeyLoad()) document.getElementById('greg-pdf-in').click();
+}
+function gregPdfReadClick() {
+  if (document.getElementById('greg-pdf-read-row').style.display !== 'none') { gregPdfReadRow(false); return; }
+  gregPdfReadStart();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ntApiKeyLoad); else ntApiKeyLoad();
 function gregClearEditHighlight() {
   const wrap = document.getElementById('greg-svg-wrap');
   const svgEl = wrap ? wrap.querySelector('svg') : null;

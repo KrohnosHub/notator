@@ -14,6 +14,7 @@ const NT_INLINE_HANDLERS = {
     "gregUpdateIktusUI()": function (event) { gregUpdateIktusUI() },
     "gregUpdateQuilismaUI()": function (event) { gregUpdateQuilismaUI() },
     "if(this.value){gregAddDiv(this.value);this.value='';}": function (event) { if(this.value){gregAddDiv(this.value);this.value='';} },
+    "ntApiKeyChanged()": function (event) { ntApiKeyChanged() },
     "ntPlaySecSet(this.value)": function (event) { ntPlaySecSet(this.value) },
   },
   click: {
@@ -65,7 +66,7 @@ const NT_INLINE_HANDLERS = {
     "gregPagePreviewToggle()": function (event) { gregPagePreviewToggle() },
     "gregPdfPage(-1)": function (event) { gregPdfPage(-1) },
     "gregPdfPage(1)": function (event) { gregPdfPage(1) },
-    "gregPdfReadRow()": function (event) { gregPdfReadRow() },
+    "gregPdfReadClick()": function (event) { gregPdfReadClick() },
     "gregPdfReadRow(false)": function (event) { gregPdfReadRow(false) },
     "gregPdfSheet()": function (event) { gregPdfSheet() },
     "gregPdfZoom(-1)": function (event) { gregPdfZoom(-1) },
@@ -125,6 +126,7 @@ const NT_INLINE_HANDLERS = {
     "clSideInput()": function (event) { clSideInput() },
     "gregApplySizing()": function (event) { gregApplySizing() },
     "gregApplySizingLinked()": function (event) { gregApplySizingLinked() },
+    "ntApiKeyChanged()": function (event) { ntApiKeyChanged() },
   },
   mouseenter: {
     "this.style.background='#4a7a40'": function (event) { this.style.background='#4a7a40' },

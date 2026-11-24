@@ -486,7 +486,8 @@ async function gregLoadPDF(input) {
       return;
     }
 
-    const apiKey = (document.getElementById('greg-api-key') || {value: ''}).value.trim();
+    const apiKey = (document.getElementById('greg-api-key') || {value: ''}).value.trim() || ntApiKeySaved();
+    ntApiKeyChanged();                                            // «merken» angehakt: aktuellen Key speichern
     if (!apiKey) {
       gregPdfReadRow(true);
       gregGst('Bitte API-Key eingeben (Feld «API-Key» unter der Werkzeugleiste) und das PDF nochmals wählen');

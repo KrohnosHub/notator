@@ -27,16 +27,17 @@
         <button class="b" data-onclick="gregRedo()" style="font-size:10px;padding:2px 6px" title="Rückgängig gemachte Aktion wiederherstellen (Strg+Y)">&#8618; Redo</button>
         <input type="file" id="greg-load-in" accept=".notator,.json" style="display:none" data-onchange="gregLoadPiece(this)">
         <input type="file" id="greg-lib-import-in" accept=".json" style="display:none" data-onchange="gregLibImportFile(this)">
-        <button class="b" id="greg-pdf-read-btn" data-onclick="gregPdfReadRow()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (API-Key wird darunter abgefragt)">&#128196; PDF lesen</button>
+        <button class="b" id="greg-pdf-read-btn" data-onclick="gregPdfReadClick()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (API-Key wird darunter abgefragt)">&#128196; PDF lesen</button>
         <input type="file" id="greg-pdf-in" accept=".pdf" style="display:none" data-onchange="gregLoadPDF(this)">
         <button id="greg-pdf-panel-toggle" class="b" data-onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:2px 6px;display:none" title="Original-PDF-Panel ein-/ausblenden">&#128196; Original</button>
       </div>
       <div id="greg-pdf-read-row" style="display:none;padding:5px 8px;background:#18240f;border-bottom:1px solid #3a4a30;gap:5px;align-items:center;flex-wrap:wrap;font-size:10px;color:#a8c890">
         <span title="Anthropic API-Key: console.anthropic.com → API Keys">&#128273; API-Key</span>
-        <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird von Notator nicht gespeichert (der Browser kann ihn als Kennwort merken)" style="flex:1 1 140px;min-width:120px;font-size:11px;padding:2px 5px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+        <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung" data-oninput="ntApiKeyChanged()" style="flex:1 1 140px;min-width:120px;font-size:11px;padding:2px 5px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+        <label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap" title="Key in diesem Browser speichern und bei «PDF lesen» automatisch verwenden. Ausschalten löscht den gespeicherten Key."><input type="checkbox" id="greg-api-key-save" data-onchange="ntApiKeyChanged()"> merken</label>
         <button class="b" data-onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="PDF-Datei wählen und einlesen">&#128196; PDF wählen …</button>
         <button class="b" data-onclick="gregPdfReadRow(false)" style="font-size:10px;padding:2px 6px" title="Zuklappen">&#10005;</button>
-        <span style="flex-basis:100%;color:#6b8a60;font-size:9px">Key erhältlich unter console.anthropic.com → API Keys. Das Feld bleibt offen, bis du es zuklappst.</span>
+        <span style="flex-basis:100%;color:#6b8a60;font-size:9px">Key erhältlich unter console.anthropic.com → API Keys. Mit «merken» bleibt er in diesem Browser gespeichert (pro Gerät einmal eingeben).</span>
       </div>
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" data-onclick="gregAddSection()" style="font-size:10px;padding:2px 6px;background:#1a3a5a;color:#a0c0e0;border-color:#2a5a8a" title="Neuen Abschnitt hinzufügen">+ Abschnitt</button>

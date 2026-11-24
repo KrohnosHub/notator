@@ -168,6 +168,8 @@ Allgemein
 - Vorgeschlagene Dateinamen (PDF, ABC, MusicXML, Teilen) kommen vom **Namen der Notator-Datei**, nie vom aktiven Abschnitt.
 - Gelöschte Drive-Dateien (Papierkorb) erscheinen nicht in der Bibliothek; beim Öffnen Warnung und rote Markierung.
 - «Freitext» heisst «Notiz» (standardmässig nicht im PDF).
+- API-Key für «PDF lesen» (Wunsch Matthias 24.11.2026, Build 421): im API-Feld per Häkchen «merken» im localStorage
+  (`notator-anthropic-api-key`), nicht im Drive und nicht in Notator-Dateien. Gleiches Risiko wie das Google-Token (gemeinsame Origin).
 
 Choral
 - ♭ gilt standardmässig bis zur nächsten Divisio (Solesmes-Regel per Schalter).

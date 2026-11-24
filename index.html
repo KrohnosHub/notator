@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-DwOZZWblDjo+okU7H1mdpzMf9En/rqxf1Y9+BA/N8WU=' 'sha256-GukUGlrP+XAyO0kMFnl7ZSYQcbZkMP3J6JtP5gJfnfI=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-tMQkt2SApgDqYgzb8NHvqPTIJCskRozmGuWjvN2owWE=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -362,16 +362,17 @@ body.nt-comfort #greg-entry-list [data-idx] input[type=checkbox]{width:15px;heig
         <button class="b" data-onclick="gregRedo()" style="font-size:10px;padding:2px 6px" title="Rückgängig gemachte Aktion wiederherstellen (Strg+Y)">&#8618; Redo</button>
         <input type="file" id="greg-load-in" accept=".notator,.json" style="display:none" data-onchange="gregLoadPiece(this)">
         <input type="file" id="greg-lib-import-in" accept=".json" style="display:none" data-onchange="gregLibImportFile(this)">
-        <button class="b" id="greg-pdf-read-btn" data-onclick="gregPdfReadRow()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (API-Key wird darunter abgefragt)">&#128196; PDF lesen</button>
+        <button class="b" id="greg-pdf-read-btn" data-onclick="gregPdfReadClick()" style="font-size:10px;padding:2px 6px" title="Noten aus einem PDF per KI-Bilderkennung einlesen (API-Key wird darunter abgefragt)">&#128196; PDF lesen</button>
         <input type="file" id="greg-pdf-in" accept=".pdf" style="display:none" data-onchange="gregLoadPDF(this)">
         <button id="greg-pdf-panel-toggle" class="b" data-onclick="gregToggleOriginalPdf()" style="font-size:10px;padding:2px 6px;display:none" title="Original-PDF-Panel ein-/ausblenden">&#128196; Original</button>
       </div>
       <div id="greg-pdf-read-row" style="display:none;padding:5px 8px;background:#18240f;border-bottom:1px solid #3a4a30;gap:5px;align-items:center;flex-wrap:wrap;font-size:10px;color:#a8c890">
         <span title="Anthropic API-Key: console.anthropic.com → API Keys">&#128273; API-Key</span>
-        <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung — wird von Notator nicht gespeichert (der Browser kann ihn als Kennwort merken)" style="flex:1 1 140px;min-width:120px;font-size:11px;padding:2px 5px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+        <input type="password" id="greg-api-key" placeholder="API-Key (für PDF-KI)" title="Anthropic API-Key für PDF-Bilderkennung" data-oninput="ntApiKeyChanged()" style="flex:1 1 140px;min-width:120px;font-size:11px;padding:2px 5px;background:#0a1406;color:#c0d890;border:1px solid #3a4a30;outline:none">
+        <label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap" title="Key in diesem Browser speichern und bei «PDF lesen» automatisch verwenden. Ausschalten löscht den gespeicherten Key."><input type="checkbox" id="greg-api-key-save" data-onchange="ntApiKeyChanged()"> merken</label>
         <button class="b" data-onclick="document.getElementById('greg-pdf-in').click()" style="font-size:10px;padding:2px 8px;background:#3d6b35;color:#fff;border-color:#3d6b35" title="PDF-Datei wählen und einlesen">&#128196; PDF wählen …</button>
         <button class="b" data-onclick="gregPdfReadRow(false)" style="font-size:10px;padding:2px 6px" title="Zuklappen">&#10005;</button>
-        <span style="flex-basis:100%;color:#6b8a60;font-size:9px">Key erhältlich unter console.anthropic.com → API Keys. Das Feld bleibt offen, bis du es zuklappst.</span>
+        <span style="flex-basis:100%;color:#6b8a60;font-size:9px">Key erhältlich unter console.anthropic.com → API Keys. Mit «merken» bleibt er in diesem Browser gespeichert (pro Gerät einmal eingeben).</span>
       </div>
       <div style="padding:2px 8px 5px;background:#121c0e;border-bottom:1px solid #3a4a30;display:flex;gap:3px;align-items:center;flex-wrap:wrap">
         <button class="b" data-onclick="gregAddSection()" style="font-size:10px;padding:2px 6px;background:#1a3a5a;color:#a0c0e0;border-color:#2a5a8a" title="Neuen Abschnitt hinzufügen">+ Abschnitt</button>
@@ -714,6 +715,7 @@ const NT_INLINE_HANDLERS = {
     "gregUpdateIktusUI()": function (event) { gregUpdateIktusUI() },
     "gregUpdateQuilismaUI()": function (event) { gregUpdateQuilismaUI() },
     "if(this.value){gregAddDiv(this.value);this.value='';}": function (event) { if(this.value){gregAddDiv(this.value);this.value='';} },
+    "ntApiKeyChanged()": function (event) { ntApiKeyChanged() },
     "ntPlaySecSet(this.value)": function (event) { ntPlaySecSet(this.value) },
   },
   click: {
@@ -765,7 +767,7 @@ const NT_INLINE_HANDLERS = {
     "gregPagePreviewToggle()": function (event) { gregPagePreviewToggle() },
     "gregPdfPage(-1)": function (event) { gregPdfPage(-1) },
     "gregPdfPage(1)": function (event) { gregPdfPage(1) },
-    "gregPdfReadRow()": function (event) { gregPdfReadRow() },
+    "gregPdfReadClick()": function (event) { gregPdfReadClick() },
     "gregPdfReadRow(false)": function (event) { gregPdfReadRow(false) },
     "gregPdfSheet()": function (event) { gregPdfSheet() },
     "gregPdfZoom(-1)": function (event) { gregPdfZoom(-1) },
@@ -825,6 +827,7 @@ const NT_INLINE_HANDLERS = {
     "clSideInput()": function (event) { clSideInput() },
     "gregApplySizing()": function (event) { gregApplySizing() },
     "gregApplySizingLinked()": function (event) { gregApplySizingLinked() },
+    "ntApiKeyChanged()": function (event) { ntApiKeyChanged() },
   },
   mouseenter: {
     "this.style.background='#4a7a40'": function (event) { this.style.background='#4a7a40' },
@@ -2845,6 +2848,37 @@ function gregPdfReadRow(open) {
   row.style.display = want ? 'flex' : 'none';
   if (want) { const k = document.getElementById('greg-api-key'); if (k && !k.value) setTimeout(() => k.focus(), 30); }
 }
+// API-Key für «PDF lesen» merken (Build 421): im localStorage dieses Browsers, nur wenn «merken» angehakt ist.
+// Hinweis: gleiche Origin wie Schola-Planer/Gesangs-App (siehe Sicherheit in CLAUDE.md) – wie das Google-Token.
+const NT_API_KEY_LS = 'notator-anthropic-api-key';
+function ntApiKeyLoad() {
+  let k = '';
+  try { k = localStorage.getItem(NT_API_KEY_LS) || ''; } catch (e) {}
+  const f = document.getElementById('greg-api-key'), cb = document.getElementById('greg-api-key-save');
+  if (f && k && !f.value) f.value = k;
+  if (cb) cb.checked = !!k;
+  return k;
+}
+function ntApiKeyChanged() {
+  const f = document.getElementById('greg-api-key'), cb = document.getElementById('greg-api-key-save');
+  if (!f || !cb) return;
+  const k = f.value.trim();
+  try {
+    if (cb.checked && k) localStorage.setItem(NT_API_KEY_LS, k);
+    else if (!cb.checked) localStorage.removeItem(NT_API_KEY_LS);
+  } catch (e) {}
+}
+function ntApiKeySaved() { try { return localStorage.getItem(NT_API_KEY_LS) || ''; } catch (e) { return ''; } }
+// «PDF lesen»: mit gespeichertem Key direkt die Datei wählen (die Zeile öffnet sich trotzdem, um den Key zu ändern)
+function gregPdfReadStart() {
+  gregPdfReadRow(true);
+  if (ntApiKeyLoad()) document.getElementById('greg-pdf-in').click();
+}
+function gregPdfReadClick() {
+  if (document.getElementById('greg-pdf-read-row').style.display !== 'none') { gregPdfReadRow(false); return; }
+  gregPdfReadStart();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ntApiKeyLoad); else ntApiKeyLoad();
 function gregClearEditHighlight() {
   const wrap = document.getElementById('greg-svg-wrap');
   const svgEl = wrap ? wrap.querySelector('svg') : null;
@@ -5682,7 +5716,8 @@ async function gregLoadPDF(input) {
       return;
     }
 
-    const apiKey = (document.getElementById('greg-api-key') || {value: ''}).value.trim();
+    const apiKey = (document.getElementById('greg-api-key') || {value: ''}).value.trim() || ntApiKeySaved();
+    ntApiKeyChanged();                                            // «merken» angehakt: aktuellen Key speichern
     if (!apiKey) {
       gregPdfReadRow(true);
       gregGst('Bitte API-Key eingeben (Feld «API-Key» unter der Werkzeugleiste) und das PDF nochmals wählen');
@@ -8323,7 +8358,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '420';
+const NOTATOR_BUILD_ID = '421';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -10064,7 +10099,7 @@ function ntFileMenu(btn) {
   sep();
   group('📥 Importieren', 'Noten aus GregoBase, PDF, GABC oder einer anderen Notator-Datei übernehmen', add => {
     add('🎵 Aus GregoBase …', 'Nach Titel oder GregoBase-ID suchen und importieren', () => gregImportSongFromGregoBase());
-    add('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadRow(true); });
+    add('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadStart(); });
     add('✍ GABC einfügen …', 'GABC-Quelltext einfügen und importieren', () => { toGreg(); gregSetMode('details'); gregSideTab('gabc'); const pnl = document.getElementById('greg-gabc-import-panel'); if (pnl && pnl.style.display === 'none') gregToggleGABCImport(); });
     add('📎 Notator-Datei als Abschnitt einfügen …', 'Inhalt einer anderen Notator-Datei (Bibliothek, Gerät oder Drive) als neuen Abschnitt an dieses Stück anhängen', () => { toGreg(); ntInsertFileShow(); });
   });

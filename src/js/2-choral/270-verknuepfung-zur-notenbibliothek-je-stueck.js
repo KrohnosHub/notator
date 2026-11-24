@@ -206,7 +206,7 @@ function ntFileMenu(btn) {
   sep();
   group('📥 Importieren', 'Noten aus GregoBase, PDF, GABC oder einer anderen Notator-Datei übernehmen', add => {
     add('🎵 Aus GregoBase …', 'Nach Titel oder GregoBase-ID suchen und importieren', () => gregImportSongFromGregoBase());
-    add('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadRow(true); });
+    add('📄 PDF lesen (KI) …', 'Noten aus einem PDF per KI-Bilderkennung einlesen', () => { toGreg(); gregSetMode('details'); gregPdfReadStart(); });
     add('✍ GABC einfügen …', 'GABC-Quelltext einfügen und importieren', () => { toGreg(); gregSetMode('details'); gregSideTab('gabc'); const pnl = document.getElementById('greg-gabc-import-panel'); if (pnl && pnl.style.display === 'none') gregToggleGABCImport(); });
     add('📎 Notator-Datei als Abschnitt einfügen …', 'Inhalt einer anderen Notator-Datei (Bibliothek, Gerät oder Drive) als neuen Abschnitt an dieses Stück anhängen', () => { toGreg(); ntInsertFileShow(); });
   });
