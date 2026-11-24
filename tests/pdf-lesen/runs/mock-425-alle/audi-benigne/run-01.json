@@ -1,0 +1,33 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "AUdi benígne Cónditor Nostras preces",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "AU(fe)di(f) be(hg)ní(h)gne(fg) Cón(f)di(ef)tor(f.) (,) Nos(hg)tras(hi) pre(ih)ces(f) cum(h) flé(fg)",
+    "ti(fe)bus,(e.) (;) In(e) hoc(f) sa(h)cro(hg) je(f)jú(h)ni(hi)o(i.) (,) Fu(ef)sas(hi) qua(g)dra(hg)ge(f)ná(gf)ri(ef)o.(f.) (::)"
+   ]
+  },
+  {
+   "incipit": "TE lucis ante términum, Rerum",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "TE(g) lu(g)cis(fe) an(f)te(g) tér(h)mi(g)num,(f) (,) Re(f)rum(f) Cre(h)á(g)tor(e) pó(f)sci(h)",
+    "mus,(g.) (;) Ut(h) só(i)li(h)ta(g) cle(f)mén(h)ti(g)a,(f.) Sis(g) præ(g)sul(fe) ad(f) cus(g)tó(h)di(g)am.(f.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2571,
+  "output_tokens": 252,
+  "costUsd": 0.007662
+ },
+ "durationMs": 5107
+}

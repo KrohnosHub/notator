@@ -162,6 +162,25 @@ async function pgReadText(apiKey, b64, n) {
 // Fremder Text (KI-Antwort) → nur Zeichen, die im GABC als Silbentext unbedenklich sind
 function pgSafeText(t) { return String(t || '').replace(/[()[\]{}<>%|\\]/g, ' ').replace(/\s+/g, ' ').trim(); }
 
+// Die KI hat zwei Zeilen in eine geschrieben und die nächste leer gelassen (grosse Zierinitiale über zwei Systeme, Vexilla
+// Regis; Build 425): den Text nach der Breite der Textgruppen beider Systeme an einer Silbengrenze aufteilen.
+function pgRepairMerged(lines, staves) {
+  const width = st => (st.chunks || []).reduce((s, c) => s + c.x1 - c.x0, 0);
+  for (let k = 0; k + 1 < staves.length; k++) {
+    if (!String(lines[k] || '').trim() || String(lines[k + 1] || '').trim() || (staves[k + 1].chunks || []).length < 3) continue;
+    const w0 = width(staves[k]), w1 = width(staves[k + 1]);
+    if (!w0 || !w1) continue;
+    const syl = [];                                               // [Text, beginnt Wort]
+    pgResyllabify(lines[k]).trim().split(/\s+/).forEach(w => w.split('-').filter(x => x).forEach((p, i) => syl.push([p, i === 0])));
+    const tot = syl.reduce((s, x) => s + x[0].length, 0), goal = tot * w0 / (w0 + w1);
+    let acc = 0, cut = 1, best = Infinity;
+    for (let i = 0; i < syl.length; i++) { acc += syl[i][0].length; if (Math.abs(acc - goal) < best && i + 1 < syl.length) { best = Math.abs(acc - goal); cut = i + 1; } }
+    const join = arr => arr.map((x, i) => (i && x[1] ? ' ' : i ? '-' : '') + x[0]).join('');
+    lines[k] = join(syl.slice(0, cut)) + (syl[cut] && !syl[cut][1] ? '-' : '');
+    lines[k + 1] = join(syl.slice(cut).map((x, i) => i ? x : [x[0], true]));
+    console.log('PDF lesen (neu): Zeilen ' + (k + 1) + '/' + (k + 2) + ' aufgeteilt (KI hatte sie zusammengezogen)');
+  }
+}
 // Systeme (über alle Seiten) zu Stücken: ein System mit Initiale beginnt ein neues Stück
 function pgPieces(items) {
   const pieces = [];
@@ -236,6 +255,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       const res = await pgReadText(apiKey, strips.b64, strips.n);
       usd += res.usage.usd;
       console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
+      pgRepairMerged(res.lines, page.staves);
       page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
       page.img = null;
     }

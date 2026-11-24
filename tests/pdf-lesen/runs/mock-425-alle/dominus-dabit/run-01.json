@@ -1,0 +1,25 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "DOminus dabit benignitátem: et terra",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "DO(ff)mi(fhg)nus(ghfefedcd.c.) (,) da(ff)bit(ffg) be(fd)ni(f)gni(gh)tá(hjkjh)tem:(h.) et(h.)",
+    "ter(ghg)ra(ef) no(ghhg)stra(g.) (;) da(fh.ffhghfed)bit(dfddc.) (,) fru(fg)ctum(edfgfef) su(ded)um.(d.) (::)",
+    "℣s.() Com()pla(f)cu(gh)í(h)sti(hh) ti(h)bi,(h) Dó(h)mi(h)ne,(h) in(h) ter(hj)ra(h) tu(hg)a,(g.h.) (;)",
+    "con(gf)ver(gh)tí(h)sti(h) cap(h)ti(h)vi(hjh)tá(g)tem(f) Ja()cob.(fff) Dó()mi(d.)nus.() (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2470,
+  "output_tokens": 211,
+  "costUsd": 0.00705
+ },
+ "durationMs": 4902
+}

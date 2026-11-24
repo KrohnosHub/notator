@@ -1,0 +1,27 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VExílla Regis pródeunt: Fulget Crúcis",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "VExíl(f)la() Re()gis(gh) pró()de()unt:(ixi) Ful()get(hgf) Crú()cis(g) my()ste()ri()um,() Qua(ghg) vi()ta(f) mor(ed.)tem() (;) per()tu(g)lit,() Et(g) mor()te() vi(h)tam(fd) pró()tu()lit.(f)",
+    "(c.d.ddfdcffghggf.fixfhihghfdfefdc.d.) (:) (;) (::)",
+    "Quæ(f) vul(gh)ne(ixi)rá(hgf)ta(g) lán(ghg)ce(f)æ(ed.) (;) Mu(g)cró(g)ne(h) di(fd)ro,(f) crí(ef)mi(d)num(c.d.) (:)",
+    "Ut(d) nos(d) la(f)vá(dc)ret(f) sór(fgh)di(g)bus,(gf.) (;) Ma(f)ná(ixfhihg)vit(h) un(fd)da(f) et(f) sán(ef)gui(d)ne.(c.d.) (::)",
+    "Im(f)plé(gh) (,) ta(ixi) sunt(hgf) quæ(g) cón(ghg)ci(f)nit(ed.) (;) David(gg) fi(h)dé(fd)li(f) cár(ef)mi(d)ne,(c.d.) (:)",
+    "Di()cén(d)do(d) na(f)ti(dc)ó(f)ni(fgh)bus:(ggf.) (;) Reg(f)ná(ixfhihg)vit(h) a(fd) li(f)gno(ef) De(d)us.(c.d.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3398,
+  "output_tokens": 334,
+  "costUsd": 0.010136
+ },
+ "durationMs": 10822
+}

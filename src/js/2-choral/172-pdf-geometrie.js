@@ -141,13 +141,18 @@ function pgGroup(lines) {
   // Abweichende Systeme gelten nur mit erkanntem Schlüssel (pgAnalysePage) – so bleibt die handgeschriebene Zeile bei
   // Tu es Petrus (62 %, kein Schlüssel) draussen (Build 417; Build 416 hatte eine feste Grenze von 70 %).
   const own = !globalThis._pgNurPrototyp;
-  let i = 0;
+  let i = 0, fives = 0;
   while (i + 3 < lines.length) {
     const q = lines.slice(i, i + 4), m = (q[3] - q[0]) / 3;
     const ok = own ? m > PG_SYS_MIN * g && m < PG_SYS_MAX * g && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)
       : [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - g) < 0.25 * g);
+    // Fünfliniensystem (moderne Noten, Build 425, nicht im Prototyp): fünfte Linie im gleichen Abstand ober- oder unterhalb
+    if (ok && own && lines.some(l => Math.abs(l - (q[3] + m)) < 0.2 * m || Math.abs(l - (q[0] - m)) < 0.2 * m)) fives++;
     if (ok) { out.push(q); i += 4; } else i++;
   }
+  // Seite mit überwiegend Fünfliniensystemen (Regina caeli mit Orgelsatz ergab sonst 16 «Systeme» mit Unsinn): kein Choral.
+  // Pro Seite entschieden – eine einzelne Textzeile im Linienabstand unter einem System ist keine fünfte Linie (Puer natus).
+  if (own && fives >= 2 && fives >= 0.6 * out.length) return {out: [], g};
   return {out, g};
 }
 
@@ -793,6 +798,25 @@ function pgTextChunks(dark, st, gl) {
 
 // ── Text auf Tintengruppen und Noten legen ──────────────────────────────
 const PG_SIGN_RE = /^(\d+\.?|[℣℟]\.?|[VR]\/\.?|Ps\.)$/i;
+// Silbengrenzen, die die KI ausgelassen hat («cre-ásti», «úncti», «VExíl»), nach der Notator-Silbentrennung ergänzen
+// (Build 425, nicht im Prototyp). Gedruckte bzw. gelieferte Bindestriche bleiben; nur Teile mit ≥ 2 Vokalgruppen werden geteilt.
+function pgResyllabify(text) {
+  if (globalThis._pgNurPrototyp || typeof ntPtSyllabify !== 'function') return text;
+  return String(text || '').split(/(\s+)/).map(w => {
+    if (/^\s*$/.test(w) || PG_SIGN_RE.test(w)) return w;
+    const parts = w.split('-');
+    return parts.map((part, pi) => {
+      const m = /^([^\p{L}]*)([\p{L}]*)([^\p{L}]*)$/u.exec(part);
+      if (!m || m[2].length < 3) return part;
+      // «san-guis»: gu vor Vokal nach n ist ein Konsonant – mit dem n davor trennen lassen
+      const prevN = pi > 0 && /n$/i.test(parts[pi - 1]) && /^gu[aeiouyáéíóúý]/i.test(m[2]);
+      const syl = prevN ? ntPtSyllabify('n' + m[2]).map((x, k) => k ? x : x.slice(1)).filter(x => x) : ntPtSyllabify(m[2]);
+      // «saé-cu-la», «caé-lum»: Akzent auf dem e des Diphthongs æ (Satzgewohnheit) – nicht «sa-é» trennen
+      for (let k = syl.length - 2; k >= 0; k--) if (/[aoAO]$/.test(syl[k]) && /^[éÉ]/.test(syl[k + 1])) syl.splice(k, 2, syl[k] + syl[k + 1]);
+      return syl.length > 1 ? m[1] + syl.join('-') + m[3] : part;
+    }).join('-');
+  }).join('');
+}
 function pgCleanLine(t) { return String(t || '').trim().replace(/-\s+(?=\S)/g, '-'); }
 
 function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
@@ -945,7 +969,7 @@ function pgAnalysePage(img) {
 
 // GABC-Zeile eines Systems aus dem gelesenen Text (Silben mit «-», Wörter mit Leerzeichen)
 function pgStaffGabc(staff, text) {
-  const t = pgCleanLine(text);
+  const t = pgResyllabify(pgCleanLine(text));
   // Build 419 (nicht im Prototyp): Textgruppen rechts vom letzten Schlussstrich und von der letzten Note tragen keine Silbe
   // (roter Hinweis «rep. Alleluja» bei Surrexit, den die KI weglässt)
   let chunks = staff.chunks;

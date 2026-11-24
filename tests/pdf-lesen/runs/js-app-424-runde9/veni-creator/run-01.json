@@ -1,0 +1,29 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VEni Creátor Spíritus, Méntes tuórum",
+   "mode": "8",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "VEni(ef) Cre(ed)á(e)tor(fe) Spí(h)ri(i)tus,(h.) (;) Mén(h)tes(e)",
+    "tu(f)ó(h)rum(ih) ví(i)si()ta:(j) (:) Im(h)ple(ij) su(hg)pér(fe)na(hi) grá(e)",
+    "ti(f)a(h.) (;) Quæ(gh) tu(f) cre(ed)ásti(ffgf) pé(e)cto(d)ra.(e.) (:) Qui(e) dí(f.)",
+    "ce(ed)ris(e) Pa(fe)rá(h)cli(i)tus,(h.) (;) Al(h)tís(e)si(f)mi(h) dó(ih)num(i) Dé(j)i,(i.) (:)",
+    "Fons(h) ví(j)vus,(ghg) íg(e)nis,(hi) cá(e)ri(f)tas,(h.) (;) Et(gh) spi(f)ri(ed)tá(f)lis(fgf.)",
+    "úncti(ed)o.(e.) (::) Tu(e) sep(f)ti(ed)fór(e)mis(fe) mú(h)ne(i)re,(h.) (;) Dígi(hh)",
+    "tus(e) pa(f)tér(h)næ(ih) déx(i)te(j)ræ,() (:) Tu(h) ri(ij)te(hg) pro(e)mís(hi)sum(e)",
+    "Pá(f)tris,(h.) (;) Ser(gh)mó(f)ne(ed) dí(f)tans(fgf) gút()tu(d)ra.(e.) (;) Ac(e)cén(f)de(ed) lú(e)men(fe) sén(h)si()bus,() (;)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3224,
+  "output_tokens": 416,
+  "costUsd": 0.010608
+ },
+ "durationMs": 10744
+}

@@ -1,0 +1,36 @@
+{
+ "id": "vexilla-regis",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion / ccwatershed.org (Vexilla Regis), Seite 1 von 2, Drive des Nutzers",
+  "reference": "GregoBase 2120 (LU S. 575)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale-gross-verziert",
+  "b-vorzeichen",
+  "rhomben",
+  "strophen-mit-eigenen-noten",
+  "englischer-fliesstext",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 9 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Hymnus, Strophen 1–3 mit eigenen Noten (je 2 Systeme), Zierinitiale V über zwei Systeme, Climacus mit Rhomben, ♭. Soll aus GregoBase (LU), Text nach dem Druck (Fulget, vi-ta, mortem, mor-te, di-ro, David, li-gno, De-us), Strophennummern weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Vexilla Regis",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "VE(f)xíl(gh)la(ixi) Ré(hvGF')gis(g) pró(ghg)de(f)unt:(e[ll:1]d..) (;) Ful(g)get(g') Crú(h)cis(fd) my(f)sté(ef)ri(d)",
+    "um,(cd..) (:) Qua(d) vi(d')ta(f) mor(dc)tem(f) pér(fgh)tu(g)lit,(gf..) (;) Et(f) mor(ixfh!ivHG')te(h) vi(fd)tam(f) pró(ef)tu(d)lit.(cd..) (::)",
+    "Quæ(f) vul(gh)ne(ixi)rá(hvGF')ta(g) lán(ghg)ce(f)æ(e[ll:1]d..) (;) Mu(g)cró(g')ne(h) di(fd)ro,(f) crí(ef)mi(d)num(cd..) (:)",
+    "Ut(d) nos(d') la(f)vá(dc)ret(f) sór(fgh)di(g)bus,(gf..) (;) Ma(f)ná(ixfh!ivHG')vit(h) un(fd)da(f) et(f) sán(ef)gui(d)ne.(cd..) (::)",
+    "Im(f)plé(gh)ta(ixi) sunt(hvGF') quæ(g) cón(ghg)ci(f)nit(e[ll:1]d..) (;) Da(g)vid(g') fi(h)dé(fd)li(f) cár(ef)mi(d)ne,(cd..) (:)",
+    "Di(d)cén(d')do(f) na(dc)ti(f)ó(fgh)ni(g)bus:(gf..) (;) Re(f)gná(ixfh!ivHG')vit(h) a(fd) li(f)gno(ef) De(d)us.(cd..) (::)"
+   ]
+  }
+ ]
+}

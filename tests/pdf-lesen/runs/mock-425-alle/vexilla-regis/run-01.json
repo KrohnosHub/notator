@@ -1,0 +1,27 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VExílla Regis pródeunt: Fulget Crúcis",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "VE(f)xíl(gh)la(ixi) Re(hgf)gis(g) pró(ghg)de(f)unt:(ed.) (;) Ful(g)get(g) Crú(h)cis(fd) my(f)",
+    "ste(c.d.)ri()um,() (:) Qua(d) vi(d)ta(f) mor(dc)tem(f) per(fgh)tu(g)lit,(gf.) (;) Et(f) mor(ixfhihg)te(h) vi(fd)tam(f) pró(ef)tu(d)lit.(c.d.) (::)",
+    "Quæ(f) vul(gh)ne(ixi)rá(hgf)ta(g) lán(ghg)ce(f)æ(ed.) (;) Mu(g)cró(g)ne(h) di(fd)ro,(f) crí(ef)mi(d)num(c.d.) (:)",
+    "Ut(d) nos(d) la(f)vá(dc)ret(f) sór(fgh)di(g)bus,(gf.) (;) Ma(f)ná(ixfhihg)vit(h) un(fd)da(f) et(f) sán(ef)gui(d)ne.(c.d.) (::)",
+    "Im(f)plé(gh) (,) ta(ixi) sunt(hgf) quæ(g) cón(ghg)ci(f)nit(ed.) (;) Da(g)vid(g) fi(h)dé(fd)li(f) cár(ef)mi(d)ne,(c.d.) (:)",
+    "Di()cén(d)do(d) na(f)ti(dc)ó(f)ni(fgh)bus:(ggf.) (;) Reg(f)ná(ixfhihg)vit(h) a(fd) li(f)gno(ef) De(d)us.(c.d.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3398,
+  "output_tokens": 334,
+  "costUsd": 0.010136
+ },
+ "durationMs": 6539
+}

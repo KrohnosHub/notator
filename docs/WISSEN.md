@@ -170,6 +170,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   gelten – oberhalb braucht eine Textzeile jetzt 0.3 Linienabstände Höhe; unterhalb unverändert (sonst Text als Noten, Ave Maria).
   Noten ab Stufe l brauchen eine seitlich überstehende Hilfslinie (sonst Handschrift). Neumentyp-Fehler sind über alle 28 Fälle
   weiter v. a. fehlende/überzählige Einzelnoten an Silbengrenzen, nicht vertauschte Reihenfolge.
+- **Runde 9 (Build 425, 24.11.2026):** Viele falsche Neumentypen kamen von ausgelassenen Silbentrennungen der KI (zwei Neumen auf
+  einer Silbe). `pgResyllabify` teilt nur Wortteile mit ≥ 2 Vokalgruppen per `ntPtSyllabify`; Ausnahmen: «saé-cu-la/caé-lum»
+  (æ mit Akzent bleibt beisammen), «san-guis» (gu nach n). `pgRepairMerged`: Zeile leer und Vorzeile übervoll → nach Breite der
+  Textgruppen teilen. Fünfliniensysteme: pro Seite entscheiden (≥ 60 % der Systeme mit fünfter Linie) – eine Textzeile im Linienabstand
+  unter einem System hatte bei Puer natus sonst ein System gelöscht. Bleistiftnotizen neben dem Schlüssel können ihn als F-Schlüssel
+  erscheinen lassen; fürs Stück zählt die Mehrheit der Systeme.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

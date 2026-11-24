@@ -1,0 +1,37 @@
+{
+ "id": "veni-creator",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Gesangbuch (Hymnus Veni Creator, deutsch in der rechten Spalte), Seite 1 von 2, Drive des Nutzers",
+  "reference": "GregoBase 2923 (LU S. 885)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c3",
+  "initiale",
+  "strophen-fortlaufend",
+  "rechte-textspalte",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 9 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Hymnus, 8 Systeme, Strophen 1–4 fortlaufend, rechts deutsche Übersetzung in einer Spalte. Soll aus GregoBase (LU), Text nach dem Druck (Méntes, dónum Déi, vívus, ígnis, Pátris, dítans, lúmen), Strophennummern weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Veni Creator",
+   "mode": "8",
+   "clef": "c3",
+   "systems": [
+    "VE(e)ni(f) Cre(e[ll:1]d)á(e)tor(fe) Spí(h')ri(i)tus,(h.) (;) Mén(h)tes(e')",
+    "tu(f)ó(h)rum(ih) ví(i')si(j)ta :(i.) (:) Im(h)ple(ij) su(hg)pér(fe)na(hi) grá(e')",
+    "ti(f)a(h.) (;) Quæ(gh) tu(f) cre(e[ll:1]d)á(f)sti(fgf) pé(e')cto(d)ra.(e.) (::) Qui(e) dí(f)",
+    "ce(e[ll:1]d)ris(e) Pa(fe)rá(h')cli(i)tus,(h.) (;) Al(h)tís(e')si(f)mi(h) dó(ih)num(i') Dé(j)i,(i.) (:)",
+    "Fons(h) ví(ij)vus,(hg) í(fe)gnis,(hi) cá(e')ri(f)tas,(h.) (;) Et(gh) spi(f)ri(e[ll:1]d)tá(f)lis(fgf)",
+    "ún(e')cti(d)o.(e.) (::) Tu(e) se(f)pti(e[ll:1]d)fór(e)mis(fe) mú(h')ne(i)re,(h.) (;) Di(h)gi(h)",
+    "tus(e') pa(f)tér(h)næ(ih) déx(i')te(j)ræ,(i.) (:) Tu(h) ri(ij)te(hg) pro(fe)mís(hi)sum(e')",
+    "Pá(f)tris,(h.) (;) Ser(gh)mó(f)ne(e[ll:1]d) dí(f)tans(fgf) gút(e')tu(d)ra.(e.) (::) Ac(e)cén(f)de(e[ll:1]d) lú(e)men(fe) sén(h')si(i)bus,(h.) (;)"
+   ]
+  }
+ ]
+}

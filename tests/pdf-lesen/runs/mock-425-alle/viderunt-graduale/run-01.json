@@ -1,0 +1,25 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VIdérunt ómnes fínes térrae salutáre",
+   "mode": "5",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "VI(e)dé(fe)runt(eh) ó(h)mnes(h) fí(h)nes(h) tér(h)rae(h) (,) sa(h)lu(h)tá(h)re(hg) Dé(hi)i(i)",
+    "nó(hi)stri(h.) ju(h)bi(h)lá(h)te(h) Dé(h)o,(h) ó(i)mnis(g) tér(h)ra.(f.) (::) Nó(e)tum(fe) fé(eh)cit(h) Dó(h)",
+    "mi(h)nus(h) sa(h)lu(hg)tá(hi)re(i) sú(hi)um(h.) (:) an(h)te(h) cons(h)péc(h)tum(h) gén(h)ti(h)um(h) re(h)ve(h)",
+    "lá(h)vit(h) jus(h)tí(i)ti(g)am(g) sú(h)am.(f.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2397,
+  "output_tokens": 231,
+  "costUsd": 0.007104
+ },
+ "durationMs": 4362
+}

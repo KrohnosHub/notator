@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-9fZC8M7wOW84b/7O36eHYYcVx0hnlQgdKOSKR49Tk+g=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-WfbzAzr3eJ6hILbcM3j84I1mExUktIFZ13FW3pbdM28=' 'sha256-h/6KKzChHFIYLNoBOF0qpO3wUn3ZiJf4Y1UBpNN3OmI=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -5895,13 +5895,18 @@ function pgGroup(lines) {
   // Abweichende Systeme gelten nur mit erkanntem Schlüssel (pgAnalysePage) – so bleibt die handgeschriebene Zeile bei
   // Tu es Petrus (62 %, kein Schlüssel) draussen (Build 417; Build 416 hatte eine feste Grenze von 70 %).
   const own = !globalThis._pgNurPrototyp;
-  let i = 0;
+  let i = 0, fives = 0;
   while (i + 3 < lines.length) {
     const q = lines.slice(i, i + 4), m = (q[3] - q[0]) / 3;
     const ok = own ? m > PG_SYS_MIN * g && m < PG_SYS_MAX * g && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)
       : [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - g) < 0.25 * g);
+    // Fünfliniensystem (moderne Noten, Build 425, nicht im Prototyp): fünfte Linie im gleichen Abstand ober- oder unterhalb
+    if (ok && own && lines.some(l => Math.abs(l - (q[3] + m)) < 0.2 * m || Math.abs(l - (q[0] - m)) < 0.2 * m)) fives++;
     if (ok) { out.push(q); i += 4; } else i++;
   }
+  // Seite mit überwiegend Fünfliniensystemen (Regina caeli mit Orgelsatz ergab sonst 16 «Systeme» mit Unsinn): kein Choral.
+  // Pro Seite entschieden – eine einzelne Textzeile im Linienabstand unter einem System ist keine fünfte Linie (Puer natus).
+  if (own && fives >= 2 && fives >= 0.6 * out.length) return {out: [], g};
   return {out, g};
 }
 
@@ -6547,6 +6552,25 @@ function pgTextChunks(dark, st, gl) {
 
 // ── Text auf Tintengruppen und Noten legen ──────────────────────────────
 const PG_SIGN_RE = /^(\d+\.?|[℣℟]\.?|[VR]\/\.?|Ps\.)$/i;
+// Silbengrenzen, die die KI ausgelassen hat («cre-ásti», «úncti», «VExíl»), nach der Notator-Silbentrennung ergänzen
+// (Build 425, nicht im Prototyp). Gedruckte bzw. gelieferte Bindestriche bleiben; nur Teile mit ≥ 2 Vokalgruppen werden geteilt.
+function pgResyllabify(text) {
+  if (globalThis._pgNurPrototyp || typeof ntPtSyllabify !== 'function') return text;
+  return String(text || '').split(/(\s+)/).map(w => {
+    if (/^\s*$/.test(w) || PG_SIGN_RE.test(w)) return w;
+    const parts = w.split('-');
+    return parts.map((part, pi) => {
+      const m = /^([^\p{L}]*)([\p{L}]*)([^\p{L}]*)$/u.exec(part);
+      if (!m || m[2].length < 3) return part;
+      // «san-guis»: gu vor Vokal nach n ist ein Konsonant – mit dem n davor trennen lassen
+      const prevN = pi > 0 && /n$/i.test(parts[pi - 1]) && /^gu[aeiouyáéíóúý]/i.test(m[2]);
+      const syl = prevN ? ntPtSyllabify('n' + m[2]).map((x, k) => k ? x : x.slice(1)).filter(x => x) : ntPtSyllabify(m[2]);
+      // «saé-cu-la», «caé-lum»: Akzent auf dem e des Diphthongs æ (Satzgewohnheit) – nicht «sa-é» trennen
+      for (let k = syl.length - 2; k >= 0; k--) if (/[aoAO]$/.test(syl[k]) && /^[éÉ]/.test(syl[k + 1])) syl.splice(k, 2, syl[k] + syl[k + 1]);
+      return syl.length > 1 ? m[1] + syl.join('-') + m[3] : part;
+    }).join('-');
+  }).join('');
+}
 function pgCleanLine(t) { return String(t || '').trim().replace(/-\s+(?=\S)/g, '-'); }
 
 function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
@@ -6699,7 +6723,7 @@ function pgAnalysePage(img) {
 
 // GABC-Zeile eines Systems aus dem gelesenen Text (Silben mit «-», Wörter mit Leerzeichen)
 function pgStaffGabc(staff, text) {
-  const t = pgCleanLine(text);
+  const t = pgResyllabify(pgCleanLine(text));
   // Build 419 (nicht im Prototyp): Textgruppen rechts vom letzten Schlussstrich und von der letzten Note tragen keine Silbe
   // (roter Hinweis «rep. Alleluja» bei Surrexit, den die KI weglässt)
   let chunks = staff.chunks;
@@ -6882,6 +6906,25 @@ async function pgReadText(apiKey, b64, n) {
 // Fremder Text (KI-Antwort) → nur Zeichen, die im GABC als Silbentext unbedenklich sind
 function pgSafeText(t) { return String(t || '').replace(/[()[\]{}<>%|\\]/g, ' ').replace(/\s+/g, ' ').trim(); }
 
+// Die KI hat zwei Zeilen in eine geschrieben und die nächste leer gelassen (grosse Zierinitiale über zwei Systeme, Vexilla
+// Regis; Build 425): den Text nach der Breite der Textgruppen beider Systeme an einer Silbengrenze aufteilen.
+function pgRepairMerged(lines, staves) {
+  const width = st => (st.chunks || []).reduce((s, c) => s + c.x1 - c.x0, 0);
+  for (let k = 0; k + 1 < staves.length; k++) {
+    if (!String(lines[k] || '').trim() || String(lines[k + 1] || '').trim() || (staves[k + 1].chunks || []).length < 3) continue;
+    const w0 = width(staves[k]), w1 = width(staves[k + 1]);
+    if (!w0 || !w1) continue;
+    const syl = [];                                               // [Text, beginnt Wort]
+    pgResyllabify(lines[k]).trim().split(/\s+/).forEach(w => w.split('-').filter(x => x).forEach((p, i) => syl.push([p, i === 0])));
+    const tot = syl.reduce((s, x) => s + x[0].length, 0), goal = tot * w0 / (w0 + w1);
+    let acc = 0, cut = 1, best = Infinity;
+    for (let i = 0; i < syl.length; i++) { acc += syl[i][0].length; if (Math.abs(acc - goal) < best && i + 1 < syl.length) { best = Math.abs(acc - goal); cut = i + 1; } }
+    const join = arr => arr.map((x, i) => (i && x[1] ? ' ' : i ? '-' : '') + x[0]).join('');
+    lines[k] = join(syl.slice(0, cut)) + (syl[cut] && !syl[cut][1] ? '-' : '');
+    lines[k + 1] = join(syl.slice(cut).map((x, i) => i ? x : [x[0], true]));
+    console.log('PDF lesen (neu): Zeilen ' + (k + 1) + '/' + (k + 2) + ' aufgeteilt (KI hatte sie zusammengezogen)');
+  }
+}
 // Systeme (über alle Seiten) zu Stücken: ein System mit Initiale beginnt ein neues Stück
 function pgPieces(items) {
   const pieces = [];
@@ -6956,6 +6999,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       const res = await pgReadText(apiKey, strips.b64, strips.n);
       usd += res.usage.usd;
       console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
+      pgRepairMerged(res.lines, page.staves);
       page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
       page.img = null;
     }
@@ -8382,7 +8426,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '424';
+const NOTATOR_BUILD_ID = '425';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

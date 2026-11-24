@@ -1,0 +1,37 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SAlve, sáncta Párens ení xa",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "SAl(cefg)ve,(f.) sánc(f)ta(fe) Pá(fghf)rens(f.) (;) e(ef)ní(hhi)",
+    "xa(h) pu(h)ér(h)pe(h)ra(hihg) Ré(hgg)gem,(fgg.f.) (:) qui(eh) cae(h)lum(hhh)",
+    "ter(ef)rám(fhhfgf)que(ef) ré(fhhfgfe)git(f.e.) (;) in(ef) saé(hh)cu(hi)la(f.) (,)",
+    "sae(fhi)cu(hihg)ló(hgg)rum.(fgg.f.) (::)",
+    "E(e)ruc(fe)tá(eh)vit(h) cor(h) mé(h)um(hg) vér(hi)bum(i) bó(hi)num:(h.) dí() (:) co() é(hf)go(fh) ó(h)pe(hhh)",
+    "ra(i) mé(hf)a(h) ré(ge)gi.(fgf) (::)"
+   ]
+  },
+  {
+   "incipit": "GLória Patri, et Fílio, et",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "GLó(e)ri(fe)a(eh) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h.) (,) et(h) Spi(h)rí(hg)tu(hi)i(i) Sanc(hi)to.(h.) (:) Si(hf)cut(fh) e(h)rat(h) in(h)",
+    "prin(h)cí(h)pi(h)o,(h.) (,) et(hg) nunc,(hi) et(i) sem(hi)per,(h.) (:) et(hf) in(fh) saé(h)cu(h)la(h) sae(h)cu(i)ló(hf)rum.(h) A(ge)men.(fgf.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3572,
+  "output_tokens": 375,
+  "costUsd": 0.010894
+ },
+ "durationMs": 5822
+}
