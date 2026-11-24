@@ -33,7 +33,7 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
           const ans = JSON.parse(r.content.filter(b => b.type === 'text').map(b => b.text).join(''));
           const u = {input_tokens: r.usage.input_tokens, output_tokens: r.usage.output_tokens};
           usage = {input_tokens: usage.input_tokens + u.input_tokens, output_tokens: usage.output_tokens + u.output_tokens};
-          fs.writeFileSync(kiFile(live, ++call), JSON.stringify({model: r.model, lines: ans.lines.map(e => e.text), modes: ans.modes || [],
+          fs.writeFileSync(kiFile(live, ++call), JSON.stringify({model: r.model, lines: (() => { const a = []; ans.lines.forEach(e => { a[e.n - 1] = e.text; }); return Array.from(a, t => t || ''); })(), modes: ans.modes || [],
             usage: {...u, costUsd: (u.input_tokens * 2 + u.output_tokens * 10) / 1e6}}, null, 1));
         }
         await route.fulfill({status: 200, contentType: 'application/json', body});
@@ -64,7 +64,7 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
     const res = await page.evaluate(() => window._pgLetzteErkennung || null);
     if (!res) { console.log(c + ': kein Ergebnis'); await page.close(); continue; }
     const out = {model: mock ? 'gespeichert (' + mock + ')' : 'claude-sonnet-5-5' + (live ? ' (über curl)' : ''), effort: 'low', pipeline: 'Notator, neue Erkennung (pdf.js, 172/174)',
-      pieces: res.pieces.map(p => ({incipit: p.incipit, mode: p.mode === '?' ? '' : p.mode, clef: p.clef, hasDropCap: p.hasDropCap, systems: p.systems})),
+      pieces: res.pieces.map(p => ({incipit: p.incipit, mode: p.mode === '?' ? '' : p.mode, clef: p.clef, hasDropCap: p.hasDropCap, systems: p.systems, unsure: p.unsure})),
       usage: {...usage, costUsd: res.usd}, durationMs: Date.now() - t0};
     const d = path.join(ROOT, 'runs', series, c); fs.mkdirSync(d, {recursive: true});
     fs.writeFileSync(path.join(d, 'run-' + String(run).padStart(2, '0') + '.json'), JSON.stringify(out, null, 1));

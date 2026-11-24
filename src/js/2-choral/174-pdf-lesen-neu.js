@@ -39,9 +39,8 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 '- If a strip contains no chant text, return an empty string for it.\n' +
 'Return one entry per strip number 1..N.\n\n' +
 'Rows labelled "M<n>" (if any) are not chant text: they show the small annotation printed above the initial letter of ' +
-'strip n, usually the mode of the chant as a Roman or Arabic numeral, sometimes with other words (e.g. "VIII", "5", ' +
-'"1.", "R. br. VI", "Ant. 7"). For each such row return in "modes" the mode as an Arabic number 1–8 ("VIII" -> "8", ' +
-'"R. br. VI" -> "6"), or an empty string if no mode number is visible.';
+'strip n (e.g. "2.", "VIII", "HYMN I.", "Intr. 2.", "Ant. 7. e", "R. br. VI"). For each such row return in "modes" ' +
+'exactly the characters printed there (Roman numerals stay Roman), or an empty string if the row is blank.';
 
 // PDF-Seite mit 300 dpi als Graustufenbild (L = 0.299 R + 0.587 G + 0.114 B, wie PIL)
 async function pgRenderPageGray(pdfDoc, pageNo) {
@@ -153,10 +152,21 @@ async function pgReadText(apiKey, b64, n) {
   const text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   const got = {}, modes = {}, ans = JSON.parse(text);
   for (const e of (ans.lines || [])) got[e.n] = String(e.text || '');
-  for (const e of (ans.modes || [])) { const m = /[1-8]/.exec(String(e.mode || '')); if (m) modes[e.n] = m[0]; }
+  for (const e of (ans.modes || [])) { const m = pgModeFromText(e.mode); if (m) modes[e.n] = m; }
   const u = r.usage || {};
   return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''), modes,
     usage: {input: u.input_tokens || 0, output: u.output_tokens || 0, usd: ((u.input_tokens || 0) * PG_PRICE[0] + (u.output_tokens || 0) * PG_PRICE[1]) / 1e6}};
+}
+
+// Modus aus der gedruckten Angabe über der Initiale (Build 429): «2.», «HYMN I.», «Intr. 2.», «Ant. 7. e», «R. br. VI» → '1'…'8'.
+// Vorher sollte die KI selbst umrechnen und lieferte bei «2.», «HYMN I.», «Intr. 2.» leere Felder.
+function pgModeFromText(t) {
+  const R = {I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8};
+  for (const tok of String(t || '').split(/[\s.,;:()]+/)) {
+    if (/^[1-8]$/.test(tok)) return tok;
+    if (R[tok.toUpperCase()] && /^[IVX]+$/i.test(tok) && (tok === tok.toUpperCase() || tok.length > 1)) return String(R[tok.toUpperCase()]);
+  }
+  return '';
 }
 
 // Fremder Text (KI-Antwort) → nur Zeichen, die im GABC als Silbentext unbedenklich sind
@@ -164,6 +174,15 @@ function pgSafeText(t) { return String(t || '').replace(/[()[\]{}<>%|\\]/g, ' ')
 
 // Die KI hat zwei Zeilen in eine geschrieben und die nächste leer gelassen (grosse Zierinitiale über zwei Systeme, Vexilla
 // Regis; Build 425): den Text nach der Breite der Textgruppen beider Systeme an einer Silbengrenze aufteilen.
+// Vorzeile enthält deutlich mehr Text, als unter ihr Platz hat (dann hat die KI zwei Zeilen zusammengezogen, pgRepairMerged
+// teilt sie). Massstab: Buchstaben je Pixel Textbreite, Median über die übrigen Zeilen der Seite.
+function pgChunkWidth(st) { return (st.chunks || []).reduce((s, c) => s + c.x1 - c.x0, 0); }
+function pgLooksMerged(lines, staves, k) {
+  const len = t => String(t || '').replace(/[-\s]/g, '').length;
+  const r = pgMedian(lines.map((t, i) => len(t) && pgChunkWidth(staves[i]) ? len(t) / pgChunkWidth(staves[i]) : null).filter(v => v !== null));
+  const w = pgChunkWidth(staves[k]);
+  return !!(r && w && len(lines[k]) > 1.4 * r * w);
+}
 function pgRepairMerged(lines, staves) {
   const width = st => (st.chunks || []).reduce((s, c) => s + c.x1 - c.x0, 0);
   for (let k = 0; k + 1 < staves.length; k++) {
@@ -284,6 +303,17 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       const res = await pgReadText(apiKey, strips.b64, strips.n);
       usd += res.usage.usd;
       console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
+      // Zweiter KI-Aufruf nur bei Bedarf (Build 429): Zeile leer, obwohl unter dem System Text steht (≥ 3 Textgruppen) und
+      // die Vorzeile nicht zusammengezogen ist – die KI hatte bei Gaudeamus und Terribilis je eine Zeile ausgelassen.
+      const missing = res.lines.map((t, k) => !String(t).trim() && (page.staves[k].chunks || []).length >= 3
+        && !(k > 0 && pgLooksMerged(res.lines, page.staves, k - 1)) ? k : -1).filter(k => k >= 0);
+      if (missing.length) {
+        gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – fehlende Zeilen nochmals lesen (KI)…');
+        const res2 = await pgReadText(apiKey, strips.b64, strips.n);
+        usd += res2.usage.usd;
+        for (const k of missing) if (String(res2.lines[k] || '').trim()) res.lines[k] = res2.lines[k];
+        console.log('PDF lesen (neu), Seite ' + pg + ': zweiter KI-Aufruf für Zeile(n) ' + missing.map(k => k + 1).join(', ') + ', ' + res2.usage.usd.toFixed(4) + ' USD');
+      }
       pgRepairMerged(res.lines, page.staves);
       page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
       page.img = null;

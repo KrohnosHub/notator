@@ -453,7 +453,7 @@ function pgAnalyseStaff(dark, st, g, ref) {
     for (let i = out.length - 1; i >= 0; i--) if (pgRound(out[i].p) >= 8 && !hasLedger(out[i])) { pgDiag('über dem System ohne Hilfslinie', {x0: out[i].x, x1: out[i].x, y0: out[i].y, y1: out[i].y, area: 0}, st); out.splice(i, 1); }
   }
   st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt};
-  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
+  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
 }
 
@@ -509,7 +509,8 @@ function pgMarkFlats(st, notes) {
   }
 }
 
-// Virga (Build 413, nicht im Python-Prototyp): dünner Strich am rechten Rand des Kopfs nach unten, der frei endet
+// Virga (Build 413, nicht im Python-Prototyp; seit Build 429 abgeschaltet, Schalter globalThis._pgVirga: auf 31 Fällen nur
+// 12 % gefunden und 39 % richtig – mehr falsche als richtige Zeichen): dünner Strich am rechten Rand des Kopfs nach unten, der frei endet
 // (endet er an einer anderen Note, ist es ein Verbindungsstrich). Setzt n.virga. Iktus und Episem wurden ebenso versucht,
 // aber verworfen: zu viele Fehlmeldungen (Linienreste, Hilfslinien, Hälse; Plan 7.18).
 function pgMarkVirga(st, notes) {
@@ -824,7 +825,12 @@ function pgResyllabify(text) {
   if (globalThis._pgNurPrototyp || typeof ntPtSyllabify !== 'function') return text;
   return String(text || '').split(/(\s+)/).map(w => {
     if (/^\s*$/.test(w) || PG_SIGN_RE.test(w)) return w;
-    const parts = w.split('-');
+    let parts = w.split('-');
+    // Silbe ohne Vokal gibt es im Latein nicht («Ma-tré-m-que», KI-Lesefehler bei Mittit, Build 429): an die vorige Silbe hängen
+    for (let k = parts.length - 1; k >= 0 && parts.length > 1; k--) {
+      if (!/\p{L}/u.test(parts[k]) || /[aeiouyæœáéíóúýǽàèìòùäëïöüAEIOUYÆŒÁÉÍÓÚÝǼ]/.test(parts[k])) continue;
+      if (k > 0) { parts[k - 1] += parts[k]; parts.splice(k, 1); } else { parts[1] = parts[0] + parts[1]; parts.splice(0, 1); }
+    }
     return parts.map((part, pi) => {
       const m = /^([^\p{L}]*)([\p{L}]*)([^\p{L}]*)$/u.exec(part);
       if (!m || m[2].length < 3) return part;
@@ -957,7 +963,7 @@ function pgToGabcText(notes, bars, syls, gl) {
 // sich die Durchgänge nicht einig waren (x-Positionen, für die Markierung «bitte prüfen»).
 const PG_VOTE_DELTA = 18;                                   // Grauwert-Abstand der Zusatzdurchgänge zur Hauptschwelle
 function pgSameNote(a, b, gl) { return Math.abs(a.x - b.x) < 0.3 * gl && Math.abs(a.p - b.p) < 0.6; }
-function pgVoteNotes(base, alts, gl, lightIdx, smallAt) {
+function pgVoteNotes(base, alts, gl, lightIdx, smallAt, wref) {
   const hits = n => alts.filter(al => al.some(m => pgSameNote(n, m, gl))).length;
   const out = [], unsure = [];
   for (const n of base) {
@@ -974,7 +980,13 @@ function pgVoteNotes(base, alts, gl, lightIdx, smallAt) {
     const others = alts.filter((o, j) => j !== k && o.some(x => pgSameNote(x, m, gl))).length;
     if (k !== lightIdx && others === 0) return;              // nur in einem Zusatzdurchgang (dunkel) gesehen
     unsure.push(m.x);
-    if (others >= 1 || (k === lightIdx && smallAt(m))) extra.push(m);
+    // Ergänzt wird nur, was der helle Durchgang an der Stelle eines verworfenen Rests sieht. Funde beider Zusatzdurchgänge
+    // ohne Rest im Hauptdurchgang werden nur als «unsicher» markiert.
+    // Nicht über der obersten Linie: dort stehen handschriftliche Akkordbuchstaben (Mittit), die hell kräftiger werden
+    if (k === lightIdx && smallAt(m) && pgRound(m.p) <= 6) {
+      extra.push(m);
+      if (Array.isArray(globalThis._pgVoteLog)) globalThis._pgVoteLog.push({x: Math.round(m.x), y: Math.round(m.y), letter: m.letter, why: others >= 1 ? 'beide' : 'hell+Rest', w: m.w});
+    }
   }));
   for (const m of extra) {                                   // nach x einsortieren, Reihenfolge des Hauptdurchgangs bleibt
     let i = out.length; while (i > 0 && out[i - 1].x > m.x) i--;
@@ -1020,7 +1032,7 @@ function pgAnalysePage(img) {
     if (vote) {
       small = small.filter(s => s.why === 'klein');
       const smallAt = m => small.some(s => m.x >= s.x0 - 0.2 * gl && m.x <= s.x1 + 0.2 * gl && m.y >= s.y0 - 0.3 * gl && m.y <= s.y1 + 0.3 * gl);
-      ({notes, unsure} = pgVoteNotes(notes, altNotes, gl, 1, smallAt));
+      ({notes, unsure} = pgVoteNotes(notes, altNotes, gl, 1, smallAt, st._ctx && st._ctx.wref));
     }
     return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, unsure, bars: pgFindBars(st), clef: pgFindClef(st), odd: st.odd,
       dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
