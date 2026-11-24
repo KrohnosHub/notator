@@ -603,7 +603,8 @@ function pgFindClef(st) {
   const p = c.stepOf((xa + xb) / 2, ym);
   const line = Math.floor(p / 2 + 0.5) + 1;
   if (line < 1 || line > 4) return '';
-  return ((xb - xa) > 1.9 * c.wref ? 'f' : 'c') + line;
+  // F-Schlüssel: 1.76–1.96 Notenkopfbreiten, C-Schlüssel 0.66–1.18 (alle Testfälle, Build 422; vorher Grenze 1.9 = Prototyp)
+  return ((xb - xa) > (globalThis._pgNurPrototyp ? 1.9 : 1.5) * c.wref ? 'f' : 'c') + line;
 }
 
 function pgFindBars(st) {
@@ -854,7 +855,10 @@ function pgToGabcText(notes, bars, syls, gl) {
   const a = syls.map(s => s.x - 0.4 * gl), b = a.map((v, i) => i + 1 < S ? a[i + 1] : 1e9);
   a[0] = -1e9;
   const cost = (j, i) => { const x = units[j][0].x; return (a[i] <= x && x < b[i]) ? 0 : Math.min(Math.abs(x - a[i]), Math.abs(x - b[i])) / gl; };
-  const P = 0.8, INF = 1e18, groups = syls.map(() => []);
+  // Strafe je Silbe ohne Noten: 4 statt 0.8 (Build 422, nicht im Prototyp). Mit 0.8 war es oft «billiger», Silben leer zu
+  // lassen, als eine Note knapp ausserhalb der geschätzten Silbengrenze zuzuordnen – dann verrutschte die Zuordnung, und aus
+  // Punctum/Clivis wurden falsche Neumentypen (Resurrexi, Ave Maria). Über alle Fälle besser, keiner schlechter.
+  const P = globalThis._pgNurPrototyp ? 0.8 : 4, INF = 1e18, groups = syls.map(() => []);
   if (U) {
     const f = Array.from({length: U}, () => new Array(S).fill(INF)), bk = Array.from({length: U}, () => new Array(S).fill(-1));
     for (let i = 0; i < S; i++) f[0][i] = cost(0, i) + P * i;

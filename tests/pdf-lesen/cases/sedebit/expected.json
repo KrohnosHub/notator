@@ -1,0 +1,35 @@
+{
+ "id": "sedebit",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Blatt «Communio mit Psalmversen – Christkönigsfest» (Neusatz), Datei aus dem Drive des Nutzers",
+  "reference": "GregoBase 1229 (Communio, GR 1961 S. 642); Psalmverse (6. Ton) vom Druck abgelesen",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale",
+  "neusatz",
+  "psalmverse",
+  "deutscher-fliesstext",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 6 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Communio (gut 2 Systeme) und zwei Psalmverse im 6. Ton (je 2 Systeme), darunter deutsche Übersetzung. Communio aus GregoBase, Verse von Claude mit Hilfslinien abgelesen. «℣.», Versnummern und «*» weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Sedebit Dominus",
+   "mode": "6",
+   "clef": "c4",
+   "systems": [
+    "SE(cd)dé(f)bit(dc) Dó(fg)mi(h)nus(gf) Rex(fgf) in(f_e) æ(ixg_[oh:h]i_[oh:h]g_[oh:h]!hwi)tér(f_[oh:h]g_[oh:h]f_[oh:h])num:(f.) (;)",
+    "Dó(fg)mi(f)nus(f) be(f)ne(f)dí(ixf!gwh'!iv)cet(h.) (,) pó(hj)pu(g)lo(fg) su(gf)o(fgff/ded.) (,) in(f_e/ggh)",
+    "pa(f_[oh:h]g_[oh:h]f_[oh:h])ce.(f.) (::) Af(fg)fér(gf)te(gh) Dó(h)mi(h)no,(g) fí(ixi)li(h)i(h) De(g)i,(f) (:)",
+    "af(f)fér(gh)te(h) Dó(hj)mi(g)no(f) gló(f)ri(f)am(g) et(fd) po(f)tén(g)ti(f)am.(fghg) (::)",
+    "Af(fg)fér(gf)te(gh) Dó(h)mi(h)no(h) gló(h)ri(h)am(g) nó(ixi)mi(h)nis(h) e(g)ius,(f) (:)",
+    "ad(f)o(gh)rá(h)te(h) Dó(hj)mi(g)num(f) in(f) splen(g)dó(fd)re(f) sanc(g)to.(fghg) (::)"
+   ]
+  }
+ ]
+}

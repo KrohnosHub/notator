@@ -1,0 +1,36 @@
+{
+ "id": "resurrexi",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "renegoupil.org / Corpus Christi Watershed, Introitus Ostersonntag (nach GR 1961 S. 240), ohne das Gloria unten (zugeschnitten)",
+  "reference": "GregoBase 1043 (GR 1961 S. 240)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "initiale-gross-verziert",
+  "porrectus",
+  "englischer-fliesstext",
+  "zugeschnitten",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 6 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Grosse Zierinitiale R über zwei Systeme, mehrere Porrectus (cum, mi-rá, …). Seite oberhalb des Gloria zugeschnitten (der Druck kürzt dort «saécula sæculórum»). Soll aus GregoBase, auf die 7 gedruckten Systeme verteilt; Text nach dem Druck (RE-SUR-RE-XI ohne Akzent), «*» und «Ps.» weggelassen. Nicht Note für Note geprüft; kein Modus gedruckt.",
+ "pieces": [
+  {
+   "incipit": "Resurrexi",
+   "mode": "4",
+   "clef": "c4",
+   "systems": [
+    "RE(d)SUR(dfd)RE(f)XI,(fff/ded.) (;) et(fe) ad(fg)huc(g) te(g)",
+    "cum(f) sum,(ef/gfg.) (,) al(gv.!fff)le(dfe)lú(egff)ia :(fe..) (:)",
+    "po(fgf)su(ff)í(f!gwh)sti(ghg) su(gv.!fff)per(d!ewf/gf) me(f.) (,) ma(fff)num(d!ewf) tu(fgF'E)am,(f.) (;) al(fff)le(dfe)",
+    "lú(fgff)ia :(d//ffdf.) (:) mi(c)rá(cd/fef)bi(f)lis(f) fa(fffg)cta(deDC'd) est(dc..) (,) sci(e!fwg)én(ghg)ti(f)a(fff)",
+    "tu(gfhg)a,(g.) (;) al(gf~)le(e/f'g)lú(gf~)ia,(e/fgfg.) (,) al(gv.!fff)le(dfe)lú(egff)ia.(fe..) (::) Dó(hg)mi(gh)ne(h)",
+    "pro(h)bá(h)sti(h) me,(h) et(hg) co(gi)gno(i)ví(hi)sti(h) me :(h.) (:) tu(hg) co(gh)gno(h)ví(h)sti(h) ses(h)si(h)ó(h)nem(h)",
+    "me(h)am,(h.) (,) et(h) re(h)sur(h)re(h)cti(h)ó(gf)nem(gh) me(g)am.(e.) (::)"
+   ]
+  }
+ ]
+}

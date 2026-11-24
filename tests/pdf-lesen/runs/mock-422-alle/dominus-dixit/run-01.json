@@ -1,0 +1,25 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "DOminus díxit ad me: Fílius",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "DO(fhih)mi(hhh)nus(f) dí(fhh)xit(fhh) ad(eg) me:(f) Fí(fgf)li(fe)us(f) mé(hg)us(hi.)",
+    "es(fgfe) tu,(e) (:) é(fhih)go(hhh) hó(fhhh)di(fe)e(e) (,) gé(fge)nu(hh) (,) i(ihgh) te.(f) (::) Qua(e)re(fe)",
+    "fre(ehf)mu(hg)érunt(hii) géntes:(hih.) et(hv) pó(fh)pu(h)li(h) me(h)di(h)tá(h)ti(h) sunt(i) in(hf)á(h)ni(ge)a?(fgf.) (:)",
+    "Gló(e)ri(fde)a(eh) Pá(h)tri.(hfv) E(h) u(i) o(hf) u(h) a(ge) e.(fgf) (;)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2397,
+  "output_tokens": 200,
+  "costUsd": 0.006794
+ },
+ "durationMs": 5582
+}

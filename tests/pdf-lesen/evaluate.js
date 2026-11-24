@@ -53,6 +53,7 @@ function parseSystemLine(line) {
     syllables: [],      // Text je Silbe (normalisiert, mit Akzenten)
     syllablesPlain: [], // ohne Akzente/Satzzeichen
     groups: [],         // Notenzahl je Silbe (Neumen-Gruppierung)
+    sylNotes: [],       // Tonhöhen je Silbe (für den Neumentyp)
     notes: [],          // alle Tonhoehen in Lesereihenfolge (a–m)
     bars: [],           // Trennstriche in Reihenfolge
     wordStarts: [],     // je Silbe: beginnt ein neues Wort?
@@ -77,6 +78,7 @@ function parseSystemLine(line) {
     out.syllables.push(normText(text, false));
     out.syllablesPlain.push(normText(text, true).replace(/[^a-z0-9]/g, ''));
     out.groups.push(n.letters.length);
+    out.sylNotes.push(n.letters);
     out.notes.push(...n.letters);
     out.wordStarts.push(out.syllables.length === 1 || /\s/.test(gapBefore));
   }
@@ -129,6 +131,39 @@ function boundaryF1(groupsExp, groupsAct) {
   return p + r ? (2 * p * r) / (p + r) : 0;
 }
 
+// Neumentyp (Build 422): Silben beider Fassungen über den Text ausrichten (LCS); für Silben mit ≥ 2 Noten und gleicher
+// Notenzahl den Verlauf vergleichen (U auf, D ab, S gleich) – z. B. Torculus «UD» gegen Porrectus «DU».
+const contour = ns => ns.slice(1).map((x, i) => x > ns[i] ? 'U' : x < ns[i] ? 'D' : 'S').join('');
+const NEUME_NAME = {'': 'Punctum', U: 'Pes', D: 'Clivis', S: 'Distropha', UD: 'Torculus', DU: 'Porrectus', UU: 'Scandicus',
+  DD: 'Climacus', SS: 'Tristropha', UDU: 'Torculus resupinus', DUD: 'Porrectus flexus', UUD: 'Scandicus flexus', DDU: 'Climacus resupinus'};
+const neumeName = ns => ns.length ? (NEUME_NAME[contour(ns)] || 'mehrteilig (' + ns.length + ')') : '–';
+function neumeShapes(e, a) {
+  const n = e.syllablesPlain.length, m = a.syllablesPlain.length;
+  const L = Array.from({length: n + 1}, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    L[i][j] = e.syllablesPlain[i] === a.syllablesPlain[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = {total: 0, shapeOk: 0, seqOk: 0, torPor: 0, confusions: [], all: 0, typeOk: 0, typeConf: []};
+  for (let i = 0, j = 0; i < n && j < m;) {
+    if (e.syllablesPlain[i] === a.syllablesPlain[j]) {
+      const en = e.sylNotes[i], an = a.sylNotes[j];
+      if (en.length >= 1) {                                         // Typ über alle Silben mit Noten (auch bei anderer Notenzahl)
+        out.all++;
+        const te = neumeName(en), ta = neumeName(an);
+        if (te === ta) out.typeOk++; else out.typeConf.push(te + '→' + ta);
+      }
+      if (en.length >= 2 && en.length === an.length) {
+        out.total++;
+        const ce = contour(en), ca = contour(an);
+        if (ce === ca) out.shapeOk++; else out.confusions.push(ce + '→' + ca);
+        if (en.join('') === an.join('')) out.seqOk++;
+        if (ce === 'UD' && ca === 'DU' || ce === 'DU' && ca === 'UD') out.torPor++;
+      }
+      i++; j++;
+    } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
+  }
+  return out;
+}
+
 function compareSystem(expLine, actLine) {
   const e = parseSystemLine(expLine || ''), a = parseSystemLine(actLine || '');
   return {
@@ -141,6 +176,7 @@ function compareSystem(expLine, actLine) {
     grouping: similarity(e.groups, a.groups),       // Notenzahl je Silbe
     groupingExact: e.groups.join(',') === a.groups.join(','),
     groupBoundaryF1: boundaryF1(e.groups, a.groups),
+    neume: neumeShapes(e, a),
     syllables: similarity(e.syllables, a.syllables),
     syllablesPlain: similarity(e.syllablesPlain, a.syllablesPlain),
     wordBreaks: similarity(e.wordStarts, a.wordStarts),
@@ -222,6 +258,14 @@ function summarize(comparisons) {
     pitchPositional: mean(sys.map(s => s.pitchPositional)),
     grouping: mean(sys.map(s => s.grouping)),
     groupingExact: share(sys, s => s.groupingExact),
+    neumeTotal: sys.reduce((t, s) => t + s.neume.total, 0),
+    neumeShape: sys.reduce((t, s) => t + s.neume.shapeOk, 0) / Math.max(1, sys.reduce((t, s) => t + s.neume.total, 0)),
+    neumeSeq: sys.reduce((t, s) => t + s.neume.seqOk, 0) / Math.max(1, sys.reduce((t, s) => t + s.neume.total, 0)),
+    neumeTorPor: sys.reduce((t, s) => t + s.neume.torPor, 0),
+    neumeTypeAll: sys.reduce((t, s) => t + s.neume.all, 0),
+    neumeType: sys.reduce((t, s) => t + s.neume.typeOk, 0) / Math.max(1, sys.reduce((t, s) => t + s.neume.all, 0)),
+    neumeTypeConf: (() => { const c = {}; sys.forEach(s => s.neume.typeConf.forEach(x => { c[x] = (c[x] || 0) + 1; })); return c; })(),
+    neumeConf: (() => { const c = {}; sys.forEach(s => s.neume.confusions.forEach(x => { c[x] = (c[x] || 0) + 1; })); return c; })(),
     syllables: mean(sys.map(s => s.syllables)),
     syllablesPlain: mean(sys.map(s => s.syllablesPlain)),
     wordBreaks: mean(sys.map(s => s.wordBreaks)),
@@ -344,6 +388,12 @@ function printSummary(title, s) {
   console.log('  Tonhöhen-Treffer (ausgerichtet) ' + pct(s.pitch) + '   positionsgenau ' + pct(s.pitchPositional));
   console.log('  Tonhöhen je Stück (ohne Systemschnitt) ' + pct(s.pieceNotes));
   console.log('  Neumen-Gruppierung              ' + pct(s.grouping) + '   exakt ' + pct(s.groupingExact));
+  console.log('  Neumentyp (Verlauf je Silbe)    ' + pct(s.neumeShape) + '   Töne gleich ' + pct(s.neumeSeq) + '   (' + s.neumeTotal + ' Neumen; Torculus↔Porrectus ' + s.neumeTorPor + ')');
+  const top = Object.entries(s.neumeConf || {}).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => k + ' ' + v).join(', ');
+  if (top) console.log('    häufigste Verwechslungen (Soll→Ist): ' + top);
+  console.log('  Neumentyp über alle Silben      ' + pct(s.neumeType) + '   (' + s.neumeTypeAll + ' Silben mit Noten)');
+  const tc = Object.entries(s.neumeTypeConf || {}).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, v]) => k + ' ' + v).join(', ');
+  if (tc) console.log('    Typ-Verwechslungen (Soll→Ist): ' + tc);
   console.log('  Silben                          ' + pct(s.syllables) + '   ohne Akzente ' + pct(s.syllablesPlain));
   console.log('  Wortgrenzen                     ' + pct(s.wordBreaks));
   console.log('  Trennstriche                    ' + pct(s.bars));

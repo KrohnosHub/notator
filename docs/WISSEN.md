@@ -154,6 +154,13 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Episem («f'_»), wo der Druck einen Mora-Punkt hat (Cantus selecti, Mittit) – vermeintliche Fehlfunde erst am Druck prüfen.
   Bei schwer lesbaren Vorlagen (blass, handbeschrieben, melismatisch) lieber den Fall weglassen oder auf den sicher ablesbaren
   Teil zuschneiden, als ein unsicheres Soll zu messen.
+- **Neumentypen (Runde 6, Build 422, 24.11.2026; Hinweis Matthias: «Porrectus statt Torculus»):** `evaluate.js` meldet jetzt
+  den Neumentyp je Silbe und die häufigsten Verwechslungen. Bei richtiger Notenzahl stimmt der Verlauf fast immer (99–100 %); falsche
+  Typen entstehen fast nur durch fehlende/zusätzliche Noten und durch verrutschte Silbenzuordnung. Die Reihenfolge abgetrennter
+  Notenreste («hinter den Nachbarn», Build 412) ist in den Testdrucken richtig: «übereinander = von unten nach oben» machte
+  13 Clivis zu Pes – verworfen. Silben ohne Noten kosten bei der Zuordnung jetzt 4 statt 0.8. F-Schlüssel 1.76–1.96, C-Schlüssel
+  0.66–1.18 Notenkopfbreiten (Grenze 1.5). Soll-Quelle für neue Testseiten: GregoBase (`gregobase.selapa.net` in der
+  Cloud-Umgebung freigegeben; Index über `incipit.php?letter=X`, Download `download.php?id=N&format=gabc&elem=1`).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

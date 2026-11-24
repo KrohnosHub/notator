@@ -13,6 +13,7 @@ const check = (cond, msg) => { if (cond) ok++; else { bad++; console.log('FEHLER
 
 // 1. Zuordnung Text → Tintengruppen → Noten
 const fx = JSON.parse(fs.readFileSync(path.join(__dirname, 'pdf-geometrie-fixtures.json'), 'utf8'));
+globalThis._pgNurPrototyp = true;                  // Vergleich mit dem Prototyp: ohne die Ergänzungen ab Build 412 (z. B. Build 422: Strafe leere Silbe)
 for (const f of fx) {
   const staff = {gl: f.gl, dropcap: f.dropcap, x0: 0, x1: 0,
     notes: f.notes.map(([x, letter]) => ({x, letter})), bars: f.bars.map(([x, type]) => ({x, type})),
@@ -20,6 +21,8 @@ for (const f of fx) {
   const got = pgStaffGabc(staff, f.text);
   check(got === f.gabc, f.case + ' System ' + f.staff + '\n   erhalten: ' + got + '\n   erwartet: ' + f.gabc);
 }
+
+globalThis._pgNurPrototyp = false;
 
 // 1b. Neue Erkennung (174): Stückgrenzen an Initialen, fremder Text bereinigt, GABC mit Schlüssel und Schlussstrich
 (function () {

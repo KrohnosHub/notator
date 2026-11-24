@@ -1,0 +1,27 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/491ce31a-897c-59e6-a46e-a91b9cef9326/scratchpad/live-419m)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SEdébit Dóminus Rex in ætérnum",
+   "mode": "6",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "SEdé(cd)bit(fdc) Dó(fg)mi(h)nus(gf) Rex(fgf) in(fe) æ(ixgighi)tér(fgf)num:(f.) (;)",
+    "Dó(fg)mi(f)nus(f) be(f)ne(f)dí(ixfghiv)cet(h.) pó(hj)pu(g)lo(fg) su(gf)o(fgffded) in(feggh)",
+    "pa(fgf)ce.(f.) (;) Af(fg)fé(gf)rte(gh) Dó(h)mi(h)no,(g) fí(ixi)li(h)i(h) De(g)i,(f) (;)",
+    "af(f)fé(gh)rte(h) Dó(hj)mi(g)no(f) gló(f)ri(f)am(g) et(fd) po(f)tén(g)ti(f)am.(fghg) (::)",
+    "Af(fg)fé(gf)rte(gh) Dó(h)mi(h)no(h) gló(h)ri(h)am(g) nó(ixi)mi(h)nis(h) e(g)ius,(f) (;)",
+    "a(f)do(gh)rá(h)te(h) Dó(hj)mi(g)num(f) in(f) splen(g)dó(fd)re(f) sa(g)ncto.(fghg) (:)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2687,
+  "output_tokens": 305,
+  "costUsd": 0.008424
+ },
+ "durationMs": 6095
+}

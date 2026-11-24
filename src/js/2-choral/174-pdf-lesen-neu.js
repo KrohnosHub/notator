@@ -13,7 +13,8 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 'square notation in a printed book. A strip may begin with a large (often decorated) initial letter, shown scaled ' +
 'down at its left edge; it is the first letter of the strip\'s first word: write it directly before that word\'s ' +
 'other letters, with no hyphen and no space (e.g. initial "S" + "Al-ve" -> "SAl-ve", initial "A" + "D cœnam" -> ' +
-'"Ad cœ-nam").\n' +
+'"Ad cœ-nam"). The rest of that word is still divided into syllables as usual: initial "S" + "Edébit" -> "SE-dé-bit", ' +
+'initial "R" + "ESURREXI" -> "RE-SUR-RE-XI".\n' +
 'Every numbered strip is its own line: return exactly the text printed in that strip. Never move text from one ' +
 'strip into another, even when a word or sentence continues on the next strip (keep the hyphen at the end of the ' +
 'strip, e.g. strip 1 "... al-", strip 2 "le-lú-ia.").\n' +
