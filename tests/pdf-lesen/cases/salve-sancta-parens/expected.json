@@ -1,0 +1,45 @@
+{
+ "id": "salve-sancta-parens",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal (ccwatershed.org), Introitus Salve sancta Parens mit Psalmvers und Gloria, Drive des Nutzers",
+  "reference": "GregoBase 1140 (Introitus, GR 1961 S. [75]), 4500 (Gloria Patri II)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "fa-schluessel",
+  "f3",
+  "initiale",
+  "porrectus",
+  "englischer-fliesstext-neben-system",
+  "zwei-stuecke",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 7 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Introitus mit vier Systemen (das letzte kurz, daneben englischer Text mit Initiale «H»), Psalmvers (2 Systeme) und Gloria Patri II (2 Systeme). Soll aus GregoBase; Text nach dem Druck (sáncta, caélum, saécula saeculórum), «*» und «Ps.» weggelassen.",
+ "pieces": [
+  {
+   "incipit": "Salve sancta Parens",
+   "mode": "2",
+   "clef": "f3",
+   "systems": [
+    "SAl(ce!fg)ve,(f.) (,) sán(f)cta(fe) Pa(f!gwh_f)rens(f.) (;) e(ef)ní(hhi)",
+    "xa(h) pu(h)ér(h)pe(h)ra(hiHG') Ré(hggfg)gem,(gf..) (:) qui(eh) caé(h)lum(hhh)",
+    "ter(fe~)rám(f!hhf/gf)que(ef) ré(fhhfgv_[oh:h]F~E~)git(fe..) (;) in(ef) saé(hh)cu(hi)la(f.) (,)",
+    "sae(f!h'i)cu(hiHG')ló(hggfg)rum.(gf..) (::)",
+    "E(e)ru(fe)ctá(eh)vit(h) cor(h) mé(h)um(hg) vér(hi)bum(i) bó(hi)num:(h.) (:) dí(hf)co(fh) é(h)go(h) ó(h)pe(h')",
+    "ra(i) mé(hf)a(h) ré(ge)gi.(fgf.) (::)"
+   ]
+  },
+  {
+   "incipit": "Gloria Patri",
+   "mode": "2",
+   "clef": "f3",
+   "systems": [
+    "GLó(e)ri(fe)a(eh) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h.) (,) et(h) Spí(h)ri(hg)tu(hi)i(i) San(hi)cto.(h.) (:) Si(hf)cut(fh) e(h)rat(h) in(h)",
+    "prin(h)cí(h)pi(h)o,(h.) (,) et(hg) nunc,(hi) et(i) sem(hi)per,(h.) (:) et(hf) in(fh) saé(h)cu(h)la(h) sae(h')cu(i)ló(hf)rum.(h) A(ge)men.(fgf.) (::)"
+   ]
+  }
+ ]
+}

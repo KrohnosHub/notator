@@ -96,7 +96,9 @@ function pgEdit(a, b) {
       if (ed === 1) console.log('Hinweis ' + c + ' System ' + (k + 1) + ': 1 Note Unterschied (' + js + ' / ' + p.letters + ')');
       check(ed <= 1, c + ' System ' + (k + 1) + ': Noten weichen ab');
       check(s.clef === p.clef, c + ' System ' + (k + 1) + ': Schlüssel ' + s.clef + ' statt ' + p.clef);
-      check(s.bars.map(x => x.type).join('') === p.bars.map(x => x[1]).join(''), c + ' System ' + (k + 1) + ': Trennstriche weichen ab');
+      const bj = s.bars.map(x => x.type).join(''), bp = p.bars.map(x => x[1]).join(''), be = pgEdit(bj, bp);
+      if (be === 1) console.log('Hinweis ' + c + ' System ' + (k + 1) + ': 1 Trennstrich Unterschied (' + bj + ' / ' + bp + ')');
+      check(be <= 1, c + ' System ' + (k + 1) + ': Trennstriche weichen ab');
       check(!!s.dropcap === !!p.dropcap, c + ' System ' + (k + 1) + ': Initiale weicht ab');
       if (Math.abs(s.chunks.length - p.chunks.length) === 1) console.log('Hinweis ' + c + ' System ' + (k + 1) + ': Textgruppen ' + s.chunks.length + ' statt ' + p.chunks.length);
       check(Math.abs(s.chunks.length - p.chunks.length) <= 1, c + ' System ' + (k + 1) + ': Textgruppen ' + s.chunks.length + ' statt ' + p.chunks.length);

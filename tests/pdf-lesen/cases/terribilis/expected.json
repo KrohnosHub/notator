@@ -1,0 +1,46 @@
+{
+ "id": "terribilis",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Liber Usualis 1961, S. 1250 (Commune Dedicationis Ecclesiae), Kopie mit Akkorden und Notiz von Hand, Drive des Nutzers",
+  "reference": "GregoBase 923 (Introitus), 4500 (Gloria Patri II)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "fa-schluessel",
+  "f3",
+  "initiale",
+  "handschriftliche-akkorde",
+  "porrectus",
+  "zwei-stuecke",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 7 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Introitus (6 Systeme) und Gloria Patri II (3 Systeme), F-Schlüssel, Akkordbuchstaben von Hand über allen Systemen. Soll aus GregoBase (gleiche Ausgabe), auf die gedruckten Systeme verteilt; «*», «T. P.» und «Ps.» weggelassen. Nicht Note für Note geprüft.",
+ "pieces": [
+  {
+   "incipit": "Terribilis est",
+   "mode": "2",
+   "clef": "f3",
+   "systems": [
+    "TEr(f)rí(f)bi(e)lis(c) est(c!e'f) (,) lo(h)cus(hhh) i(hihh)ste :(gf..) (;) hic(e) do(ef'g)mus(igge)",
+    "De(e.f!gw!hvGF)i(ef) est,(f.) (;) et(fh~) por(h)ta(gh'i) cae(i_[oh:h]h)li :(hihh/efe.) (:) et(e) vo(f)cá(fh/ih)bi(hhh)tur(fgE'Ce.) (;)",
+    "au(c!e'f)la(f/hhe/gf) De(f_[oh:h]g_[oh:h]f_[oh:h])i.(f.) (::) Al(ef'h~)le(h_g)lú(hih)ia,(hhhffe.) (,) al(fh~)le(hghf)lú(f_[oh:h]g_[oh:h]f_[oh:h])ia.(f.) (::)",
+    "Quam(e) di(fe)lé(eh)cta(h) ta(h)ber(h)ná(h)cu(h)la(h) tu(h)a,(h) Dó(h)mi(hg)ne(hi) vir(i)tú(hi)tum!(h.) (:)",
+    "con(hf~)cu(fh)pí(h)scit,(h) et(h) dé(h)fi(h)cit(h) á(h)ni(h)ma(h) me(h)a(h.) (,) in(h) á(h')tri(i)a(hf) Dó(h)mi(ge)",
+    "ni.(fgf.) (::)"
+   ]
+  },
+  {
+   "incipit": "Gloria Patri",
+   "mode": "2",
+   "clef": "f3",
+   "systems": [
+    "GLó(e)ri(fe)a(eh) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h.) (,) et(h) Spi(h)rí(hg)tu(hi)i(i) San(hi)",
+    "cto.(h.) (:) Sic(hf)ut(fh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h.) (,) et(hg) nunc,(hi) et(i) sem(hi)per,(h.) (:)",
+    "et(hf) in(fh) saé(h)cu(h)la(h) sae(h')cu(i)ló(hf)rum.(h) A(ge)men.(fgf.) (::)"
+   ]
+  }
+ ]
+}

@@ -116,9 +116,12 @@ function pgLineCands(dark, lo, hi) {
   }
   return cl.filter(c => c.length <= 12).map(c => (c[0] + c[c.length - 1]) / 2);
 }
+// Systemgrösse relativ zum typischen Linienabstand der Seite (Build 423): Campion druckt die Antiphon fast doppelt so gross wie
+// Psalmvers und Gloria (61 / 33 px, Salve sancta Parens). Abweichende Systeme gelten nur mit erkanntem Schlüssel (pgAnalysePage).
+const PG_SYS_MIN = 0.45, PG_SYS_MAX = 2.2;
 function pgGroup(lines) {
   const gaps = [];
-  for (let i = 0; i + 1 < lines.length; i++) { const d = lines[i + 1] - lines[i]; if (d > 12 && d < 60) gaps.push(d); }
+  for (let i = 0; i + 1 < lines.length; i++) { const d = lines[i + 1] - lines[i]; if (d > 12 && d < (globalThis._pgNurPrototyp ? 60 : 100)) gaps.push(d); }
   gaps.sort((a, b) => a - b);
   if (!gaps.length) return {out: [], g: 0};
   let g = gaps[Math.floor(gaps.length / 2)];
@@ -129,7 +132,7 @@ function pgGroup(lines) {
     const ms = [];
     for (let i = 0; i + 3 < lines.length; i++) {
       const q = lines.slice(i, i + 4), m = (q[3] - q[0]) / 3;
-      if (m > 12 && m < 60 && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)) ms.push(m);
+      if (m > 12 && m < 100 && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)) ms.push(m);
     }
     if (ms.length) { ms.sort((a, b) => a - b); g = ms[Math.floor(ms.length / 2)]; }
   }
@@ -141,7 +144,7 @@ function pgGroup(lines) {
   let i = 0;
   while (i + 3 < lines.length) {
     const q = lines.slice(i, i + 4), m = (q[3] - q[0]) / 3;
-    const ok = own ? m > 0.6 * g && m < 1.6 * g && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)
+    const ok = own ? m > PG_SYS_MIN * g && m < PG_SYS_MAX * g && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)
       : [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - g) < 0.25 * g);
     if (ok) { out.push(q); i += 4; } else i++;
   }
@@ -200,7 +203,7 @@ function pgStaves(img) {
     for (const [lo, hi] of [[0.05, 0.30], [0.70, 0.95]]) {
       for (const q of pgGroup(pgLineCands(dark, lo, hi)).out) {
         const m = (q[3] - q[0]) / 3;
-        if (m > 0.6 * g && m < 1.6 * g && !out.some(o => q[0] < o[3] + m && o[0] < q[3] + m)) { q.side = true; out.push(q); }
+        if (m > PG_SYS_MIN * g && m < PG_SYS_MAX * g && !out.some(o => q[0] < o[3] + m && o[0] < q[3] + m)) { q.side = true; out.push(q); }
       }
     }
     out.sort((a, b) => a[0] - b[0]);
@@ -223,7 +226,7 @@ function pgStaves(img) {
     }
     if (last !== null && last - st0 > best[1] - best[0]) best = [st0, last];
     const m = (q[3] - q[0]) / 3;
-    sts.push({lines: q, x0: best[0], x1: best[1], odd: !globalThis._pgNurPrototyp && (!!q.side || m < 0.8 * g)});
+    sts.push({lines: q, x0: best[0], x1: best[1], odd: !globalThis._pgNurPrototyp && (!!q.side || m < 0.8 * g || m > 1.25 * g)});
   }
   return {img, sts, g, ang};
 }

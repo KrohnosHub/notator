@@ -1,4 +1,4 @@
-# Notator – Stand Build 422 (24.11.2026)
+# Notator – Stand Build 423 (24.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–422 (Auszug)
+## Neu in Build 298–423 (Auszug)
 
+- **PDF lesen, Runde 7 (423):** Systeme bis 2.2-mal grösser als der typische Linienabstand werden gefunden (Campion druckt Antiphonen fast doppelt so gross wie Psalmvers und Gloria; bei Salve sancta Parens fehlte der ganze Introitus). Runde 7: Notenzahl 52 → 78 %, Tonhöhen/Stück 87 → 99 %.
 - **PDF lesen, Runde 6 (422):** Auswertung misst jetzt den Neumentyp je Silbe (Torculus/Porrectus …). Silben ohne Noten werden bei der Zuordnung stärker bestraft – verrutschte Zuordnungen erzeugten falsche Neumentypen (Neumentyp 91 → 93 %, Gruppierung exakt 43 → 50 %). F-Schlüssel ab 1.5 statt 1.9 Notenkopfbreiten (Liber-Hymnen). KI trennt das erste Wort nach der Initiale («SE-dé-bit»).
 - **API-Key merken (421):** Neben dem API-Feld von «PDF lesen» ein Häkchen «merken»: Der Key bleibt im Browser gespeichert (pro Gerät einmal eingeben); mit gespeichertem Key öffnet «PDF lesen» direkt die Dateiauswahl. Häkchen weg = Key gelöscht.
 - **PDF lesen, Gegenprobe 5 (420):** blind mit Build 419 (Mittit ad Virginem, Graduale Viderunt, Verbum caro): Notenzahl 80 %, Tonhöhen 98 %, Gruppierung 95 %. Daraus: ♭ direkt nach dem Schlüssel wird erkannt (über alle 22 Fälle ♭ gefunden 74 → 88 %, 96 % richtig).

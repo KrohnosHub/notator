@@ -1,0 +1,44 @@
+{
+ "id": "unus-militum",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal (ccwatershed.org), Communio Herz Jesu mit Vers und Gloria, Drive des Nutzers",
+  "reference": "GregoBase 1356 (Communio), Gloria VII wie signum-magnum; Psalmvers vom Druck abgelesen",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c3",
+  "initiale-gross-verziert",
+  "englische-interlinear-uebersetzung",
+  "handschriftliche-akkorde",
+  "psalmvers",
+  "zwei-stuecke",
+  "neumentyp"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 7 (24.11.2026): Soll vor der ersten Messung geschrieben, an diesem Fall nichts eingestellt. Communio (2 Systeme, verzierte Initiale U, Akkorde von Hand), Vers im 7. Ton (2 Systeme, von Claude mit Hilfslinien abgelesen) und Gloria VII (2 Systeme, Melodie wie bei signum-magnum, Text nach diesem Druck). «*», «Vs.» weggelassen; «Unus.» am Versende steht ohne Noten.",
+ "pieces": [
+  {
+   "incipit": "Unus militum",
+   "mode": "7",
+   "clef": "c3",
+   "systems": [
+    "U(i)nus(ig) mí(ij)li(i)tum(g.) (,) lán(h)ce(fe)a(f!gwh) la(g)tus(h) e(ij)ius(i) a(ij)pé(hf)ru(h)it,(g.) (;)",
+    "et(i) con(h)tí(ij)nu(ih)o(h) ex(hf)í(hi)vit(i.) san(iji)guis(g') et(h) a(f_e/f!gw!hvGF'g)qua.(fe..) (::)",
+    "Quó(ehg)ni(hi)am(i) di(i)xí(i)sti:(i) (,) In(i) ae(i)tér(i)num(i) mi(i)se(i)ri(i)cór(i)di(i)a(i) ae(i)di(ik)",
+    "fi(j)cá(j)bi(ji)tur,(i.j.) (;) in(ig) cae(hi)lis(i) fir(i)má(i)bi(i)tur(i) vé(i!jwk)ri(i)tas(h) tu(hhh)a.(f.e.) (::) U()nus.()"
+   ]
+  },
+  {
+   "incipit": "Gloria Patri",
+   "mode": "7",
+   "clef": "c3",
+   "systems": [
+    "GLó(ehg)ri(hi)a(i) Pá(i)tri,(i) et(i) Fí(i)li(i)o,(i.) (,) et(i) Spí(i)ri(ik)tu(j)i(j) Sán(ji)cto.(i.j.) (:) Si(ig)cut(hi) é(i)rat(i) in(i)",
+    "prin(i)cí(i)pi(i)o,(i.) (,) et(i) nunc,(ik) et(j) sem(ji)per,(i.j.) (:) et(ig) in(hi) saé(i)cu(i)la(i) sae(i)cu(i!jwk)ló(i')rum.(h) A(hhh)men.(f.e.) (::)"
+   ]
+  }
+ ]
+}

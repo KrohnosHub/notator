@@ -161,6 +161,10 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   13 Clivis zu Pes – verworfen. Silben ohne Noten kosten bei der Zuordnung jetzt 4 statt 0.8. F-Schlüssel 1.76–1.96, C-Schlüssel
   0.66–1.18 Notenkopfbreiten (Grenze 1.5). Soll-Quelle für neue Testseiten: GregoBase (`gregobase.selapa.net` in der
   Cloud-Umgebung freigegeben; Index über `incipit.php?letter=X`, Download `download.php?id=N&format=gabc&elem=1`).
+- **Runde 7 (Build 423, 24.11.2026):** Systemgrössen auf einer Seite können sich fast verdoppeln (Campion: Antiphon 61 px,
+  Psalmvers/Gloria 33 px Linienabstand) – erlaubt sind jetzt 45–220 % des typischen Abstands (`PG_SYS_MIN/MAX`), Abstände bis 100 px;
+  abweichende Systeme (unter 80 % oder über 125 %) gelten weiter nur mit erkanntem Schlüssel. Prototyp-Vergleich: 1 Trennstrich
+  Unterschied je System gilt als Hinweis (Grenzfall auf der Liber-Seite Terribilis, schon vor Build 423).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

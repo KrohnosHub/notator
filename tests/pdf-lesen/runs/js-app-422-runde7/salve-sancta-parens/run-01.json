@@ -1,0 +1,33 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Eructávit cor méum vérbum bónum",
+   "mode": "",
+   "clef": "f3",
+   "hasDropCap": false,
+   "systems": [
+    "Eruc(e)tá(fe)vit(ehh) cor(h) mé(h)um(hg) vér(hi)bum(i) bó(hi)num:(h.) (:) dí(hf)co(fh) é(h)go(h) ó(h)pe(h)",
+    "ra(i) mé(hf)a(h) ré(ge)gi.(fgf) (::)"
+   ]
+  },
+  {
+   "incipit": "GLória Patri, et Fílio, et",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "GLó(e)ri(fe)a(eh) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h.) (,) et(h) Spi(h)rí(hg)tu(hi)i(i) Sanc(hi)to.(h.) (:) Si(hf)cut(fh) e(h)rat(h) in(h)",
+    "prin(h)cí(h)pi(h)o,(h.) (,) et(hg) nunc,(hi) et(i) sem(hi)per,(h.) (:) et(hf) in(fh) saé(h)cu(h)la(h) sae(h)cu(i)ló(hf)rum.(h) A(ge)men.(fgf.) (::)"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2760,
+  "output_tokens": 231,
+  "costUsd": 0.00783
+ },
+ "durationMs": 8753
+}
