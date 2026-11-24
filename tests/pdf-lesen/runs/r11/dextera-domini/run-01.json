@@ -1,0 +1,37 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "DExtera Dómini fecit virtútem, déxtera",
+   "mode": "8",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "DEx(e)te(f)ra(h) Dó(h)mi(h)ni(h) fe(h)cit(h) vir(h)tú(i)tem,(h.) (;) dé(h)xte(h)ra(h) Dó(h)mi(h)ni(h.)",
+    "ex(g)al(h)tá(f)vit(e) me:(e.) (;) non(h) mó(h)ri(h)ar,(h) sed(h) vi(i)vam,(h.) (;) et(h) nar(h)rá(h)bo(h) ó(h)pe(g)ra(h)",
+    "Dó(f)mi(e)ni.(e.) (;)",
+    "V/.() In() tri(h)bu(h)la(h)ti(h)ó(h)ne(hh) in(h)vo(h)cá(h)vi(h) Dó(h)mi(f)num;(f) et(h) ex(h)au(h)dí(h)",
+    "vit(h) me(h) in(h) la(h)ti(h)tú(i)di(h)ne:(h.) qui(h)a(h) Dó(h)mi(h)nus(h) ad(h)jú(g)tor(h)",
+    "V/.() Im(h)púl(h)sus(h) ver(h)sá(h)tus(h) sum,(h) ut(h) cá(h)de(f)rem;(f) (,) et(h) Dó(h)mi(h)",
+    "nus(h) sus(h)cé(i)pit(h) me:(h.) (;) et(h) fac(h)tus(h) est(h) mi(h)hi(h) in(g) sa(h)lú(f)tem.(e.) (;)"
+   ],
+   "unsure": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2899,
+  "output_tokens": 379,
+  "costUsd": 0.009588
+ },
+ "durationMs": 8075
+}

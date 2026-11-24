@@ -1,0 +1,39 @@
+{
+ "id": "conditor-alme",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Hymnus «Conditor alme siderum» (6 Strophen fortlaufend, Querformat, blasser Druck mit gestrichelten Linien), Drive des Nutzers",
+  "reference": "Melodie GregoBase 7424 (Antiphonale Monasticum 1934), Text nach dem Druck",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "hymnus",
+  "strophen-fortlaufend",
+  "initiale",
+  "blasse-linien",
+  "schraeg",
+  "querformat"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 12 (24.11.2026): blind gemessen (0 Systeme – Linien blass und gestrichelt), danach Ersatzweg gebaut. Soll: Melodie je Strophe aus GregoBase 7424 auf die sechs gedruckten Strophen übertragen, Zeilen nach dem Druck; Strophennummern weggelassen. Nicht Note für Note am Druck geprüft (Annahme: gleiche Melodie in allen Strophen).",
+ "pieces": [
+  {
+   "incipit": "Conditor alme siderum",
+   "mode": "4",
+   "clef": "c4",
+   "systems": [
+    "COn(e)di(c)tor(e) al(g)me(h) sí(h)de(f)rum,(g) (,) ae(g)tér(h)na(f) lux(g) cre(f)dén(e)ti(d)um,(e.) (;) Chri(g)ste,(f) re(d)dém(e)ptor(f)",
+    "ó(e)mni(d)um,(c) (,) ex(c)áu(e)di(f) pre(g)ces(f) súp(e)pli(d)cum.(e.) (::) Qui(e) côn(c)do(e)lens(g) in(h)té(h)ri(f)tu(g) (,) mor(g)tis(h) pe(f)rí(g)re(f)",
+    "saé(e)cu(d)lum,(e.) (;) sal(g)vá(f)sti(d) mun(e)dum(f) lán(e)gui(d)dum,(c) (,) do(c)nans(e) re(f)is(g) re(f)mé(e)di(d)um,(e.) (::) Ver(e)gén(c)te(e)",
+    "mun(g)di(h) vé(h)spe(f)re,(g) (,) u(g)ti(h) spon(f)sus(g) de(f) thá(e)la(d)mo,(e.) (;) e(g)grés(f)sus(d) ho(e)ne(f)stís(e)si(d)ma(c) (,) Vír(c)gi(e)nis(f) ma(g)tris(f)",
+    "cláu(e)su(d)la.(e.) (::) Cú(e)ius(c) for(e)ti(g) po(h)tén(h)ti(f)ae(g) (,) ge(g)nu(h) cur(f)ván(g)tur(f) ó(e)mni(d)a:(e.) (;) cae(g)lé(f)sti(d)a,(e) ter(f)ré(e)stri(d)a(c) (,)",
+    "nu(c)tu(e) fa(f)tén(g)tur(f) súb(e)di(d)ta.(e.) (::) Te,(e) San(c)cte,(e) fi(g)de(h) quaé(h)su(f)mus,(g) (,) ven(g)tú(h)re(f) iú(g)dex(f) saé(e)cu(d)li,(e.) (;)",
+    "con(g)sér(f)va(d) nos(e) in(f) tém(e)po(d)re(c) (,) ho(c)stis(e) a(f) te(g)lo(f) pér(e)fi(d)di.(e.) (::) Sit,(e) Chri(c)ste,(e) rex(g) pi(h)ís(h)si(f)me,(g) (,) ti(g)bi(h)",
+    "Pa(f)trí(g)que(f) gló(e)ri(d)a(e.) (;) cum(g) Spí(f)ri(d)tu(e) Pa(f)rá(e)cli(d)to,(c) (,) in(c) sem(e)pi(f)tér(g)na(f) saé(e)cu(d)la.(e.) (::) A(efe)men.(d.e.) (::)"
+   ]
+  }
+ ]
+}

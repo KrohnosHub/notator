@@ -1,0 +1,33 @@
+{
+ "id": "justorum-animae",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal, Offertorium Allerheiligen (vereinfachte Melodie), Drive des Nutzers («Justorum animae – Choral.pdf»)",
+  "reference": "vom Druck abgelesen (vereinfachte Campion-Melodie, nicht GR)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "initiale-gross",
+  "englische-interlinear-uebersetzung",
+  "rezitationston",
+  "b-vorzeichen"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 11 (24.11.2026): blind gemessen, Soll danach von Claude Note für Note am Druck (200 dpi, mit Linien) abgelesen. 4 Systeme, Modus I, zwei ♭ (Stufe i). Am Ende von System 3 steht ein Custos (keine Note, kein Mora-Punkt).",
+ "pieces": [
+  {
+   "incipit": "Justorum animae",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "JUs(f)tó(gh)rum(h) á(h)ni(h)mae(h) in(h) ma(ixi)nu(h) De(g)i(h) sunt,(h.) (;)",
+    "et(h) non(h) tan(h)get(h) il(h)los(h) tor(h)mén(h)tum(g) ma(f)lí(gh)ti(g)ae:(g.) (::)",
+    "vi(h)si(h) sunt(h) ó(h)cu(h)lis(h) in(h)si(h)pi(h)én(ixi)ti(h)um(h) mo(g)ri:(h.) (;) il(h)li(h)",
+    "au(h)tem(h) sunt(h) in(h) pa(h)ce,(h) al(g)le(f)lú(gh)ja.(g.) (::)"
+   ]
+  }
+ ]
+}

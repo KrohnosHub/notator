@@ -103,14 +103,14 @@ function pgMedianGray(img) {
 }
 
 // ── Notenlinien und Systeme ─────────────────────────────────────────────
-function pgLineCands(dark, lo, hi) {
+function pgLineCands(dark, lo, hi, rel) {
   const xa = pgInt(dark.w * lo), xb = pgInt(dark.w * hi), cnt = new Float64Array(dark.h);
   for (let y = 0; y < dark.h; y++) { let s = 0; for (let x = xa; x < xb; x++) s += dark.a[y * dark.w + x]; cnt[y] = s; }
   const top = Array.from(cnt).sort((a, b) => a - b).slice(-20);
   const peak = top.reduce((a, b) => a + b, 0) / top.length;
   const cl = [];
   for (let y = 0; y < dark.h; y++) {
-    if (!(cnt[y] > 0.45 * peak)) continue;
+    if (!(cnt[y] > (rel || 0.45) * peak)) continue;
     const last = cl.length ? cl[cl.length - 1] : null;
     if (last && y - last[last.length - 1] <= 2) last.push(y); else cl.push([y]);
   }
@@ -135,6 +135,12 @@ function pgGroup(lines) {
       if (m > 12 && m < 100 && [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - m) < 0.15 * m)) ms.push(m);
     }
     if (ms.length) { ms.sort((a, b) => a - b); g = ms[Math.floor(ms.length / 2)]; }
+    else if (globalThis._pgErsatz) {                         // Ersatzweg: Abstand aus Dreiergruppen m, m
+      const m3 = [];
+      for (let i = 0; i + 2 < lines.length; i++) { const d1 = lines[i + 1] - lines[i], d2 = lines[i + 2] - lines[i + 1];
+        if (d1 > 12 && d1 < 100 && Math.abs(d1 - d2) < 0.15 * d1) m3.push((d1 + d2) / 2); }
+      if (m3.length) { m3.sort((a, b) => a - b); g = m3[Math.floor(m3.length / 2)]; }
+    }
   }
   // Ab Build 416 (nicht im Prototyp): jedes System nach seinem eigenen Linienabstand prüfen – kleinere Systeme auf derselben
   // Seite (Gloria Patri unter einem Introitus: 69–74 %) wichen sonst um mehr als 25 % vom Seitenwert ab und fielen weg.
@@ -148,7 +154,17 @@ function pgGroup(lines) {
       : [0, 1, 2].every(k => Math.abs((q[k + 1] - q[k]) - g) < 0.25 * g);
     // Fünfliniensystem (moderne Noten, Build 425, nicht im Prototyp): fünfte Linie im gleichen Abstand ober- oder unterhalb
     if (ok && own && lines.some(l => Math.abs(l - (q[3] + m)) < 0.2 * m || Math.abs(l - (q[0] - m)) < 0.2 * m)) fives++;
-    if (ok) { out.push(q); i += 4; } else i++;
+    if (ok) { out.push(q); i += 4; continue; }
+    // Ersatzweg (Build 430, nur wenn sonst kein System gefunden wird): eine innere Linie fehlt (blasser, gestrichelter Druck,
+    // Conditor alme) – drei Linien mit Abständen m, 2m oder 2m, m ergänzen
+    if (globalThis._pgErsatz && g) {
+      const t = lines.slice(i, i + 3), d1 = t[1] - t[0], d2 = t[2] - t[1], mm = (t[2] - t[0]) / 3;
+      const near = (d, v) => Math.abs(d - v) < 0.15 * mm;
+      if (mm > 0.7 * g && mm < 1.4 * g && (near(d1, mm) && near(d2, 2 * mm) || near(d1, 2 * mm) && near(d2, mm))) {
+        out.push(near(d1, mm) ? [t[0], t[1], t[1] + mm, t[2]] : [t[0], t[0] + mm, t[1], t[2]]); i += 3; continue;
+      }
+    }
+    i++;
   }
   // Seite mit überwiegend Fünfliniensystemen (Regina caeli mit Orgelsatz ergab sonst 16 «Systeme» mit Unsinn): kein Choral.
   // Pro Seite entschieden – eine einzelne Textzeile im Linienabstand unter einem System ist keine fünfte Linie (Puer natus).
@@ -191,22 +207,45 @@ function pgCropGray(img, x0, x1) {
   for (let y = 0; y < img.h; y++) a.set(img.a.subarray(y * img.w + x0, y * img.w + x1), y * w);
   return {w, h: img.h, a};
 }
+// Schräglage aus dem Bild selbst (Build 430, Ersatzweg): Winkel, bei dem die Zeilenprojektion am schärfsten ist
+function pgSkewByProjection(img) {
+  const dk = pgThreshold(img, 200), xa = Math.floor(img.w * 0.15), xb = Math.floor(img.w * 0.85);
+  let best = [0, -1];
+  for (let a = -2; a <= 2.001; a += 0.1) {
+    const tn = Math.tan(a * Math.PI / 180), bins = new Float64Array(img.h + 400);
+    for (let y = 0; y < img.h; y++) for (let x = xa; x < xb; x += 3) if (dk.a[y * img.w + x]) bins[Math.round(y - (x - img.w / 2) * tn) + 200]++;
+    let sc = 0; for (let i = 1; i < bins.length; i++) { const d = bins[i] - bins[i - 1]; sc += d * d; }
+    if (sc > best[1]) best = [Math.round(a * 10) / 10, sc];
+  }
+  return best[0];
+}
 function pgStaves(img) {
-  let dark = pgThreshold(img, PG_THR_LINES);
-  const L = pgGroup(pgLineCands(dark, 0.25, 0.40)).out, R = pgGroup(pgLineCands(dark, 0.60, 0.75)).out;
+  const r = pgStaves1(img);
+  if (r.sts.length || globalThis._pgNurPrototyp || globalThis._pgFuenfLinien) return r;
+  // Ersatzweg: keine Systeme gefunden – Schräge aus der Projektion, hellere Schwelle, niedrigere Linienschwelle, 3 von 4 Linien
+  const ang = pgSkewByProjection(img), rot = Math.abs(ang) > 1e-6 ? pgRotate(img, ang) : img;
+  globalThis._pgErsatz = true;
+  try { const r2 = pgStaves1(rot); if (r2.sts.length) { r2.ang += ang; console.log('PDF lesen (neu): Ersatzweg für blasse/schräge Linien, ' + r2.sts.length + ' Systeme'); return r2; } }
+  finally { globalThis._pgErsatz = false; }
+  return r;
+}
+function pgStaves1(img) {
+  let dark = pgThreshold(img, globalThis._pgErsatz ? 200 : PG_THR_LINES);
+  const L = pgGroup(pgLineCands(dark, 0.25, 0.40, globalThis._pgErsatz ? 0.25 : 0)).out, R = pgGroup(pgLineCands(dark, 0.60, 0.75, globalThis._pgErsatz ? 0.25 : 0)).out;
   let ang = 0;
   let pairs = R.length ? L.map(l => [l, R.reduce((b, r) => Math.abs(r[0] - l[0]) < Math.abs(b[0] - l[0]) ? r : b, R[0])]) : [];
   pairs = pairs.filter(([l, r]) => Math.abs(r[0] - l[0]) < 30);
   if (pairs.length) {
     const dy = pgMedian(pairs.map(([l, r]) => r[0] - l[0]));
     ang = Math.atan2(dy, 0.35 * img.w) * 180 / Math.PI;
-    if (Math.abs(ang) > 1e-6) { img = pgRotate(img, ang); dark = pgThreshold(img, PG_THR_LINES); }
+    if (Math.abs(ang) > 1e-6) { img = pgRotate(img, ang); dark = pgThreshold(img, globalThis._pgErsatz ? 200 : PG_THR_LINES); }
   }
-  const {out, g} = pgGroup(pgLineCands(dark, 0.30, 0.70));
+  const {out, g} = pgGroup(pgLineCands(dark, 0.30, 0.70, globalThis._pgErsatz ? 0.25 : 0));
   // Kurze Systeme (z. B. Schluss eines Stücks nur links, Build 416, nicht im Prototyp): auch links und rechts suchen
   if (!globalThis._pgNurPrototyp) {
-    for (const [lo, hi] of [[0.05, 0.30], [0.70, 0.95]]) {
-      for (const q of pgGroup(pgLineCands(dark, lo, hi)).out) {
+    // Build 430: auch zwischen Rand und Mitte (kurzes System «me-us est» bei Dextera Domini, 31–42 % der Seitenbreite)
+    for (const [lo, hi] of [[0.05, 0.30], [0.70, 0.95], [0.25, 0.45], [0.55, 0.75]]) {
+      for (const q of pgGroup(pgLineCands(dark, lo, hi, globalThis._pgErsatz ? 0.25 : 0)).out) {
         const m = (q[3] - q[0]) / 3;
         if (m > PG_SYS_MIN * g && m < PG_SYS_MAX * g && !out.some(o => q[0] < o[3] + m && o[0] < q[3] + m)) { q.side = true; out.push(q); }
       }
@@ -225,9 +264,9 @@ function pgStaves(img) {
     }
     let best = [0, 0], st0 = null, last = null;
     for (let x = 0; x < dark.w; x++) {
-      if (cnt[x] < 4) continue;
+      if (cnt[x] < (globalThis._pgErsatz ? 3 : 4)) continue;
       if (st0 === null) st0 = x;
-      else if (x - last > 40) { if (last - st0 > best[1] - best[0]) best = [st0, last]; st0 = x; }
+      else if (x - last > (globalThis._pgErsatz ? 160 : 40)) { if (last - st0 > best[1] - best[0]) best = [st0, last]; st0 = x; }   // Ersatzweg: gestrichelte Linien (Build 430)
       last = x;
     }
     if (last !== null && last - st0 > best[1] - best[0]) best = [st0, last];
@@ -561,6 +600,7 @@ function pgMarkMoras(st, notes) {
       if (area / (w * h) < 0.5) continue;
       const cx = (x0 + x1) / 2 + wx0 + c.xa;
       if (notes.some((m, j) => j !== i && Math.abs(m.x - cx) < 0.3 * gl)) continue;              // gehört zu einer anderen Note
+      if (cx > st.x1 - 0.6 * gl) continue;                                                      // Custos am Zeilenende (Build 430, Justorum)
       n.mora = true; break;
     }
   }
@@ -660,7 +700,25 @@ function pgFindBars(st) {
   const v = pgLine1(pgLine1(reg, k, 0, true), k, 0, false);           // nur senkrechte Läufe ≥ 0.55 Linienabstand
   const near = pgLine1(pgLine1(pgCrop(c.op, ra, rb, 0, c.op.w), 2 * pgInt(0.3 * gl) + 1, 1, false), 2 * pgInt(0.15 * gl) + 1, 0, false);
   let bars = [];
-  for (const runs of pgComponents(v)) {
+  // Build 430 (nicht im Prototyp): in unscharfen Kopien zerfällt ein Strich in übereinanderliegende Stücke (Dextera Domini) –
+  // Stücke mit gleicher Lage (± 0.15 Linienabstände) und Lücke unter 0.6 Linienabständen wieder zusammensetzen
+  let comps = pgComponents(v);
+  if (!globalThis._pgNurPrototyp) {
+    const items = comps.map(r => ({runs: r, b: pgBox(r)})).sort((a, b) => a.b[1] - b.b[1]);
+    const used = new Set(); comps = [];
+    for (let i = 0; i < items.length; i++) {
+      if (used.has(i)) continue;
+      let runs = items[i].runs.slice(), b = items[i].b.slice();
+      for (let j = i + 1; j < items.length; j++) {
+        const o = items[j].b;
+        if (used.has(j) || Math.abs((o[0] + o[2]) / 2 - (b[0] + b[2]) / 2) > 0.15 * gl || o[1] - b[3] > 0.6 * gl || o[2] - o[0] > 0.35 * gl) continue;
+        runs = runs.concat(items[j].runs); b = [Math.min(b[0], o[0]), b[1], Math.max(b[2], o[2]), Math.max(b[3], o[3])]; used.add(j);
+      }
+      runs.sort((p, q) => p[0] - q[0]);
+      comps.push(runs);
+    }
+  }
+  for (const runs of comps) {
     const [bx0, by0, bx1, by1] = pgBox(runs);
     if (bx1 - bx0 + 1 > 0.35 * gl) continue;                          // zu breit: Initiale, Notenstapel
     const cx = (bx0 + bx1) / 2 + c.xa;
@@ -676,6 +734,7 @@ function pgFindBars(st) {
     }
     if ((by1 - by0 + 1) < 1.4 * gl && asym / (by1 - by0 + 1) > 0.4) continue;   // b-Vorzeichen, Custos
     const L = (by1 - by0 + 1) / gl, pm = c.stepOf(cx, (by0 + by1) / 2 + ra + c.top);
+    if (Array.isArray(globalThis._pgBarLog)) globalThis._pgBarLog.push({y: Math.round(q[0]), x: Math.round(cx), L: +L.toFixed(2), w: +((bx1 - bx0 + 1) / gl).toFixed(2), pm: +pm.toFixed(1), asym: +(asym / (by1 - by0 + 1)).toFixed(2), top: by0 <= 1});
     let t;
     if (L >= 2.5) t = ':';
     else if (L >= 1.4 && pm > 0.5 && pm < 5.5) t = ';';
@@ -692,7 +751,12 @@ function pgFindBars(st) {
   const out = [];
   for (const b of bars) {
     const l = out[out.length - 1];
-    if (l && b.x - l.x < 0.8 * gl) { if (b.type === ':' && (l.type === ':' || l.type === '::')) l.type = '::'; continue; }
+    if (l && b.x - l.x < 0.8 * gl) {
+      if (b.type === ':' && (l.type === ':' || l.type === '::')) l.type = '::';
+      // Build 430: Doppelstrich, dessen zweiter Strich nur als halber Strich erkannt wird (blasse Kopie)
+      else if (!globalThis._pgNurPrototyp && ((b.type === ':' && l.type === ';') || (b.type === ';' && l.type === ':'))) l.type = '::';
+      continue;
+    }
     out.push(b);
   }
   return out;
@@ -818,7 +882,7 @@ function pgTextChunks(dark, st, gl) {
 }
 
 // ── Text auf Tintengruppen und Noten legen ──────────────────────────────
-const PG_SIGN_RE = /^(\d+\.?|[℣℟]\.?|[VR]\/\.?|Ps\.)$/i;
+const PG_SIGN_RE = /^(\d+\.?|[℣℟]\.?|[VR]\/\.?|Ps\.|Vs\.)$/i;   // «Vs.» seit Build 430 (Campion)
 // Silbengrenzen, die die KI ausgelassen hat («cre-ásti», «úncti», «VExíl»), nach der Notator-Silbentrennung ergänzen
 // (Build 425, nicht im Prototyp). Gedruckte bzw. gelieferte Bindestriche bleiben; nur Teile mit ≥ 2 Vokalgruppen werden geteilt.
 function pgResyllabify(text) {
@@ -860,7 +924,7 @@ function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
   const S = syls.length, C = chunks.length;
   if (C === 0) return null;
   const cw = chunks.reduce((s, c) => s + c.x1 - c.x0, 0) / Math.max(1, syls.reduce((s, x) => s + x.n, 0));
-  const INF = 1e18, L = 4, SKIP = 1.0;
+  const INF = 1e18, L = globalThis._pgNurPrototyp ? 4 : 8, SKIP = 1.0;   // Build 430: bis 8 Silben je Gruppe («tri-bulati-óne», Dextera)
   const f = Array.from({length: S + 1}, () => new Array(C + 1).fill(INF));
   const bk = Array.from({length: S + 1}, () => new Array(C + 1).fill(null));
   f[0][0] = 0;
@@ -876,6 +940,8 @@ function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
         const est = cw * run.reduce((s, x) => s + x.n, 0);
         let cost = Math.abs(w - est) / Math.max(cw * 2.5, 1e-6);
         cost += 2.0 * run.slice(1).filter(x => x.word).length;          // Gruppe über eine Wortgrenze
+        // ℣/Ps./Nummer steht für sich (Build 430: «Vs. In» bei Dextera Domini – «℣.» und «In» in einer Gruppe verschob die ganze Zeile)
+        if (r > 1 && run.some(x => x.sign) && !globalThis._pgNurPrototyp) cost += 5;
         if (c.hyphen && run[r - 1].wend) cost += 0.5;
         if (!c.hyphen && !run[r - 1].wend) cost += 0.3;
         if (f[i][j] + cost < f[i + r][j + 1]) { f[i + r][j + 1] = f[i][j] + cost; bk[i + r][j + 1] = ['take', i, j, r]; }
@@ -913,7 +979,14 @@ function pgSyllablesFromChunks(text, chunks, gl, dropcap) {
 function pgNoteGabc(n) { return (n.flat ? n.flat + 'x' : '') + n.letter + (n.virga ? 'v' : '') + (n.mora ? '.' : ''); }
 
 // GABC-Zeile: Notengruppen (Lücke > 0.8 Linienabstand) per dynamischer Programmierung monoton auf die Silben verteilen
-function pgToGabcText(notes, bars, syls, gl) {
+// «Ps.» → kursive Anweisung, ℣/℟ → «V/.»/«R/.» (wie GregoBase); Strophennummern → null
+function pgSignDirective(t) {
+  if (/^Ps\.$/i.test(t)) return '<i>Ps.</i>()';
+  if (/^(℣\.?|V\/\.?|Vs\.)$/.test(t)) return 'V/.()';
+  if (/^(℟\.?|R\/\.?)$/.test(t)) return 'R/.()';
+  return null;
+}
+function pgToGabcText(notes, bars, syls, gl, dirs, out_) {
   if (!syls || !syls.length) return null;
   const units = [];
   for (const n of notes) {
@@ -945,10 +1018,15 @@ function pgToGabcText(notes, bars, syls, gl) {
     let i = end;
     for (let j = U - 1; j >= 0; j--) { groups[i] = units[j].concat(groups[i]); if (j > 0) i = bk[j][i]; }
   }
+  // Silben ohne Noten merken (Build 430): Hinweis «⚠ prüfen» – meist ist die Zuordnung dort verrutscht
+  if (out_ && U) out_.emptyX = syls.filter((s, i) => !groups[i].length && s.text && /\p{L}/u.test(s.text)).map(s => s.x);
   let toks = syls.map((s, i) => [groups[i].length ? groups[i][0].x : s.x, i, s.text + '(' + groups[i].map(pgNoteGabc).join('') + ')', s.word]);
   let m = -1e9;
   toks = toks.map(t => { m = Math.max(m, t[0]); return [m, t[1], t[2], t[3]]; });
   toks = toks.concat(bars.map(bb => [bb.x, 1e6, '(' + bb.type + ')', true]));
+  // Anweisung vor die Silbe an derselben Stelle; steht knapp rechts davon ein Trennstrich, gehört sie dahinter (Jubilate: «‖ Ps.»)
+  toks = toks.concat((dirs || []).map(d => { const b = bars.find(bb => bb.x > d.x - 0.3 * gl && bb.x < d.x + 1.2 * gl);
+    return b ? [b.x, 1e6 + 1, d.text, true] : [d.x - 0.01, -1, d.text, true]; }));
   toks.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
   let out = '';
   toks.forEach((t, i) => { out += (i && (t[3] || t[2][0] === '(' || toks[i - 1][2][0] === '(') ? ' ' : '') + t[2]; });
@@ -1061,19 +1139,40 @@ function pgStaffGabc(staff, text) {
   const t = pgResyllabify(pgCleanLine(text));
   // Build 419 (nicht im Prototyp): Textgruppen rechts vom letzten Schlussstrich und von der letzten Note tragen keine Silbe
   // (roter Hinweis «rep. Alleluja» bei Surrexit, den die KI weglässt)
-  let chunks = staff.chunks;
+  let chunks = staff.chunks, endX = null;
+  // Build 430: Textgruppen, die deutlich rechts der letzten Note beginnen, tragen keine Silbe mit Noten (gedrehter Randtext
+  // rechts vom System bei Jubilate Deo zog sonst die letzten Silben an sich)
+  let farX = Infinity;
+  if (!globalThis._pgNurPrototyp && staff.notes.length) farX = Math.max(...staff.notes.map(n => n.x)) + 3 * staff.gl;
   if (!globalThis._pgNurPrototyp && staff.notes.length) {
     const end = Math.max(...staff.notes.map(n => n.x), ...staff.bars.filter(b => b.type === '::').map(b => b.x));
-    if (staff.bars.some(b => b.type === '::' && b.x >= end - 1)) chunks = chunks.filter(c => c.x0 <= end + 0.5 * staff.gl);
+    if (staff.bars.some(b => b.type === '::' && b.x >= end - 1)) endX = end + 0.5 * staff.gl;
   }
-  let syls = pgSyllablesFromChunks(t, chunks, staff.gl, !!staff.dropcap);
+  let syls = pgSyllablesFromChunks(t, chunks, staff.gl, !!staff.dropcap), tail = [];
+  if (endX !== null) {
+    // Hinweis rechts vom Schlussstrich, der mit ℟/℣ beginnt («℟. In cordis.» bei Puer natus, Build 430): ohne Noten hinten
+    // anhängen, statt ihn bei der Zuordnung mitzuzählen (sonst rutschen die Noten der Zeile nach links)
+    const k = syls ? syls.findIndex(x => x.sign && x.x > endX && /^(℟|℣|[RV]\/)/.test(x.text)) : -1;
+    let main = t;
+    if (k > 0) {
+      tail = syls.slice(k);
+      const words = t.split(/\s+/); let cnt = 0, wi = 0;      // Text bis vor das Zeichen (Silben zählen wie pgSyllablesFromChunks)
+      for (; wi < words.length && cnt < k; wi++) { const w = words[wi]; cnt += PG_SIGN_RE.test(w) ? 1 : /\p{L}/u.test(w) ? w.split('-').filter(x => x).length : 0; }
+      main = words.slice(0, wi).join(' ');
+    }
+    // Textgruppen rechts vom letzten Schlussstrich tragen keine Silbe (Build 419: roter Hinweis «rep. Alleluja» bei Surrexit)
+    syls = pgSyllablesFromChunks(main, chunks.filter(c => c.x0 <= endX && c.x0 <= farX), staff.gl, !!staff.dropcap);
+  } else if (farX < Infinity && chunks.some(c => c.x0 > farX)) syls = pgSyllablesFromChunks(t, chunks.filter(c => c.x0 <= farX), staff.gl, !!staff.dropcap);
   if (syls === null) {                                                   // keine Textgruppen: gleichmässig verteilen
     const parts = [];
     t.split(/\s+/).filter(w => /\p{L}/u.test(w)).forEach(w => w.split('-').filter(p => p).forEach((p, k) => parts.push({text: p, word: k === 0})));
     const span = staff.x1 - staff.x0;
     syls = parts.map((p, i) => ({text: p.text, word: p.word, x: staff.x0 + span * i / Math.max(1, parts.length), x1: 0}));
   }
-  syls = syls.filter(x => !x.sign);                                      // Strophennummer, ℣, Ps.: nur für die Zuordnung
+  // Strophennummern dienen nur der Zuordnung; «Ps.», ℣ und ℟ bleiben als Text-Anweisung im Ergebnis (Wunsch Matthias, Build 430)
+  const dirs = globalThis._pgNurPrototyp ? [] : syls.filter(x => x.sign && pgSignDirective(x.text)).map(x => ({x: x.x, text: pgSignDirective(x.text)}));
+  syls = syls.filter(x => !x.sign);
   if (!syls.length) syls = [{text: '', x: staff.x0, x1: staff.x0, word: true}];
-  return pgToGabcText(staff.notes, staff.bars, syls, staff.gl);
+  const tailText = tail.map(x => (x.word ? ' ' : '') + (x.sign ? (pgSignDirective(x.text) || '') : x.text + '()')).join('').replace(/\s+/g, ' ');
+  return pgToGabcText(staff.notes, staff.bars, syls, staff.gl, dirs, globalThis._pgNurPrototyp ? null : staff) + (tailText.trim() ? ' ' + tailText.trim() : '');
 }

@@ -1003,6 +1003,14 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
   Silben 91 %, Trennstriche 77 %, Modus 81–84 % (schwankt mit der KI), ♭ 89/93 %.
 - Offen: Modus ohne Initiale (links vom System), kleine Initialen (Tu es Petrus), Zusatznoten aus Iktus/Episem bei Parce Domine.
 
+### 7.26 Runden 11–12 und Meldungen (Build 430, 25.11.2026)
+
+- Neue Fälle: justorum-animae, dextera-domini, beati-mundo-corde (Runde 11), jubilate-deo, modicum, conditor-alme (Runde 12).
+- Runde 11 blind/nachher: Notenzahl 79/95 %, Tonhöhen 88/100 %, Silben 80/97 %, Trennstriche 58/66 %.
+- Runde 12 blind/nachher: Notenzahl 52/64 %, Tonhöhen 69/84 %, Silben 65/78 %, fehlende Systeme 16/8 % (Conditor alme: Ersatzweg 6 von 8).
+- Gesamt (36 Fälle, Mock): Notenzahl 75 %, Tonhöhen 95 %, Gruppierung exakt 62 %, Neumentyp 95 %, Silben 90 %, Trennstriche 81 %.
+- «⚠ prüfen» mit Silben ohne Noten: markiert & Fehler 43, markiert & ok 24, unmarkiert & Fehler 52, unmarkiert & ok 103.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

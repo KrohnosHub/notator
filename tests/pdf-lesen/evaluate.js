@@ -49,6 +49,8 @@ function normText(t, stripAccents) {
 }
 
 function parseSystemLine(line) {
+  // Text-Anweisungen ohne Noten («<i>Ps.</i>()», «V/.()», «R/.()», Build 430) zählen nicht als Silben
+  line = String(line).replace(/<i>[^<]*<\/i>\(\)/g, ' ').replace(/(^|\s)[VR]\/\.\(\)/g, ' ');
   const out = {
     syllables: [],      // Text je Silbe (normalisiert, mit Akzenten)
     syllablesPlain: [], // ohne Akzente/Satzzeichen

@@ -1,0 +1,47 @@
+{
+ "id": "modicum",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal, Communio 3. Sonntag nach Ostern mit zwei Versen und Gloria (Seite 1 von 2), Drive des Nutzers",
+  "reference": "GregoBase 813 (GR 1961 S. 268); Verse vom Druck (8. Ton); Gloria VIII GregoBase 4624",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "initiale-gross",
+  "englische-interlinear-uebersetzung",
+  "psalmvers",
+  "zwei-stuecke",
+  "gloria-patri",
+  "lange-zeile-geteilt"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 12 (24.11.2026): blind gemessen, Soll danach geschrieben. Communio aus GregoBase, Verse vom Druck abgelesen (8. Psalmton), «Vs.» und «*» weggelassen; «Mó-di-cum.» steht ohne Noten. Im zweiten Vers druckt die Vorlage «áudi- / mansu-éti» (ohne «ant»). Gloria-Zeile 1 ist breiter als das KI-Bild und wird geteilt («8+»).",
+ "pieces": [
+  {
+   "incipit": "Modicum",
+   "mode": "8",
+   "clef": "c4",
+   "systems": [
+    "MO(f/g'h)di(g)cum(g.) (,) et(g) non(f) vi(ghg)dé(h)bi(g)tis(gfg) me,(d.) (,) al(gh)le(f)lú(hji)ia:(g.) (:)",
+    "í(jjk)te(j)rum(j) mó(jhj)di(hiHG'h)cum,(hg..) (,) et(g) vi(gd)dé(g)bi(h)tis(ijhi) me,(g.) (:) qui(gh!ivHG'h)a(h_g)",
+    "va(g)do(f) ad(e) Pa(f)trem,(efd.) (;) al(g_f~)le(h)lú(j)ia,(i.) (,) al(j)le(hjI'G)lú(ghg___)ia.(g.) (::)",
+    "Be(g)ne(hg)dí(gj)cam(j) Dó(j)mi(j)num(j) in(ji) om(jk)ni(k) tém(jk)po(j)re,(j.) (;) sem(jh)per(hj)",
+    "laus(j) e(j)jus(j) in(jji) o(gh)re(ji) me(h)o.(g.) (::) Mó()di()cum.()",
+    "In(g) Dó(hg)mi(gj)no(j) glo(j)ri(j)á(j)bi(j)tur(j) á(ji)ni(jk)ma(k) me(jk)a,(j.) (;) áu(jh)di(hj)",
+    "man(j)su(j)é(j)ti(jji) et(gh) lae(ji)tén(h)tur.(g.) (::) Mó()di()cum.()"
+   ]
+  },
+  {
+   "incipit": "Gloria Patri",
+   "mode": "8",
+   "clef": "c4",
+   "systems": [
+    "GLó(g)ri(hg)a(gj) Pá(j)tri,(j) et(j) Fí(j)li(j)o,(j.) (,) et(j) Spi(j)rí(ji)tu(jk)i(k) Sán(jk)cto.(j.) (:) Sic(jh)ut(hj) é(j)rat(j) in(j)",
+    "prin(j)cí(j)pi(j)o,(j.) (,) et(ji) nunc,(jk) et(k) sem(jk)per,(j.) (:) et(jh) in(hj) saé(j)cu(j)la(j) sae(j)cu(jji)ló(gh)rum.(ji) A(h)men.(g.) (::)"
+   ]
+  }
+ ]
+}

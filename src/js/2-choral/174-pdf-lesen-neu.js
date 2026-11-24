@@ -19,7 +19,7 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 'strip into another, even when a word or sentence continues on the next strip (keep the hyphen at the end of the ' +
 'strip, e.g. strip 1 "... al-", strip 2 "le-lú-ia.").\n' +
 'A long strip may be cut into two parts shown on consecutive rows; the second part is marked "N+" and continues ' +
-'strip N on the same line. Return such a strip as one entry.\n\n' +
+'strip N on the same line. Return such a strip as one entry: the text of row "N+" belongs to strip N, never to strip N+1.\n\n' +
 'Transcribe the text of every numbered strip exactly as printed:\n' +
 '- Separate words with one space. Mark EVERY syllable boundary inside a word with "-". The print shows hyphens only ' +
 'where notes separate the syllables; add the missing ones yourself with the usual syllable division of liturgical ' +
@@ -34,7 +34,7 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 '"Al-le-lú-ia".\n' +
 '- Keep accents (á é í ó ú ý ǽ) and the ligatures æ œ exactly as printed. Keep punctuation (, . ; : ! ?) at the end of ' +
 'its word; look closely to tell a comma (with a small tail below the line) from a full stop.\n' +
-'- Leave out the asterisk * and crosses. Keep verse numbers (e.g. "2."), the signs ℣ ℟ and "Ps." as separate words ' +
+'- Leave out the asterisk * and crosses. Keep verse numbers (e.g. "2."), the signs ℣ ℟, "Vs." and "Ps." as separate words ' +
 'exactly where they are printed (they help to place the syllables and are removed afterwards).\n' +
 '- If a strip contains no chant text, return an empty string for it.\n' +
 'Return one entry per strip number 1..N.\n\n' +
@@ -185,19 +185,27 @@ function pgLooksMerged(lines, staves, k) {
 }
 function pgRepairMerged(lines, staves) {
   const width = st => (st.chunks || []).reduce((s, c) => s + c.x1 - c.x0, 0);
+  const len = t => String(t || '').replace(/[-\s]/g, '').length;
+  const r = pgMedian(lines.map((t, i) => len(t) && width(staves[i]) ? len(t) / width(staves[i]) : null).filter(v => v !== null));
   for (let k = 0; k + 1 < staves.length; k++) {
-    if (!String(lines[k] || '').trim() || String(lines[k + 1] || '').trim() || (staves[k + 1].chunks || []).length < 3) continue;
+    const a = String(lines[k] || '').trim(), b = String(lines[k + 1] || '').trim();
     const w0 = width(staves[k]), w1 = width(staves[k + 1]);
-    if (!w0 || !w1) continue;
+    if (!a || !w0 || !w1) continue;
+    let text;
+    if (!b && (staves[k + 1].chunks || []).length >= 3) text = a;               // zwei Zeilen in eine gezogen, nächste leer
+    // Build 430: Zeile auffällig kurz, nächste auffällig lang – die KI hat die Fortsetzung «N+» der nächsten Zeile zugeschlagen
+    // (Gloria bei Modicum): beide Texte zusammen nach der Breite der Textgruppen neu verteilen
+    else if (b && r && len(a) < 0.6 * r * w0 && len(b) > 1.4 * r * w1) text = /-$/.test(a) ? a + b : a + ' ' + b;
+    else continue;
     const syl = [];                                               // [Text, beginnt Wort]
-    pgResyllabify(lines[k]).trim().split(/\s+/).forEach(w => w.split('-').filter(x => x).forEach((p, i) => syl.push([p, i === 0])));
+    pgResyllabify(text).trim().split(/\s+/).forEach(w => w.split('-').filter(x => x).forEach((p, i) => syl.push([p, i === 0])));
     const tot = syl.reduce((s, x) => s + x[0].length, 0), goal = tot * w0 / (w0 + w1);
     let acc = 0, cut = 1, best = Infinity;
     for (let i = 0; i < syl.length; i++) { acc += syl[i][0].length; if (Math.abs(acc - goal) < best && i + 1 < syl.length) { best = Math.abs(acc - goal); cut = i + 1; } }
     const join = arr => arr.map((x, i) => (i && x[1] ? ' ' : i ? '-' : '') + x[0]).join('');
     lines[k] = join(syl.slice(0, cut)) + (syl[cut] && !syl[cut][1] ? '-' : '');
     lines[k + 1] = join(syl.slice(cut).map((x, i) => i ? x : [x[0], true]));
-    console.log('PDF lesen (neu): Zeilen ' + (k + 1) + '/' + (k + 2) + ' aufgeteilt (KI hatte sie zusammengezogen)');
+    console.log('PDF lesen (neu): Zeilen ' + (k + 1) + '/' + (k + 2) + ' neu aufgeteilt (KI hatte den Text falsch auf die Zeilen verteilt)');
   }
 }
 // Systeme (über alle Seiten) zu Stücken: ein System mit Initiale beginnt ein neues Stück
@@ -220,9 +228,19 @@ function pgPieces(items) {
   }
   return pieces;
 }
-function pgPieceGabc(p, withHeader) {
-  const lines = p.items.map(it => pgStaffGabc(it.staff, it.text) || '').filter(l => l.trim());
-  let body = '(' + p.clef + ') ' + lines.join('\n');
+// prevClef: Schlüssel des vorangehenden Stücks beim Zusammenfügen («als ein Stück laden»). Gleicher Schlüssel → nicht nochmals
+// setzen (Meldung Matthias, Build 430: Schlüssel vor dem Gloria Patri); am Zeilenanfang setzt der Notensatz ihn ohnehin.
+function pgPieceGabc(p, withHeader, prevClef) {
+  // Wort über das Systemende getrennt («pa- / ti-ún-tur», Build 430): ohne Leerraum anschliessen, sonst entstehen zwei Wörter
+  let joined = '', cont = false;
+  p.items.forEach(it => {
+    const l = (pgStaffGabc(it.staff, it.text) || '').trim();
+    if (!l) return;
+    joined += joined ? (cont ? '' : '\n') + l : l;
+    // endet die Zeile mit einer Silbe (nicht mit Trennstrich/Anweisung) und der Text mit «-», geht das Wort weiter
+    cont = /-\s*$/.test(String(it.text || '')) && /[^\s)]\([^)]*\)$/.test(l);
+  });
+  let body = (prevClef === p.clef ? '' : '(' + p.clef + ') ') + joined;
   if (!/\(::\)\s*$/.test(body)) body += ' (::)';
   return withHeader ? pgGabcHeader(p) + body : body;
 }
@@ -233,7 +251,7 @@ function pgMarkUnsure(pieces) {
   const marks = [];                                               // Index der Tonhöhe im Abschnitt
   let base = 0;
   for (const p of pieces) for (const it of p.items) {
-    const st = it.staff, xs = st.unsure || [];
+    const st = it.staff, xs = (st.unsure || []).concat(st.emptyX || []);
     if (xs.length) {
       const first = Math.min(...xs);
       let k = st.notes.findIndex(n => n.x >= first - 0.3 * st.gl);
@@ -330,7 +348,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
   window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,
-    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || ''), unsure: p.items.map(it => (it.staff.unsure || []).length)}))};
+    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || ''), unsure: p.items.map(it => (it.staff.unsure || []).length + (it.staff.emptyX || []).length)}))};
   let choice = pieces[0].index;
   if (pieces.length > 1) {
     choice = await gregPickPieceModal(pieces);
@@ -344,7 +362,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const previousEntries = gregEntries;
   let gabc = null, loaded = 0, unsureN = 0;
   if (choice === 'MERGE') {
-    gabc = pgGabcHeader(pieces[0]) + chosen.map(p => pgPieceGabc(p, false)).join('\n');
+    gabc = pgGabcHeader(pieces[0]) + chosen.map((p, i) => pgPieceGabc(p, false, i ? chosen[i - 1].clef : null)).join('\n');
     gregImportGABCString(gabc, {deferRender: true}); loaded = 1; unsureN += pgMarkUnsure(chosen);
   } else {
     for (const p of chosen) {

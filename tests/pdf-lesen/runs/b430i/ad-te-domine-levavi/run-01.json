@@ -1,0 +1,31 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Ad te, Dómine, levávi ánimam",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "Ad(f) te,(gh) Dó(h)mi(h)ne,(h) le(h)vá(h)vi(h) á(ixi)ni(h)mam(h) me(g)am:(h.) (;)",
+    "De(h)us(h) me(h)us,(h) in(h) te(g) con(f)fí(gh)do,(g.) (::) non(h) e(h)ru(h)bé(h)scam:(h) (,)",
+    "ne(h)que(h) ir(h)rí(h)de(h)ant(h) me(h) in(h)i(h)mí(h)ci(h) me(h)i:(g) (,) é(h)te(h)nim(h) u(h)",
+    "ni(h)vér(h)si,(h) qui(h) te(ixi) ex(h)spé(g)ctant,(h.) (;) non(h) con(g)fun(f)dén(gh)tur.(g.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2435,
+  "output_tokens": 210,
+  "costUsd": 0.00697
+ },
+ "durationMs": 5295
+}

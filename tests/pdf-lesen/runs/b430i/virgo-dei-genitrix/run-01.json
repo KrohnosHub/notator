@@ -1,0 +1,37 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VIrgo, Déi Génitrix, quem tótus",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "VIr(h)go,(g) Dé(f)i(g) Gé(f)ni(e)trix,(f) (,) quem(h) tó(i)tus(h) non(j) cá(h)pit(i) ór(h)bis:(h.) (;)",
+    "In(h) tú(g)a(f) se(g) clá()u(e)sit(f.) (,) ví(c)sce(f)ra(f) fá(h)ctus(g) hó(e)mo.(f.) (::) Vé(h)ra(g) fí(f)des(g)",
+    "Gé(f)ni(e)ti(f) (,) pur(h)gá(i)vit(h) crí(j)mi(h)na(i) mún(h)di,(h.) (;) Et(h) tí(g)bi(f) vir(g)gí(f)ni(e)tas(f.)",
+    "in(c)vi(f)o(f)lá(h)ta(g) má(e)net.(f.) (::) Te(h) má(g)trem(f) pi(g)e(f)tá(e)tis,(f) (,) ó(h)pem(i) te(h) clá(j)",
+    "mi(h)tat(i) ór(h)bis:(h.) (;) Sub(h)vé(g)ni(f)as(g) fá(f)mu(e)lis,(f.) (,) o(c) be(f)ne(f)dí(h)cta,(g) tú(e)is.(f.) (::)",
+    "Gló(h)ri(g)a(f) má(g)gna(f) Pá(e)tri,(f) (,) cóm(h)par(i) sit(h) gló(j)ri(h)a(i) Ná(h)to,(h.) (;) Spi(h)rí(g)",
+    "tu(f)i(g) Sá(e)ncto,(f.) (,) gló(c)ri(f)a(f) má(h)gna(g) Dé(e)o.(f.) (::) A(fgf)men.(ef.) (::)"
+   ],
+   "unsure": [
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2899,
+  "output_tokens": 419,
+  "costUsd": 0.009988
+ },
+ "durationMs": 5575
+}

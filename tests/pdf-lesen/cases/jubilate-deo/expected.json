@@ -1,0 +1,46 @@
+{
+ "id": "jubilate-deo",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal, Introitus 3. Sonntag nach Ostern (Seite 1 von 3), Drive des Nutzers",
+  "reference": "GregoBase 1543 (GR 1908), Mora-Punkte aus dem Druck; Gloria Patri VIII GregoBase 4624 (GR 1961)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "initiale-gross",
+  "englische-interlinear-uebersetzung",
+  "psalmvers",
+  "zwei-stuecke",
+  "gloria-patri",
+  "gedrehter-randtext"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 12 (24.11.2026): blind gemessen, Soll danach aus GregoBase (GR 1908 hat keine Mora-Punkte; Punkte dort übernommen, wo die eigene Lesung bei gleichen Tönen einen setzt – unsicher). «*» und «Ps.» weggelassen. Rechts am Rand gedrehter englischer Text.",
+ "pieces": [
+  {
+   "incipit": "Jubilate Deo",
+   "mode": "8",
+   "clef": "c4",
+   "systems": [
+    "JU(g)bi(g)lá(hjg)te(f) De(gh)o(h.) (,) o(jj)mnis(g) ter(h)ra,(g.) (,) al(h)le(g)lú(ghg)ia:(g.) (:) psal(gj~)",
+    "mum(jv//jjjh) dí(h!iwj)ci(hg)te(gf) nó(h!iwj)mi(hvGF)ni(h) e(hi~)ius,(g) (;) al(gj~)le(jv//jjjh)lú(hjIH)ia:(h) (:)",
+    "da(iij)te(ghGF) gló(h!iwj)ri(h)am(fg~) lau(gf~)di(hfhg) e(ghg)ius,(g.) (:) al(g)le(g)lú(fef)ia,(d/ffdf.) (,)",
+    "al(cd)le(fg)lú(gh~)ia,(hgh.) (,) al(h!iwj)le(jv//ijHG)lú(ghg)ia.(g.) (::) Dí(g)ci(hg)te(gj) De(j)o,(j) (,) quam(j)",
+    "ter(j)ri(j)bí(j)li(j)a(j) sunt(j) ó(j)pe(j)ra(ji) tu(jk)a,(k) Dó(jk)mi(j)ne!(j.) (:) in(jh~) mul(hj)ti(j)tú(j)di(j)ne(j)",
+    "vir(j)tú(j)tis(j) tu(j)ae(j) (,) men(j)ti(j)én(j)tur(j) ti(j)bi(j) in(j)i(jji)mí(gh)ci(ji) tu(h)i.(g.) (::)"
+   ]
+  },
+  {
+   "incipit": "Gloria Patri",
+   "mode": "8",
+   "clef": "c4",
+   "systems": [
+    "GLó(g)ri(hg)a(gj) Pá(j)tri,(j) et(j) Fí(j)li(j)o,(j.) (,) et(j) Spi(j)rí(ji)tu(jk)i(k) Sán(jk)cto.(j.) (:) Sic(jh)ut(hj) é(j)rat(j) in(j)",
+    "prin(j)cí(j)pi(j)o,(j.) (,) et(ji) nunc,(jk) et(k) sem(jk)per,(j.) (:) et(jh) in(hj) sæ(j)cu(j)la(j) sæ(j)cu(jji)ló(gh)rum.(ji) A(h)men.(g.) (::)"
+   ]
+  }
+ ]
+}

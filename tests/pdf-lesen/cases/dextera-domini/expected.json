@@ -1,0 +1,39 @@
+{
+ "id": "dextera-domini",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal, Offertorium (vereinfachte Melodie) mit zwei Versen, Drive des Nutzers («Dextera Domini (Gründonnerstag) – Choral.pdf»)",
+  "reference": "vom Druck abgelesen (vereinfachte Campion-Melodie, nicht GR)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c3",
+  "initiale-gross",
+  "englische-interlinear-uebersetzung",
+  "rezitationston",
+  "psalmvers",
+  "kurzes-system",
+  "handschrift"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 11 (24.11.2026): blind gemessen, Soll danach von Claude am Druck (200 dpi) abgelesen. Antiphon 3 Systeme (das dritte kurz, links), zwei Verse mit «Vs.» (weggelassen), davon ein kurzes System «me-us est.» in der Mitte der Zeile neben englischem Text. Rechts am Systemende jeweils ein senkrechter Abschlussstrich (keine Divisio).",
+ "pieces": [
+  {
+   "incipit": "Dextera Domini",
+   "mode": "8",
+   "clef": "c3",
+   "systems": [
+    "DEx(e)te(f)ra(h) Dó(h)mi(h)ni(h) fe(h)cit(h) vir(h)tú(i)tem,(h.) (;) déx(h)te(h)ra(h) Dó(h)mi(h)ni(h)",
+    "ex(g)al(h)tá(f)vit(e) me:(e.) (::) non(h) mó(h)ri(h)ar,(h) sed(h) vi(i)vam,(h.) (;) et(h) nar(h)rá(h)bo(h) ó(h)pe(g)ra(h)",
+    "Dó(f)mi(e)ni.(e.) (::)",
+    "In(h) tri(h)bu(h)la(h)ti(h)ó(h)ne(h) in(h)vo(h)cá(h)vi(h) Dó(h)mi(f)num;(f) (,) et(h) ex(h)au(h)dí(h)",
+    "vit(h) me(h) in(h) la(h)ti(h)tú(i)di(h)ne:(h.) (;) qui(h)a(h) Dó(h)mi(h)nus(h) ad(h)jú(g)tor(h)",
+    "me(f)us(e) est.(e.) (::)",
+    "Im(h)púl(h)sus(h) ver(h)sá(h)tus(h) sum,(h) ut(h) cá(h)de(f)rem;(f) (,) et(h) Dó(h)mi(h)",
+    "nus(h) sus(h)cé(i)pit(h) me:(h.) (;) et(h) fac(h)tus(h) est(h) mi(h)hi(h) in(g) sa(h)lú(f)tem.(e.) (::)"
+   ]
+  }
+ ]
+}

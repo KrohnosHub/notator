@@ -202,6 +202,15 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   **Virga** abgeschaltet (`globalThis._pgVirga` schaltet ein): 12 % gefunden, 39 % richtig; strengere Halslänge machte es schlechter.
   **Mock-Läufe:** Die KI lässt manchmal eine Zeile aus; gespeicherte Antworten müssen die Zeilennummer behalten (früher verschob
   sich danach alles). Für Vergleiche immer beide Fassungen mit denselben gespeicherten Antworten messen (Mock gegen Mock).
+- **Build 430 (25.11.2026, Meldungen Matthias, Runden 11–12):** Keine «⚠ prüfen»-Notizen auf dem Handy war kein Fehler: bei sauberen
+  Campion-Drucken sind sich die drei Durchgänge fast immer einig. Deshalb markieren jetzt auch Silben ohne Noten (verrutschte Zuordnung).
+  «Ps.», «Vs.», ℣, ℟ bleiben als Anweisung im GABC (`pgSignDirective`; Auswertung ignoriert sie), Strophennummern nicht. Zeichen dürfen nie
+  mit dem Folgewort eine Textgruppe teilen (sonst verschob «℣. In» die ganze Zeile); eine Textgruppe kann bis 8 Silben tragen («tri-bulati-óne»).
+  Lehren: kurze Systeme stehen auch zwischen Rand und Mitte; in unscharfen Kopien zerfallen Trennstriche in Stücke (zusammensetzen);
+  ein Custos am Zeilenende sah wie ein Mora-Punkt aus; gedrehter Randtext rechts vom System zog Silben an sich (Textgruppen > 3 Linienabstände
+  rechts der letzten Note zählen nicht); die KI schlägt die Fortsetzungszeile «N+» manchmal der nächsten Zeile zu (zu kurze + zu lange
+  Zeile → nach Breite neu verteilen). Ersatzweg nur bei 0 Systemen: Schräge per Projektion, Schwelle 200, Linienschwelle 0.25, System
+  auch aus 3 von 4 Linien – die fünf Blätter mit moderner Notation werden weiter abgewiesen. «Sic-ut» ist die Trennung der Choralbücher.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

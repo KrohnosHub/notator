@@ -1,0 +1,45 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "síderum áudi preces súpplicum. 2.Qu",
+   "mode": "",
+   "clef": "c2",
+   "hasDropCap": false,
+   "systems": [
+    "sí()de(f)rum()",
+    "áu()di(f) pre(g)ces(f) súp(e)pli(d)cum.(e.) (::) 2.Qu()",
+    "né()",
+    "pe()re,(g) (,) u(g)ti(h) spon(f)su()"
+   ],
+   "unsure": [
+    2,
+    2,
+    0,
+    2
+   ]
+  },
+  {
+   "incipit": "pi ís e glória",
+   "mode": "",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "pi()ís()",
+    "e() gló(e)ri(d)a(e.) (;)"
+   ],
+   "unsure": [
+    0,
+    1
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2725,
+  "output_tokens": 161,
+  "costUsd": 0.00706
+ },
+ "durationMs": 7546
+}
