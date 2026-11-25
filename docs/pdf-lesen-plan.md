@@ -1051,6 +1051,12 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - Titel/Untertitel aus Reihe «T<n>»: Salve mater → «Salve Mater» / «In hon. B.M.V.».
 - Linker Systemteil ergänzt: Mock-Messung pueri-portantes Notenzahl +33 %, salve-mater +14 %, sonst unverändert; 10 Gegenproben abgewiesen.
 
+### 7.34 Zerfallene Notenköpfe an der Linie (Build 438, 25.11.2026)
+
+- Stücke ober-/unterhalb einer Notenlinie → eine Note. Mock-Messung: salve-mater, rorate-caeli Tonhöhen +1–2 %, sonst unverändert.
+- Variante ohne Linie dazwischen: dominus-dixit und justorum-animae Notenzahl −25 % – verworfen.
+- Doppelstrich vor dem ersten System mit Strophen.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

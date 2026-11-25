@@ -1,0 +1,53 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SAlve, Regína, máter mise ricórdiæ",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "SAl(hh)ve,(gh) Re(d.) (,) gí(hg)na,(fefgf) má(ed) (;) ter(cd) mi(dc)se(d) (;)",
+    "ri(ef)cór(gdec)di(d.) (::) æ:(hh) Ví(gh)ta,(d) (,) dul(hg)cé(fefgf)do,(ed) (;) et(c) spes(d)",
+    "nó(ef)stra,(g.) (,) sál(dec)ve.(d.) (::) Ad(df) te(h) cla(g)má(g)mus,(fhe) (;) éx(g)su(f)",
+    "les,(edg) (,) fí(c)li(d)i(e) Hé(dgfe)væ.(d.) (::) Ad(df) te(h) su(j)spi(g)rá(gffg)mus,(h.) (;)",
+    "ge(d)mén(f)tes(g) et(d) flén(fed)tes(c) (;) in(d) hac(ddcf) la(gh)cri(g)má(fe)rum(g) vál(f)le.(dcd.) (::) E(ffg)ia(f) er(gh)go,(h) (,)",
+    "Ad(j)vo(g)cá(hgf)ta(d) nó(g)stra,(h.) (;) íl(k)los(k) tú(jijk)os(h) (,) mi(k)se(j)ri(h)cór(g) (,) des(fhg) ó(de)cu(f)los(edc.) (;) ad(cd)",
+    "nos(f) con(gf)vér(dcd)te.(d.) (::) Et(d) Jé(a)sum,(cd) be(d)ne(de)dí(edd)ctum(c) frú(g)ctum(f) vén(ed)tris(g)",
+    "tú(fe)i,(dcd.) (;) nó(j)bis(ixdhih.) (,) post(hgf) hoc(g) ex(d)sí(f)li(fe)um(dc) (,) o(efe)stén(d.)de.(d.) (::) O(hhghij) clé(ihg)mens:(h.) (::)",
+    "O(ghijji) pí(hg)a:(gh.) (::) O(hdfedcd) (,) dúl(defg)cis(gfgh) Vír(d)go(c) Ma(d)rí(dgff)a.(e.d.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    1
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": null
+  }
+ ],
+ "usage": {
+  "input_tokens": 3189,
+  "output_tokens": 425,
+  "costUsd": 0.010628
+ },
+ "durationMs": 6291
+}

@@ -486,7 +486,7 @@ function pgAnalyseStaff(dark, st, g, ref) {
   const [aref, wref] = ref;
   const stepOf = (x, y) => (q[3] + off(x) - y) / hs;
   let notes = [];
-  const accepted = [], small = [];
+  const accepted = [], small = [], kleinAll = [];
   // Build 430 (nicht im Prototyp): rechter Rand des Schlüssels selbst – die Teile, die am Systemanfang beginnen. In schmalem Satz
   // steht die erste Note noch innerhalb von PG_CLEF Linienabständen (Inviolata) und fiel sonst als «Schlüsselzone» weg.
   let clefRight = Infinity;
@@ -505,6 +505,7 @@ function pgAnalyseStaff(dark, st, g, ref) {
       : (cy > ylo - 0.1 * gl || cy < yhi + 0.1 * gl) ? 'Textzeile'       // liegt in einer Textzeile
       : (w < PG_WMIN * wref || b.area < 0.45 * aref) ? 'klein' : '';      // Punkte, Reste, Flecken
     if (why === 'klein' && b.area >= 0.15 * aref && b.y1 - b.y0 + 1 >= 0.22 * gl) small.push(b);
+    if (why === 'klein') kleinAll.push(b);
     if (why) { pgDiag(why, b, st); continue; }
     b.wref = wref; accepted.push(b);
     const nn = pgSplitBlob(b, gl, hs, stepOf);
@@ -528,6 +529,40 @@ function pgAnalyseStaff(dark, st, g, ref) {
     const x = Math.max(cx, (nb.x0 + nb.x1) / 2 + 0.25 * gl);
     notes.push({x, y: cy, p: stepOf(cx, cy), kind: 'pair', w: b.x1 - b.x0 + 1, xa: b.x0, xb: b.x1});
     pgDiag('als Paar-Note übernommen', b, st);
+  }
+  // Build 438 (nicht im Prototyp; Salve mater «trans», «ter»): Ein blasser Notenkopf auf einer Notenlinie zerfällt beim Entfernen
+  // der Linie in Stücke ober- und unterhalb, die einzeln als «klein» wegfallen. Stücke, die waagrecht übereinanderliegen und nur
+  // durch eine Notenlinie getrennt sind, zusammen notenkopfgross (0.35–0.8 × 0.45–0.85 Linienabstände), gelten als eine Note.
+  if (!globalThis._pgNurPrototyp) {
+    const used = new Set();
+    for (const a of kleinAll) {
+      if (used.has(a)) continue;
+      const grp = [a];
+      for (const b of kleinAll) {
+        if (b === a || used.has(b)) continue;
+        const ov = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) + 1, nar = Math.min(a.x1 - a.x0, b.x1 - b.x0) + 1;
+        const [u, d] = a.y0 < b.y0 ? [a, b] : [b, a], gap = d.y0 - u.y1;
+        if (ov < 0.5 * nar || gap < 1 || gap > lt + 0.25 * gl) continue;
+        const xm = (Math.max(a.x0, b.x0) + Math.min(a.x1, b.x1)) / 2;
+        if (!q.some(L => { const y = L + off(xm); return y > u.y1 - 4 && y < d.y0 + 4; })) continue;
+        grp.push(b);
+      }
+      if (grp.length < 2) continue;
+      for (const c of kleinAll) {                                     // dritter Teil daneben (Kopf in drei Stücke zerfallen)
+        if (grp.includes(c) || used.has(c)) continue;
+        const gx0 = Math.min(...grp.map(g => g.x0)), gx1 = Math.max(...grp.map(g => g.x1)), gy0 = Math.min(...grp.map(g => g.y0)), gy1 = Math.max(...grp.map(g => g.y1));
+        if (c.x0 <= gx1 + 0.15 * gl && c.x1 >= gx0 - 0.15 * gl && c.y0 >= gy0 - 0.1 * gl && c.y1 <= gy1 + 0.1 * gl) grp.push(c);
+      }
+      const X0 = Math.min(...grp.map(g => g.x0)), X1 = Math.max(...grp.map(g => g.x1)), Y0 = Math.min(...grp.map(g => g.y0)), Y1 = Math.max(...grp.map(g => g.y1));
+      const w = X1 - X0 + 1, h = Y1 - Y0 + 1, ar = grp.reduce((t, g) => t + g.area, 0);
+      if (w < 0.35 * gl || w > 0.8 * gl || h < 0.45 * gl || h > 0.85 * gl || ar < 0.3 * aref) continue;
+      if (accepted.some(b => Math.min(b.x1, X1) - Math.max(b.x0, X0) > 0 && Math.max(b.y0 - Y1, Y0 - b.y1) < 0.2 * gl)) continue;
+      const cx = (X0 + X1) / 2, cy = (Y0 + Y1) / 2;
+      if (cy > q[3] + 0.9 * gl || cy < q[0] - 1.6 * gl) continue;
+      grp.forEach(g => used.add(g));
+      notes.push({x: cx, y: cy, p: stepOf(cx, cy), kind: 'pair', w, xa: X0, xb: X1});
+      pgDiag('Stücke an der Linie als Note übernommen', {x0: X0, x1: X1, y0: Y0, y1: Y1, area: ar}, st);
+    }
   }
   notes.sort((a, b) => a.x - b.x);
   const merged = [];                                               // Bruchstücke derselben Note zusammenfassen

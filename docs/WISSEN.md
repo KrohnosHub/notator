@@ -258,6 +258,13 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   mit heller Schwelle und 3 von 4 Linien nachsuchen (nur bis zum typischen Anfang, nicht vollflächig) – die Linien waren dort blass und
   leicht gebogen. «1.-6.» als Zeichen (`PG_SIGN_RE`) verschlechterte die Zuordnung bei Tota pulchra – verworfen. Ob die Kehrvers-Wiederholung
   auf dem Handy-Screenshot dieselbe Ursache hatte, ist nicht belegt (die KI-Antwort von dort liegt nicht vor).
+- **Build 438 (25.11.2026, Meldung Matthias):** Eine Silbe ohne Note («trans») ist im Strophen-Assistenten kein Platz – die weiteren
+  Strophen lassen sich dort nicht zuordnen. Ursache war eine fehlende Note: blasse Notenköpfe **auf** einer Notenlinie zerfallen beim
+  Entfernen der Linie in 2–3 Stücke, die einzeln als «klein» wegfallen. Jetzt gelten übereinanderliegende Stücke, die eine Notenlinie
+  trennt, zusammen als Note, wenn sie notenkopfgross sind (0.35–0.8 × 0.45–0.85 Linienabstände, Fläche ≥ 0.3 Kopffläche); ein drittes
+  Stück daneben wird angefügt. Dieselbe Regel ohne Linie dazwischen (zerfallene Köpfe in sprenkligem Druck, «sú-pe-ris») erzeugte
+  Zusatznoten in Dominus dixit und Justorum animae (−25 %) – verworfen. Vor dem ersten System mit Strophen steht jetzt ein Doppelstrich,
+  wenn das System davor ohne Trennstrich endet (Kehrvers-Wiederholung | Strophe; der Assistent erkennt «1.» nach Doppelstrich als Vorlagenbeginn).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

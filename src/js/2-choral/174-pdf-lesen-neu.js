@@ -277,9 +277,13 @@ function pgPieces(items) {
 function pgPieceGabc(p, withHeader, prevClef) {
   // Wort über das Systemende getrennt («pa- / ti-ún-tur», Build 430): ohne Leerraum anschliessen, sonst entstehen zwei Wörter
   let joined = '', cont = false;
-  p.items.forEach(it => {
+  const hasV = it => Object.keys(it.verses || {}).length > 0;
+  p.items.forEach((it, i) => {
     const l = (pgStaffGabc(it.staff, it.text) || '').trim();
     if (!l) return;
+    // Strophenbeginn nach dem Kehrvers (Build 438, Salve mater): Doppelstrich, falls das System davor ohne Trennstrich endet –
+    // trennt Kehrvers und Strophe und lässt den Strophen-Assistenten «1.» + Doppelstrich als Vorlagenbeginn erkennen
+    if (joined && hasV(it) && i > 0 && !hasV(p.items[i - 1]) && !/\([:;,]+\)\s*$/.test(joined)) { joined += ' (::)'; cont = false; }
     joined += joined ? (cont ? '' : '\n') + l : l;
     // endet die Zeile mit einer Silbe (nicht mit Trennstrich/Anweisung) und der Text mit «-», geht das Wort weiter
     cont = /-\s*$/.test(String(it.text || '')) && /[^\s)]\([^)]*\)$/.test(l);
