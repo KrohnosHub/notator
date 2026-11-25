@@ -248,6 +248,16 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   `pgApplyVerses` verteilt die Silben je System auf die Noten-Plätze (`gregVerseSlots`/`gregVerseApply`); passt die Platzzahl nicht
   zum Stück, werden keine Strophen übernommen. Fehlen Noten (Geometrie), landen überzählige Silben auf dem letzten Platz des Systems.
   Strophentext wird nicht ausgewertet (kein Soll); Mock-Läufe ohne `verses` bleiben unverändert.
+- **Build 437 (25.11.2026, Meldung Matthias: Salve mater auf dem Handy schlecht, Titel fehlt):** Die KI antwortet nicht immer gleich:
+  in einem von vier Läufen setzte sie die Strophenzeilen «4.2», «4.3» als Hauptzeilen der Systeme 5 und 6 ein (Beschriftung «N.k» sah
+  aus wie eine Strophennummer). Seither heissen die Reihen «4b», «4c» …, und beginnt eine Hauptzeile unter einem System mit weiteren
+  Textzeilen mit «2.»–«9.», wird einmal neu gelesen (stimmige Antwort gewinnt). Strophennummern werden wie bei der Handnummerierung
+  vor die erste Silbe gesetzt (`NT_VS_NUM`). **Titel:** Bereich über dem ersten System eines Stücks als Reihe «T<n>» (bis 9 Linienabstände,
+  nicht über das vorige System hinaus); KI liefert Titel ohne Nummer («393. SALVE MATER» → «Salve Mater») und Untertitel («In hon. B.M.V.»),
+  Kopfzeilen `name:`/`notator-subtitle:`. **Systemanfang:** Beginnt ein System > 3 Linienabstände rechts vom typischen Anfang, links
+  mit heller Schwelle und 3 von 4 Linien nachsuchen (nur bis zum typischen Anfang, nicht vollflächig) – die Linien waren dort blass und
+  leicht gebogen. «1.-6.» als Zeichen (`PG_SIGN_RE`) verschlechterte die Zuordnung bei Tota pulchra – verworfen. Ob die Kehrvers-Wiederholung
+  auf dem Handy-Screenshot dieselbe Ursache hatte, ist nicht belegt (die KI-Antwort von dort liegt nicht vor).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

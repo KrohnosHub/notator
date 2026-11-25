@@ -1045,6 +1045,12 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - Live geprüft: Tota pulchra (5 Strophen), Attende Domine (Kehrvers + 4), Salve mater (5, erst nach Erklärung der «N.k+»-Zeilen im Prompt).
 - Mock-Messung über alle Fälle unverändert gegenüber Build 434/435; 10 Gegenproben moderne Noten weiter abgewiesen.
 
+### 7.33 Salve mater nachgeprüft, Titel (Build 437, 25.11.2026)
+
+- 4 Live-Läufe Build 436: 1× Strophenzeilen als Hauptzeilen (ohne `verses`). Build 437: Reihen «Nb», Neu-Lesen bei «2.» in der Hauptzeile; 4 von 4 Läufen stimmig.
+- Titel/Untertitel aus Reihe «T<n>»: Salve mater → «Salve Mater» / «In hon. B.M.V.».
+- Linker Systemteil ergänzt: Mock-Messung pueri-portantes Notenzahl +33 %, salve-mater +14 %, sonst unverändert; 10 Gegenproben abgewiesen.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

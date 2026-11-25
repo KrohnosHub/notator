@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-Kp8VXfc2cl3AHvSCTj4idEnrdy4h9biGtFqEgIX3C4U=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-M64UpKitNSGH/jEBrCNEUxqwGp4I8vw3klfJE0t/iLg=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -6088,6 +6088,30 @@ function pgStaves1(img) {
     }
     sts.push({lines: q, x0: best[0], x1: best[1], odd: !globalThis._pgNurPrototyp && (!!q.side || m < 0.8 * g || m > 1.25 * g)});
   }
+  // Build 437 (Salve mater, letztes System): Beginnt ein System deutlich rechts der übrigen, fehlt oft nur der linke Teil hinter
+  // einer Lücke in den Linien (> 40 px; blasse, leicht gebogene Linien). Links davon nach einem Stück mit 3 von 4 Linien (helle
+  // Schwelle) suchen,
+  // höchstens bis zum typischen Systemanfang und nur, wenn es nicht vollflächig ist (Zierinitiale, Gaudeamus).
+  if (!globalThis._pgNurPrototyp && sts.length >= 3) {
+    const typ = pgMedian(sts.filter(o => !o.odd).map(o => o.x0));
+    for (const o of sts) {
+      const q = o.lines, m = (q[3] - q[0]) / 3;
+      if (o.odd || o.x0 < typ + 3 * m) continue;
+      const lo = Math.max(0, pgRound(typ - m)), hi = o.x0;
+      const lmk = lightMask || (lightMask = pgThreshold(img, 200));   // linker Teil oft blasser: helle Schwelle
+      const has = x => q.filter(yy => { const y = pgRound(yy); for (let r = Math.max(0, y - 4); r < Math.min(dark.h, y + 5); r++) if (lmk.a[r * lmk.w + x]) return true; return false; }).length >= 3;
+      let x = hi - 1;
+      while (x >= lo && !has(x)) x--;                                 // Lücke links vom bisherigen Anfang
+      if (x < lo || hi - x > 3 * m) continue;
+      let s0 = x, miss = 0;
+      for (let xx = x; xx >= lo; xx--) { if (has(xx)) { s0 = xx; miss = 0; } else if (++miss > 40) break; }
+      if (x - s0 < 2 * m) continue;
+      let solid = 0, n = 0;                                           // Tinte zwischen den Linien (Mitte der Zwischenräume)
+      for (let xx = s0; xx <= x; xx += 2) for (let i = 0; i < 3; i++) { const y = pgRound((q[i] + q[i + 1]) / 2); n++; solid += dark.a[y * dark.w + xx]; }
+      if (solid / Math.max(1, n) > 0.3) continue;
+      o.x0 = s0;
+    }
+  }
   // Mehrheit der Systeme mit fünf Linien: moderne Notation, keine Choralnoten (Meldung in 174). Einzelne Treffer kommen auch bei
   // Choral vor (Trennlinie unter dem letzten System, handgeschriebene Zeile darunter) – deshalb nur mit klarer Mehrheit.
   if (five && five > sts.length / 2) { globalThis._pgFuenfLinien = true; sts.length = 0; }
@@ -7095,18 +7119,24 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 '"Al-le-lú-ia".\n' +
 '- Keep accents (á é í ó ú ý ǽ) and the ligatures æ œ exactly as printed. Keep punctuation (, . ; : ! ?) at the end of ' +
 'its word; look closely to tell a comma (with a small tail below the line) from a full stop.\n' +
-'- Leave out the asterisk * and crosses. Keep verse numbers (e.g. "2."), the signs ℣ ℟, "Vs." and "Ps." as separate words ' +
+'- Leave out the asterisk * and crosses. Keep verse numbers (e.g. "2.", also ranges like "1.-6." written as one word without spaces) and every word after them, the signs ℣ ℟, "Vs." and "Ps." as separate words ' +
 'exactly where they are printed (they help to place the syllables and are removed afterwards).\n' +
 '- If a strip contains no chant text, return an empty string for it.\n' +
 'Return one entry per strip number 1..N.\n\n' +
 'Rows labelled "M<n>" (if any) are not chant text: they show the small annotation printed above the initial letter of ' +
 'strip n (e.g. "2.", "VIII", "HYMN I.", "Intr. 2.", "Ant. 7. e", "R. br. VI"). For each such row return in "modes" ' +
 'exactly the characters printed there (Roman numerals stay Roman), or an empty string if the row is blank.\n\n' +
-'Rows labelled "N.k" (k = 2, 3, …; if any) show further text lines printed under staff N, below its strip N. If such a row is ' +
-'a further stanza of the Latin chant text sung to the same notes (often starting with a stanza number like "2."), return it in ' +
-'"verses" as {n: N, k: k, text} with the same syllable rules as above, keeping the stanza number as a separate word. If the row ' +
-'is a translation (English, German, Italian …), a rubric or other text, do not return it. A row "N.k+" continues row "N.k" ' +
-'on the same line (long lines are cut in two): return both parts together as one entry for N.k.';
+'Rows labelled with a number and a letter, e.g. "4b", "4c", "4d" (if any), show further text lines printed under staff 4, ' +
+'below strip 4. They are NOT numbered strips: never put their text into "lines". If such a row is a further stanza of the ' +
+'Latin chant text sung to the same notes (often starting with a stanza number like "2."), return it in "verses" as ' +
+'{row: "4b", text} with the same syllable rules as above, keeping the stanza number as a separate word. If the row is a ' +
+'translation (English, German, Italian …), a rubric or other text, do not return it. A row "4b+" continues row "4b" on the ' +
+'same line (long lines are cut in two): return both parts together as one entry for "4b".\n\n' +
+'Rows labelled "T<n>" (if any) show the area above staff n, where a new piece begins. Return in "titles" {n, title, subtitle}: ' +
+'title = the name of the piece printed there, with ordinary capitalisation ("393. SALVE MATER" -> "Salve Mater"; leave out a ' +
+'leading number); subtitle = a short line printed with the title that says what the piece is for or where it comes from ' +
+'(e.g. "In hon. B.M.V.", "Dominica in Palmis"), else an empty string. Leave out page numbers, the small mode annotation ' +
+'above the initial and chant text. Return empty strings if no title is printed there.';
 
 // PDF-Seite mit 300 dpi als Graustufenbild (L = 0.299 R + 0.587 G + 0.114 B, wie PIL)
 async function pgRenderPageGray(pdfDoc, pageNo) {
@@ -7172,18 +7202,30 @@ function pgStripsImage(page) {
       bc.imageSmoothingQuality = 'high'; bc.drawImage(ini, 0, 0, iw, c.height); bc.drawImage(c, Math.round(iw) + gap, 0);
       c = both;
     }
-    c = pgScaled(c, c.width * PG_LINE_H / c.height, PG_LINE_H);
+    const sc = PG_LINE_H / c.height;
+    c = pgScaled(c, c.width * sc, PG_LINE_H);
+    if (st.dropcap) {                                              // Titelbereich über dem ersten System eines Stücks als «T<n>» (Build 437)
+      const pv = page.staves[k - 1], gl0 = st.gl;
+      const prevBot = pv ? Math.max(pv.lines[3] + pv.gl, pv.textTop !== null ? pv.textTop + PG_BOTTOM * pv.gl : 0, ...(pv.verseLines || []).map(v => v[1] + 0.35 * pv.gl)) : 0;
+      const top = Math.max(prevBot, st.lines[0] - 9 * gl0), bot = Math.min(st.lines[0] - 0.2 * gl0, st.dropcap[1] - 0.2 * gl0);
+      if (bot - top >= 1.5 * gl0) {
+        const x0 = Math.min(st.x0, st.dropcap[0]) - gl0;
+        let t = pgGrayCanvas(page.img, x0, top, st.x1 + gl0, bot);
+        let s2 = sc; if (t.width * s2 > PG_IMG_W - 70) s2 = (PG_IMG_W - 70) / t.width;
+        parts.push(['T' + (k + 1), pgScaled(t, t.width * s2, t.height * s2)]);
+      }
+    }
     if (st.modeBox) {                                              // Modus-Angabe über der Initiale als eigene Zeile «M<n>»
       const [a, b, x, y] = st.modeBox, m = pgGrayCanvas(page.img, a, b, x, y);
       parts.push(['M' + (k + 1), pgScaled(m, m.width * PG_LINE_H / m.height, PG_LINE_H)]);
     }
     if (c.width > PG_IMG_W - 70) pgSplitStrip(c, PG_IMG_W - 70).forEach(p => parts.push([k + 1, p]));
     else parts.push([k + 1, c]);
-    // weitere Textzeilen unter dem System (Strophen untereinander, Build 436) als Reihen «N.2», «N.3» …
+    // weitere Textzeilen unter dem System (Strophen untereinander, Build 436) als Reihen «Nb», «Nc» … (Build 437; «N.2» verwechselte die KI mit Strophennummern)
     (st.verseLines || []).forEach((vb, j) => {
       let v = pgGrayCanvas(page.img, st.x0 - 0.5 * gl, vb[0] - 0.3 * gl, st.x1 + 0.5 * gl, vb[1] + 0.35 * gl);
       v = pgScaled(v, v.width * PG_LINE_H / v.height, PG_LINE_H);
-      const lab = (k + 1) + '.' + (j + 2);
+      const lab = (k + 1) + 'bcdefghij'[j];
       if (v.width > PG_IMG_W - 70) pgSplitStrip(v, PG_IMG_W - 70).forEach(p => parts.push([lab, p]));
       else parts.push([lab, v]);
     });
@@ -7205,10 +7247,12 @@ function pgStripsImage(page) {
 async function pgReadText(apiKey, b64, n) {
   const row = (key, type) => ({type: 'array', items: {type: 'object', properties: {n: {type: 'integer'}, [key]: {type}},
     required: ['n', key], additionalProperties: false}});
-  const vrow = {type: 'array', items: {type: 'object', properties: {n: {type: 'integer'}, k: {type: 'integer'}, text: {type: 'string'}},
-    required: ['n', 'k', 'text'], additionalProperties: false}};
-  const schema = {type: 'object', properties: {lines: row('text', 'string'), modes: row('mode', 'string'), verses: vrow},
-    required: ['lines', 'modes', 'verses'], additionalProperties: false};
+  const vrow = {type: 'array', items: {type: 'object', properties: {row: {type: 'string'}, text: {type: 'string'}},
+    required: ['row', 'text'], additionalProperties: false}};
+  const trow = {type: 'array', items: {type: 'object', properties: {n: {type: 'integer'}, title: {type: 'string'}, subtitle: {type: 'string'}},
+    required: ['n', 'title', 'subtitle'], additionalProperties: false}};
+  const schema = {type: 'object', properties: {lines: row('text', 'string'), modes: row('mode', 'string'), verses: vrow, titles: trow},
+    required: ['lines', 'modes', 'verses', 'titles'], additionalProperties: false};
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
@@ -7230,9 +7274,14 @@ async function pgReadText(apiKey, b64, n) {
   for (const e of (ans.lines || [])) got[e.n] = String(e.text || '');
   for (const e of (ans.modes || [])) { const m = pgModeFromText(e.mode); if (m) modes[e.n] = m; }
   const verses = {};                                              // verses[n][k] = Text der Strophe k unter System n
-  for (const e of (ans.verses || [])) { const t = String(e.text || '').trim(); if (t && e.k >= 2) (verses[e.n] || (verses[e.n] = {}))[e.k] = t; }
+  for (const e of (ans.verses || [])) {
+    const t = String(e.text || '').trim(), m = /^\s*(\d+)\s*([b-j])\s*$/i.exec(String(e.row || ''));
+    if (t && m) (verses[+m[1]] || (verses[+m[1]] = {}))['bcdefghij'.indexOf(m[2].toLowerCase()) + 2] = t;
+  }
+  const titles = {};
+  for (const e of (ans.titles || [])) { const t = pgSafeTitle(e.title), u = pgSafeTitle(e.subtitle); if (t || u) titles[e.n] = {title: t, subtitle: u}; }
   const u = r.usage || {};
-  return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''), modes, verses,
+  return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''), modes, verses, titles,
     usage: {input: u.input_tokens || 0, output: u.output_tokens || 0, usd: ((u.input_tokens || 0) * PG_PRICE[0] + (u.output_tokens || 0) * PG_PRICE[1]) / 1e6}};
 }
 
@@ -7248,6 +7297,7 @@ function pgModeFromText(t) {
 }
 
 // Fremder Text (KI-Antwort) → nur Zeichen, die im GABC als Silbentext unbedenklich sind
+function pgSafeTitle(t) { return String(t || '').replace(/[;%\\<>{}[\]|]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120); }
 function pgSafeText(t) { return String(t || '').replace(/[()[\]{}<>%|\\]/g, ' ').replace(/\s+/g, ' ').trim(); }
 
 // Die KI hat zwei Zeilen in eine geschrieben und die nächste leer gelassen (grosse Zierinitiale über zwei Systeme, Vexilla
@@ -7298,6 +7348,7 @@ function pgPieces(items) {
     const words = p.items.map((it, k) => k === 0 && it.staff.dropcap ? String(it.text || '').replace(/^(\p{Lu})\1/u, '$1') : it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w));
     p.incipit = words.slice(0, 5).join(' ').replace(/[,.;:!?]+$/, '') || '(ohne Text)';
     p.hasDropCap = !!p.items[0].staff.dropcap;
+    p.title = p.items[0].title || null;                            // Titel/Untertitel über dem ersten System (Build 437)
     p.mode = p.items[0].mode || '?';                               // Modus über der Initiale des ersten Systems
     const cl = p.items.map(it => it.staff.clef).filter(c => c), cnt = {};
     cl.forEach(c => { cnt[c] = (cnt[c] || 0) + 1; });
@@ -7382,10 +7433,27 @@ function pgApplyVerses(pieces) {
     });
     gregVerseApply(gregEntries, k - 2, all);
   }
+  // Strophennummern wie gedruckt (Build 437, Wunsch Matthias): «1.» vor die erste Silbe der Hauptzeile, «k.» vor die erste Silbe
+  // der Strophe k – so, wie man Strophen in Notator von Hand nummeriert (NT_VS_NUM)
+  const slots = gregVerseSlots(gregEntries), off = i => slotsPer.slice(0, i).reduce((a, b) => a + b, 0);
+  const i0 = items.findIndex(it => Object.keys(it.verses || {}).length), m1 = i0 >= 0 && /^\s*(\d+)\.\s/.exec(items[i0].text || '');
+  const vnum = k => { for (const it of items) { const m = /^\s*(\d+)\.\s/.exec((it.verses || {})[k] || ''); if ((it.verses || {})[k]) return m ? m[1] : null; } return null; };
+  const numbered = !!m1 || Array.from({length: K - 1}, (_, j) => vnum(j + 2)).some(v => v);
+  if (numbered && i0 >= 0 && slotsPer[i0] > 0) {
+    const e = slots[off(i0)];
+    if (e && !/^\s*\d+\./.test(e.syllable || '')) e.syllable = (m1 ? m1[1] : '1') + '. ' + e.syllable;
+    for (let k = 2; k <= K; k++) {
+      const i = items.findIndex(it => (it.verses || {})[k]); if (i < 0 || !slotsPer[i]) continue;
+      const se = slots[off(i)]; if (!se || !Array.isArray(se.verses) || !se.verses[k - 2]) continue;
+      if (!/^\s*\d+\./.test(se.verses[k - 2])) se.verses[k - 2] = (vnum(k) || String(k)) + '. ' + se.verses[k - 2];
+    }
+  }
   return K - 1;
 }
 function pgGabcHeader(p) {
-  return (/^[1-8]$/.test(p.mode) ? 'annotation: ' + p.mode + '\n' : '') + (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n';
+  const t = p.title || {};
+  return (t.title ? 'name: ' + t.title + ';\n' : '') + (t.subtitle ? 'notator-subtitle: ' + t.subtitle + ';\n' : '') +
+    (/^[1-8]$/.test(p.mode) ? 'annotation: ' + p.mode + '\n' : '') + (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n';
 }
 
 // GregoBase-Abgleich wie im bisherigen Weg: nur anbieten, nie automatisch. Gibt true, wenn aus GregoBase geladen wurde.
@@ -7431,8 +7499,18 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       if (!page.staves.length) continue;
       gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Text lesen (KI)…');
       const strips = pgStripsImage(page);
-      const res = await pgReadText(apiKey, strips.b64, strips.n);
+      let res = await pgReadText(apiKey, strips.b64, strips.n);
       usd += res.usage.usd;
+      // Strophenzeilen in «lines» statt in «verses» (Build 437, Salve mater): unter einem System mit weiteren Textzeilen beginnt
+      // die Hauptzeile mit «2.», «3.» … → einmal neu lesen und die Antwort nehmen, wenn sie stimmig ist
+      const versesWrong = r => page.staves.some((st, k) => (st.verseLines || []).length && /^\s*[2-9]\.\s/.test(r.lines[k] || ''));
+      if (versesWrong(res)) {
+        gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – Strophen nochmals lesen (KI)…');
+        const r2 = await pgReadText(apiKey, strips.b64, strips.n);
+        usd += r2.usage.usd;
+        console.log('PDF lesen (neu), Seite ' + pg + ': Strophenzeilen als Hauptzeilen gelesen – zweiter KI-Aufruf' + (versesWrong(r2) ? ' (wieder falsch)' : ''));
+        if (!versesWrong(r2)) res = r2;
+      }
       console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
       // Zweiter KI-Aufruf nur bei Bedarf (Build 429): Zeile leer, obwohl unter dem System Text steht (≥ 3 Textgruppen) und
       // die Vorzeile nicht zusammengezogen ist – die KI hatte bei Gaudeamus und Terribilis je eine Zeile ausgelassen.
@@ -7455,7 +7533,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       pgRepairMerged(res.lines, page.staves);
       page.staves.forEach((st, k) => {
         const vv = {}; Object.entries((res.verses || {})[k + 1] || {}).forEach(([kk, t]) => { vv[kk] = pgSafeText(t); });
-        items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || '', verses: vv});
+        items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || '', verses: vv, title: (res.titles || {})[k + 1] || null});
       });
       page.img = null;
     }
@@ -7471,7 +7549,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
   window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,
-    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || ''), unsure: p.items.map(it => (it.staff.unsure || []).length + (it.staff.emptyX || []).length), verses: p.items.map(it => it.verses || {})}))};
+    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || ''), unsure: p.items.map(it => (it.staff.unsure || []).length + (it.staff.emptyX || []).length), verses: p.items.map(it => it.verses || {}), title: p.title}))};
   let choice = pieces[0].index;
   if (pieces.length > 1) {
     choice = await gregPickPieceModal(pieces);
@@ -8890,7 +8968,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '436';
+const NOTATOR_BUILD_ID = '437';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

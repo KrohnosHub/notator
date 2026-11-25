@@ -1,0 +1,50 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "INvioláta, integra, et cásta es",
+   "mode": "6",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "IN(f)vi(g)o(f)lá(g)ta,(h.) in(ixi)te(h)gra,(g) et(h) cá(g)sta(f) es(g) (;)",
+    "Ma()rí(f)a:(g) Quæ(h.) es() (::) ef(f)féc(h)ta(ihg) fúl(h)gi(g)da(f) cæ(g)li(f) pór(g) (;)",
+    "ta.(h.) (::) O(h) Má(g)ter(f) ál(g)ma(f) Chri()sti(g) ca(h)rís(jj)si(ixi)ma:(g) de(h.) (::) (:)",
+    "Sús(h)ci(g)pe(f) pí(g)a(f) láu(g)dum(h) præ(j)có(ixi)ni(g)a.(h.) (::) Te(f) nunc(f) (;)",
+    "flá(h)gi(ixi)tant(h.) de(h)vó(g)ta(f) cór(g)da(g) et(h) ó(g)ra:(f.) (::) Nós(f)tra(f) ut(h) pú(ixi)ra(h.) péc(h)to(g)ra(f) sint(g) et(g) (;)",
+    "cór(h)po(g)ra.(f.) (::) Tú(f)a(f) per(h) pre(ixi)cá(h)ta(g) dul(h)cí(j)so(ixi)na:(h.) (::) Nó(f)bis(f) con(h)cé(ixi)das(h) vé(h)ni(g)am(f) (;)",
+    "per(h) sæ(j)cu(ixi)la.(h.) (::) O(hh) be(g)ní(g)gna!(f.) (::) O(hh) Re(g)gí(g)na!(f.) (::) O(hh) Ma(g)rí(g)a!(f.) (::) Quæ(f) só(g) (;)",
+    "la(f) in(f)vi(f)o(fj)lá(fhihg)ta(ge) per(gh)man(ghg)sí(fghgfg)sti.(g.f.) (::)"
+   ],
+   "unsure": [
+    0,
+    2,
+    1,
+    0,
+    2,
+    0,
+    0,
+    1
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": null
+  }
+ ],
+ "usage": {
+  "input_tokens": 3102,
+  "output_tokens": 421,
+  "costUsd": 0.010414
+ },
+ "durationMs": 5852
+}

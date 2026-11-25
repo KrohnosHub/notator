@@ -1,4 +1,4 @@
-# Notator – Stand Build 436 (25.11.2026)
+# Notator – Stand Build 437 (25.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–436 (Auszug)
+## Neu in Build 298–437 (Auszug)
 
+- **PDF lesen (437, Meldung Matthias zu Salve mater):** Titel und Untertitel über dem ersten System werden gelesen; Strophennummern («1.», «2.» …) werden gesetzt; liest die KI Strophenzeilen als Hauptzeilen, wird einmal neu gelesen; ein System, dessen linker Teil blass ist, wird nach links ergänzt (Salve mater «O Ma-rí-a», Pueri «portantes» +33 % Notenzahl).
 - **PDF lesen (436):** Mehrere Strophen untereinander unter demselben System werden gelesen und als weitere Strophen übernommen (Tota pulchra 5, Attende 4, Salve mater 5).
 - **PDF lesen (435):** «⚠ prüfen» rot und fett über dem System statt blassbraun auf der Textzeile (auf dem Handy übersehen, Meldung Matthias). Runde 17: Te Deum blind 91 % Notenzahl, 100 % Silben.
 - **PDF lesen (434, Runde 16):** Modus auch links neben dem ersten System ohne Initiale (Ubi caritas «VI»); Teile eines ♭ gelten nicht mehr als Mora-Punkt; zweiter KI-Aufruf auch bei deutlich zu kurzer Zeile. Drei weitere Orgelsätze (Jesu dulcis, Kyrie XII, Victimae paschali) werden richtig abgewiesen (9 Gegenproben). Runde 16 (Stabat Mater, Venite ad me, Pueri «portantes»): Notenzahl 63 %, Tonhöhen 93 %, Silben 90 %.

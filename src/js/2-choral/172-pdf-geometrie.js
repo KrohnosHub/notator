@@ -331,6 +331,30 @@ function pgStaves1(img) {
     }
     sts.push({lines: q, x0: best[0], x1: best[1], odd: !globalThis._pgNurPrototyp && (!!q.side || m < 0.8 * g || m > 1.25 * g)});
   }
+  // Build 437 (Salve mater, letztes System): Beginnt ein System deutlich rechts der übrigen, fehlt oft nur der linke Teil hinter
+  // einer Lücke in den Linien (> 40 px; blasse, leicht gebogene Linien). Links davon nach einem Stück mit 3 von 4 Linien (helle
+  // Schwelle) suchen,
+  // höchstens bis zum typischen Systemanfang und nur, wenn es nicht vollflächig ist (Zierinitiale, Gaudeamus).
+  if (!globalThis._pgNurPrototyp && sts.length >= 3) {
+    const typ = pgMedian(sts.filter(o => !o.odd).map(o => o.x0));
+    for (const o of sts) {
+      const q = o.lines, m = (q[3] - q[0]) / 3;
+      if (o.odd || o.x0 < typ + 3 * m) continue;
+      const lo = Math.max(0, pgRound(typ - m)), hi = o.x0;
+      const lmk = lightMask || (lightMask = pgThreshold(img, 200));   // linker Teil oft blasser: helle Schwelle
+      const has = x => q.filter(yy => { const y = pgRound(yy); for (let r = Math.max(0, y - 4); r < Math.min(dark.h, y + 5); r++) if (lmk.a[r * lmk.w + x]) return true; return false; }).length >= 3;
+      let x = hi - 1;
+      while (x >= lo && !has(x)) x--;                                 // Lücke links vom bisherigen Anfang
+      if (x < lo || hi - x > 3 * m) continue;
+      let s0 = x, miss = 0;
+      for (let xx = x; xx >= lo; xx--) { if (has(xx)) { s0 = xx; miss = 0; } else if (++miss > 40) break; }
+      if (x - s0 < 2 * m) continue;
+      let solid = 0, n = 0;                                           // Tinte zwischen den Linien (Mitte der Zwischenräume)
+      for (let xx = s0; xx <= x; xx += 2) for (let i = 0; i < 3; i++) { const y = pgRound((q[i] + q[i + 1]) / 2); n++; solid += dark.a[y * dark.w + xx]; }
+      if (solid / Math.max(1, n) > 0.3) continue;
+      o.x0 = s0;
+    }
+  }
   // Mehrheit der Systeme mit fünf Linien: moderne Notation, keine Choralnoten (Meldung in 174). Einzelne Treffer kommen auch bei
   // Choral vor (Trennlinie unter dem letzten System, handgeschriebene Zeile darunter) – deshalb nur mit klarer Mehrheit.
   if (five && five > sts.length / 2) { globalThis._pgFuenfLinien = true; sts.length = 0; }

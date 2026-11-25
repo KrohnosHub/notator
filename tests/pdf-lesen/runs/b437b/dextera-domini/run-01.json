@@ -1,0 +1,50 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "DExtera Dómini fecit virtútem, déxtera",
+   "mode": "8",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "DEx(e)te(f)ra(h) Dó(h)mi(h)ni(h) fe(h)cit(h) vir(h)tú(i)tem,(h.) (;) déx(h)te(h)ra(h) Dó(h)mi(h)ni(h)",
+    "ex(g)al(h)tá(f)vit(e) me:(e.) (:) non(h) mó(h)ri(h)ar,(h) sed(h) vi(i)vam,(h.) (;) et(h) nar(h)rá(h)bo(h) ó(h)pe(g)ra(h)",
+    "Dó(f)mi(e)ni.(e.) (::)",
+    "V/.() In(h) tri(h)bu(h)la(h)ti(h)ó(h)ne(h) in(h)vo(h)cá(h)vi(h) Dó(h)mi(f)num;(f) et(h) ex(h)au(h)dí(h)",
+    "vit(h) me(h) in(h) la(h)ti(h)tú(i)di(h)ne:(h.) qui(h)a(h) Dó(h)mi(h)nus(h) ad(h)jú(g)tor(h) (;)",
+    "me(f)us(e) est.(e.) (;)",
+    "V/.() Im(h)púl(h)sus(h) ver(h)sá(h)tus(h) sum,(h) ut(h) cá(h)de(f)rem;(f) (,) et(h) Dó(h)mi(h)",
+    "nus(h) sus(h)cé(i)pit(h) me:(h.) (;) et(h) fac(h)tus(h) est(h) mi(h)hi(h) in(g) sa(h)lú(f)tem.(e.) (::)"
+   ],
+   "unsure": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": null
+  }
+ ],
+ "usage": {
+  "input_tokens": 3073,
+  "output_tokens": 394,
+  "costUsd": 0.010086
+ },
+ "durationMs": 5685
+}
