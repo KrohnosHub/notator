@@ -1,0 +1,64 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SAlve, mater misericórdiæ, Mater Dei",
+   "mode": "5",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "SAl(g)ve,(g) ma(j)ter(jk) mi(j)se(i)ri(h)cór(g)di(h)æ,(g.) Ma(e)ter(e) De(g)i,(g) et(f) ma(e)ter(d)",
+    "vé(c)ni(d)æ.(c.) (:) Ma(c)ter(c) spe(d)i,(e) et(e) ma(d)ter(eef) grá(g)ti(g)æ,(g.) (;) Ma(g)ter(g)",
+    "ple(h)na(g.gf) sanc(f)tæ(g) læ(f)tí(e.)ti(d)æ,(e) O(dd) Ma()rí(c.)a!() ij.() (::) Sal(g)ve(g) ma(j)ter..()",
+    "Sal(e)ve,(g) de(fe)cus(de) hu(f)má(e)ni(d) gé(c)ne(d)ris,(e.) (;) Sal(c)ve,(e) Vir(g)",
+    "go(hi) díg(j)ni(i)or(g) cé(h)te(f)ris,(g.) (:) Quæ(j) vír(j)gi(g)nes(hi) om(g)nes(g)",
+    "trans()gré(e)de(d)ris,(e.) (;) Et(e) ál(dcc)ti(e)us(g) se(e)des(f) in(g) sú(h)pe()ris,(j.) (,)",
+    "Ma(h)rí(kk)a.(j.) Rep.() (::) Sal(g)ve..(g)"
+   ],
+   "unsure": [
+    0,
+    2,
+    4,
+    0,
+    0,
+    5,
+    2
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {
+     "2": "2. Sal-ve, fe-lix Vir-go pu-ér-pe-ra: Nam qui se-",
+     "3": "3. Te cre-á-vit Pa-ter in-gé-ni-tus, Ob-um-brá-",
+     "4": "4. Te cre-á-vit De-us mi-rá-bi-lem, Te re-spé-",
+     "5": "5. Te be-á-tam lau-dá-re cú-pi-unt Om-nes ju-",
+     "6": "6. E-sto, Ma-ter, no-strum so-lá-ti-um; No-strum e-"
+    },
+    {
+     "2": "2. det in Pa-tris déx-te-ra, Cæ-lum re-gens, ter-ram",
+     "3": "3. vit te U-ni-gé-ni-tus, Fœ-cun-dá-vit te Sanc-",
+     "4": "4. xit an-cíl-lam hú-mi-lem, Te quæ-sí-vit spon-sam",
+     "5": "5. sti, sed non suf-fí-ci-unt; Mul-tas lau-des de te",
+     "6": "6. sto, tu Vir-go, gáu-di-um; Et nos tan-dem post hoc"
+    },
+    {
+     "2": "2. et æ-the-ra, In-tra tu-a se clau-sit vís-ce-ra,",
+     "3": "3. tus Spi-ri-tus, Tu es fac-ta to-ta di-ví-ni-tus,",
+     "4": "4. a-má-bi-lem, Ti-bi nun-quam fe-cit con-sí-mi-lem,",
+     "5": "5. con-cí-pi-unt, Sed in il-lis pror-sus de-fí-ci-unt,",
+     "6": "6. ex-sí-li-um, Læ-tos jun-ge cho-ris cæ-lé-sti-um."
+    },
+    {}
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 6226,
+  "output_tokens": 1177,
+  "costUsd": 0.024222
+ },
+ "durationMs": 13455
+}

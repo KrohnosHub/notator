@@ -1,0 +1,55 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VOX Clara ecce íntonat, Obscúra",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "VOX(e) Cla(c)ra(e) ec(g)ce(h.) ín(i)to(h)nat,(h) (::) Obs(g)cú(h)ra(i) quæ(j)que(ihg) ín(h)cre(i)",
+    "pat:(h) (:) Pel(h)lán(h)tur(i) é(g)mi()nus(eg) sóm(f)ni(e)a,(d) (;) Ab(e) æ()the(c)re(e) Chri(g)stus(h) pró(i)",
+    "mi(h)cat.(h) (::) Mens(e) jam(c) re(e)súr(g)gat(h) tór(i)pi(h)da,(h) (;) Quæ(g) sor(h)de(i) ex(j)stat(ihg)",
+    "sáu(h)ci(i)a:(h) (:) Si(h)dus(h) re(i)fúl(g)get(eg) jam(f) no(e)vum,(d) (;) Ut(e) tol(c)lat(e) om(g)ne(h) nó(i)xi(h)",
+    "um.(h) (::) E(e) sur(c)sum(e) A(g)gnus(h) mít(i)ti(h)tur(h) (;) La(g)xa(h)re(i) gra(j)tis(ihg) dé(h)bi(i)tum:(h) (:)",
+    "Om(h)nes(h) pro(i) in(g)dul(eg)gén(f)ti(e)a,(d) (;) Vo(e)cem(c) de(e)mus(g) cum(h) lá(i)cri(h)mis:(h) (::)",
+    "Se(e)cún(c)do(e) ut(g) cum(h) fúl(i)se(h)rit,(h) (;) Mun(g)dúm(h)que(i) hor(j)ror(ihg) cín(h)xe(i)rit,(h) (:)",
+    "Non(h) pro(h) re(i)á(g)tu(eg) pú(f)ni(e)at,(d) (;) Sed(e) pi(c)us(e) nos(g) tunc(h) pró(i)te(h)gat.(h) (::)",
+    "Laus,(e) ho(c)nor,(e) vir(g)tus,(h) gló(i)ri(h)a(h) (;) De(g)o(h) Pa(i)tri(j) et(ihg) Fí(h)li(i)o,(h) (:) San(h)",
+    "cto(h) si(i)mul(g) Pa(eg)rá(f)cli(e)to,(d) (;) In(e) sem(c)pi(e)té(g)rna(h) sǽ(i)cu(h)la.(h) (::) A(hih)men.(gh) (::)"
+   ],
+   "unsure": [
+    0,
+    2,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 5044,
+  "output_tokens": 600,
+  "costUsd": 0.016087999999999998
+ },
+ "durationMs": 5983
+}

@@ -1,0 +1,64 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "MOdicum et non vidébitis me",
+   "mode": "8",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "MO(fgh)di(g)cum(g.) (,) et(g) non(f) vi(ghg)dé(h)bi(g)tis(gfg) me,(d.) (,) al(gh)le(f)lú(hji)ia:(g.) (:)",
+    "í(jjk)te(j)rum(j) mó(j)di(hjhihgh)cum,(h.g.) (,) et(g) vi(gd)dé(g)bi(h)tis(iihhi) me,(g.) (:) qui(ghihgh)a(hg)",
+    "va(g)do(f) ad(e) Pa(f)trem,(efd.) (;) al(gf)le(h)lú(j)ia,(i.) (,) al(j)le(hjig)lú(ghg)ia.(g.) (::)",
+    "V/.() Be(g)ne(hg)dí(gj)cam(j) Dó(j)mi(j)num(j) in(ji) om(jk)ni(k) tém(jk)po(j)re,(j.) (;) sem(jh)per(hj)",
+    "laus(j) e(j)jus(j) in(jji) o(gh)re(ji) me(h)o.(g.) (::) Mó()di()cum.()",
+    "V/.() In(g) Dó(hg)mi(gj)no(j) glo(j)ri(j)á(j)bi(j)tur(j) á(ji)ni(jk)ma(k) me(jk)a,(j.) (;) áu(jh)di(hj)",
+    "ant() man(j)su(j)é(j)ti(jji) et(gh) lae(ji)tén(h)tur.(g.) (::) Mó()di()cum.()"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0,
+    3,
+    0,
+    4
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ]
+  },
+  {
+   "incipit": "GLória Pátri, et Fílio, et",
+   "mode": "8",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "GLó(g)ri(hg)a(gj) Pá(j)tri,(j) et(j) Fí(j)li(j)o,(j.) (,) et(j) Spi(j)rí(ji)tu(jk)i(k) Sán(jk)cto.(j.) (:) Sic(jh)ut(hj) é(j)rat(jj)",
+    "in() prin(j)cí(j)pi(j)o,(j.) (,) et(ji) nunc,(jk) et(k) sem(jk)per,(j.) (:) et(jh) in(hj) saé(j)cu(j)la(j) sae(j)cu(jji)ló(gh)rum.(ji) A(h)men.(g.) (::)"
+   ],
+   "unsure": [
+    0,
+    1
+   ],
+   "verses": [
+    {},
+    {}
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 7306,
+  "output_tokens": 964,
+  "costUsd": 0.024252
+ },
+ "durationMs": 6497
+}

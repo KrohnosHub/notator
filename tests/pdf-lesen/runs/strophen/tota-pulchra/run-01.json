@@ -1,0 +1,64 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "TOta púlchra es, o María",
+   "mode": "5",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "TO(f)ta(f) púl(d)chra(f) es,(h.) o(h) Ma(gf)rí(gh)a,(fe) (,) to(g)ta(ge) pul(f)",
+    "chra(e) es,(d.) et(f) má(h)cu(h)la(g) non(h) est(i) in(h) te.(f.) (:) Quam(h) spe(g)",
+    "ci(i)ó(h)sa,(h.) quam(k) su(ih)á(ij)vis(ih) (,) in(i) de(ig)li(h)ci(h)is,(f.) (;)",
+    "Con(d)cép(f)ti(f)o(e) il(f)li(g)bá(ff)ta.(e.) (::) Ve(f)ni,(h) ve(gf)ni(e) de(f) Lí(g)ba(e)no,(f.) (;)",
+    "Ve(h)ni,(i) ve(k)ni(i) de(j) Lí(k)ba(i)no,(h.) (:) Ve(f)ni,(h) ve(i)ni(fe) co(g)ro(e)ná(f)be(e)ris.(d.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    1,
+    0
+   ],
+   "verses": [
+    {
+     "2": "2. Tu pro-gré-de-ris ut au-ró-ra val-de rú-",
+     "3": "3. Si-cut lí-li-um in-ter spi-nas: in-ter fí-",
+     "4": "4. In te spes vi-tæ et vir-tú-tis, om-nis grá-",
+     "5": "5. Hor-tus con-clú-sus, fons sig-ná-tus, De-i Gé-",
+     "6": "6. In ter-ra no-stra vox au-dí-ta, vox dul-cís-"
+    },
+    {
+     "2": "2. ti-lans, af-fers gáu-di-a sa-lú-tis. Per te",
+     "3": "3. li-as sic tu Vir-go be-ne-díc-ta. Tu-um",
+     "4": "4. ti-a et vi-æ et ve-ri-tá-tis. Post te",
+     "5": "5. ni-trix, et grá-ti-æ pa-ra-dí-sus. Im-ber",
+     "6": "6. si-ma: vox túr-tu-ris, vox co-lúm-bæ. As-sú-"
+    },
+    {
+     "2": "2. or-tus est Chri-stus De-us, sol ju-stí-ti-æ,",
+     "3": "3. re-fúl-get ve-sti-mén-tum ut ni-x cán-di-dum;",
+     "4": "4. cur-ré-mus in o-dó-rem su-a-vís-si-mum",
+     "5": "5. á-bi-it et re-cés-sit, hi-ems trán-si-it,",
+     "6": "6. me pen-nas, o co-lúm-ba for-mo-sís-si-ma!"
+    },
+    {
+     "2": "2. o fúl-gi-da por-ta lu-cis. Ve-ni, ve-ni de Lí-ba-no,",
+     "3": "3. si-cut sol fá-ci-es tu-a. Ve-ni, ve-ni de Lí-ba-no,",
+     "4": "4. tra-hén-ti-um unguen-tó-rum. Ve-ni, ve-ni de Lí-ba-no,",
+     "5": "5. jam flo-res ap-pa-ru-é-runt. Ve-ni, ve-ni de Lí-ba-no,",
+     "6": "6. Sur-ge, pró-pe-ra et ve-ni. Ve-ni, ve-ni de Lí-ba-no,"
+    },
+    {}
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 5722,
+  "output_tokens": 1297,
+  "costUsd": 0.024414
+ },
+ "durationMs": 16775
+}

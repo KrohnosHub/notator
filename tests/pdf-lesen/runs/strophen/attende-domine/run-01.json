@@ -1,0 +1,54 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Atténde Dómine, et miserére, quia",
+   "mode": "5",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "At(c)tén(de)de(g) Dó(g)mi(g)ne,(g.h) et(j) mi(i)se(g)ré(h)re,(g.) (;) qui(j)a(fg) pec(d)cá(f)vi(g)mus(e) ti(ded)bi.(c.) (::)",
+    "Ad(e) te,(e) Rex(c) sum(d)me,(de.) óm(h)ni(h)um(g) Red(h)émp(fe)tor,(e.) (;)",
+    "ó(g)cu(g)los(g) no(g)stros(e.) sub(f)le(g)vá(h)mus(g) flen(fe)tes:(d.) ex(g)áu(h)",
+    "di,(ijj) Chri(g.)ste,(g) sup(d)pli(f)cán(e)tum() pre(ed)ces.(c.) (::) R/.() At(c)tén(e)de:(g)"
+   ],
+   "unsure": [
+    0,
+    0,
+    1,
+    1
+   ],
+   "verses": [
+    {},
+    {
+     "2": "2. Déx-te-ra Pa-tris, la-pis an-gu-lá-ris,",
+     "3": "3. Ro-gá-mus, De-us, tu-am ma-je-stá-tem:",
+     "4": "4. Ti-bi fa-té-mur crí-mi-na ad-mís-sa:",
+     "5": "5. In-no-cens cap-tus, nec re-púg-nans duc-tus,"
+    },
+    {
+     "2": "2. vi-a sa-lú-tis, já-nu-a cæ-lé-stis, áb-lu-",
+     "3": "3. áu-ri-bus sa-cris gé-mi-tus ex-áu-di: crí-mi-",
+     "4": "4. con-trí-to cor-de pán-di-mus oc-cúl-ta: tu-a,",
+     "5": "5. tés-ti-bus fal-sis pro ím-pi-is dam-ná-tus: quod red-"
+    },
+    {
+     "2": "2. e no-stri má-cu-las de-lí-cti. ℟. At-tén-de:",
+     "3": "3. na no-stra plá-ci-dus in-dúl-ge. ℟. At-tén-de:",
+     "4": "4. Red-émp-tor, pi-e-tas ig-nó-scat. ℟. At-tén-de:",
+     "5": "5. e-mí-sti, tu con-sér-va, Chri-ste. ℟. At-tén-de:",
+     "6": "℣. An-gé-lis suis De-us man-dá-vit de te.",
+     "7": "℟. Ut cu-stó-di-ant te in óm-ni-bus vi-is tu-is."
+    }
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 6720,
+  "output_tokens": 943,
+  "costUsd": 0.02287
+ },
+ "durationMs": 15412
+}

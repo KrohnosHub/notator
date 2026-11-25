@@ -1,0 +1,61 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SIGNUM magnum appáruit in caelo",
+   "mode": "7",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "SIG(ef)NUM(f) ma(fdfe)gnum(e.) (,) ap(fh)pá(hhh)ru(h)it(hji)",
+    "in(ihhfh) cae(efe)lo:(e.) (:) mú(efhgh)li(h)er(h) a(h)mí(h)cta(fh)",
+    "so(h)le,(hghiffe.) et(e) lu(efhg)na(h) sub(g) pé(ghi)di(i)bus(ijhfgh) e(hi)jus,(h.) (:) et(hg) in(h)",
+    "cá(hji)pi(h)te(hhh) e(eghff)jus(d.) (;) co(e)ró(ef)na(e) stel(e)lá(e)rum(efghi) du(ihhfh)ó(e)de(efe)cim.(e.) (::)",
+    "<i>Ps.</i>() Can(ehg)tá(hi)te(i) Dó(i)mi(i)no(i) cán(ik)ti(j)cum(j) no(ji)vum:(i.j.) (:) qui(ig)a(hi) mi(i)ra(i)bí(ijk)",
+    "li(i)a(h) fe(hhh)cit.(f.e.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ]
+  },
+  {
+   "incipit": "GLória Pátri, et Fílio, et",
+   "mode": "7",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "GLó(ehg)ri(hi)a(i) Pá(i)tri,(i) et(i) Fí(i)li(i)o,(i.) (,) et(i) Spi(i)rí(ik)tu(j)i(j) Sán(ji)cto.(i.j.) (:) Sic(ig)ut(hi) é(i)rat(i) in(i)",
+    "prin(i)cí(i)pi(i)o,(i.) (,) et(i) nunc,(ik) et(j) sem(ji)per,(i.j.) (:) et(ig) in(hi) saé(i)cu(i)la(i) sae(i)cu(ijk)ló(i)rum.(h) A(hhh)men.(fe.) (::)"
+   ],
+   "unsure": [
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {}
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3537,
+  "output_tokens": 400,
+  "costUsd": 0.011074
+ },
+ "durationMs": 6176
+}
