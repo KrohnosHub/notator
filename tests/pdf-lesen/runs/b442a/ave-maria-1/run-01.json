@@ -1,0 +1,41 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Ave María, grátia pléna, Dóminus",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "A(f)ve(c) Ma(d)rí(ixdhi)a,(h.) grá(h)ti(g)a(f) plé(gh)na,(h.) Dó(j)mi(h)nus(gf) té(g)cum,(d.)",
+    "be(g)ne(g)dí(h)cta(g) tu(f.) in(ef) mu(g)li(fe)é(d)ri(cd)bus,(d.) (;) et(e) be(c)ne(d)dí(f)ctus(f) frú(e)ctus(f) vén(g)",
+    "tris(e) tú(g)i,(fe) Jé(cd)sus.(df) (::) Sá(h)ncta(g) Ma(h)rí(ji)a,(g.) Má(g)ter(f) Dé(gh)i,(h.) (;) ó(h)ra(g) pro(f)",
+    "nó(gf)bis(d) pec(f)ca(fe)tó(de)ri(d)bus,(c.) (;) nunc(d) et(c) in(df) hó(ffg)ra(f) mór(e)tis(f) nó(gh)strae.(fe) A(d.)men.(d.) (::)"
+   ],
+   "unsure": [
+    1,
+    0,
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Ave Maria",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 2435,
+  "output_tokens": 256,
+  "costUsd": 0.00743
+ },
+ "durationMs": 5349
+}

@@ -1,0 +1,72 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "ASCENDENS Christus in al tum",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "AS(f)CEN(fg)DENS(f) Chri(f)stus(fe) in(dc) al(fgd)",
+    "tum,(ixfghih) Al() (;) le(ixi)lú(ihg)ia,(gh) al(f.dc) (,)",
+    "le()lú(ixfghihgf)ia.(gh) As(f.) (::) cén(f)dens.(fgf) (::) V/.() Cap(f)tí(g)vam(f) du(gh)xit(f) (,) cap(f)ti(fe)vi(dc)",
+    "tá(fgd)tem.(ixfghih) (::) Al(ixi)le(ihg)lú(gh)ia,(f.) (,) al(dc)le(ixfghihgf)lú(gfh)ia.(f.) (::) V/.() Gló(f)ri(f)a(f)",
+    "Pa(gh)tri,(f) (,) et(g) Fí(fe)li(dc)o,(c.) et(d) Spi(f)rí(ixghi)tu(ih)i(gh) San(gf)cto.(f.) (::) As(f)cén(fg)dens.(f) (::)"
+   ],
+   "unsure": [
+    0,
+    1,
+    1,
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Ascendens Christus in altum",
+    "subtitle": ""
+   }
+  },
+  {
+   "incipit": "Ascéndens Christus in altum, Allelúia",
+   "mode": "6",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "As(f)cén(f)dens(f) Chri(g)stus(f) in(e) al(g)tum,(h.) (;) Al(h)le(hg)lú(g)ia,(f) al(d)le(fg)",
+    "lú(g)ia.(f.) (::) As(f)cén(f)dens.(f) (::) V/.() Cap(d)tí(f)vam(f) du(g)xit(f) cap(f)ti(f)vi(e)tá(g)tem.(h.) (::) Al(h)",
+    "le(hg)lú(g)ia.(f) (::) V/.() Gló(f)ri(f)a(e) Pa(g)tri,(h) et(h) Fí(ixhi)li(h)o,(h) (,) et(h) Spi(h)rí(h)tu(g)i(h) San(gf)",
+    "cto.(f.) (::) As(f)cén(f)dens.(f) (::)"
+   ],
+   "unsure": [
+    0,
+    1,
+    6,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Ascendens Christus in altum",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 3392,
+  "output_tokens": 459,
+  "costUsd": 0.011374
+ },
+ "durationMs": 6278
+}

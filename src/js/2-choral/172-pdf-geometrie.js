@@ -610,6 +610,8 @@ function pgAnalyseStaff(dark, st, g, ref) {
   if (!globalThis._pgNurPrototyp) {
     pgMarkFlats(st, out); pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out);   // ♭ zuerst: dessen Teile sind keine Mora-Punkte (Build 430)
     // Note direkt hinter dem Schlüssel, die in Wahrheit der Bauch eines ♭ ist (Media vita, Build 430)
+    // Build 442 (Media vita): Hals des ♭ als Note eine Stufe über dem Bauch («Sán(h)cte(jix…)») – Note im ♭-Kasten genau dort entfernen
+    for (let i = out.length - 1; i >= 0; i--) if ((st._ctx.flatBoxes || []).some(fb => out[i].x >= fb[0] - 0.1 * gl && out[i].x <= fb[1] + 0.1 * gl && pgRound(out[i].p) === fb[2] + 1)) out.splice(i, 1);
     for (let i = out.length - 1; i >= 0; i--) if (out[i].afterClef && (st._ctx.flatBoxes || []).some(fb => out[i].x >= fb[0] - 0.1 * gl && out[i].x <= fb[1] + 0.1 * gl)) out.splice(i, 1);
   }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
@@ -662,7 +664,7 @@ function pgMarkFlats(st, notes) {
     const by = box[1] + y0 + c.top + (belly[0] + belly[belly.length - 1]) / 2, bx = (box[0] + box[2]) / 2 + c.xa;
     const p = pgRound(c.stepOf(bx, by));
     if (p < -3 || p > 9) continue;
-    (c.flatBoxes || (c.flatBoxes = [])).push([box[0] + c.xa, box[2] + c.xa]);
+    (c.flatBoxes || (c.flatBoxes = [])).push([box[0] + c.xa, box[2] + c.xa, p]);
     const next = notes.find(n => n.x > box[2] + c.xa - 0.1 * gl && n.x < box[2] + c.xa + 1.8 * gl);
     if (next && !next.flat) next.flat = PG_LET[p + 3];
   }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-N0f0Gbg9wqrHNHvp+Kx4wHBc4QzC1w1LFsAm2gYK0Lc=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-reZbonD8fPhJ4j5Mm+xHu3tHWJL2ZPZAiSq8h31s7A0=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -6370,6 +6370,8 @@ function pgAnalyseStaff(dark, st, g, ref) {
   if (!globalThis._pgNurPrototyp) {
     pgMarkFlats(st, out); pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out);   // ♭ zuerst: dessen Teile sind keine Mora-Punkte (Build 430)
     // Note direkt hinter dem Schlüssel, die in Wahrheit der Bauch eines ♭ ist (Media vita, Build 430)
+    // Build 442 (Media vita): Hals des ♭ als Note eine Stufe über dem Bauch («Sán(h)cte(jix…)») – Note im ♭-Kasten genau dort entfernen
+    for (let i = out.length - 1; i >= 0; i--) if ((st._ctx.flatBoxes || []).some(fb => out[i].x >= fb[0] - 0.1 * gl && out[i].x <= fb[1] + 0.1 * gl && pgRound(out[i].p) === fb[2] + 1)) out.splice(i, 1);
     for (let i = out.length - 1; i >= 0; i--) if (out[i].afterClef && (st._ctx.flatBoxes || []).some(fb => out[i].x >= fb[0] - 0.1 * gl && out[i].x <= fb[1] + 0.1 * gl)) out.splice(i, 1);
   }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
@@ -6422,7 +6424,7 @@ function pgMarkFlats(st, notes) {
     const by = box[1] + y0 + c.top + (belly[0] + belly[belly.length - 1]) / 2, bx = (box[0] + box[2]) / 2 + c.xa;
     const p = pgRound(c.stepOf(bx, by));
     if (p < -3 || p > 9) continue;
-    (c.flatBoxes || (c.flatBoxes = [])).push([box[0] + c.xa, box[2] + c.xa]);
+    (c.flatBoxes || (c.flatBoxes = [])).push([box[0] + c.xa, box[2] + c.xa, p]);
     const next = notes.find(n => n.x > box[2] + c.xa - 0.1 * gl && n.x < box[2] + c.xa + 1.8 * gl);
     if (next && !next.flat) next.flat = PG_LET[p + 3];
   }
@@ -9034,7 +9036,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '441';
+const NOTATOR_BUILD_ID = '442';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

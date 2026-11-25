@@ -279,6 +279,10 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - **Build 441 (25.11.2026):** Die in Build 438 verworfene Variante «Stücke ohne Linie dazwischen» geht mit zwei Bedingungen: Höhe ≤ 1.2 × Breite
   und Mitte innerhalb des Systems (±0.3 Linienabstände). Die Fehlfunde in Dominus dixit/Justorum animae waren 1.3–1.4-mal so hoch wie
   breit (♭-Teile, Striche über dem System), echte Köpfe 1.0–1.05. Mock-Messung: nur Salve mater +1 %, sonst unverändert; Gegenproben abgewiesen.
+- **Build 442 (25.11.2026):** Der obere Hals eines ♭ wurde als Note eine Stufe über dem Bauch gelesen («Sán(h)cte(jix…)», Media vita, 6×).
+  Eine Note im ♭-Kasten wird jetzt entfernt, aber **nur genau eine Stufe über dem Bauch** – die allgemeine Regel «Note im ♭-Kasten
+  entfernen» (Build 415) hatte echte Noten gekostet, damals noch mit vielen falschen ♭ (vor der b-Stufen-Regel aus Build 418).
+  Mock-Messung: Media vita +30 %, Inviolata +12 % Notenzahl, keine Verluste; gesamt 75 → 77 %, Tonhöhen 95 → 96 %.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

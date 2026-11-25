@@ -1057,6 +1057,12 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - Variante ohne Linie dazwischen: dominus-dixit und justorum-animae Notenzahl −25 % – verworfen.
 - Doppelstrich vor dem ersten System mit Strophen.
 
+### 7.35 ♭-Hals, zerfallene Köpfe ohne Linie, Titel (Builds 439–442, 25.11.2026)
+
+- Mock-Gesamtmessung Build 442: Notenzahl 77 %, Tonhöhen 96 %, Neumentyp 95 %, Silben 90 %, Trennstriche 80 %, Schlüssel 100 %.
+- Titel live an 8 Stücken geprüft; Textanfang als Titel, wenn der gelesene Titel nicht zum Text passt.
+- Grenze: Conditor alme – zwei Systeme mit fast verschwundenen Linien werden nicht gefunden.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).
