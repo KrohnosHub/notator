@@ -1,0 +1,87 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "POpule méus, quid féci tibi",
+   "mode": "5",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "PO(c)pu(de)le(efedd) mé(cd)us,(d.) (,) quid(efg) fé(ggf)ci(e)",
+    "ti(fe)bi?(d.e.) (;) Aut(c) in(e) quo(hixg.hihghg) con(ef)tri(fg)stá(e)vi(fg)",
+    "te?(defedcd) (;) Re(c)spón(efe)de(dc) mi(ef)hi.(d.) (::) V/.() Qui()a(dedc) e(c)dú(efg)xi(ggf) te(ef) de(dd.e.) (,) tér(ceg)",
+    "ra(ghihghg) Æ(fe)gý(fg)pti:(e) (;) pa(ce)rá(h)sti(ixg.hihghge) Crú(fg)cem(efgfe.) (,) Sal(ef)va(f)tó(ghg)ri(f)",
+    "(gfe.f.g.g) (::)"
+   ],
+   "unsure": [
+    0,
+    1,
+    2,
+    0,
+    0
+   ]
+  },
+  {
+   "incipit": "Agios o Theós. Agios Ischyrós",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "A(g)gi(fe)os(fgffe) o(c) The(d)ós.(fghhg.) (::)",
+    "A(g)gi(fe)os(fgffe) I(c)schy(d)rós.(fghhg.) (::)"
+   ],
+   "unsure": [
+    0,
+    0
+   ]
+  },
+  {
+   "incipit": "HAgios Athánatos, eléison",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "HA(gh)gi(gh)os(hghhgg) A(f)thá(g)na(h)tos,(hijihiih) (;) e(g)lé(hjjih)i(g)son(hghg)",
+    "(fdfghhg.) (::)"
+   ],
+   "unsure": [
+    1,
+    0
+   ]
+  },
+  {
+   "incipit": "SAnctus Immortális, miserére Die Vorsänger",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "SAn(gh)ctus(hghih.g) Im(f)mor(g)tá(h)lis,(hijihiih) (;) mi(g)se(hjjih)ré(g)re(hghg)",
+    "Di(fd)e(fghhg) Vor()sän()ger() (::) des() II.() Cho()res()"
+   ],
+   "unsure": [
+    0,
+    7
+   ]
+  },
+  {
+   "incipit": "QUia edúxite per de",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "QUi(dedc)a(c) e(efg)dú(ggf)xi(ef)te(dde) (,) per(c) de(e)"
+   ],
+   "unsure": [
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 5218,
+  "output_tokens": 408,
+  "costUsd": 0.014516000000000001
+ },
+ "durationMs": 11591
+}

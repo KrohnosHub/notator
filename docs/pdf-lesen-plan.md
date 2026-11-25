@@ -1033,6 +1033,12 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - Neue Fälle: stabat-mater (Hymnenmelodie 6. Modus, nicht in GregoBase), venite-ad-me (Campion-Alleluja, System 1 ohne unabhängiges Soll), pueri-portantes (Antiphon mit Soll, Psalm ohne).
 - Ergebnis: Notenzahl 63 %, Tonhöhen 93 %, Silben 90 %, Mora 82 % gefunden / 100 % richtig; Hauptfehler: blasse linke Systemhälfte (Pueri) – offen.
 
+### 7.31 Runde 17 (25.11.2026)
+
+- te-deum (GregoBase 18625, Tonus simplex): blind Notenzahl 91 %, Tonhöhen 100 %, Gruppierung exakt 91 %, Silben 100 %, Trennstriche 95 %.
+- popule-meus ohne Soll (zwei kurze Systeme nebeneinander); veni-sancte: Orgelsatz, abgewiesen.
+- Feineres Öffnen für zerfallene Notenköpfe (Rorate) dreimal verworfen (siehe WISSEN).
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

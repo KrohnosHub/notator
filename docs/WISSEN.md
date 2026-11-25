@@ -233,6 +233,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Ein grosser Buchstabe in der Textzeile unter dem Systemanfang («D» bei Psalm 23) ist keine Initiale. Gegenproben für moderne Notation
   liegen nur im Scratchpad der Sitzung (9 Blätter aus dem Drive: Benedictus, Christus vincit, Dies irae, Ite missa est, Puer natus,
   Regina caeli simplex, Jesu dulcis, Kyrie XII, Victimae paschali) – vor jedem Build prüfen.
+- **Versuch feineres Öffnen (25.11.2026, verworfen):** Schlanke, gerasterte Notenköpfe (Rorate caeli) zerfallen beim Öffnen in
+  10×10-px-Reste. Kleinerer Kern für alle Systeme: Notenzahl 75 → 64 % (Linienreste werden Noten); als vierter Durchgang nur an Stellen
+  verworfener Reste: 75 → 71 %, auch auf Systeme mit vielen Resten beschränkt noch 73 %. Rorate bleibt offen.
+- **Runde 17 (25.11.2026, ohne Code-Änderung):** Te Deum (einfacher Ton, Webausdruck mit Akkorden) blind 91 % Notenzahl, 100 % Silben.
+  Veni Sancte Spiritus war ein Orgelsatz (10. Gegenprobe, abgewiesen). Popule meus (Doppelseite mit je zwei kurzen Systemen
+  nebeneinander, «Hagios | Sanctus») ist als Fall ohne Soll abgelegt – nebeneinanderstehende Systeme werden nicht getrennt (offen).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
