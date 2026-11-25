@@ -1,4 +1,4 @@
-# Notator – Stand Build 440 (25.11.2026)
+# Notator – Stand Build 441 (25.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–440 (Auszug)
+## Neu in Build 298–441 (Auszug)
 
+- **PDF lesen (441):** zerfallene Notenköpfe auch ohne Notenlinie dazwischen (gesprenkelter Druck), wenn fast quadratisch und im System (Salve mater «pe»).
 - **PDF lesen (440):** «⚠ prüfen» auch, wenn eine Strophenzeile nicht auf die Noten ihres Systems passt (Silbenzahl ≠ Notenplätze).
 - **PDF lesen (439):** Titel = Textanfang, wenn kein passender Titel gedruckt ist (Proprien: «Introitus», Anlass → Untertitel); «⚠ prüfen» direkt über dem eigenen System statt im Text des vorigen Systems (bei Strophen mitten in deren Zeilen).
 - **PDF lesen (438, Meldung Matthias):** Notenköpfe auf einer Notenlinie, die beim Entfernen der Linie in Stücke zerfallen, werden wieder als Note erkannt (Salve mater «trans», «ter»); Doppelstrich zwischen Kehrvers und Strophenbeginn, damit der Strophen-Assistent die Vorlage ab «1.» erkennt.

@@ -276,6 +276,9 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Notenlinien dort im Scan nur noch als Pünktchen erscheinen (keine Zeilenspitze in der Projektion, auch nicht mit Schwelle 200) – die
   Notenköpfe sind deutlich. Ein System aus Notenköpfen statt Linien zu erschliessen wäre möglich, aber ein grösserer Umbau (offen).
   Gaudeamus: niedrige Werte sind vor allem ein Messartefakt (Gloria Patri als eigenes Stück mit Initiale, Soll als ein Stück).
+- **Build 441 (25.11.2026):** Die in Build 438 verworfene Variante «Stücke ohne Linie dazwischen» geht mit zwei Bedingungen: Höhe ≤ 1.2 × Breite
+  und Mitte innerhalb des Systems (±0.3 Linienabstände). Die Fehlfunde in Dominus dixit/Justorum animae waren 1.3–1.4-mal so hoch wie
+  breit (♭-Teile, Striche über dem System), echte Köpfe 1.0–1.05. Mock-Messung: nur Salve mater +1 %, sonst unverändert; Gegenproben abgewiesen.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

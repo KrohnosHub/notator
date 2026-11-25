@@ -1,0 +1,59 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "MEdia víta in mórte súmus",
+   "mode": "4",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "ME(d)di(e)a(f) ví(g)ta(f.e) (,) in(dh) mór(h)te(gf) sú(ghgge)mus:(e) (;) quem(dh) quæ(h)ri(g)",
+    "mus(ghg) ad(fe)ju(fgf)tó(g.)rem,(g.) (;) ni(gfd)si(fgh) te(gh) Dó(gf)mi(egff)ne?(eef.) (:) qui(d) pro(e) pec(f)cá(g)",
+    "tis(f) nó(ffed)stris(e.d.) (;) jus(dfh)te(g.) i(g)rá(gfgh)sce(egff)ris:(f.e.j) (:) Sánc(h)te(jixg.hihggfd.) Dé(efg)",
+    "us,(f.e.) (;) Sánc(h)te(ixg.hihggfd.) fór(efg)tis,(f.e.) (;) Sánc(h)te(jixghihgg) mi(d)sé(e)ri(f)cors(g) Sal(f)vá(fed)",
+    "tor,(e.d.) (;) a(f)má(h)ræ(g) mór(g)ti(d.) (,) ne(g) trá(gfgh)das(egff) nos.(f.e.c) (::) V/.() In(dh) te(gh) spe(h)ra(h)",
+    "vé(ixihg.hijih)runt(h.) (,) pá(fh)tres(hgh) nó(fede)stri;(d.) (;) spe(fed)ra(ef)vé(gh)runt,(g.) (,) et(h) li(hj)be(h)rá(hgfedg)",
+    "sti(gfgh) é(egff)os.(f.e.) (::) Sán(h)cte(jixg) etc.(hihggfd.) (::) V/.() Ad(dh) te(gh) cla(h)ma(hj)vé(ixihg.hijih)",
+    "runt(h.) (,) pá(fh)tres(hgh) nó(fede)stri;(d.) (;) cla(fed)ma(ef)vé(gh)runt,(g.) (,) et(hj) non(h) sunt(hgfedg) con(gfgh)",
+    "fú(egff)si.(f.e.) (::) Sán(h)cte(ixg.) etc.(hihggfd.) (::) Gló(dh)ri(gh)a(h) Pá(jixiihg.hihjih)tri,(h.) (,) et(fh) Fi(hgh)",
+    "li(fede)o,(d.) (;) et(fed) Spi(ef)rí(gh)tu(g)i(gfgh) Sán(egff)cto.(f.e.) (::) Sán(h)cte(jixg.) etc.(hihggfd.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    2,
+    0,
+    1,
+    0,
+    0,
+    0,
+    2,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Media vita in morte",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 4986,
+  "output_tokens": 513,
+  "costUsd": 0.015101999999999999
+ },
+ "durationMs": 6916
+}
