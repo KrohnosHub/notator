@@ -36,7 +36,7 @@ globalThis._pgNurPrototyp = false;
   check(ps[0].mode === '5' && ps[1].mode === '?', 'pgPieces: Modus ' + ps[0].mode + ' / ' + ps[1].mode);
   check(ps[0].incipit === 'SAlve Regína mater mi x' && ps[1].clef === 'c3', 'pgPieces: Incipit/Schlüssel ' + ps[0].incipit + ' / ' + ps[1].clef);
   const g = pgPieceGabc(ps[0], true);
-  check(/^annotation: 5\ndrop-cap: auto\n%%\n\n\(c4\) /.test(g) && /\(::\)$/.test(g) && !/[{}<>]/.test(g), 'pgPieceGabc: ' + g);
+  check(/^name: Salve Regina mater mi;\nannotation: 5\ndrop-cap: auto\n%%\n\n\(c4\) /.test(g) && /\(::\)$/.test(g) && !/[{}<>]/.test(g), 'pgPieceGabc: ' + g);
 })();
 
 // 2. Synthetisches System: 4 Linien (Abstand 39 px), Do-Schlüssel auf Linie 4, Noten d f h e, Trennstrich, Text darunter

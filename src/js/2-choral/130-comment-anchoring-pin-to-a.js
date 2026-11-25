@@ -68,7 +68,7 @@ function gregResolveAnchorPosition(score, anchorNoteIdx) {
     if (foundIdx >= l.notationsStartIndex && foundIdx < l.notationsStartIndex + l.numNotationsOnLine) { line = l; break; }
   }
   if (!line) return null;
-  return { x: (line.bounds.x || 0) + nt.bounds.x, y: (line.bounds.y || 0) + nt.bounds.y };
+  return { x: (line.bounds.x || 0) + nt.bounds.x, y: (line.bounds.y || 0) + nt.bounds.y, lineTop: line.bounds.y || 0 };
 }
 
 // Finds the gregEntries[] index of the note-bearing entry whose rendered
@@ -168,6 +168,9 @@ function gregEmbedCommentsIntoSvg(svgEl, entries, score, interactive) {
     if (anchor) {
       x = anchor.x + (e.dx || 0);
       y = anchor.y + (e.dy || 0);
+      // «⚠ prüfen» (Build 439): oberhalb des eigenen Systems statt fest 110 Einheiten über der Note – das lag im Text des
+      // vorigen Systems, bei Strophen mitten in deren Zeilen (Meldung Matthias, Salve mater)
+      if (e.pgUnsure) y = anchor.lineTop - 32 + (e.dy === -110 ? 0 : (e.dy || 0));
     } else {
       // Legacy fallback for comments saved before note-anchoring existed
       const vb = (svgEl.getAttribute('viewBox') || '').trim().split(/\s+/).map(Number);

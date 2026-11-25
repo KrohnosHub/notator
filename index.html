@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-AjO2lzA4oaIcZC/YFpTA9hqi2L23QqLZuVHU0VO3DRs=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-EgJ/EvSu9XAugM7xxlKL2VbtDXTTPyCWgPswxvtLoNc=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -4625,7 +4625,7 @@ function gregResolveAnchorPosition(score, anchorNoteIdx) {
     if (foundIdx >= l.notationsStartIndex && foundIdx < l.notationsStartIndex + l.numNotationsOnLine) { line = l; break; }
   }
   if (!line) return null;
-  return { x: (line.bounds.x || 0) + nt.bounds.x, y: (line.bounds.y || 0) + nt.bounds.y };
+  return { x: (line.bounds.x || 0) + nt.bounds.x, y: (line.bounds.y || 0) + nt.bounds.y, lineTop: line.bounds.y || 0 };
 }
 
 // Finds the gregEntries[] index of the note-bearing entry whose rendered
@@ -4725,6 +4725,9 @@ function gregEmbedCommentsIntoSvg(svgEl, entries, score, interactive) {
     if (anchor) {
       x = anchor.x + (e.dx || 0);
       y = anchor.y + (e.dy || 0);
+      // «⚠ prüfen» (Build 439): oberhalb des eigenen Systems statt fest 110 Einheiten über der Note – das lag im Text des
+      // vorigen Systems, bei Strophen mitten in deren Zeilen (Meldung Matthias, Salve mater)
+      if (e.pgUnsure) y = anchor.lineTop - 32 + (e.dy === -110 ? 0 : (e.dy || 0));
     } else {
       // Legacy fallback for comments saved before note-anchoring existed
       const vb = (svgEl.getAttribute('viewBox') || '').trim().split(/\s+/).map(Number);
@@ -7372,6 +7375,24 @@ function pgRepairMerged(lines, staves) {
   }
 }
 // Systeme (über alle Seiten) zu Stücken: ein System mit Initiale beginnt ein neues Stück
+// Titel eines Stücks (Build 439): Gedruckter Titel, wenn er zum Textanfang passt (Lieder, Hymnen: «Salve Mater», «Tota pulchra»).
+// Sonst – nur Gattung («Introitus. I.»), Anlass («In ipsa ecclesia dedicata») oder gar nichts gedruckt – gilt der Textanfang bis zum
+// ersten Satzzeichen (höchstens 4 Wörter) als Titel, das Gelesene kommt in den Untertitel.
+function pgTitleFor(p) {
+  const t = p.items[0].title || {title: '', subtitle: ''};
+  const norm = w => String(w).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-zæœ]/g, '');
+  const it0 = p.items[0], first = (it0.staff.dropcap ? String(it0.text || '').replace(/^(\p{Lu})\1/u, '$1') : String(it0.text || ''));
+  const raw = p.items.map((it, k) => k ? it.text : first).join(' ').replace(/-\s+(?=\p{L})/gu, '-').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w) && !/^(ij|iij)\.$/i.test(w));
+  const head = [];
+  for (const w of raw) { const c = w.replace(/-/g, ''); head.push(c.replace(/[,.;:!?]+$/, '')); if (/[,.;:!?]$/.test(c) || head.length >= 4) break; }
+  const pretty = head.map((w, i) => { const x = w.normalize('NFD').replace(/[\u0301]/g, '').normalize('NFC'); const y = x === x.toUpperCase() ? x.toLowerCase() : /^\p{Lu}{2}\p{Ll}/u.test(x) ? x.charAt(0) + x.slice(1).toLowerCase() : x; return i ? y : y.charAt(0).toUpperCase() + y.slice(1); }).join(' ');
+  const textWords = new Set(raw.slice(0, 8).map(norm));
+  const fits = t.title && t.title.split(/\s+/).some(w => norm(w).length >= 4 && textWords.has(norm(w)));
+  if (fits) return {title: t.title, subtitle: t.subtitle};
+  if (!pretty) return t.title || t.subtitle ? t : null;
+  const sub = [String(t.title || '').replace(/\s+[IVX]+\.?$/, '').replace(/\.$/, ''), t.subtitle].filter(x => x).join(' · ');   // Modus steht schon in der Annotation
+  return {title: pretty, subtitle: sub};
+}
 function pgPieces(items) {
   const pieces = [];
   for (const it of items) {
@@ -7383,7 +7404,7 @@ function pgPieces(items) {
     const words = p.items.map((it, k) => k === 0 && it.staff.dropcap ? String(it.text || '').replace(/^(\p{Lu})\1/u, '$1') : it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w));
     p.incipit = words.slice(0, 5).join(' ').replace(/[,.;:!?]+$/, '') || '(ohne Text)';
     p.hasDropCap = !!p.items[0].staff.dropcap;
-    p.title = p.items[0].title || null;                            // Titel/Untertitel über dem ersten System (Build 437)
+    p.title = pgTitleFor(p);                                       // Titel/Untertitel (Build 437/439)
     p.mode = p.items[0].mode || '?';                               // Modus über der Initiale des ersten Systems
     const cl = p.items.map(it => it.staff.clef).filter(c => c), cnt = {};
     cl.forEach(c => { cnt[c] = (cnt[c] || 0) + 1; });
@@ -9007,7 +9028,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '438';
+const NOTATOR_BUILD_ID = '439';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

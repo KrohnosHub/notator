@@ -265,6 +265,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Stück daneben wird angefügt. Dieselbe Regel ohne Linie dazwischen (zerfallene Köpfe in sprenkligem Druck, «sú-pe-ris») erzeugte
   Zusatznoten in Dominus dixit und Justorum animae (−25 %) – verworfen. Vor dem ersten System mit Strophen steht jetzt ein Doppelstrich,
   wenn das System davor ohne Trennstrich endet (Kehrvers-Wiederholung | Strophe; der Assistent erkennt «1.» nach Doppelstrich als Vorlagenbeginn).
+- **Build 439 (25.11.2026):** Titel-Lesung an 8 Stücken live geprüft: Lieder/Hymnen richtig («Tota pulchra», «Attende, Domine»,
+  «Stabat Mater»); bei Proprien liefert die KI Gattung («Introitus. I.») oder Anlass («In ipsa ecclesia dedicata») – passt kein Wort
+  (≥ 4 Buchstaben) des gelesenen Titels zu den ersten 8 Textwörtern oder fehlt er, wird der Textanfang bis zum ersten Satzzeichen
+  (max. 4 Wörter, über Systemgrenzen zusammengesetzt, Initial-Grossbuchstaben normalisiert) Titel und das Gelesene Untertitel.
+  **«⚠ prüfen»:** `dy −110` von der Note aus lag im Textbereich des **vorigen** Systems – bei Strophen mitten in deren Zeilen. Jetzt
+  `lineTop − 32` (oberer Rand des eigenen Systems, `gregResolveAnchorPosition` liefert `lineTop`), am PC und in der Handy-Ansicht geprüft.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

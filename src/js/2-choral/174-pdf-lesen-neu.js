@@ -252,6 +252,24 @@ function pgRepairMerged(lines, staves) {
   }
 }
 // Systeme (über alle Seiten) zu Stücken: ein System mit Initiale beginnt ein neues Stück
+// Titel eines Stücks (Build 439): Gedruckter Titel, wenn er zum Textanfang passt (Lieder, Hymnen: «Salve Mater», «Tota pulchra»).
+// Sonst – nur Gattung («Introitus. I.»), Anlass («In ipsa ecclesia dedicata») oder gar nichts gedruckt – gilt der Textanfang bis zum
+// ersten Satzzeichen (höchstens 4 Wörter) als Titel, das Gelesene kommt in den Untertitel.
+function pgTitleFor(p) {
+  const t = p.items[0].title || {title: '', subtitle: ''};
+  const norm = w => String(w).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-zæœ]/g, '');
+  const it0 = p.items[0], first = (it0.staff.dropcap ? String(it0.text || '').replace(/^(\p{Lu})\1/u, '$1') : String(it0.text || ''));
+  const raw = p.items.map((it, k) => k ? it.text : first).join(' ').replace(/-\s+(?=\p{L})/gu, '-').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w) && !/^(ij|iij)\.$/i.test(w));
+  const head = [];
+  for (const w of raw) { const c = w.replace(/-/g, ''); head.push(c.replace(/[,.;:!?]+$/, '')); if (/[,.;:!?]$/.test(c) || head.length >= 4) break; }
+  const pretty = head.map((w, i) => { const x = w.normalize('NFD').replace(/[\u0301]/g, '').normalize('NFC'); const y = x === x.toUpperCase() ? x.toLowerCase() : /^\p{Lu}{2}\p{Ll}/u.test(x) ? x.charAt(0) + x.slice(1).toLowerCase() : x; return i ? y : y.charAt(0).toUpperCase() + y.slice(1); }).join(' ');
+  const textWords = new Set(raw.slice(0, 8).map(norm));
+  const fits = t.title && t.title.split(/\s+/).some(w => norm(w).length >= 4 && textWords.has(norm(w)));
+  if (fits) return {title: t.title, subtitle: t.subtitle};
+  if (!pretty) return t.title || t.subtitle ? t : null;
+  const sub = [String(t.title || '').replace(/\s+[IVX]+\.?$/, '').replace(/\.$/, ''), t.subtitle].filter(x => x).join(' · ');   // Modus steht schon in der Annotation
+  return {title: pretty, subtitle: sub};
+}
 function pgPieces(items) {
   const pieces = [];
   for (const it of items) {
@@ -263,7 +281,7 @@ function pgPieces(items) {
     const words = p.items.map((it, k) => k === 0 && it.staff.dropcap ? String(it.text || '').replace(/^(\p{Lu})\1/u, '$1') : it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w));
     p.incipit = words.slice(0, 5).join(' ').replace(/[,.;:!?]+$/, '') || '(ohne Text)';
     p.hasDropCap = !!p.items[0].staff.dropcap;
-    p.title = p.items[0].title || null;                            // Titel/Untertitel über dem ersten System (Build 437)
+    p.title = pgTitleFor(p);                                       // Titel/Untertitel (Build 437/439)
     p.mode = p.items[0].mode || '?';                               // Modus über der Initiale des ersten Systems
     const cl = p.items.map(it => it.staff.clef).filter(c => c), cnt = {};
     cl.forEach(c => { cnt[c] = (cnt[c] || 0) + 1; });

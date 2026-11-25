@@ -1,4 +1,4 @@
-# Notator – Stand Build 438 (25.11.2026)
+# Notator – Stand Build 439 (25.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–438 (Auszug)
+## Neu in Build 298–439 (Auszug)
 
+- **PDF lesen (439):** Titel = Textanfang, wenn kein passender Titel gedruckt ist (Proprien: «Introitus», Anlass → Untertitel); «⚠ prüfen» direkt über dem eigenen System statt im Text des vorigen Systems (bei Strophen mitten in deren Zeilen).
 - **PDF lesen (438, Meldung Matthias):** Notenköpfe auf einer Notenlinie, die beim Entfernen der Linie in Stücke zerfallen, werden wieder als Note erkannt (Salve mater «trans», «ter»); Doppelstrich zwischen Kehrvers und Strophenbeginn, damit der Strophen-Assistent die Vorlage ab «1.» erkennt.
 - **PDF lesen (437, Meldung Matthias zu Salve mater):** Titel und Untertitel über dem ersten System werden gelesen; Strophennummern («1.», «2.» …) werden gesetzt; liest die KI Strophenzeilen als Hauptzeilen, wird einmal neu gelesen; ein System, dessen linker Teil blass ist, wird nach links ergänzt (Salve mater «O Ma-rí-a», Pueri «portantes» +33 % Notenzahl).
 - **PDF lesen (436):** Mehrere Strophen untereinander unter demselben System werden gelesen und als weitere Strophen übernommen (Tota pulchra 5, Attende 4, Salve mater 5).
