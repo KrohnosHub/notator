@@ -1,0 +1,39 @@
+{
+ "id": "adoremus-v",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Adoremus in aeternum (Modus V, mit Ps. 116 und Gloria), Webseiten-Ausdruck gregorian-chant-hymns.com mit Handnotizen, Drive des Nutzers",
+  "reference": "GregoBase 3017 (LU S. 1853), Text nach dem Druck",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c3",
+  "initiale-gross",
+  "psalmvers",
+  "gloria-patri",
+  "handschriftliche-akkorde",
+  "handschrift-text",
+  "schraeg"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 14 (25.11.2026): blind gemessen, Soll danach aus GregoBase 3017. «Ps.» und «*» weggelassen; «Adorémus.» nach dem Vers steht ohne Noten; im letzten System ist der Text von Hand geschrieben («Adoremus...» am Ende ohne Noten, weggelassen).",
+ "pieces": [
+  {
+   "incipit": "Adoremus in aeternum",
+   "mode": "5",
+   "clef": "c3",
+   "systems": [
+    "AD(f)o(e)ré(f)mus(ed) in(h) æ(i)tér(hg)num(f.) (,) sanc(f)tís(e)si(f)mum(ed) Sa(ef)cra(e)",
+    "mén(d.)tum.(d.) (::) Lau(d)dá(f)te(h) Dó(h)mi(h)num(h) o(h)mnes(h) gen(i)tes:(h.) (:) lau(h)dá(h)te(h)",
+    "e(h)um(h) o(i)mnes(g) pó(h)pu(f)li.(f.) (::) Quó(d)ni(f)am(h) con(h)fir(h)má(h)ta(h) est(h) su(h)per(h)",
+    "nos(h) mi(h)se(h)ri(h)cór(h)di(h)a(h) e(i)jus:(h.) (:) et(h) vé(h)ri(h)tas(h) Dó(h)mi(h)ni(h) ma(h)net(h)",
+    "in(i) æ(g)tér(h)num.(f.) (::) A()do()ré()mus.()",
+    "Gló(d)ri(f)a(h) Pa(h)tri(h) et(h) Fí(i)li(h)o,(h.) (:) et(h) Spi(h)rí(i)tu(g)i(g) Sanc(h)to.(f.) (::)",
+    "Sic(d)ut(f) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h) et(h) nunc,(h) et(h) sem(i)per:(h.) (:) et(h) in(h)",
+    "sae(h)cu(h)la(h) sae(h)cu(h)ló(i)rum.(g) A(h)men.(f.) (::)"
+   ]
+  }
+ ]
+}

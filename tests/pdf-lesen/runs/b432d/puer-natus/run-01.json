@@ -1,0 +1,49 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "PUer natus in Béthlehem, allelúia",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "PU(d)er(f) na(f)tus(e) in(f) Béth(g)le(f)hem,(e) al(d)le(f)lú(e)ia:(d.) (;) Un(d)de(f) gau(g)det(h)",
+    "Je(g)rú(h)sa(g)lem,(f.) (;) al(f)le(f)lú(f)ia,(f) al(h)le(g)lú(f)ia.(e.) (::) R/.() In(d) cor(f)dis(g) jú(h)bi(ixi)lo(j.) (;) Chri(j)",
+    "stum(f) na(f)tum(f) a(h)do(g)ré(f)mus,(e.) Cum(d) no(f)vo(f) cán(e)ti(e)co.(d.) (;)",
+    "As(d)súmp(f)sit(f) car(e)nem(f) Fí(g)li(f)us,(e) al(d)le(f)lú(e)ia,(d.) (;) De(d)i(f) Pa(g)tris(h) al(g)tís(h)",
+    "si(g)mus,(f.) (;) al(f)le(f)lú(f)ia,(f) al(h)le(g)lú(f)ia.(e.) (::) R/.() In() cor()dis.()",
+    "Per(d) Ga(f)bri(f)é(e)lem(f) nún(g)ti(f)um,(e) al(d)le(f)lú(e)ia,(d.) Vir(d)go(f) con(g)cé(h)pit(g) Fí(h)",
+    "li(g)um,(f.) (;) al(f)le(f)lú(f)ia,(f) al(h)le(g)lú(f)ia.(e.) (::) R/.() In() cor()dis.()",
+    "Tam(d)quam(f) spon(f)sus(e) de(f) thá(g)la(f)mo,(e) al(d)le(f)lú(e)ia,(d.) (;) Pro(d)cés(f)sit(g) Ma(h)tris(g)",
+    "ú()te(h)ro,() al()le(g)lú()ia,(f.) (;) al(f)le(f)lú(f) R/.()ia.(f) In(h) cor(g)dis.(fe.) (::)",
+    "Hic(d) ja(f)cet(f) in(e) prae(f)sé(g)pi(f)o,(e) al(d)le(f)lú(e)ia,(d.) (;) Qui(d) reg(f)nat(g) si(h)ne(g) tér(h)",
+    "mi(g)no,(f.) (;) al(f)le()lú(f)ia,(f) al(f)le(h)lú(g)ia.(f) R/.() In(e.) (::) cor()dis.()",
+    "An(ef)ge(g)lus(fe) pas(d)tó(f)ri(e)bus,(d.) al()le()lú(d)ia,(f) Re()vé()lat(g) quod(h) sit(g) Dó(h)",
+    "al()le(f)lú(f)ia,(f) al(h)le(g)lú(f)ia.(e.) (::) R/.() In() cor()dis.()"
+   ],
+   "unsure": [
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4,
+    0,
+    3,
+    4,
+    1
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3827,
+  "output_tokens": 713,
+  "costUsd": 0.014784
+ },
+ "durationMs": 6060
+}

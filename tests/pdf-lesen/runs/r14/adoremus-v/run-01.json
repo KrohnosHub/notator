@@ -1,0 +1,39 @@
+{
+ "model": "claude-sonnet-5-5 (über curl)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "ADorémus in ætérnum sanctíssimum Sacra",
+   "mode": "5",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "AD(f)o(e)ré(f)mus(ed) in(h) æ(i)tér(hg)num(f.) (,) sanc(f)tís(e)si(f)mum(ed) Sa(ef)cra(e)",
+    "mén(d.)tum.(d.) (::) <i>Ps.</i>() Lau(d)dá(f)te(h) Dó(h)mi(h)num(h) o(h)mnes(h) gen(i)tes:(h.) (:) lau(h)dá(h)te(h)",
+    "e(h)um(h) o(i)mnes(g) pó(h)pu(f)li.(f.) (::) Quó(d)ni(f)am(h) con(h)fir(h)má(h)ta(h) est(h) su(h)per(h)",
+    "nos(h) mi(h)se(h)ri(h)cór(h)di(h)a(h) e(i)jus:(h.) (:) et(h) vé(h)ri(h)tas(h) Dó(h)mi(h)ni(h) ma(h)net(h)",
+    "in(i) æ()tér(g)num.(h) A()do()ré(f.)mus.() (::)",
+    "Gló(d)ri(f)a(h) Pa(h)tri(h) et(h) Fí(i)li(h)o,(h.) (:) et(h) Spi(h)rí(i)tu(g)i(g) Sanc(h)to.(f.) (::)",
+    "Sic(d)ut(f) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h) et(h) nunc,(h) et(h) sem(i)per:(h.) (:) et(h) in(h)",
+    "sae(h)cu(h)la() sae(h)cu(h)lo(h)rum.(i) A()men.(g) A()do(h)re()mus...(f.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0,
+    4,
+    0,
+    0,
+    4
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3102,
+  "output_tokens": 412,
+  "costUsd": 0.010324
+ },
+ "durationMs": 9177
+}

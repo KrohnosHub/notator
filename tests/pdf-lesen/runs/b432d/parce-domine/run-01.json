@@ -1,0 +1,39 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "PArce Dómine, párce pópulo túo",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "PAr(h)ce(h) Dó(h)mi(g)ne,(g.f.) (,) pár(h)ce(h) pó(h)pu(g)lo(gf) tú(gf)o:(e.d.) (;) ne(f) in(e) æ(f)tér(g)",
+    "num(h.) i(e)ras(f)cá(gf)ris(e) nó(fe)bis.(d.) (::)",
+    "Flec(h)tá(h)mus(g) í(h)ram(iixi) vín(h)di(gf)cem,(f) (,) Plo(g.)ré(ixi)mus(i) an(h)te(f) Jú(g)di(g)cem;(g.h.) (;)",
+    "Cla(j)mé(k)mus(h) ó(ixi)re(h) súp(g)pli(f)ci,(f.) (,) Di(e)cá(f)mus(g) ó(h)mnes(d) cér(f)nu(fe)i:(d.) (::)",
+    "Nó(h)stris(h) má(g)lis(h) of(ixi)fén(h)di(gf)mus(f) (,) Tú(g)am(ixi) Dé(iixi)us(h) cle(f)mén(g)ti(g)am(g.h.) (;)",
+    "Ef(j)fún(k)de(h) nó(ixi)bis(h) dé(g)su(f)per(f.) (,) Re(e)mís(f)sor(g) in(h)dul(d)gén(f)ti(fe)am.(d.) (::)",
+    "Dans(h) tém(h)pus(g) ac(h)cep(ixi)tá(h)bi(gf)le,(f) (,) Da(g) la(ixi)cri(i)má(h)rum(f) rí(g)vu(g)lis(g.h.) (;)",
+    "La(j)vá(k)re(h) cór(iixii)dis(h) víc(g)ti(f)mam,(f.) (,) Quam(e) læ(f)ta(g) a(g)dú(h)rat(d) cá(f)ri(fe)tas.(d.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3073,
+  "output_tokens": 433,
+  "costUsd": 0.010476
+ },
+ "durationMs": 5724
+}

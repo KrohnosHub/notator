@@ -1,0 +1,37 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Ubi cáritas est vera, Deus",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": false,
+   "systems": [
+    "U(f)bi(f) cá(gh)ri(hg)tas(h) est(ixi) ve(hg)ra,(hg) (,) De(f)us(f) i(f)bi(g) est.(g.) (::)",
+    "V/.() Con(f)gre(f)gá(gh)vit(hg) nos(h) in(ixi) u(hg)num(hg) (,) Chri(f)sti(f) a(g)mor.(g.) (::) V/.() Ex(f)sul(f)té(gh)mus(hg) et(h) in(ixi) ip(hg)so(hg) (,) iu(f)cun(f)dé(g)mur.(g.) (::)",
+    "V/.() Ti(f)me(g)á(f)mus(gh) et(h) a(f)mé(gf)mus(dc) De(g)um(h) vi(g)vum.(f.) (::) V/.() Et(f) ex(g) cor(f)de(gh) di(h)li(f)gá(gf)mus(dc) nos(g) sin(ghg)cé(fdf)ro.(f.) (::)",
+    "V/.() Si(f)mul(f) er(gh)go(hg) cum(h) in(i) u(hg)num(hg) (,) con(f)gre(f)gá(g)mur(g.) (::) V/.() Ne(f) nos(f) men(gh)te(hg) di(h)vi(ixi)dá(hg)mur,(hg) (,) ca(f)ve(f)á(g)mus(g.) (::)",
+    "V/.() Ces(f)sent(g) iúr(f)gi(gh)a(h) ma(f)li(gf)gna,(dc) ces(g)sent(h) li(g)tes(f.) (::) V/.() Et(f) in(g) mé(f)di(gh)o(h) no(f)stri(gf) sit(dc) Chri(g)stus(ghg) De(fdf)us(f.) (::)",
+    "V/.() Si(f)mul(f) quo(gh)que(hg) cum(h) be(ixi)á(hg)tis(hg) (,) vi(f)de(f)á(g)mus(g.) (::) V/.() Glo(f)ri(f)án(gh)ter(hg) vul(h.)tum(ixi) tu(hg)um,(hg) (,) Chri(f)ste(f) De(g)us(g.) (::)",
+    "V/.() Gáu(f)di(g)um,(f) quod(gh) est(h) im(f)mén(gf)sum,(dc) at(g)que(h) pro(g)bum.(f.) (::) V/.() Sae(f)cu(g)la(f) per(gh) in(h)fi(f)ni(gf)ta(dc) sae(g)cu(ghg)ló(fdf)rum.(f.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3653,
+  "output_tokens": 502,
+  "costUsd": 0.012326
+ },
+ "durationMs": 5106
+}

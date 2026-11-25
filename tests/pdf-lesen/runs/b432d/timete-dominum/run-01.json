@@ -1,0 +1,31 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "TIméte Dóminum, omnes sancti ejus",
+   "mode": "8",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "TI(e.)mé(f)te(h) Dó(h)mi(h)num,(h) om(h)nes(h) sanc(h)ti(h) e(i)jus:(h.) (;)",
+    "quó(h)ni(h)am(h) ni(h)hil(h) de(h)ëst(h) ti(h)mén(h)ti(g)bus(h) e(f)um.(e.) (::)",
+    "V/.() In(h)qui(h)rén(h)tes(h) au(h)tem(h) Dó(i)mi(h)num,(h.) (;) non(h) de(h)fí(h)",
+    "ci(h)ent(h) om(g)ni(h) bo(f)no.(e.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2435,
+  "output_tokens": 188,
+  "costUsd": 0.00675
+ },
+ "durationMs": 4809
+}

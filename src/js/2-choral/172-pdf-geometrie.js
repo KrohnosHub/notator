@@ -530,7 +530,7 @@ function pgAnalyseStaff(dark, st, g, ref) {
     };
     for (let i = out.length - 1; i >= 0; i--) if (pgRound(out[i].p) >= 8 && !hasLedger(out[i])) { pgDiag('über dem System ohne Hilfslinie', {x0: out[i].x, x1: out[i].x, y0: out[i].y, y1: out[i].y, area: 0}, st); out.splice(i, 1); }
   }
-  st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt};
+  st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt, firstNoteX: out.length ? Math.min(...out.map(n => n.x)) : Infinity};
   if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
 }
@@ -737,7 +737,15 @@ function pgFindBars(st) {
   const reg = pgCrop(c.reg, ra, rb, 0, c.reg.w);
   const k = Math.max(5, pgRound(0.55 * gl));
   const v = pgLine1(pgLine1(reg, k, 0, true), k, 0, false);           // nur senkrechte Läufe ≥ 0.55 Linienabstand
-  const near = pgLine1(pgLine1(pgCrop(c.op, ra, rb, 0, c.op.w), 2 * pgInt(0.3 * gl) + 1, 1, false), 2 * pgInt(0.15 * gl) + 1, 0, false);
+  let opc = pgCrop(c.op, ra, rb, 0, c.op.w);
+  // Build 430 (nicht im Prototyp): kräftig gedruckte Trennstriche überstehen das Öffnen und galten dann als Notenkopf (Tota pulchra) –
+  // für den Hals-Test hohe, schmale Flecken (Strich selbst) nicht als Notenkopf zählen
+  if (!globalThis._pgNurPrototyp) {
+    const m2 = pgMask(opc.w, opc.h);
+    for (const runs of pgComponents(opc)) { const b = pgBox(runs); if (b[2] - b[0] + 1 <= 0.35 * gl && b[3] - b[1] + 1 >= 1.4 * gl) continue; for (const [y, a, z] of runs) for (let x = a; x <= z; x++) m2.a[y * m2.w + x] = 1; }
+    opc = m2;
+  }
+  const near = pgLine1(pgLine1(opc, 2 * pgInt(0.3 * gl) + 1, 1, false), 2 * pgInt(0.15 * gl) + 1, 0, false);
   let bars = [];
   // Build 430 (nicht im Prototyp): in unscharfen Kopien zerfällt ein Strich in übereinanderliegende Stücke (Dextera Domini) –
   // Stücke mit gleicher Lage (± 0.15 Linienabstände) und Lücke unter 0.6 Linienabständen wieder zusammensetzen
@@ -759,9 +767,12 @@ function pgFindBars(st) {
   }
   for (const runs of comps) {
     const [bx0, by0, bx1, by1] = pgBox(runs);
+    if (Array.isArray(globalThis._pgBarLog0)) globalThis._pgBarLog0.push({y: Math.round(q[0]), x: Math.round((bx0 + bx1) / 2 + c.xa), h: +((by1 - by0 + 1) / gl).toFixed(2), w: +((bx1 - bx0 + 1) / gl).toFixed(2)});
     if (bx1 - bx0 + 1 > 0.35 * gl) continue;                          // zu breit: Initiale, Notenstapel
     const cx = (bx0 + bx1) / 2 + c.xa;
     if (cx < x0 + PG_CLEF * gl) continue;
+    // Build 430: kein Trennstrich direkt hinter dem Schlüssel – dort steht höchstens die ♭-Vorzeichnung (Hals ≥ 1.4 Linienabstände, Tota pulchra)
+    if (!globalThis._pgNurPrototyp && cx < x0 + 2.2 * gl && bx1 - bx0 + 1 < 0.35 * gl) { const nn = (st._ctx.firstNoteX || Infinity); if (cx < nn) continue; }
     let tot = 0, hit = 0;
     for (const [y, a, b] of runs) { tot += b - a + 1; for (let x = a; x <= b; x++) hit += near.a[y * near.w + x]; }
     if (hit > 0.25 * tot) continue;                                    // hängt an einem Notenkopf: Hals
@@ -782,9 +793,9 @@ function pgFindBars(st) {
     // Build 419 (nicht im Prototyp): eine Divisio minima endet knapp über der obersten Linie; ein Strich, der über den
     // Suchbereich (0.9 Linienabstände) hinausragt, ist Handschrift (Akkordzeichen über dem System, Dominus dixit)
     if (t === ',' && by0 <= 1 && !globalThis._pgNurPrototyp) continue;
-    // Build 430: eine gedruckte Divisio minima reicht bis in den Zwischenraum unter der obersten Linie (untere Stufe 4.9–5.1);
-    // Striche, die schon über der Linie enden (≥ 5.5), sind Unterlängen der Textzeile darüber (Asperges, Signum magnum)
-    if (t === ',' && !globalThis._pgNurPrototyp && pm - L > 5.5) continue;
+    // Build 430: eine gedruckte Divisio minima reicht bis in den Zwischenraum unter der obersten Linie (untere Stufe 4.9–5.75 in unscharfen Kopien);
+    // Striche, die schon über der Linie enden (≥ 5.5), (≥ 5.84) sind Unterlängen der Textzeile darüber (Asperges, Signum magnum)
+    if (t === "," && !globalThis._pgNurPrototyp && pm - L > 5.8) continue;
     // … ebenso ein kurzer Strich unter 0.07 Linienabständen mittlerer Breite: gedruckte Divisio minima 0.09–0.21, Feder/Bleistift dünner
     if (t === ',' && !globalThis._pgNurPrototyp && tot / (by1 - by0 + 1) < 0.05 * gl) continue;
     bars.push({x: cx, type: t});
@@ -833,13 +844,16 @@ function pgDropcapBox(dark, st, gl, others) {
   const ybx = pgInt(Math.min(dark.h, yb + 6 * gl));                    // grosse Zier-Initialen reichen ins nächste System
   let best = null; const boxes = [];
   for (const runs of pgComponents(pgCrop(dark, ya, ybx, xa, xb))) {
-    const b = pgBox(runs); boxes.push(b);
+    const b = pgBox(runs);
     // Build 417 (nicht im Prototyp): mindestens 0.6 Linienabstände breit – senkrechte Scannerstreifen am Rand sind keine Initiale
-    const narrow = !globalThis._pgNurPrototyp && b[2] - b[0] + 1 < 0.6 * gl;
+    let fill = 0; for (const r of runs) fill += r[2] - r[1] + 1; fill /= (b[2] - b[0] + 1) * (b[3] - b[1] + 1);
+    // Build 430: fast vollflächig schwarzer, hoher Fleck = Schatten vom Buchrücken (Tota pulchra), keine Initiale
+    const narrow = !globalThis._pgNurPrototyp && (b[2] - b[0] + 1 < 0.6 * gl || (fill > 0.75 && b[3] - b[1] > 4 * gl));
     // Build 430: auch kleine Initialen (1.3–2.5 Linienabstände, Asperges «A», Tu es Petrus «T»), wenn sie auf Höhe der Textzeile stehen
     const small = !globalThis._pgNurPrototyp && yt0 !== null && b[3] - b[1] >= 1.3 * gl && b[2] - b[0] + 1 >= 0.8 * gl
       && b[3] + ya > yt - 0.3 * gl && b[3] + ya < yt + 1.8 * gl && b[1] + ya > q[0] + 1.5 * gl;
     if (b[1] < yb - ya && (b[3] - b[1] >= 2.5 * gl || small) && !narrow && !inOther(b) && (!best || b[3] - b[1] > best[3] - best[1])) best = b.slice();
+    if (!narrow || globalThis._pgNurPrototyp) boxes.push(b);              // Schatten auch nicht beim Wachsen dazunehmen
   }
   if (!best) return null;
   // Verzierte Initialen bestehen aus mehreren Teilen: alle grösseren Teile dazunehmen, die den Kasten berühren

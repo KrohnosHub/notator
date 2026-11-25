@@ -1,0 +1,33 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Tota púlchra es, o María",
+   "mode": "",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "To(f)ta(f) púl(d)chra(f) es,(h.) o(h) Ma(gf)rí(gh)a,(fe) (,) to(g)ta(ge) pul(f)",
+    "chra(e) es,(d.) et(f) má(h)cu(h)la(g) non(h) est(i) in(h) te.(f.) (:) Quam(h) spe(g)",
+    "ci(i)ó(h)sa,(h.) quam(k) su(ih)á(ij)vis(ih) (,) in(i) de(ig)li(h)ci(h)is,(f.) (;)",
+    "Con(d)cép(f)ti(f)o(e) il(f)li(g)bá(ff)ta.(e.) (::) Ve(f)ni,(h) ve(gf)ni(e) de(f) Lí(g)ba(e)no,(f.) (;)",
+    "Ve(h)ni,(i) ve(k)ni(i) de(j) Lí(k)ba(i)no,(h.) (:) Ve(f)ni,(h) ve(i)ni(fe) co(g)ro(e)ná(f)be(e)ris.(d.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    1,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3566,
+  "output_tokens": 276,
+  "costUsd": 0.009892
+ },
+ "durationMs": 5366
+}

@@ -1016,6 +1016,12 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - Neue Fälle: ascendens-christus (AM, Responsorium breve, schmale Spalte), ave-maris-stella (Linienlücke Mitte, blasse untere Hälfte), asperges (kleine Initiale, Strich unter der Übersetzung).
 - Blind/nachher: Notenzahl 43/70 %, Tonhöhen 74/91 %, Gruppierung exakt 35/57 %, Silben 64/82 %; ältere Fälle unverändert.
 
+### 7.28 Runde 14 (Build 432, 25.11.2026)
+
+- Neue Fälle: tota-pulchra (Pothier, 6 Strophen untereinander, Buchrücken-Schatten), adoremus-v (LU 1853, Webausdruck mit Handschrift); Regina caeli (Orgelsatz) als Gegenprobe moderne Notation.
+- Blind/nachher: Notenzahl 85/100 %, Silben 81/96 %, Trennstriche 81/88 %, Stückgrenzen 50/100 %, Modus 50/100 %.
+- Gesamt (40 Fälle, Mock): Notenzahl 75 %, Neumentyp 95 %, Silben 90 %, Trennstriche 81 %, Gruppierung exakt 62 %.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

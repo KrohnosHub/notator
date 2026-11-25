@@ -1,0 +1,35 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Aspérges me, Dómine, hyssópo, et",
+   "mode": "4",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "As(f)pér(fe)ges(de) me,(e.) (,) Dó(e)mi(g)ne,(gh) hys(ihi)só(h)po,(gf) et(gh)",
+    "mun(gf)dá(ef)bor:(e.d.) (:) la(cd)vá(fe)bis(fg) me,(g.) (,) et(g) sú(h)per(h) ní(g)vem(gf) de(gh)al(gf)bá(ee)bor.(e.) (::)",
+    "<i>Ps.</i>() Mi(h)se(gh)ré(h)re(h) mé(g)i(h) Dé(i)us,(h) (:) se(h)cún(h)dum(h) mág(h)nam(h)",
+    "mi(h)se(h)ri(h)cór(g)di(h)am(ih) tu(gf)am.(e.) (::) Gló(h)ri(gh)a(h) Pá(h)tri,(h) et() Fí(h)li(h)o,(h.)",
+    "et(h) Spi(h)rí(h)tu(g)i(h) Sanc(i)to.(h.) (:) Sí(h)cut(gh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h.)",
+    "et(h) nunc,(g) et(h) sém(i)per,(h.) (:) et(h) in(h) sæ(h)cu(h)la(h) sæ(h)cu(g)ló(h)rum.(ih) A(gf)men.(e.) (::)"
+   ],
+   "unsure": [
+    2,
+    7,
+    2,
+    5,
+    0,
+    4
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2754,
+  "output_tokens": 333,
+  "costUsd": 0.008838
+ },
+ "durationMs": 5616
+}

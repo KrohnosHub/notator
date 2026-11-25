@@ -217,6 +217,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Linie im Linienabstand neben dem System (Strich unter der Übersetzung) kann als Notenlinie genommen werden: aussen ist die Seite ohne
   Tinte zwischen den Linien. Grössere Lücken in den Linien zuzulassen half Asperges, schob aber bei Gaudeamus das System in die
   Zierinitiale – verworfen. Echte Divisio minima endet unten bei Stufe 4.9–5.1, Unterlängen der Textzeile darüber bei ≥ 5.8.
+- **Runde 14 (Build 432, 25.11.2026):** Ein fast vollflächig schwarzer, hoher Fleck links vom System ist der Schatten vom Buchrücken,
+  keine Initiale (Füllgrad > 0.75 bei > 4 Linienabständen). Der Hals der ♭-Vorzeichnung direkt nach dem Schlüssel (≥ 1.4 Linienabstände)
+  wurde als Trennstrich gelesen – vor der ersten Note gibt es keinen Trennstrich. Divisio minima endet unten bei Stufe ≤ 5.75 (unscharfe
+  Kopien), Unterlängen der Textzeile darüber bei ≥ 5.84. **Mess-Lehre:** `cmp.py` muss auch die Trennstriche vergleichen – eine Regel
+  (Hals-Test ohne schmale Flecken) änderte die Trennstriche in fast allen Fällen, ohne dass Noten/Silben sich rührten. Soll für Tota pulchra
+  aus der eigenen Lesung, am Druck mit eingeblendeten Linien geprüft (100 % dort nur bedingt aussagekräftig).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

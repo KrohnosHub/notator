@@ -1,0 +1,35 @@
+{
+ "id": "tota-pulchra",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Liber/Gesangbuch Nr. 404 «Tota pulchra» (Dom Pothier), S. 346, sechs Strophen untereinander unter denselben Noten, Drive des Nutzers",
+  "reference": "vom Druck abgelesen (Linien und Notenköpfe überlagert geprüft); nur Strophe 1",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c3",
+  "b-vorzeichnung",
+  "initiale",
+  "strophen-untereinander",
+  "buchruecken-schatten",
+  "modus-ueber-initiale"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 14 (25.11.2026): blind gemessen (Schatten vom Buchrücken als Initiale → falsche Stückgrenze; ♭-Vorzeichnung als Trennstrich), Soll danach am Druck mit eingeblendeten Linien abgelesen. Sechs Strophen stehen untereinander; gemessen wird nur Strophe 1, Strophennummern weggelassen. Modus «5» über der Initiale.",
+ "pieces": [
+  {
+   "incipit": "Tota pulchra es",
+   "mode": "5",
+   "clef": "c3",
+   "systems": [
+    "To(f)ta(f) púl(d)chra(f) es,(h.) o(h) Ma(gf)rí(gh)a,(fe) (,) to(g)ta(ge) pul(f)",
+    "chra(e) es,(d.) (;) et(f) má(h)cu(h)la(g) non(h) est(i) in(h) te.(f.) (:) Quam(h) spe(g)",
+    "ci(i)ó(h)sa,(h.) quam(k) su(ih)á(ij)vis(ih) (,) in(i) de(ig)lí(h)ci(h)is,(f.)",
+    "Con(d)cép(f)ti(f)o(e) il(f)li(g)bá(ff)ta.(e.) (::) Ve(f)ni,(h) ve(gf)ni(e) de(f) Lí(g)ba(e)no,(f.)",
+    "Ve(h)ni,(i) ve(k)ni(i) de(j) Lí(k)ba(i)no,(h.) (:) Ve(f)ni,(h) ve(i)ni(fe) co(g)ro(e)ná(f)be(e)ris.(d.) (::)"
+   ]
+  }
+ ]
+}
