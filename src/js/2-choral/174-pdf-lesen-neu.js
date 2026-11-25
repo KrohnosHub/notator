@@ -318,6 +318,7 @@ function pgMarkUnsure(pieces) {
   let base = 0;
   for (const p of pieces) for (const it of p.items) {
     const st = it.staff, xs = (st.unsure || []).concat(st.emptyX || []);
+    if (!xs.length && st.verseMismatch && st.notes.length) xs.push(st.notes[st.notes.length - 1].x);   // Strophe passt nicht auf die Noten
     if (xs.length) {
       const first = Math.min(...xs);
       let k = st.notes.findIndex(n => n.x >= first - 0.3 * st.gl);
@@ -364,6 +365,7 @@ function pgApplyVerses(pieces) {
         p = gregVerseParse(t.replace(/-\s*$/, ''));
         if (cont && p.length) p[p.length - 1].cont = true;
       }
+      if (t && p.length !== n) it.staff.verseMismatch = true;      // Silbenzahl ≠ Notenplätze: «⚠ prüfen» (Build 440)
       if (p.length > n && n > 0) { const rest = p.slice(n - 1); p = p.slice(0, n - 1).concat([{t: rest.map(x => x.t).join(' '), cont: rest[rest.length - 1].cont}]); }
       while (p.length < n) p.push({t: '', cont: false});
       all = all.concat(p.slice(0, n));

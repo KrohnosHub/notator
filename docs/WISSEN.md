@@ -271,6 +271,11 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   (max. 4 Wörter, über Systemgrenzen zusammengesetzt, Initial-Grossbuchstaben normalisiert) Titel und das Gelesene Untertitel.
   **«⚠ prüfen»:** `dy −110` von der Note aus lag im Textbereich des **vorigen** Systems – bei Strophen mitten in deren Zeilen. Jetzt
   `lineTop − 32` (oberer Rand des eigenen Systems, `gregResolveAnchorPosition` liefert `lineTop`), am PC und in der Handy-Ansicht geprüft.
+- **Build 440 (25.11.2026):** Systeme, deren Strophenzeile mehr/weniger Silben hat als Notenplätze, bekommen «⚠ prüfen» (am Systemende;
+  in Salve mater, Tota pulchra, Attende waren diese Systeme schon markiert). **Grenze Conditor alme:** zwei Systeme fehlen, weil die
+  Notenlinien dort im Scan nur noch als Pünktchen erscheinen (keine Zeilenspitze in der Projektion, auch nicht mit Schwelle 200) – die
+  Notenköpfe sind deutlich. Ein System aus Notenköpfen statt Linien zu erschliessen wäre möglich, aber ein grösserer Umbau (offen).
+  Gaudeamus: niedrige Werte sind vor allem ein Messartefakt (Gloria Patri als eigenes Stück mit Initiale, Soll als ein Stück).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
