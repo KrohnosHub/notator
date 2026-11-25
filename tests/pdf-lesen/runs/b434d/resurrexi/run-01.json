@@ -1,0 +1,37 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "RESURREXI, et adhuc te cum",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "RE(d)SUR(dfd)RE(f)XI,(fffded) (;) et(fe) ad(fg)huc(g) te(g)",
+    "cum(f) sum,(efgfg.) (,) al(gfff)le(dfe)lú(egff)ia(f.e.) (:)",
+    "po(fgf)su(ff)í(fgh)sti(ghg) su(gfff)per(defgf) me(f.) (,) ma(fff)num(def) tu(fgfe)am,(f.) (;) al(fff)le(dfe)",
+    "lú(fgff)ia(dffdf.) (:) mi(c)rá(cdfef)bi(f)lis(f) fa(fffg)cta(dedcd) est(d.c.) (,) sci(efg)én(ghg)ti(f)a(fff)",
+    "tu(gfhg)a,(g.) (;) al(gf)le(efg)lú(gf)ia,(efgfg.) (,) al(gfff)le(dfe)lú(egff)ia.(f.e.) (::) <i>Ps.</i>() Dó(hg)mi(gh)ne(h)",
+    "pro(h)bá(h)sti(h) me,(h) et(hg) co(gi)gno(i)ví(hi)sti(h) me(h.) tu(hg) co(gh)gno(h)ví(h)sti(h) ses(h)si(h)ó(h)nem(h)",
+    "me(h)am,(h.) (,) et(h) re(h)sur(h)re(h)cti(h)ó(gf)nem(gh) me(g)am.(e.) (:)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2725,
+  "output_tokens": 299,
+  "costUsd": 0.00844
+ },
+ "durationMs": 5031
+}

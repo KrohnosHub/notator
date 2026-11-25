@@ -1028,6 +1028,11 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - Blind/nachher: Notenzahl 60/67 %, Tonhöhen 96/97 %, Gruppierung exakt 40/60 %, Silben 97/97 %.
 - Gesamt (44 Fälle, Mock): Notenzahl 75 %, Tonhöhen 95 %, Neumentyp 95 %, Silben 90 %, Trennstriche 80 %, Schlüssel 100 %.
 
+### 7.30 Runde 16 (Build 434, 25.11.2026)
+
+- Neue Fälle: stabat-mater (Hymnenmelodie 6. Modus, nicht in GregoBase), venite-ad-me (Campion-Alleluja, System 1 ohne unabhängiges Soll), pueri-portantes (Antiphon mit Soll, Psalm ohne).
+- Ergebnis: Notenzahl 63 %, Tonhöhen 93 %, Silben 90 %, Mora 82 % gefunden / 100 % richtig; Hauptfehler: blasse linke Systemhälfte (Pueri) – offen.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

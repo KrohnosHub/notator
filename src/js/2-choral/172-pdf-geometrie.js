@@ -277,10 +277,13 @@ function pgStaves1(img) {
   const extent = q => {
     const a = extent1(q, dark);
     if (globalThis._pgNurPrototyp || globalThis._pgErsatz) return a;
-    const b = extent1(q, lightMask || (lightMask = pgThreshold(img, 200)));
-    return b[1] - b[0] > 1.15 * (a[1] - a[0]) ? b : a;
+    const lm = lightMask || (lightMask = pgThreshold(img, 200));
+    let best = a;
+    // helle Schwelle (3 von 4 Linien dort versucht und verworfen: das System lief in Textspalten hinein, Inviolata)
+    for (const b of [extent1(q, lm)]) if (b[1] - b[0] > 1.15 * (best[1] - best[0])) best = b;
+    return best;
   };
-  const extent1 = (q, dk) => {
+  const extent1 = (q, dk, need) => {
     const cnt = new Int32Array(dk.w);
     for (const yy of q) {
       const y = pgRound(yy);
@@ -290,7 +293,7 @@ function pgStaves1(img) {
     }
     let best = [0, 0], st0 = null, last = null;
     for (let x = 0; x < dark.w; x++) {
-      if (cnt[x] < (globalThis._pgErsatz || q.inferred ? 3 : 4)) continue;      // ergänzte Linie: 3 von 4 genügen
+      if (cnt[x] < (need || (globalThis._pgErsatz || q.inferred ? 3 : 4))) continue;      // ergänzte Linie: 3 von 4 genügen
       if (st0 === null) st0 = x;
       else if (x - last > (globalThis._pgErsatz || q.inferred ? 160 : 40)) { if (last - st0 > best[1] - best[0]) best = [st0, last]; st0 = x; }   // Ersatzweg: gestrichelte Linien (Build 430)
       last = x;
@@ -542,7 +545,7 @@ function pgAnalyseStaff(dark, st, g, ref) {
   }
   st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt, firstNoteX: out.length ? Math.min(...out.map(n => n.x)) : Infinity};
   if (!globalThis._pgNurPrototyp) {
-    pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out); pgMarkFlats(st, out);
+    pgMarkFlats(st, out); pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out);   // ♭ zuerst: dessen Teile sind keine Mora-Punkte (Build 430)
     // Note direkt hinter dem Schlüssel, die in Wahrheit der Bauch eines ♭ ist (Media vita, Build 430)
     for (let i = out.length - 1; i >= 0; i--) if (out[i].afterClef && (st._ctx.flatBoxes || []).some(fb => out[i].x >= fb[0] - 0.1 * gl && out[i].x <= fb[1] + 0.1 * gl)) out.splice(i, 1);
   }           // Test gegen den Python-Prototyp: ohne Ergänzungen
@@ -655,6 +658,7 @@ function pgMarkMoras(st, notes) {
       const cx = (x0 + x1) / 2 + wx0 + c.xa;
       if (notes.some((m, j) => j !== i && Math.abs(m.x - cx) < 0.3 * gl)) continue;              // gehört zu einer anderen Note
       if (cx > st.x1 - 0.6 * gl) continue;                                                      // Custos am Zeilenende (Build 430, Justorum)
+      if ((c.flatBoxes || []).some(fb => cx >= fb[0] - 0.05 * gl && cx <= fb[1] + 0.05 * gl)) continue;   // Teil eines ♭ (Stabat Mater)
       n.mora = true; break;
     }
   }
@@ -890,7 +894,7 @@ function pgDropcapBox(dark, st, gl, others) {
 // Modus-Angabe über der Initiale («VIII», «5», «1.»): kleine Teile direkt über dem Initialkasten, ohne Linien/Text
 // anderer Systeme. Gibt [x0, y0, x1, y1] (Seitenkoordinaten, mit Rand) oder null. (Nicht Teil des Python-Prototyps.)
 function pgModeBox(dark, st, gl, dc, others) {
-  if (!dc) return null;
+  if (!dc) return globalThis._pgNurPrototyp ? null : pgModeBoxLeft(dark, st, gl, others);
   const xa = Math.max(0, pgInt(dc[0] - gl)), xb = Math.min(dark.w, pgInt(dc[2] + gl));
   const ya = Math.max(0, pgInt(dc[1] - 3 * gl)), yb = Math.min(dark.h, pgInt(dc[1] + 0.6 * gl));
   if (xb - xa < gl || yb - ya < gl) return null;
@@ -909,6 +913,24 @@ function pgModeBox(dark, st, gl, dc, others) {
     box = box ? [Math.min(box[0], b[0]), Math.min(box[1], b[1]), Math.max(box[2], b[2]), Math.max(box[3], b[3])] : b.slice();
   }
   if (!box) return null;
+  const pad = pgInt(0.3 * gl);
+  return [xa + box[0] - pad, ya + box[1] - pad, xa + box[2] + pad, ya + box[3] + pad];
+}
+
+// Modus links neben dem System ohne Initiale (Build 430, Ubi caritas «VI»): kleine Zeichen im Bereich bis 4 Linienabstände
+// links vom Systemanfang, auf Höhe der Linien. Nur für das oberste System der Seite (dort beginnt ein Stück ohne Initiale).
+function pgModeBoxLeft(dark, st, gl, others) {
+  if ((others || []).some(o => o !== st && !o.odd && o.lines[0] < st.lines[0])) return null;
+  const xa = Math.max(0, pgInt(st.x0 - 4 * gl)), xb = pgInt(st.x0 - 0.15 * gl);
+  const ya = Math.max(0, pgInt(st.lines[0] - 0.8 * gl)), yb = Math.min(dark.h, pgInt(st.lines[3] + 0.8 * gl));
+  if (xb - xa < gl) return null;
+  let box = null;
+  for (const runs of pgComponents(pgCrop(dark, ya, yb, xa, xb))) {
+    const b = pgBox(runs), h = b[3] - b[1] + 1, w = b[2] - b[0] + 1;
+    if (h < 0.3 * gl || h > 1.6 * gl || w > 2.5 * gl) continue;
+    box = box ? [Math.min(box[0], b[0]), Math.min(box[1], b[1]), Math.max(box[2], b[2]), Math.max(box[3], b[3])] : b.slice();
+  }
+  if (!box || box[2] - box[0] > 3 * gl) return null;
   const pad = pgInt(0.3 * gl);
   return [xa + box[0] - pad, ya + box[1] - pad, xa + box[2] + pad, ya + box[3] + pad];
 }

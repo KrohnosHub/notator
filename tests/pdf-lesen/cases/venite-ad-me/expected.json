@@ -1,0 +1,32 @@
+{
+ "id": "venite-ad-me",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Campion Missal & Hymnal, Alleluja mit Vers «Venite ad me» (vereinfacht), Drive des Nutzers («Alleluja - Venite ad me – Choral.pdf»)",
+  "reference": "Vers vom Druck abgelesen (mit eingeblendeten Linien geprüft); Alleluja-System aus der eigenen Lesung übernommen (nicht unabhängig geprüft)",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c3",
+  "initiale-gross",
+  "handschriftliche-akkorde",
+  "psalmvers",
+  "rhomben"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 16 (25.11.2026): blind gemessen. Vers (2 Systeme) vom Druck abgelesen, «Vs.» weggelassen; das erste System (Alleluja mit Jubilus, viele Rhomben und Handschrift) ist aus der Lesung übernommen und daher kein unabhängiges Soll. Druck: «omnes» (Solesmes «o-mnes» nicht gedruckt) – Soll «om-nes».",
+ "pieces": [
+  {
+   "incipit": "Alleluia Venite ad me",
+   "mode": "8",
+   "clef": "c3",
+   "systems": [
+    "AL(def)le(fefghg)lú(fhhh) (,) ia.(hihffe.) (;) ij.(ghefedfghhgehfgffe.) (::)",
+    "Ve(e)ní(f)te(h) ad(h) me,(h) om(h)nes(h) qui(h) la(h)bo(h)rá(h)tis(f) (,) et(h) o(h)ne(h)",
+    "rá(h)ti(h) es(i)tis:(h.) (;) et(h) e(h)go(h) re(h)fí(g)ci(h)am(f) vos.(e.) (::)"
+   ]
+  }
+ ]
+}

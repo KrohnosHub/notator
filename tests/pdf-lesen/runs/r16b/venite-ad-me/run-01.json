@@ -1,0 +1,29 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "ALlelúia. ij. Veníte ad me",
+   "mode": "8",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "AL(def)le(fefghg)lú(fhhh) (,) ia.(hihffe.) (;) ij.(ghefedfghhgehfgffe.) (::)",
+    "V/.() Ve(e)ní(f)te(h) ad(h) me,(h) o(h)mnes(h) qui(h) la(h)bo(h)rá(h)tis(f) (,) et(h) o(h)ne(h)",
+    "rá(h)ti(h) es(i)tis:(h.) (;) et(h) e(h)go(h) re(h)fí(g)ci(h)am(f) vos.(e.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2290,
+  "output_tokens": 145,
+  "costUsd": 0.00603
+ },
+ "durationMs": 4584
+}

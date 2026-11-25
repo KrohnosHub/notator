@@ -1,0 +1,31 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "JUstórum ánimae in manu Dei",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "JUs(f)tó(gh)rum(h) á(h)ni(h)mae(h) in(h) ma(ixi)nu(h) De(g)i(h) sunt,(h.) (;)",
+    "et(h) non(h) tan(h)get(h) il(h)los(h) tor(h)mén(h)tum(g) ma(f)lí(gh)ti(g)ae:(g.) (::)",
+    "vi(h)si(h) sunt(h) ó(h)cu(h)lis(h) in(h)si(h)pi(h)én(ixi)ti(h)um(h) mo(g)ri:(h.) (;) il(h)li(h)",
+    "au(h)tem(h) sunt(h) in(h) pa(h)ce,(h) al(g)le(f)lú(gh)ja.(g.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2435,
+  "output_tokens": 199,
+  "costUsd": 0.00686
+ },
+ "durationMs": 5151
+}

@@ -1,0 +1,31 @@
+{
+ "id": "stabat-mater",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Gesangbuch «Pro diversis Temporibus et Festis», S. 77, Tempore Passionis Nr. 1 «Stabat Mater» (Hymnenmelodie 6. Modus, 20 Strophen als Text)",
+  "reference": "vom Druck abgelesen (mit eingeblendeten Linien geprüft); diese Melodie ist nicht in GregoBase",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "initiale",
+  "hymnus",
+  "strophen-als-text",
+  "b-vorzeichen"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 16 (25.11.2026): blind gemessen, Soll danach vom Druck (2 Systeme, darunter 19 Strophen als Fliesstext in zwei Spalten). Modus «6.» über der Initiale. Nach «lacrimósa,» ein Doppelstrich.",
+ "pieces": [
+  {
+   "incipit": "Stabat Mater",
+   "mode": "6",
+   "clef": "c4",
+   "systems": [
+    "STa(f)bat(g) Ma(h)ter(g) do(h)lo(j)ró(ixi)sa(h.) (;) Jux(h)ta(g) cru(f)cem(e) la(d)cri(e)mó(d)sa,(c.) (::)",
+    "Dum(g) pen(f)dé(g)bat(h) Fí(g)li(f)us.(f.) (::)"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,47 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "MIttit ad Vírginem Non quemvis",
+   "mode": "6",
+   "clef": "c2",
+   "hasDropCap": true,
+   "systems": [
+    "MIt(c)tit(f) ad(f) Vír(gf)gi(e)nem(f.) (,) Non(g) quem(h)vis(g) An(h)ge(g)lum,(f.) (;) Sed(h)",
+    "For(j)ti(i)tú(h)di(g)nem,(f.) (,) Su(e)um(g) Ar(e)chán(fe)ge(d)lum,(c) (,) A(g)má(g)tor(f) hó(fd)mi(e)nis.(f.) (::)",
+    "For(c)tem(f) ex(f)pé(gf)di(e)at(f.) (,) Pro(g) no(h)bis(g) nún(h)ti(g)um,(f.) (;) Na(h)tú(j)rae(i) fá(h)ci(g)at(f.) (,)",
+    "Ut(e) præ(g)ju(e)dí(fe)ci(d)um(c) (,) In(g) par(g)tu(f) vír(fd)gi(e)nis.(f.) (::) Na(h)tú(j)ram(j) sú(i)pe(h)",
+    "ret(g) (,) Na(h)tus(f) Rex(i) gló(ih)ri(g)ae:(h.) (;) Reg(h)net(j) et(j) ím(i)pe(h)ret,(g.) (,) Et(h) zy(f)ma(i)",
+    "scó(hg)ri(f)ae(e.) (,) Tol(g)lat(e) de(f) mé(fd)di(e)o.(f.) (::) Su(h)per(j)bi(jj)én(i)ti(h)um(g) (,) Te(h)rat(f) fa(i)",
+    "stí(ih)gi(g)a,(h.) Col(h)la(j) su(j)blí(i)mi(h)um(g.) Cal(h)cans(f) vi(i) pró(hg)pri(f)a,(e) (,) Pot(g)ens(e)",
+    "in(f) præ(fd)li(e)o.(f.) (::) Fo(c)ras(d) e(e)ji(f)ci(e)at(g) (,) Mun(e)dá(f)num(d) prín(e)ci(d)pem,(c) (;)",
+    "Ma(c)trém(d)que(e) fá(f)ci(e)at(g.) (,) Se(e)cum(f) par(g)tí(h)ci(g)pem(f.) (,) Pa(g)tris(e) im(f)pé(fd)",
+    "ri(e)i.(f.) (::) Ex(c)i(d) qui(e) mít(f)te(e)ris,(g.) (,) Haec(e) do(f)na(d) dís(e)se(d)re;(c) (;) Re(c)vé(d)la(e) vé(f)",
+    "te(e)ris(g.) (,) Ve(e)lá(f)men(g) lít(h)te(g)rae,(f.) (,) Vir(g)tú(e)te(f) nún(fd)ti(e)i.(f.) (::) Ac(h)cé(j)de,(j) nún(kjj)",
+    "ti(i)a:(j.) (,) Dic,(k) A(l)ve,(k) có(l)mi(k)nus;(j.) (;) Dic,(k) ple(m)na(m) grá(l)ti(k)a;(j.) (,) Dic,(k) te(j)cum(h)"
+   ],
+   "unsure": [
+    2,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3653,
+  "output_tokens": 701,
+  "costUsd": 0.014316
+ },
+ "durationMs": 6033
+}

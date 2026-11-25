@@ -1,0 +1,29 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "SUrréxit Dóminus vere: Allelúia, allelúia",
+   "mode": "7",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "SUr(f)ré(f)xit(f) Dó(g)mi(f)nus(e) ve(g)re:(h.) (;) Al(h)le(hg)lú(g)ia,(f) al(d)le(fg)lú(gf)ia.(f.) (::)",
+    "V/.() Et(f) ap(f)pá(g)ru(f)it(f) Si(e)mó(g)ni.(h.) (::)",
+    "Gló(f)ri(f)a(e) Pa(g)tri,(h) (,) et(h) Fí(ixhi)li(h)o,(h) (,) et(h) Spi(h)rí(h)tu(g)i(h) Sanc(gf)to.(f.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2261,
+  "output_tokens": 176,
+  "costUsd": 0.006282
+ },
+ "durationMs": 4427
+}

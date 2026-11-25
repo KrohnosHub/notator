@@ -323,13 +323,20 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
       console.log('PDF lesen (neu), Seite ' + pg + ': KI ' + res.usage.input + '/' + res.usage.output + ' Token, ' + res.usage.usd.toFixed(4) + ' USD', res.lines);
       // Zweiter KI-Aufruf nur bei Bedarf (Build 429): Zeile leer, obwohl unter dem System Text steht (≥ 3 Textgruppen) und
       // die Vorzeile nicht zusammengezogen ist – die KI hatte bei Gaudeamus und Terribilis je eine Zeile ausgelassen.
-      const missing = res.lines.map((t, k) => !String(t).trim() && (page.staves[k].chunks || []).length >= 3
-        && !(k > 0 && pgLooksMerged(res.lines, page.staves, k - 1)) ? k : -1).filter(k => k >= 0);
+      // Build 430: auch Zeilen, die für ihre gedruckte Textbreite deutlich zu kurz sind (KI liess Wörter aus, Pueri «portantes»)
+      const lenOf = t => String(t || '').replace(/[-\s]/g, '').length;
+      const ratio = pgMedian(res.lines.map((t, i) => lenOf(t) && pgChunkWidth(page.staves[i]) ? lenOf(t) / pgChunkWidth(page.staves[i]) : null).filter(v => v !== null));
+      const expLen = k => ratio * pgChunkWidth(page.staves[k]);
+      const missing = res.lines.map((t, k) => (page.staves[k].chunks || []).length >= 3 && !(k > 0 && pgLooksMerged(res.lines, page.staves, k - 1))
+        && (!String(t).trim() || (ratio && lenOf(t) < 0.55 * expLen(k))) ? k : -1).filter(k => k >= 0);
       if (missing.length) {
         gregGst('PDF lesen: Seite ' + pg + '/' + pages + ' – fehlende Zeilen nochmals lesen (KI)…');
         const res2 = await pgReadText(apiKey, strips.b64, strips.n);
         usd += res2.usage.usd;
-        for (const k of missing) if (String(res2.lines[k] || '').trim()) res.lines[k] = res2.lines[k];
+        for (const k of missing) {
+          const t2 = String(res2.lines[k] || '').trim();
+          if (t2 && (!String(res.lines[k]).trim() || Math.abs(lenOf(t2) - expLen(k)) < Math.abs(lenOf(res.lines[k]) - expLen(k)))) res.lines[k] = res2.lines[k];
+        }
         console.log('PDF lesen (neu), Seite ' + pg + ': zweiter KI-Aufruf für Zeile(n) ' + missing.map(k => k + 1).join(', ') + ', ' + res2.usage.usd.toFixed(4) + ' USD');
       }
       pgRepairMerged(res.lines, page.staves);

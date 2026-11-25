@@ -1,4 +1,4 @@
-# Notator – Stand Build 433 (25.11.2026)
+# Notator – Stand Build 434 (25.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–433 (Auszug)
+## Neu in Build 298–434 (Auszug)
 
+- **PDF lesen (434, Runde 16):** Modus auch links neben dem ersten System ohne Initiale (Ubi caritas «VI»); Teile eines ♭ gelten nicht mehr als Mora-Punkt; zweiter KI-Aufruf auch bei deutlich zu kurzer Zeile. Drei weitere Orgelsätze (Jesu dulcis, Kyrie XII, Victimae paschali) werden richtig abgewiesen (9 Gegenproben). Runde 16 (Stabat Mater, Venite ad me, Pueri «portantes»): Notenzahl 63 %, Tonhöhen 93 %, Silben 90 %.
 - **PDF lesen (433, Runde 15):** erste Note direkt hinter dem Schlüssel wird in schmalem Satz nicht mehr verworfen (Inviolata: 5 Systeme richtig); ein ♭ dort wird nicht zur Note; doppelt geschriebene Initiale («OOmnes») bereinigt. Runde 15 blind → nachher: Notenzahl 60 → 67 %, Gruppierung exakt 40 → 60 %. Offen: hohle Notenköpfe (wahlweise Noten, Pueri Hebraeorum), senkrechte Abschlussstriche am Systemende (Inviolata).
 - **PDF lesen (432, Runde 14):** Schatten vom Buchrücken gilt nicht mehr als Initiale (falsche Stückgrenze bei Tota pulchra); der Hals der ♭-Vorzeichnung direkt nach dem Schlüssel ist kein Trennstrich; Divisio-minima-Grenze für unscharfe Kopien nachjustiert (seit Build 430 bei den Trennstrichen nur Verbesserungen). Orgelsatz «Regina caeli» (moderne Noten) richtig abgewiesen. Runde 14 blind → nachher: Notenzahl 85 → 100 %, Silben 81 → 96 %, Stückgrenzen 50 → 100 %.
 - **PDF lesen (431, Runde 13):** Linienlücke in der Seitenmitte gilt nicht mehr als Doppelseite (Ave maris stella); blasse Systeme werden mit hellerer Schwelle nachgesucht und mit beiden Schwellen vermessen; kleine Initialen (Asperges «A», Tu es Petrus «T»); ein Strich im Linienabstand neben dem System wird nicht mehr als Notenlinie genommen (Asperges: Tonhöhen in System 4 waren 2–3 Stufen zu tief); Unterlängen der Textzeile über dem System sind keine Divisio minima. Runde 13 blind → nachher: Notenzahl 43 → 70 %, Silben 64 → 82 %.

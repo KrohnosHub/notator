@@ -227,6 +227,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   rechten Rand des Schlüssels aus den Flecken am Systemanfang bestimmen (Suchfenster 0.9 wie `pgFindClef`, sonst fallen Schlüsselteile in
   feinem Druck heraus); ein ♭ direkt hinter dem Schlüssel darf dabei nicht zur Note werden. 37 von 304 Soll-Systemen enden mit einem
   echten Trennstrich – Abschlussstriche am Systemende lassen sich nicht pauschal streichen.
+- **Runde 16 (Build 434, 25.11.2026):** Modus links vom ersten System ohne Initiale (`pgModeBoxLeft`, nur oberstes nicht abweichendes System).
+  ♭ vor den Mora-Punkten suchen und deren Fläche ausschliessen (Stabat Mater: ♭-Teil als Mora der Vornote). Die Systembreite mit 3 von 4
+  Linien auf heller Schwelle zu messen half Pueri «portantes», liess das System aber in Textspalten laufen (Inviolata) – verworfen.
+  Ein grosser Buchstabe in der Textzeile unter dem Systemanfang («D» bei Psalm 23) ist keine Initiale. Gegenproben für moderne Notation
+  liegen nur im Scratchpad der Sitzung (9 Blätter aus dem Drive: Benedictus, Christus vincit, Dies irae, Ite missa est, Puer natus,
+  Regina caeli simplex, Jesu dulcis, Kyrie XII, Victimae paschali) – vor jedem Build prüfen.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

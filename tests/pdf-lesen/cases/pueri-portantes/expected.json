@@ -1,0 +1,33 @@
+{
+ "id": "pueri-portantes",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Graduale (Palmsonntag): Antiphon «Pueri Hebraeorum portantes» mit Psalm 23 (neuer Text) und deutscher Übersetzung, Drive des Nutzers (Seite 1 von 2)",
+  "reference": "GregoBase 1215 (GR 1961 S. 167) für die Antiphon; Psalm ohne Soll",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "initiale",
+  "psalmvers",
+  "deutsche-uebersetzung",
+  "fliesstext",
+  "blasse-linien"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 16 (25.11.2026): blind gemessen. Soll nur für die Antiphon (3 Systeme, GregoBase 1215, Ictus/Episeme weggelassen). Die drei Psalm-Systeme (Ton 1f, grosses «D» in der Textzeile, keine Initiale) gehören zum selben Stück und haben kein Soll. In System 2 ist die linke Hälfte der Linien so blass, dass das System erst ab der Mitte erkannt wird (offen).",
+ "pieces": [
+  {
+   "incipit": "Pueri Hebraeorum",
+   "mode": "1",
+   "clef": "c4",
+   "systems": [
+    "PÚ(d)e(f)ri(dc) He(f)bræ(g)ó(fh)rum,(h) (,) por(h)tán(h)tes(j) ra(h)mos(g) o(hg)li(f)",
+    "vá(gh)rum,(h.) (;) ob(f)vi(h)a(g)vé(h)runt(gf~) Dó(g)mi(fe)no,(d) (;) cla(f)mán(ffe)tes(dc) et(c) di(df)",
+    "cén(ffg)tes :(f.) (,) Ho(f)sán(gh~)na(hvGE) in(f) ex(e)cél(d.)sis.(d.) (::)"
+   ]
+  }
+ ]
+}
