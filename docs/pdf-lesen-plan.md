@@ -1039,6 +1039,12 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - popule-meus ohne Soll (zwei kurze Systeme nebeneinander); veni-sancte: Orgelsatz, abgewiesen.
 - Feineres Öffnen für zerfallene Notenköpfe (Rorate) dreimal verworfen (siehe WISSEN).
 
+### 7.32 Strophen untereinander (Build 436, 25.11.2026)
+
+- Weitere Textzeilen unter dem System als «N.k» ins KI-Bild; Antwort `verses` {n,k,text}; Übernahme als Notator-Strophen.
+- Live geprüft: Tota pulchra (5 Strophen), Attende Domine (Kehrvers + 4), Salve mater (5, erst nach Erklärung der «N.k+»-Zeilen im Prompt).
+- Mock-Messung über alle Fälle unverändert gegenüber Build 434/435; 10 Gegenproben moderne Noten weiter abgewiesen.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

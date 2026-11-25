@@ -40,7 +40,12 @@ const PG_PROMPT = 'The image shows numbered strips. Each strip is one line of La
 'Return one entry per strip number 1..N.\n\n' +
 'Rows labelled "M<n>" (if any) are not chant text: they show the small annotation printed above the initial letter of ' +
 'strip n (e.g. "2.", "VIII", "HYMN I.", "Intr. 2.", "Ant. 7. e", "R. br. VI"). For each such row return in "modes" ' +
-'exactly the characters printed there (Roman numerals stay Roman), or an empty string if the row is blank.';
+'exactly the characters printed there (Roman numerals stay Roman), or an empty string if the row is blank.\n\n' +
+'Rows labelled "N.k" (k = 2, 3, …; if any) show further text lines printed under staff N, below its strip N. If such a row is ' +
+'a further stanza of the Latin chant text sung to the same notes (often starting with a stanza number like "2."), return it in ' +
+'"verses" as {n: N, k: k, text} with the same syllable rules as above, keeping the stanza number as a separate word. If the row ' +
+'is a translation (English, German, Italian …), a rubric or other text, do not return it. A row "N.k+" continues row "N.k" ' +
+'on the same line (long lines are cut in two): return both parts together as one entry for N.k.';
 
 // PDF-Seite mit 300 dpi als Graustufenbild (L = 0.299 R + 0.587 G + 0.114 B, wie PIL)
 async function pgRenderPageGray(pdfDoc, pageNo) {
@@ -113,6 +118,14 @@ function pgStripsImage(page) {
     }
     if (c.width > PG_IMG_W - 70) pgSplitStrip(c, PG_IMG_W - 70).forEach(p => parts.push([k + 1, p]));
     else parts.push([k + 1, c]);
+    // weitere Textzeilen unter dem System (Strophen untereinander, Build 436) als Reihen «N.2», «N.3» …
+    (st.verseLines || []).forEach((vb, j) => {
+      let v = pgGrayCanvas(page.img, st.x0 - 0.5 * gl, vb[0] - 0.3 * gl, st.x1 + 0.5 * gl, vb[1] + 0.35 * gl);
+      v = pgScaled(v, v.width * PG_LINE_H / v.height, PG_LINE_H);
+      const lab = (k + 1) + '.' + (j + 2);
+      if (v.width > PG_IMG_W - 70) pgSplitStrip(v, PG_IMG_W - 70).forEach(p => parts.push([lab, p]));
+      else parts.push([lab, v]);
+    });
   });
   const H = parts.reduce((s, [, p]) => s + p.height + 10, 10);
   const cv = document.createElement('canvas'); cv.width = PG_IMG_W; cv.height = H;
@@ -131,8 +144,10 @@ function pgStripsImage(page) {
 async function pgReadText(apiKey, b64, n) {
   const row = (key, type) => ({type: 'array', items: {type: 'object', properties: {n: {type: 'integer'}, [key]: {type}},
     required: ['n', key], additionalProperties: false}});
-  const schema = {type: 'object', properties: {lines: row('text', 'string'), modes: row('mode', 'string')},
-    required: ['lines', 'modes'], additionalProperties: false};
+  const vrow = {type: 'array', items: {type: 'object', properties: {n: {type: 'integer'}, k: {type: 'integer'}, text: {type: 'string'}},
+    required: ['n', 'k', 'text'], additionalProperties: false}};
+  const schema = {type: 'object', properties: {lines: row('text', 'string'), modes: row('mode', 'string'), verses: vrow},
+    required: ['lines', 'modes', 'verses'], additionalProperties: false};
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
@@ -153,8 +168,10 @@ async function pgReadText(apiKey, b64, n) {
   const got = {}, modes = {}, ans = JSON.parse(text);
   for (const e of (ans.lines || [])) got[e.n] = String(e.text || '');
   for (const e of (ans.modes || [])) { const m = pgModeFromText(e.mode); if (m) modes[e.n] = m; }
+  const verses = {};                                              // verses[n][k] = Text der Strophe k unter System n
+  for (const e of (ans.verses || [])) { const t = String(e.text || '').trim(); if (t && e.k >= 2) (verses[e.n] || (verses[e.n] = {}))[e.k] = t; }
   const u = r.usage || {};
-  return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''), modes,
+  return {lines: Array.from({length: n}, (_, k) => got[k + 1] || ''), modes, verses,
     usage: {input: u.input_tokens || 0, output: u.output_tokens || 0, usd: ((u.input_tokens || 0) * PG_PRICE[0] + (u.output_tokens || 0) * PG_PRICE[1]) / 1e6}};
 }
 
@@ -271,6 +288,41 @@ function pgMarkUnsure(pieces) {
   anchors.forEach(i => gregEntries.push({type: 'comment', text: '⚠ prüfen', anchorNoteIdx: i, dx: 0, dy: -110, pgUnsure: true}));
   return anchors.length;
 }
+// Strophen untereinander (Build 436): Text der weiteren Zeilen je System auf die Silben-Plätze verteilen und als e.verses eintragen.
+// Plätze je System = Silben mit Noten in seiner GABC-Zeile (wie gregVerseSlots: eine Silbe = ein Platz). Systeme ohne Zeile k
+// (Kehrvers, gemeinsamer Schluss) bleiben in Strophe k leer. Gibt die Zahl der eingetragenen weiteren Strophen zurück.
+function pgApplyVerses(pieces) {
+  if (typeof gregVerseParse !== 'function' || typeof gregVerseApply !== 'function') return 0;
+  const items = pieces.flatMap(p => p.items);
+  const counts = items.map(it => Object.keys(it.verses || {}).length).filter(c => c > 0);
+  if (!counts.length) return 0;
+  const freq = {}; counts.forEach(c => { freq[c] = (freq[c] || 0) + 1; });
+  const K = +Object.keys(freq).sort((a, b) => freq[b] - freq[a] || b - a)[0] + 1;   // höchste Strophennummer (häufigste Zeilenzahl)
+  const slotsPer = items.map(it => ((pgStaffGabc(it.staff, it.text) || '').match(/[^\s()]+\([^)]*[a-m][^)]*\)/g) || []).length);
+  const total = slotsPer.reduce((a, b) => a + b, 0);
+  if (typeof gregVerseSlots === 'function' && gregVerseSlots(gregEntries).length !== total) {   // Plätze passen nicht (z. B. GregoBase-Fassung)
+    console.log('PDF lesen (neu): Strophen nicht übernommen – ' + gregVerseSlots(gregEntries).length + ' Silben-Plätze im Stück, ' + total + ' erwartet');
+    return 0;
+  }
+  for (let k = 2; k <= K; k++) {
+    let all = [];
+    items.forEach((it, i) => {
+      const n = slotsPer[i]; let t = String((it.verses || {})[k] || '').trim();
+      let p = [];
+      if (t) {
+        t = t.replace(/^\s*\d+\.\s*/, '').replace(/(^|\s)(℣|℟|[VR]\/)\.?(?=\s)/g, ' ');
+        const cont = /-\s*$/.test(t);
+        p = gregVerseParse(t.replace(/-\s*$/, ''));
+        if (cont && p.length) p[p.length - 1].cont = true;
+      }
+      if (p.length > n && n > 0) { const rest = p.slice(n - 1); p = p.slice(0, n - 1).concat([{t: rest.map(x => x.t).join(' '), cont: rest[rest.length - 1].cont}]); }
+      while (p.length < n) p.push({t: '', cont: false});
+      all = all.concat(p.slice(0, n));
+    });
+    gregVerseApply(gregEntries, k - 2, all);
+  }
+  return K - 1;
+}
 function pgGabcHeader(p) {
   return (/^[1-8]$/.test(p.mode) ? 'annotation: ' + p.mode + '\n' : '') + (p.hasDropCap ? 'drop-cap: auto\n' : '') + '%%\n\n';
 }
@@ -340,7 +392,10 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
         console.log('PDF lesen (neu), Seite ' + pg + ': zweiter KI-Aufruf für Zeile(n) ' + missing.map(k => k + 1).join(', ') + ', ' + res2.usage.usd.toFixed(4) + ' USD');
       }
       pgRepairMerged(res.lines, page.staves);
-      page.staves.forEach((st, k) => items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || ''}));
+      page.staves.forEach((st, k) => {
+        const vv = {}; Object.entries((res.verses || {})[k + 1] || {}).forEach(([kk, t]) => { vv[kk] = pgSafeText(t); });
+        items.push({page: pg, staff: st, text: pgSafeText(res.lines[k]), mode: res.modes[k + 1] || '', verses: vv});
+      });
       page.img = null;
     }
   }
@@ -355,7 +410,7 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   const pieces = pgPieces(items);
   // Für Diagnose und den Messlauf (tests/pdf-lesen/run-neu-playwright.js): Ergebnis je Stück und System
   window._pgLetzteErkennung = {usd, pieces: pieces.map(p => ({incipit: p.incipit, mode: p.mode, clef: p.clef, hasDropCap: p.hasDropCap,
-    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || ''), unsure: p.items.map(it => (it.staff.unsure || []).length + (it.staff.emptyX || []).length)}))};
+    systems: p.items.map(it => pgStaffGabc(it.staff, it.text) || ''), unsure: p.items.map(it => (it.staff.unsure || []).length + (it.staff.emptyX || []).length), verses: p.items.map(it => it.verses || {})}))};
   let choice = pieces[0].index;
   if (pieces.length > 1) {
     choice = await gregPickPieceModal(pieces);
@@ -367,16 +422,16 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   if (target === 'new' && !(await ntConfirmDiscard())) { gregGst('Abgebrochen.'); return; }
   if (target === 'new') gregCollapseSections();
   const previousEntries = gregEntries;
-  let gabc = null, loaded = 0, unsureN = 0;
+  let gabc = null, loaded = 0, unsureN = 0, versesN = 0;
   if (choice === 'MERGE') {
     gabc = pgGabcHeader(pieces[0]) + chosen.map((p, i) => pgPieceGabc(p, false, i ? chosen[i - 1].clef : null)).join('\n');
-    gregImportGABCString(gabc, {deferRender: true}); loaded = 1; unsureN += pgMarkUnsure(chosen);
+    gregImportGABCString(gabc, {deferRender: true}); loaded = 1; versesN = Math.max(versesN, pgApplyVerses(chosen)); unsureN += pgMarkUnsure(chosen);
   } else {
     for (const p of chosen) {
       if (loaded > 0) gregAddSection();
       const gb = await pgTryGregoBase(p);
       if (gb === 'cancel') { gregGst('Abgebrochen.'); if (!loaded) { gregEntries = previousEntries; } break; }
-      if (!gb) { gregImportGABCString(pgPieceGabc(p, true), {deferRender: true}); unsureN += pgMarkUnsure([p]); }
+      if (!gb) { gregImportGABCString(pgPieceGabc(p, true), {deferRender: true}); versesN = Math.max(versesN, pgApplyVerses([p])); unsureN += pgMarkUnsure([p]); }
       loaded++;
       if (gregEntries.length > 200 && !(await gregConfirmModal('⚠️ Ungewöhnlich viele Einträge', 'Das Ergebnis hat ' + gregEntries.length + ' Einträge — ungewöhnlich viel für ein Stück. Trotzdem laden?'))) {
         gregEntries = previousEntries; gregGst('Abgebrochen.'); return;
@@ -389,6 +444,6 @@ async function pgPdfLesenNeu(pdfDoc, apiKey) {
   gregRender();
   if (target === 'new') { gregLibCurrentId = null; setTimeout(() => ntMarkClean(), 50); }
   gregGst('PDF lesen: ' + loaded + ' Stück(e), ' + items.length + ' Systeme, ' + Math.round((Date.now() - t0) / 1000) + ' s, ca. ' + usd.toFixed(3) +
-    ' USD.' + (unsureN ? ' ' + unsureN + ' unsichere Stelle(n) mit «⚠ prüfen» markiert.' : '') +
+    ' USD.' + (versesN ? ' ' + versesN + ' weitere Strophe(n) unter den Noten übernommen.' : '') + (unsureN ? ' ' + unsureN + ' unsichere Stelle(n) mit «⚠ prüfen» markiert.' : '') +
     ' Neumenformen (Quilisma, Liqueszenz …) fehlen noch — bitte mit dem Original vergleichen.');
 }

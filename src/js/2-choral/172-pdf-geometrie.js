@@ -935,6 +935,32 @@ function pgModeBoxLeft(dark, st, gl, others) {
   return [xa + box[0] - pad, ya + box[1] - pad, xa + box[2] + pad, ya + box[3] + pad];
 }
 
+// Weitere Textzeilen unter der ersten (Strophen untereinander, Build 436): Bänder mit Textdichte unterhalb der ersten Zeile, bis
+// kurz vor das nächste System. Gibt [[y0, y1], …] (ohne die erste Zeile) zurück; ob es Strophen oder eine Übersetzung sind,
+// entscheidet die KI.
+function pgVerseLines(dark, st, gl, nextTop) {
+  const yt = pgTextTop(dark, st, gl);
+  if (yt === null) return [];
+  const xa = pgInt(st.x0), xb = pgInt(st.x1), lim = Math.min(dark.h, pgInt(nextTop - 1.6 * gl));
+  if (lim - yt < 1.5 * gl) return [];
+  const dens = pgRowMean(pgCrop(dark, pgInt(yt), lim, xa, xb));
+  const bands = []; let y0 = -1;
+  for (let y = 0; y <= dens.length; y++) {
+    const on = y < dens.length && dens[y] > 0.04;
+    if (on && y0 < 0) y0 = y;
+    if (!on && y0 >= 0) { if (y - y0 >= 0.25 * gl) bands.push([y0 + pgInt(yt), y - 1 + pgInt(yt)]); else if (bands.length && y0 + pgInt(yt) - bands[bands.length - 1][1] < 0.15 * gl) bands[bands.length - 1][1] = y - 1 + pgInt(yt); y0 = -1; }
+  }
+  if (bands.length < 2) return [];
+  const h1 = bands[0][1] - bands[0][0] + 1, out = [];
+  for (let i = 1; i < bands.length && out.length < 9; i++) {
+    const b = bands[i], h = b[1] - b[0] + 1, gap = b[0] - bands[i - 1][1];
+    if (gap > 1.3 * h1 + 0.4 * gl) break;                          // Lücke: danach kommt anderer Text
+    if (h < 0.45 * h1 || h > 1.8 * h1) continue;                    // Unterlängen, Striche, grosse Überschriften
+    out.push(b);
+  }
+  return out;
+}
+
 // Tintengruppen der ersten Textzeile (Lücke ≥ 0.2 Linienabstand trennt), mit «endet auf Trennstrich»
 function pgTextChunks(dark, st, gl) {
   const yt = pgTextTop(dark, st, gl);
@@ -1209,7 +1235,9 @@ function pgAnalysePage(img) {
       ({notes, unsure} = pgVoteNotes(notes, altNotes, gl, 1, smallAt, st._ctx && st._ctx.wref));
     }
     return {lines: st.lines, x0: st.x0, x1: st.x1, gl, notes, unsure, bars: pgFindBars(st), clef: pgFindClef(st), odd: st.odd,
-      dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl)};
+      dropcap: dcs[k], modeBox: pgModeBox(dark, st, gl, dcs[k], sts), textTop: pgTextTop(dark, st, gl), chunks: pgTextChunks(dark, st, gl),
+      // Grenze: nächstes nicht abweichendes System (sechs Strophenzeilen ergaben bei Tota pulchra ein Schein-«System»)
+      verseLines: globalThis._pgNurPrototyp ? [] : pgVerseLines(dark, st, gl, (sts.slice(k + 1).find(o => !o.odd) || {lines: [dark.h]}).lines[0])};
   }).filter(s => !s.odd || s.clef);      // abweichend grosses oder nur am Rand gefundenes System: nur mit Schlüssel (Build 417)
   // ♭ nur auf der b-Stufe des Schlüssels (Build 418, nicht im Prototyp): alle Fehlfunde der Gegenproben lagen anderswo
   // (handschriftliche Akkordbuchstaben «B»/«Es», Bleistift), alle richtigen auf dieser Stufe

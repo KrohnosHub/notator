@@ -10,7 +10,8 @@
 const fs = require('fs'), path = require('path'), { chromium } = require('playwright');
 const arg = (n, d) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; };
 const ROOT = __dirname, series = arg('--series', 'neu-tmp'), run = +arg('--run', 1), mock = arg('--mock', null), live = arg('--live', null), pdfjs = arg('--pdfjs', null);
-const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(ROOT, 'cases')).filter(c => !c.startsWith('_') && fs.existsSync(path.join(ROOT, 'cases', c, 'scan.pdf')));
+const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(ROOT, 'cases')).filter(c => !c.startsWith('_') && fs.existsSync(path.join(ROOT, 'cases', c, 'scan.pdf'))
+  && (!mock || fs.existsSync(path.join(mock, 'ki-' + c + '.json'))));
 (async () => {
   const browser = await chromium.launch();
   for (const c of cases) {
@@ -33,7 +34,7 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
           const ans = JSON.parse(r.content.filter(b => b.type === 'text').map(b => b.text).join(''));
           const u = {input_tokens: r.usage.input_tokens, output_tokens: r.usage.output_tokens};
           usage = {input_tokens: usage.input_tokens + u.input_tokens, output_tokens: usage.output_tokens + u.output_tokens};
-          fs.writeFileSync(kiFile(live, ++call), JSON.stringify({model: r.model, lines: (() => { const a = []; ans.lines.forEach(e => { a[e.n - 1] = e.text; }); return Array.from(a, t => t || ''); })(), modes: ans.modes || [],
+          fs.writeFileSync(kiFile(live, ++call), JSON.stringify({model: r.model, lines: (() => { const a = []; ans.lines.forEach(e => { a[e.n - 1] = e.text; }); return Array.from(a, t => t || ''); })(), modes: ans.modes || [], verses: ans.verses || [],
             usage: {...u, costUsd: (u.input_tokens * 2 + u.output_tokens * 10) / 1e6}}, null, 1));
         }
         await route.fulfill({status: 200, contentType: 'application/json', body});
@@ -48,7 +49,7 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
         if (ki.lines.length !== n) console.log('    Achtung: ' + n + ' Systeme angefragt, gespeicherte Antwort hat ' + ki.lines.length);
         usage = {input_tokens: usage.input_tokens + ki.usage.input_tokens, output_tokens: usage.output_tokens + ki.usage.output_tokens};
         await route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({type: 'message', stop_reason: 'end_turn',
-          content: [{type: 'text', text: JSON.stringify({lines: ki.lines.map((t, k) => ({n: k + 1, text: t})), modes: ki.modes || []})}],
+          content: [{type: 'text', text: JSON.stringify({lines: ki.lines.map((t, k) => ({n: k + 1, text: t})), modes: ki.modes || [], verses: ki.verses || []})}],
           usage: {input_tokens: ki.usage.input_tokens, output_tokens: ki.usage.output_tokens}})});
       });
     }
@@ -66,7 +67,7 @@ const cases = arg('--case', null) ? [arg('--case')] : fs.readdirSync(path.join(R
     const res = await page.evaluate(() => window._pgLetzteErkennung || null);
     if (!res) { console.log(c + ': kein Ergebnis'); await page.close(); continue; }
     const out = {model: mock ? 'gespeichert (' + mock + ')' : 'claude-sonnet-5-5' + (live ? ' (über curl)' : ''), effort: 'low', pipeline: 'Notator, neue Erkennung (pdf.js, 172/174)',
-      pieces: res.pieces.map(p => ({incipit: p.incipit, mode: p.mode === '?' ? '' : p.mode, clef: p.clef, hasDropCap: p.hasDropCap, systems: p.systems, unsure: p.unsure})),
+      pieces: res.pieces.map(p => ({incipit: p.incipit, mode: p.mode === '?' ? '' : p.mode, clef: p.clef, hasDropCap: p.hasDropCap, systems: p.systems, unsure: p.unsure, verses: p.verses})),
       usage: {...usage, costUsd: res.usd}, durationMs: Date.now() - t0};
     const d = path.join(ROOT, 'runs', series, c); fs.mkdirSync(d, {recursive: true});
     fs.writeFileSync(path.join(d, 'run-' + String(run).padStart(2, '0') + '.json'), JSON.stringify(out, null, 1));

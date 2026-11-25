@@ -241,6 +241,13 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   nebeneinander, «Hagios | Sanctus») ist als Fall ohne Soll abgelegt – nebeneinanderstehende Systeme werden nicht getrennt (offen).
 - **Build 435 (25.11.2026):** «⚠ prüfen»-Notizen (`pgUnsure`) werden rot/fett gezeichnet und 110 Einheiten über dem Anker gesetzt;
   bei −30 lagen sie in der Handy-Ansicht auf der Textzeile und waren blassbraun kaum zu sehen.
+- **Strophen untereinander (Build 436, 25.11.2026, Auftrag Matthias):** `pgVerseLines` sucht unter der ersten Textzeile weitere
+  Textzeilen gleicher Höhe (Zeilendichte, bis 1.6 Linienabstände vor dem nächsten **nicht abweichenden** System – sechs Strophenzeilen
+  ergaben bei Tota pulchra sonst ein Schein-System). Sie kommen als Zeilen «N.k» (k = Strophe) ins KI-Bild, Antwortfeld `verses`;
+  geteilte lange Zeilen («N.k+») muss der Prompt ausdrücklich erklären, sonst lieferte Sonnet bei Salve mater gar keine Strophen.
+  `pgApplyVerses` verteilt die Silben je System auf die Noten-Plätze (`gregVerseSlots`/`gregVerseApply`); passt die Platzzahl nicht
+  zum Stück, werden keine Strophen übernommen. Fehlen Noten (Geometrie), landen überzählige Silben auf dem letzten Platz des Systems.
+  Strophentext wird nicht ausgewertet (kein Soll); Mock-Läufe ohne `verses` bleiben unverändert.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
