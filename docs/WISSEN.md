@@ -239,6 +239,8 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - **Runde 17 (25.11.2026, ohne Code-Änderung):** Te Deum (einfacher Ton, Webausdruck mit Akkorden) blind 91 % Notenzahl, 100 % Silben.
   Veni Sancte Spiritus war ein Orgelsatz (10. Gegenprobe, abgewiesen). Popule meus (Doppelseite mit je zwei kurzen Systemen
   nebeneinander, «Hagios | Sanctus») ist als Fall ohne Soll abgelegt – nebeneinanderstehende Systeme werden nicht getrennt (offen).
+- **Build 435 (25.11.2026):** «⚠ prüfen»-Notizen (`pgUnsure`) werden rot/fett gezeichnet und 110 Einheiten über dem Anker gesetzt;
+  bei −30 lagen sie in der Handy-Ansicht auf der Textzeile und waren blassbraun kaum zu sehen.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

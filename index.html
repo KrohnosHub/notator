@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-mTUmBH/BNTFMwJZ+Ni9StUv1VXHq/f3WinOPd1urZjY=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-xo3qOB3V7nbPS3DkWi9dqHRi8lRNRNpH/LVTXtfxkQ8=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -4754,6 +4754,8 @@ function gregEmbedCommentsIntoSvg(svgEl, entries, score, interactive) {
     t.setAttribute('font-size', '14');
     t.setAttribute('font-style', 'italic');
     t.setAttribute('fill', '#8b4513');
+    // «⚠ prüfen» aus «PDF lesen» (Build 435): rot und fett – blassbraun wurde es auf dem Handy übersehen (Meldung Matthias)
+    if (e.pgUnsure) { t.setAttribute('fill', '#c0281e'); t.setAttribute('font-weight', 'bold'); t.setAttribute('font-style', 'normal'); t.setAttribute('font-size', '15'); }
     t.textContent = e.text;
 
     if (interactive) {
@@ -7299,7 +7301,7 @@ function pgMarkUnsure(pieces) {
     const a = pitch; pitch += e.pitches.length;
     marks.forEach(m => { if (m >= a && m < pitch && !anchors.includes(noteIdx)) anchors.push(noteIdx); });
   }
-  anchors.forEach(i => gregEntries.push({type: 'comment', text: '⚠ prüfen', anchorNoteIdx: i, dx: 0, dy: -30, pgUnsure: true}));
+  anchors.forEach(i => gregEntries.push({type: 'comment', text: '⚠ prüfen', anchorNoteIdx: i, dx: 0, dy: -110, pgUnsure: true}));
   return anchors.length;
 }
 function pgGabcHeader(p) {
@@ -8805,7 +8807,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '434';
+const NOTATOR_BUILD_ID = '435';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

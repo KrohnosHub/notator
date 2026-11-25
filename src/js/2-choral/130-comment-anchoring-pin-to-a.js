@@ -197,6 +197,8 @@ function gregEmbedCommentsIntoSvg(svgEl, entries, score, interactive) {
     t.setAttribute('font-size', '14');
     t.setAttribute('font-style', 'italic');
     t.setAttribute('fill', '#8b4513');
+    // «⚠ prüfen» aus «PDF lesen» (Build 435): rot und fett – blassbraun wurde es auf dem Handy übersehen (Meldung Matthias)
+    if (e.pgUnsure) { t.setAttribute('fill', '#c0281e'); t.setAttribute('font-weight', 'bold'); t.setAttribute('font-style', 'normal'); t.setAttribute('font-size', '15'); }
     t.textContent = e.text;
 
     if (interactive) {

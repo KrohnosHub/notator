@@ -268,7 +268,7 @@ function pgMarkUnsure(pieces) {
     const a = pitch; pitch += e.pitches.length;
     marks.forEach(m => { if (m >= a && m < pitch && !anchors.includes(noteIdx)) anchors.push(noteIdx); });
   }
-  anchors.forEach(i => gregEntries.push({type: 'comment', text: '⚠ prüfen', anchorNoteIdx: i, dx: 0, dy: -30, pgUnsure: true}));
+  anchors.forEach(i => gregEntries.push({type: 'comment', text: '⚠ prüfen', anchorNoteIdx: i, dx: 0, dy: -110, pgUnsure: true}));
   return anchors.length;
 }
 function pgGabcHeader(p) {
