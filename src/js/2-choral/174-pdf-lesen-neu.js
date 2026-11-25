@@ -217,7 +217,7 @@ function pgPieces(items) {
     p.items.push(it); p.systems++; if (!p.pages.includes(it.page)) p.pages.push(it.page);
   }
   for (const p of pieces) {
-    const words = p.items.map(it => it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w));
+    const words = p.items.map((it, k) => k === 0 && it.staff.dropcap ? String(it.text || '').replace(/^(\p{Lu})\1/u, '$1') : it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w));
     p.incipit = words.slice(0, 5).join(' ').replace(/[,.;:!?]+$/, '') || '(ohne Text)';
     p.hasDropCap = !!p.items[0].staff.dropcap;
     p.mode = p.items[0].mode || '?';                               // Modus über der Initiale des ersten Systems

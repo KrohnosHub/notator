@@ -1,0 +1,45 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "PUeri Hebraeórum vestiménta prosternébant in",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "PU(d)e(f)ri(dc) He(f)brae(g)ó(fh)rum(h) (,) ve(h)sti(h)mén(hj)ta(h) pro(h)ster(g)né(h)bant(g) in(f) (;)",
+    "vi(fg)a,(g) (;) et(h) cla(f)má(g)bant(e) di(f)cén(e)tes:(d.) (;) «Ho(d)sán(f)na(d) fí(e)li(f)o(g) Da(f)vid:(g.) (;)",
+    "be(e)ne(f)dí(gh)ctus(g) qui(f) ve(fg)nit(f) (,) in(e) nó(g)mi(e)ne(fe) Dó(d)mi(d)ni».(d.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "incipit": "OOmnes gentes, pláudite mánibus: jubiláte",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "O()Om(f)nes(gh) gen(h)tes,(h) plá(ixi)u()di()te(h) má()ni(g)bus:(h.) (:) ju(h)bi(h)lá(h)te(h)",
+    "De(h)o(h) in(h) vo(h)ce(h) ex(h)sul(h)tá(g)ti(f)ó(gh)nis:(g.f.h) (::) Quó(h)ni(h)am...()",
+    "Pro(h)ce(h)dá(h)mus(h) in(h) pa(h)ce.(f.) (,)"
+   ],
+   "unsure": [
+    4,
+    1,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 2638,
+  "output_tokens": 301,
+  "costUsd": 0.008286
+ },
+ "durationMs": 4588
+}

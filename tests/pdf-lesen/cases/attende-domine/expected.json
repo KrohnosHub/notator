@@ -1,0 +1,32 @@
+{
+ "id": "attende-domine",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Gesangbuch Nr. 261 «Attende, Domine» (In Quadragesima, S. 207), fünf Strophen untereinander, Drive des Nutzers",
+  "reference": "GregoBase 3021 (LU S. 1871); nur Kehrvers und Strophe 1, Text nach dem Druck",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "initiale-gross",
+  "strophen-untereinander",
+  "modus-ueber-initiale"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 15 (25.11.2026): blind gemessen, Soll aus GregoBase 3021 (Ictus weggelassen). Fünf Strophen untereinander, gemessen wird Strophe 1; «ij.» am Kehrvers-Ende und ℟ weggelassen. Druck trennt «óm-ni-um», «Red-émp-tor».",
+ "pieces": [
+  {
+   "incipit": "Attende Domine",
+   "mode": "5",
+   "clef": "c4",
+   "systems": [
+    "AT(c)tén(e)de(g) Dó(g)mi(g)ne,(g.) et(j) mi(i)se(g)ré(h)re,(g.) (;) qui(j)a(g) pec(d)cá(f)vi(g)mus(e) ti(ed)bi.(c.) (::)",
+    "Ad(e) te,(e) Rex(c) sum(d)me,(de) óm(h)ni(h)um(g) Red(h)émp(fe)tor,(e.) (;)",
+    "ó(g)cu(g)los(g) no(g)stros(e.) sub(f)le(g)vá(h)mus(g) flen(fe)tes:(d.) (;) ex(g)áu(h)",
+    "di,(i) Chri(j)ste,(g.) sup(g)pli(d)cán(f)tum(e) pre(ed)ces.(c.) (::) At(c)tén(e)de:(g)"
+   ]
+  }
+ ]
+}

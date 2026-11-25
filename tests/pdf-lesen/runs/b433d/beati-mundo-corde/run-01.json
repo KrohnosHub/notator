@@ -1,0 +1,47 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "BEáti mundo corde, quóniam ipsi",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "BE(h)á(h)ti(hg) mun(hj)do(ji) cor(hi)de,(h.) (;) quó(h)ni(g)am(hge) i(fgh)psi(g.) (,) De(hgf)um(g)",
+    "vi(fe)dé(defede)bunt:(e.d.) be(df)á(fef)ti(def) pa(fd)cí(fh)fi(gf)ci,(fghhg) (;) quó(gh)ni(gf)am(f) fí(gh)li(h)i(h)",
+    "De(j)i(h) vo(h)ca(hg)bún(fghgf)tur:(g.f.) (:) be(fhj)á(jkl)ti(kj) qui(j) per(j)se(h)cu(j)ti(g)ó(h)nem(g) pa(h)",
+    "ti(g)ún(h)tur(jhikji.) prop(g)ter(hggf) ju(gh)stí(f)ti(fghgfg)am,(g.f.) (:) quó(h)ni(g)am(hgh) ip(f)só(gffh)",
+    "rum(fe) est(dfddc.) (,) re(fegh)gnum(ghgh) cae(fe)ló(defede)rum.(e.d.) (::)"
+   ],
+   "unsure": [
+    0,
+    0,
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "incipit": "GLória Patri, et Fílio, et",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "GLó(f)ri(gh)a(h) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h.) (,) et(h) Spi(h)rí(hj)tu(h)i(h) Sanc(hg)to.(g.h.) (:) Si(gf)cut(gh) e(h)rat(h) in(h)",
+    "prin(h)cí(h)pi(h)o,(h.) (,) et(h) nunc,(hj) et(h) sem(hg)per,(gh.) (:) et(gf) in(gh) sæ(h)cu(h)la(h) sae(h)cu(hjh)ló(g)rum.(f) A(fff)men.(d.) (::)"
+   ],
+   "unsure": [
+    0,
+    0
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3363,
+  "output_tokens": 395,
+  "costUsd": 0.010676
+ },
+ "durationMs": 5775
+}

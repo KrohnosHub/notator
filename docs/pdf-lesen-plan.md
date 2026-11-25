@@ -1022,6 +1022,12 @@ Neumentyp 93 %, Silben 88 %, Modus 69 %, Virga 12 % gefunden / 39 % richtig.
 - Blind/nachher: Notenzahl 85/100 %, Silben 81/96 %, Trennstriche 81/88 %, Stückgrenzen 50/100 %, Modus 50/100 %.
 - Gesamt (40 Fälle, Mock): Notenzahl 75 %, Neumentyp 95 %, Silben 90 %, Trennstriche 81 %, Gruppierung exakt 62 %.
 
+### 7.29 Runde 15 (Build 433, 25.11.2026)
+
+- Neue Fälle: inviolata (schmale Spalte), attende-domine (5 Strophen untereinander), pueri-hebraeorum (Antiphon + Psalm mit hohlen Noten, Psalm ohne Soll).
+- Blind/nachher: Notenzahl 60/67 %, Tonhöhen 96/97 %, Gruppierung exakt 40/60 %, Silben 97/97 %.
+- Gesamt (44 Fälle, Mock): Notenzahl 75 %, Tonhöhen 95 %, Neumentyp 95 %, Silben 90 %, Trennstriche 80 %, Schlüssel 100 %.
+
 ## Offene Fragen
 
 1. Soll-GABC der drei Fälle prüfen (`tests/pdf-lesen/cases/*/expected.json`).

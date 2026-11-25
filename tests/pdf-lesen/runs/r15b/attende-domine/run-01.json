@@ -1,0 +1,31 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Atténde Dómine, et miserére, quia",
+   "mode": "5",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "At(c)tén(de)de(g) Dó(g)mi(g)ne,(g.h) et(j) mi(i)se(g)ré(h)re,(g.) (;) qui(j)a(fg) pec(d)cá(f)vi(g)mus(e) ti(ded)bi.(c.) (::)",
+    "Ad(e) te,(e) Rex(c) sum(d)me,(de.) óm(h)ni(h)um(g) Red(h)émp(fe)tor,(e.) (;)",
+    "ó(g)cu(g)los(g) no(g)stros(e.) sub(f)le(g)vá(h)mus(g) flen(fe)tes:(d.) ex(g)áu(h)",
+    "di,(ijj) Chri(g.)ste,(g) sup(d)pli(f)cán(e)tum() pre(ed)ces.(c.) (::) R/.() At(c)tén(e)de:(g)"
+   ],
+   "unsure": [
+    0,
+    0,
+    1,
+    1
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 3102,
+  "output_tokens": 230,
+  "costUsd": 0.008504
+ },
+ "durationMs": 5538
+}

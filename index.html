@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-T+t/LZ2vpS0ODDgFCOLBvQW19UBfRxZwSz6uAORiIu0=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-qeh8SeAheOibVov6x3ph7dTH4P2ppx2SDmClJXINajw=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -6215,11 +6215,19 @@ function pgAnalyseStaff(dark, st, g, ref) {
   const stepOf = (x, y) => (q[3] + off(x) - y) / hs;
   let notes = [];
   const accepted = [], small = [];
+  // Build 430 (nicht im Prototyp): rechter Rand des Schlüssels selbst – die Teile, die am Systemanfang beginnen. In schmalem Satz
+  // steht die erste Note noch innerhalb von PG_CLEF Linienabständen (Inviolata) und fiel sonst als «Schlüsselzone» weg.
+  let clefRight = Infinity;
+  if (!globalThis._pgNurPrototyp) {
+    const cb = blobs.filter(b => b.x0 < x0 + 0.9 * gl && b.x1 > x0 - 0.3 * gl && b.y1 > q[0] - 0.5 * gl && b.y0 < q[3] + 0.5 * gl);
+    if (cb.length) clefRight = Math.max(...cb.map(b => b.x1));
+  }
   for (const b of blobs) {
     const w = b.x1 - b.x0 + 1, cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
     // Schlüsselzone: Ein Schlüssel liegt nie unter der untersten Linie – tiefere Noten dort gelten (Build 414, nicht im Prototyp)
     const belowClef = !globalThis._pgNurPrototyp && stepOf(cx, cy) < -0.5;
-    const why = (b.x0 < x0 + PG_CLEF * gl && !belowClef) ? 'Schlüsselzone'             // Schlüssel am Zeilenanfang
+    const afterClef = b.x0 > clefRight + 0.25 * gl && clefRight < x0 + PG_CLEF * gl;
+    const why = (b.x0 < x0 + PG_CLEF * gl && !belowClef && !afterClef) ? 'Schlüsselzone'             // Schlüssel am Zeilenanfang
       : (b.y0 <= top + 1 || b.y1 >= bot - 2) ? 'Streifenrand'            // ragt aus dem Streifen: Text, Titel
       : cx > x1 - 0.5 * gl ? 'Zeilenende'                                 // Custos / Schlussstrich
       : (cy > ylo - 0.1 * gl || cy < yhi + 0.1 * gl) ? 'Textzeile'       // liegt in einer Textzeile
@@ -6227,7 +6235,9 @@ function pgAnalyseStaff(dark, st, g, ref) {
     if (why === 'klein' && b.area >= 0.15 * aref && b.y1 - b.y0 + 1 >= 0.22 * gl) small.push(b);
     if (why) { pgDiag(why, b, st); continue; }
     b.wref = wref; accepted.push(b);
-    notes = notes.concat(pgSplitBlob(b, gl, hs, stepOf));
+    const nn = pgSplitBlob(b, gl, hs, stepOf);
+    if (afterClef && b.x0 < x0 + PG_CLEF * gl) nn.forEach(n => { n.afterClef = true; });
+    notes = notes.concat(nn);
   }
   // Senkrechtes Notenpaar (z. B. Clivis, Pes mit Verbindungsstrich): Das Öffnen trennt die zweite Note oft nur als
   // schmalen Rest ab, der als «klein» verworfen würde. Ein solcher Rest zählt als Note, wenn er direkt über oder unter
@@ -6286,7 +6296,11 @@ function pgAnalyseStaff(dark, st, g, ref) {
     for (let i = out.length - 1; i >= 0; i--) if (pgRound(out[i].p) >= 8 && !hasLedger(out[i])) { pgDiag('über dem System ohne Hilfslinie', {x0: out[i].x, x1: out[i].x, y0: out[i].y, y1: out[i].y, area: 0}, st); out.splice(i, 1); }
   }
   st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt, firstNoteX: out.length ? Math.min(...out.map(n => n.x)) : Infinity};
-  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
+  if (!globalThis._pgNurPrototyp) {
+    pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out); pgMarkFlats(st, out);
+    // Note direkt hinter dem Schlüssel, die in Wahrheit der Bauch eines ♭ ist (Media vita, Build 430)
+    for (let i = out.length - 1; i >= 0; i--) if (out[i].afterClef && (st._ctx.flatBoxes || []).some(fb => out[i].x >= fb[0] - 0.1 * gl && out[i].x <= fb[1] + 0.1 * gl)) out.splice(i, 1);
+  }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
 }
 
@@ -6337,6 +6351,7 @@ function pgMarkFlats(st, notes) {
     const by = box[1] + y0 + c.top + (belly[0] + belly[belly.length - 1]) / 2, bx = (box[0] + box[2]) / 2 + c.xa;
     const p = pgRound(c.stepOf(bx, by));
     if (p < -3 || p > 9) continue;
+    (c.flatBoxes || (c.flatBoxes = [])).push([box[0] + c.xa, box[2] + c.xa]);
     const next = notes.find(n => n.x > box[2] + c.xa - 0.1 * gl && n.x < box[2] + c.xa + 1.8 * gl);
     if (next && !next.flat) next.flat = PG_LET[p + 3];
   }
@@ -6950,7 +6965,9 @@ function pgApplyClef(staff, clef) {
 
 // GABC-Zeile eines Systems aus dem gelesenen Text (Silben mit «-», Wörter mit Leerzeichen)
 function pgStaffGabc(staff, text) {
-  const t = pgResyllabify(pgCleanLine(text));
+  let t = pgResyllabify(pgCleanLine(text));
+  // Build 430: KI schreibt die Initiale doppelt («OOm-nes» bei Pueri Hebraeorum)
+  if (!globalThis._pgNurPrototyp && staff.dropcap) t = t.replace(/^(\p{Lu})\1/u, '$1');
   // Build 419 (nicht im Prototyp): Textgruppen rechts vom letzten Schlussstrich und von der letzten Note tragen keine Silbe
   // (roter Hinweis «rep. Alleluja» bei Surrexit, den die KI weglässt)
   let chunks = staff.chunks, endX = null;
@@ -7209,7 +7226,7 @@ function pgPieces(items) {
     p.items.push(it); p.systems++; if (!p.pages.includes(it.page)) p.pages.push(it.page);
   }
   for (const p of pieces) {
-    const words = p.items.map(it => it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w));
+    const words = p.items.map((it, k) => k === 0 && it.staff.dropcap ? String(it.text || '').replace(/^(\p{Lu})\1/u, '$1') : it.text).join(' ').replace(/-/g, '').split(/\s+/).filter(w => /\p{L}/u.test(w) && !PG_SIGN_RE.test(w));
     p.incipit = words.slice(0, 5).join(' ').replace(/[,.;:!?]+$/, '') || '(ohne Text)';
     p.hasDropCap = !!p.items[0].staff.dropcap;
     p.mode = p.items[0].mode || '?';                               // Modus über der Initiale des ersten Systems
@@ -8759,7 +8776,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '432';
+const NOTATOR_BUILD_ID = '433';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

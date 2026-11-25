@@ -1,4 +1,4 @@
-# Notator – Stand Build 432 (25.11.2026)
+# Notator – Stand Build 433 (25.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–432 (Auszug)
+## Neu in Build 298–433 (Auszug)
 
+- **PDF lesen (433, Runde 15):** erste Note direkt hinter dem Schlüssel wird in schmalem Satz nicht mehr verworfen (Inviolata: 5 Systeme richtig); ein ♭ dort wird nicht zur Note; doppelt geschriebene Initiale («OOmnes») bereinigt. Runde 15 blind → nachher: Notenzahl 60 → 67 %, Gruppierung exakt 40 → 60 %. Offen: hohle Notenköpfe (wahlweise Noten, Pueri Hebraeorum), senkrechte Abschlussstriche am Systemende (Inviolata).
 - **PDF lesen (432, Runde 14):** Schatten vom Buchrücken gilt nicht mehr als Initiale (falsche Stückgrenze bei Tota pulchra); der Hals der ♭-Vorzeichnung direkt nach dem Schlüssel ist kein Trennstrich; Divisio-minima-Grenze für unscharfe Kopien nachjustiert (seit Build 430 bei den Trennstrichen nur Verbesserungen). Orgelsatz «Regina caeli» (moderne Noten) richtig abgewiesen. Runde 14 blind → nachher: Notenzahl 85 → 100 %, Silben 81 → 96 %, Stückgrenzen 50 → 100 %.
 - **PDF lesen (431, Runde 13):** Linienlücke in der Seitenmitte gilt nicht mehr als Doppelseite (Ave maris stella); blasse Systeme werden mit hellerer Schwelle nachgesucht und mit beiden Schwellen vermessen; kleine Initialen (Asperges «A», Tu es Petrus «T»); ein Strich im Linienabstand neben dem System wird nicht mehr als Notenlinie genommen (Asperges: Tonhöhen in System 4 waren 2–3 Stufen zu tief); Unterlängen der Textzeile über dem System sind keine Divisio minima. Runde 13 blind → nachher: Notenzahl 43 → 70 %, Silben 64 → 82 %.
 - **PDF lesen (430, Meldungen Matthias + Runden 11/12):** «Ps.», «Vs.»/℣ und ℟ erscheinen im Ergebnis (kursiv bzw. V/., R/.), «Ps.» hinter dem Doppelstrich; beim Laden «als ein Stück» kein zweiter Schlüssel vor dem Gloria, wenn er gleich ist; über das Systemende getrennte Wörter bleiben ein Wort. «⚠ prüfen» zusätzlich bei Silben ohne Noten (erfasst jetzt 45 % der fehlerhaften Systeme). Kurze Systeme mitten in der Zeile, bis 8 Silben je Textgruppe, zerfallene Trennstriche in blassen Kopien, Custos ≠ Mora, gedrehter Randtext, falsch verteilte KI-Zeilen («N+»), Ersatzweg für blasse/gestrichelte/schräge Linien (Conditor alme: 0 → 6 von 8 Systemen). Runde 11 blind → nachher: Notenzahl 79 → 95 %, Silben 80 → 97 %; Runde 12: 52 → 64 %, Silben 65 → 78 %.
@@ -128,7 +129,8 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 
 ## Offen / Ideen
 
-- «PDF lesen», Neumenformen: Mora (412), ♭ (414) geometrisch; Virga (413) seit 429 abgeschaltet. Quilisma, Liqueszenz, Oriscus, Rhombus, Iktus, Episem
+- «PDF lesen», Neumenformen: Mora (412), ♭ (414) geometrisch; Virga (413) seit 429 abgeschaltet.
+- «PDF lesen», offen nach Runde 15: hohle Notenköpfe werden nicht erkannt; senkrechter Abschlussstrich am Systemende in schmalem Satz gilt als Trennstrich (eine pauschale Regel würde 37 echte Striche am Zeilenende löschen); Modus links vom ersten System ohne Initiale; Strophen untereinander – nur die erste wird gelesen. Quilisma, Liqueszenz, Oriscus, Rhombus, Iktus, Episem
   werden nicht erkannt – per KI zu teuer (Kostengrenze 0.10 USD/Seite, Entscheid Matthias 23.11.2026), geometrisch bisher
   zu unzuverlässig. Nacharbeit von Hand.
 - «PDF lesen», Notenzahl: nach Build 412 noch 7–8 fehlende und ~13 zusätzliche Noten auf 32 Systemen (Tiefe Noten nahe dem Text,

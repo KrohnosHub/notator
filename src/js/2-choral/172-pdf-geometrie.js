@@ -460,11 +460,19 @@ function pgAnalyseStaff(dark, st, g, ref) {
   const stepOf = (x, y) => (q[3] + off(x) - y) / hs;
   let notes = [];
   const accepted = [], small = [];
+  // Build 430 (nicht im Prototyp): rechter Rand des Schlüssels selbst – die Teile, die am Systemanfang beginnen. In schmalem Satz
+  // steht die erste Note noch innerhalb von PG_CLEF Linienabständen (Inviolata) und fiel sonst als «Schlüsselzone» weg.
+  let clefRight = Infinity;
+  if (!globalThis._pgNurPrototyp) {
+    const cb = blobs.filter(b => b.x0 < x0 + 0.9 * gl && b.x1 > x0 - 0.3 * gl && b.y1 > q[0] - 0.5 * gl && b.y0 < q[3] + 0.5 * gl);
+    if (cb.length) clefRight = Math.max(...cb.map(b => b.x1));
+  }
   for (const b of blobs) {
     const w = b.x1 - b.x0 + 1, cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
     // Schlüsselzone: Ein Schlüssel liegt nie unter der untersten Linie – tiefere Noten dort gelten (Build 414, nicht im Prototyp)
     const belowClef = !globalThis._pgNurPrototyp && stepOf(cx, cy) < -0.5;
-    const why = (b.x0 < x0 + PG_CLEF * gl && !belowClef) ? 'Schlüsselzone'             // Schlüssel am Zeilenanfang
+    const afterClef = b.x0 > clefRight + 0.25 * gl && clefRight < x0 + PG_CLEF * gl;
+    const why = (b.x0 < x0 + PG_CLEF * gl && !belowClef && !afterClef) ? 'Schlüsselzone'             // Schlüssel am Zeilenanfang
       : (b.y0 <= top + 1 || b.y1 >= bot - 2) ? 'Streifenrand'            // ragt aus dem Streifen: Text, Titel
       : cx > x1 - 0.5 * gl ? 'Zeilenende'                                 // Custos / Schlussstrich
       : (cy > ylo - 0.1 * gl || cy < yhi + 0.1 * gl) ? 'Textzeile'       // liegt in einer Textzeile
@@ -472,7 +480,9 @@ function pgAnalyseStaff(dark, st, g, ref) {
     if (why === 'klein' && b.area >= 0.15 * aref && b.y1 - b.y0 + 1 >= 0.22 * gl) small.push(b);
     if (why) { pgDiag(why, b, st); continue; }
     b.wref = wref; accepted.push(b);
-    notes = notes.concat(pgSplitBlob(b, gl, hs, stepOf));
+    const nn = pgSplitBlob(b, gl, hs, stepOf);
+    if (afterClef && b.x0 < x0 + PG_CLEF * gl) nn.forEach(n => { n.afterClef = true; });
+    notes = notes.concat(nn);
   }
   // Senkrechtes Notenpaar (z. B. Clivis, Pes mit Verbindungsstrich): Das Öffnen trennt die zweite Note oft nur als
   // schmalen Rest ab, der als «klein» verworfen würde. Ein solcher Rest zählt als Note, wenn er direkt über oder unter
@@ -531,7 +541,11 @@ function pgAnalyseStaff(dark, st, g, ref) {
     for (let i = out.length - 1; i >= 0; i--) if (pgRound(out[i].p) >= 8 && !hasLedger(out[i])) { pgDiag('über dem System ohne Hilfslinie', {x0: out[i].x, x1: out[i].x, y0: out[i].y, y1: out[i].y, area: 0}, st); out.splice(i, 1); }
   }
   st._ctx = {top, bot, xa, xb, op, reg, stepOf, ylo, blobs, gl, wref, off, lt, firstNoteX: out.length ? Math.min(...out.map(n => n.x)) : Infinity};
-  if (!globalThis._pgNurPrototyp) { pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out); pgMarkFlats(st, out); }           // Test gegen den Python-Prototyp: ohne Ergänzungen
+  if (!globalThis._pgNurPrototyp) {
+    pgMarkMoras(st, out); if (globalThis._pgVirga) pgMarkVirga(st, out); pgMarkFlats(st, out);
+    // Note direkt hinter dem Schlüssel, die in Wahrheit der Bauch eines ♭ ist (Media vita, Build 430)
+    for (let i = out.length - 1; i >= 0; i--) if (out[i].afterClef && (st._ctx.flatBoxes || []).some(fb => out[i].x >= fb[0] - 0.1 * gl && out[i].x <= fb[1] + 0.1 * gl)) out.splice(i, 1);
+  }           // Test gegen den Python-Prototyp: ohne Ergänzungen
   return {notes: out, gl};
 }
 
@@ -582,6 +596,7 @@ function pgMarkFlats(st, notes) {
     const by = box[1] + y0 + c.top + (belly[0] + belly[belly.length - 1]) / 2, bx = (box[0] + box[2]) / 2 + c.xa;
     const p = pgRound(c.stepOf(bx, by));
     if (p < -3 || p > 9) continue;
+    (c.flatBoxes || (c.flatBoxes = [])).push([box[0] + c.xa, box[2] + c.xa]);
     const next = notes.find(n => n.x > box[2] + c.xa - 0.1 * gl && n.x < box[2] + c.xa + 1.8 * gl);
     if (next && !next.flat) next.flat = PG_LET[p + 3];
   }
@@ -1195,7 +1210,9 @@ function pgApplyClef(staff, clef) {
 
 // GABC-Zeile eines Systems aus dem gelesenen Text (Silben mit «-», Wörter mit Leerzeichen)
 function pgStaffGabc(staff, text) {
-  const t = pgResyllabify(pgCleanLine(text));
+  let t = pgResyllabify(pgCleanLine(text));
+  // Build 430: KI schreibt die Initiale doppelt («OOm-nes» bei Pueri Hebraeorum)
+  if (!globalThis._pgNurPrototyp && staff.dropcap) t = t.replace(/^(\p{Lu})\1/u, '$1');
   // Build 419 (nicht im Prototyp): Textgruppen rechts vom letzten Schlussstrich und von der letzten Note tragen keine Silbe
   // (roter Hinweis «rep. Alleluja» bei Surrexit, den die KI weglässt)
   let chunks = staff.chunks, endX = null;

@@ -1,0 +1,37 @@
+{
+ "id": "inviolata",
+ "scan": "scan.pdf",
+ "source": {
+  "book": "Gesangbuch Nr. 488 «Inviolata» (Jungfrau Maria, S. 695), schmale Notenspalte, rechts deutscher Text, Drive des Nutzers",
+  "reference": "GregoBase 3027 (LU S. 1861), Text nach dem Druck",
+  "rights": "ungeklärt – Scan nicht im Repo"
+ },
+ "tags": [
+  "do-schluessel",
+  "c4",
+  "initiale",
+  "schmale-spalte",
+  "deutscher-text-daneben",
+  "systemende-strich"
+ ],
+ "checkedBy": "",
+ "checkedOn": "",
+ "notes": "Runde 15 (25.11.2026): blind gemessen, Soll aus GregoBase 3027 (Ictus weggelassen), «*» weggelassen. Modus «6.» über der Initiale. Am Ende der Systeme jeweils ein senkrechter Abschlussstrich (kein Trennstrich).",
+ "pieces": [
+  {
+   "incipit": "Inviolata",
+   "mode": "6",
+   "clef": "c4",
+   "systems": [
+    "IN(f)vi(g)o(f)lá(g)ta,(h.) ín(ixi)te(h)gra,(g) et(h) cá(g)sta(f) es(g)",
+    "Ma(f)rí(g)a:(h.) (::) Quæ(f) es(h) ef(ixi)féc(h)ta(g) fúl(h)gi(g)da(f) cæ(g)li(f) pór(g)",
+    "ta.(h.) (::) O(h) Má(g)ter(f) ál(g)ma(f) Chri(g)sti(h) ca(j)rís(ixi)si(g)ma:(h.) (::)",
+    "Sús(h)ci(g)pe(f) pí(g)a(f) láu(g)dum(h) præ(j)có(ixi)ni(g)a.(h.) (::) Te(f) nunc(f)",
+    "flá(h)gi(ixi)tant(h.) de(h)vó(g)ta(f) cór(g)da(g) et(h) ó(g)ra:(f.) (::) Nó(f)stra(f) ut(h) pú(ixi)ra(h.) péc(h)to(g)ra(f) sint(g) et(g)",
+    "cór(h)po(g)ra.(f.) (::) Tú(f)a(f) per(h) pre(ixi)cá(h)ta(g) dul(h)cí(j)so(ixi)na:(h.) (::) Nó(f)bis(f) con(h)cé(ixi)das(h.) vé(h)ni(g)am(f)",
+    "per(h) sǽ(j)cu(ixi)la.(h.) (::) O(hh) be(g)ní(g.)gna!(f.) (::) O(hh) Re(g)gí(g.)na!(f.) (::) O(hh) Ma(g)rí(g.)a!(f.) (::) Quæ(f) só(g)",
+    "la(f.) in(f)vi(f)o(f)lá(ixfh!ivHG)ta(ge) per(gh)man(ghg)sí(fg!hvGFg)sti.(gf..) (::)"
+   ]
+  }
+ ]
+}
