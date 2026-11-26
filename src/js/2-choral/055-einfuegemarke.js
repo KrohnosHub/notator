@@ -21,6 +21,7 @@ function gregNoteOrdinalBefore(i) {
 // Fügt Einträge an der Marke ein (oder hängt an) und gibt den Index des ersten zurück. Notizen (comment) sind über die
 // Notennummer verankert – bei eingefügten Noten werden die Anker dahinter mitverschoben.
 function gregAddEntries(...items) {
+  window._gregLastAdded = items[items.length - 1];
   const at = gregInsAt();
   if (at == null || at >= gregEntries.length) {
     gregEntries.push(...items);

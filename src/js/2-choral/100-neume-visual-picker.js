@@ -243,6 +243,48 @@ function gregQbMoreNeumes(btn) {
   const close = e => { if (!d.contains(e.target) && e.target !== btn) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
   setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
 }
+// Neumentyp mit Bild auswählen (Build 449, Wunsch Matthias): ersetzt die reine Namensliste im Notenfenster.
+// sel = bisheriges <select> (bleibt versteckt die Quelle des Werts); onPick(val) nach der Wahl.
+function gregNeumeLabel(v) { const d = NEUME_DEFS.find(n => n.val === v); return d ? d.label : v; }
+function gregNeumeSelectWithIcons(sel) {
+  const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'b greg-neume-pick';
+  btn.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:2px 8px 2px 3px;height:auto;font-size:13px';
+  const paint = () => {
+    const v = sel.value, ic = NEUME_SVG_ICONS[v];
+    btn.innerHTML = '<span style="width:40px;height:28px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border-radius:3px">' +
+      (ic ? gregNamespaceSvgIds(ic, 'npb-' + v) : '') + '</span>';
+    const sv = btn.querySelector('svg'); if (sv) { sv.style.width = '40px'; sv.style.height = 'auto'; }
+    const t = document.createElement('span'); t.textContent = gregNeumeLabel(v) + ' ▾'; btn.appendChild(t);
+  };
+  btn.onclick = ev => {
+    ev.preventDefault(); ev.stopPropagation();
+    const old = document.getElementById('greg-neume-pick-pop'); if (old) { old.remove(); return; }
+    const d = document.createElement('div'); d.id = 'greg-neume-pick-pop';
+    d.style.cssText = 'position:fixed;z-index:5000;background:#1a2414;border:1px solid #5a8a40;border-radius:5px;padding:6px;box-shadow:0 4px 16px rgba(0,0,0,.5);display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:4px;max-width:min(92vw,520px);max-height:70vh;overflow:auto';
+    [...sel.options].map(o => o.value).forEach(v => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'b';
+      b.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 2px;height:auto;white-space:normal;font-size:11px;line-height:1.1' + (v === sel.value ? ';outline:3px solid #d0a040' : '');
+      const ic = NEUME_SVG_ICONS[v], nd = NEUME_DEFS.find(n => n.val === v);
+      b.innerHTML = '<span style="width:52px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border-radius:3px">' + (ic ? gregNamespaceSvgIds(ic, 'npk-' + v) : '') + '</span>';
+      const sv = b.querySelector('svg'); if (sv) { sv.style.width = '52px'; sv.style.height = 'auto'; }
+      const lb = document.createElement('span'); lb.textContent = gregNeumeLabel(v); b.appendChild(lb);
+      const n = NEUME_OPEN_ENDED.includes(v) ? (NEUME_PITCHES[v] || 3) + '+' : (NEUME_PITCHES[v] || (nd && nd.tones) || 1);
+      const tn = document.createElement('span'); tn.textContent = n + (n === 1 ? ' Ton' : ' Töne'); tn.style.cssText = 'font-size:9px;color:#8aa070'; b.appendChild(tn);
+      b.onclick = e2 => { e2.preventDefault(); e2.stopPropagation(); d.remove(); sel.value = v; sel.dispatchEvent(new Event('change', {bubbles: true})); paint(); };
+      d.appendChild(b);
+    });
+    document.body.appendChild(d);
+    const r = btn.getBoundingClientRect();
+    d.style.top = Math.max(8, Math.min(r.bottom + 4, window.innerHeight - d.offsetHeight - 8)) + 'px';
+    d.style.left = Math.max(8, Math.min(r.left, window.innerWidth - d.offsetWidth - 8)) + 'px';
+    const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
+    setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+  };
+  sel.style.display = 'none';
+  sel.parentNode.insertBefore(btn, sel.nextSibling);
+  paint();
+  return btn;
+}
 // Werkzeugleiste über dem Notenblatt (PC/Tablet)
 const GREG_QB_NEUMES = ['punctum','virga','podatus','clivis','torculus','porrectus','scandicus','climacus','quilisma'];
 const GREG_KEY_NEUMES = { '1':'punctum', '2':'virga', '3':'quilisma', 'p':'podatus', 'c':'clivis', 't':'torculus', 'r':'porrectus', 's':'scandicus', 'k':'climacus', 'l':'salicus', 'i':'puncta_inclinata' };

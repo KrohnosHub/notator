@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-G4rsRNTgfT6LzInla8BPSeVOokxK0lDG9TEicL9BXnU=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-CltBp5KKFBnMlxrePKwu6DtwyBWfRNALUaWX7eqCPUo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-R1X4oTpCB8SfYQENyI7xVc2QhKnsk90t/F0zaG66jYY=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-CltBp5KKFBnMlxrePKwu6DtwyBWfRNALUaWX7eqCPUo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -2641,6 +2641,11 @@ function gregHandleClick(svgEl, clientX, clientY) {
     const pp = gregPitchAtSvg(svgP, ctxt);
     if (pp) {
       const inp = window._gregPitchInput;
+      // Nicht mehr Töne als der gewählte Neumentyp hat (Build 449, Wunsch Matthias) – erst den Typ wählen, dann Töne setzen
+      const nsel = document.querySelector('#greg-edit-pop .greg-pop-neume'), nv = nsel ? nsel.value : '';
+      const cap = !nv ? Infinity : NEUME_OPEN_ENDED.includes(nv) ? Infinity : (NEUME_PITCHES[nv] || 1);
+      const have = inp.value.split('').filter(c => /[a-m]/i.test(c)).length;
+      if (have >= cap) { gregGst('«' + gregNeumeLabel(nv) + '» hat ' + cap + (cap === 1 ? ' Ton' : ' Töne') + ' – für mehr Töne zuerst einen anderen Neumentyp wählen (oder einen Ton im Feld «Töne» löschen).'); return; }
       inp.value += pp.letter;
       inp.dispatchEvent(new Event('input', {bubbles: true}));
       gregGst('Ton ' + pp.letter + ' angehängt → «' + inp.value + '». Weitere Töne anklicken, dann «✓ Übernehmen».');
@@ -2784,7 +2789,7 @@ function gregFinishPendingNeume() {
 // Vorzeichen-Knöpfe nicht mehr hervorgehoben).
 function gregInputConsumed() {
   const we = document.getElementById('greg-wordend'); if (we) { we.checked = false; we._auto = false; }
-  if (gregTextQueue()) setTimeout(() => gregTextQueueAfterPlace(gregEntries[gregEntries.length - 1]), 0);
+  if (gregTextQueue()) { const le = window._gregLastAdded || gregEntries[gregEntries.length - 1]; setTimeout(() => gregTextQueueAfterPlace(le), 0); }   // eingefügt, nicht unbedingt am Ende (Build 449)
   // Mora gilt nur für die eben gesetzte Neume (Nutzerwunsch 2026-10-22)
   [1,2,3,4].forEach(p => { const m = document.getElementById('greg-mora-n' + p); if (m) m.checked = false; });
   // ebenso Iktus, Episema und Modifier (Liqueszenz, Oriscus, Strophicus, Pressus, Quilisma) – Nutzerwunsch 2026-11-04
@@ -2850,6 +2855,7 @@ function gregNoteOrdinalBefore(i) {
 // Fügt Einträge an der Marke ein (oder hängt an) und gibt den Index des ersten zurück. Notizen (comment) sind über die
 // Notennummer verankert – bei eingefügten Noten werden die Anker dahinter mitverschoben.
 function gregAddEntries(...items) {
+  window._gregLastAdded = items[items.length - 1];
   const at = gregInsAt();
   if (at == null || at >= gregEntries.length) {
     gregEntries.push(...items);
@@ -3490,6 +3496,8 @@ function gregEditEntryInner(i) {
     const grp = (title, nodes) => { const d = document.createElement('div'); d.className = 'greg-pop-row'; if (title) { const t = document.createElement('span'); t.className = 'greg-pop-lbl'; t.textContent = title; d.appendChild(t); } nodes.forEach(n => d.appendChild(n)); host.appendChild(d); };
     grp('Silbe', [sylI, weW]);
     grp('Neume', [neuSel, lbl(' Töne:'), pitI]);
+    neuSel.classList.add('greg-pop-neume');
+    if (typeof gregNeumeSelectWithIcons === 'function') gregNeumeSelectWithIcons(neuSel);   // Auswahl mit Bild (Build 449)
     grp('', [moraW, iktW, iktPosSel, epW, epPosW]);
     grp('Vorzeichen', [accSel, accPosSel]);
     grp('Modifier', [liqW, orisW, strW, presW, quilW, quilPosW]);
@@ -4428,6 +4436,48 @@ function gregQbMoreNeumes(btn) {
   d.style.left = Math.max(8, Math.min(r.left, window.innerWidth - d.offsetWidth - 8)) + 'px';
   const close = e => { if (!d.contains(e.target) && e.target !== btn) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
   setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+}
+// Neumentyp mit Bild auswählen (Build 449, Wunsch Matthias): ersetzt die reine Namensliste im Notenfenster.
+// sel = bisheriges <select> (bleibt versteckt die Quelle des Werts); onPick(val) nach der Wahl.
+function gregNeumeLabel(v) { const d = NEUME_DEFS.find(n => n.val === v); return d ? d.label : v; }
+function gregNeumeSelectWithIcons(sel) {
+  const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'b greg-neume-pick';
+  btn.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:2px 8px 2px 3px;height:auto;font-size:13px';
+  const paint = () => {
+    const v = sel.value, ic = NEUME_SVG_ICONS[v];
+    btn.innerHTML = '<span style="width:40px;height:28px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border-radius:3px">' +
+      (ic ? gregNamespaceSvgIds(ic, 'npb-' + v) : '') + '</span>';
+    const sv = btn.querySelector('svg'); if (sv) { sv.style.width = '40px'; sv.style.height = 'auto'; }
+    const t = document.createElement('span'); t.textContent = gregNeumeLabel(v) + ' ▾'; btn.appendChild(t);
+  };
+  btn.onclick = ev => {
+    ev.preventDefault(); ev.stopPropagation();
+    const old = document.getElementById('greg-neume-pick-pop'); if (old) { old.remove(); return; }
+    const d = document.createElement('div'); d.id = 'greg-neume-pick-pop';
+    d.style.cssText = 'position:fixed;z-index:5000;background:#1a2414;border:1px solid #5a8a40;border-radius:5px;padding:6px;box-shadow:0 4px 16px rgba(0,0,0,.5);display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:4px;max-width:min(92vw,520px);max-height:70vh;overflow:auto';
+    [...sel.options].map(o => o.value).forEach(v => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'b';
+      b.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 2px;height:auto;white-space:normal;font-size:11px;line-height:1.1' + (v === sel.value ? ';outline:3px solid #d0a040' : '');
+      const ic = NEUME_SVG_ICONS[v], nd = NEUME_DEFS.find(n => n.val === v);
+      b.innerHTML = '<span style="width:52px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f6f0dc;border-radius:3px">' + (ic ? gregNamespaceSvgIds(ic, 'npk-' + v) : '') + '</span>';
+      const sv = b.querySelector('svg'); if (sv) { sv.style.width = '52px'; sv.style.height = 'auto'; }
+      const lb = document.createElement('span'); lb.textContent = gregNeumeLabel(v); b.appendChild(lb);
+      const n = NEUME_OPEN_ENDED.includes(v) ? (NEUME_PITCHES[v] || 3) + '+' : (NEUME_PITCHES[v] || (nd && nd.tones) || 1);
+      const tn = document.createElement('span'); tn.textContent = n + (n === 1 ? ' Ton' : ' Töne'); tn.style.cssText = 'font-size:9px;color:#8aa070'; b.appendChild(tn);
+      b.onclick = e2 => { e2.preventDefault(); e2.stopPropagation(); d.remove(); sel.value = v; sel.dispatchEvent(new Event('change', {bubbles: true})); paint(); };
+      d.appendChild(b);
+    });
+    document.body.appendChild(d);
+    const r = btn.getBoundingClientRect();
+    d.style.top = Math.max(8, Math.min(r.bottom + 4, window.innerHeight - d.offsetHeight - 8)) + 'px';
+    d.style.left = Math.max(8, Math.min(r.left, window.innerWidth - d.offsetWidth - 8)) + 'px';
+    const close = e => { if (!d.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { d.remove(); document.removeEventListener('pointerdown', close, true); } };
+    setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+  };
+  sel.style.display = 'none';
+  sel.parentNode.insertBefore(btn, sel.nextSibling);
+  paint();
+  return btn;
 }
 // Werkzeugleiste über dem Notenblatt (PC/Tablet)
 const GREG_QB_NEUMES = ['punctum','virga','podatus','clivis','torculus','porrectus','scandicus','climacus','quilisma'];
@@ -5434,7 +5484,7 @@ document.addEventListener('keydown', ev => {
   if (k === ',' || k === ';') { done(); gregAddDiv(k); return; }
   if (k === ':') {
     done();
-    const last = gregEntries[gregEntries.length - 1];
+    const ia = gregInsAt(), last = ia != null ? gregEntries[ia - 1] : gregEntries[gregEntries.length - 1];   // zuletzt eingefügter Eintrag (Build 449)
     if (last && last.type === 'divisio' && last.div === ':' && Date.now() - (window._gregColonAt || 0) < 900) { gregPush(); last.div = '::'; gregRefreshList(); window._gregColonAt = 0; }
     else { gregAddDiv(':'); window._gregColonAt = Date.now(); }
     return;
@@ -9264,7 +9314,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '448';
+const NOTATOR_BUILD_ID = '449';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

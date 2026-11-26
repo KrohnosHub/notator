@@ -528,6 +528,8 @@ function gregEditEntryInner(i) {
     const grp = (title, nodes) => { const d = document.createElement('div'); d.className = 'greg-pop-row'; if (title) { const t = document.createElement('span'); t.className = 'greg-pop-lbl'; t.textContent = title; d.appendChild(t); } nodes.forEach(n => d.appendChild(n)); host.appendChild(d); };
     grp('Silbe', [sylI, weW]);
     grp('Neume', [neuSel, lbl(' Töne:'), pitI]);
+    neuSel.classList.add('greg-pop-neume');
+    if (typeof gregNeumeSelectWithIcons === 'function') gregNeumeSelectWithIcons(neuSel);   // Auswahl mit Bild (Build 449)
     grp('', [moraW, iktW, iktPosSel, epW, epPosW]);
     grp('Vorzeichen', [accSel, accPosSel]);
     grp('Modifier', [liqW, orisW, strW, presW, quilW, quilPosW]);

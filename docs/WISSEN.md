@@ -315,6 +315,10 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Gefundener Fehler: Der ältere Export (`buildSingleNeumeGABC`, ohne `e.notes`) gab nur so viele Töne aus, wie der Neumentyp vorsieht –
   ein im Feld «Töne» zu einem Punctum ergänzter Ton fiel weg. Jetzt passt sich der Typ beim Übernehmen an (`gregNeumeFromPitches`),
   und überzählige Töne werden angehängt statt verworfen.
+- **Build 449 (26.11.2026, Meldung Matthias):** «Töne per Klick» darf nicht mehr Töne annehmen, als der gewählte Neumentyp hat (erst Typ
+  wählen, dann Töne). Neumentyp im Notenfenster mit Bild (`gregNeumeSelectWithIcons`, das `<select>` bleibt versteckt die Quelle).
+  Gemeldete Silbenverschiebung nach «danach ⇥» liess sich nicht nachstellen (Note anklicken → danach → Neume setzen: Silben bleiben bei
+  ihren Neumen); gefunden und behoben nur Stellen, die «neu = letzter Eintrag» annahmen (`gregInputConsumed`/«Text zuerst», Doppel-«:»).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

@@ -1,4 +1,4 @@
-# Notator – Stand Build 448 (26.11.2026)
+# Notator – Stand Build 449 (26.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–448 (Auszug)
+## Neu in Build 298–449 (Auszug)
 
+- **Notenfenster (449, Meldung Matthias):** Neumentyp mit Bild auswählen (Raster mit Name und Tonzahl statt Namensliste); «Töne per Klick» nimmt nicht mehr Töne an, als der gewählte Neumentyp hat. «Text zuerst» und Doppel-«:» rechnen mit dem eingefügten statt dem letzten Eintrag.
 - **Einfügen an beliebiger Stelle (448, Wunsch Matthias):** Einfügemarke im Notenfenster («⇤ davor» / «danach ⇥», rote Marke im Notenbild, Esc bzw. Menü «Einfügen» hebt sie auf) – Noten, Trennstriche, ij./Ps./℣, Zeilenumbruch landen dort statt am Ende; Tippen auf eine freie Stelle zwischen zwei Neumen setzt die Note dort ein; «Trennstrich danach» (, ; : ::) direkt im Notenfenster; «Töne per Klick» ergänzt Töne einer bestehenden Silbe, Neumentyp passt sich an. Fehler behoben: im Feld «Töne» ergänzte Töne gingen beim Speichern verloren, wenn der Neumentyp nicht passte.
 - **Silbentrennung (447):** «qui-a», «saé-cu-la», «Is-ra-el», «ex-áu-di» (aber «Sur-ré-xit»), «Sic-ut», Vokale mit Zirkumflex – geprüft an rund 12 000 Wörtern aus Testset und GregoBase.
 - **PDF lesen (446):** hoher Einzelkopf an der Linie wird nicht mehr in zwei Noten geteilt (Attende +25 %).

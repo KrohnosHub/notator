@@ -103,7 +103,7 @@ document.addEventListener('keydown', ev => {
   if (k === ',' || k === ';') { done(); gregAddDiv(k); return; }
   if (k === ':') {
     done();
-    const last = gregEntries[gregEntries.length - 1];
+    const ia = gregInsAt(), last = ia != null ? gregEntries[ia - 1] : gregEntries[gregEntries.length - 1];   // zuletzt eingefügter Eintrag (Build 449)
     if (last && last.type === 'divisio' && last.div === ':' && Date.now() - (window._gregColonAt || 0) < 900) { gregPush(); last.div = '::'; gregRefreshList(); window._gregColonAt = 0; }
     else { gregAddDiv(':'); window._gregColonAt = Date.now(); }
     return;

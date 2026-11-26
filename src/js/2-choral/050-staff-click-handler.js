@@ -23,6 +23,11 @@ function gregHandleClick(svgEl, clientX, clientY) {
     const pp = gregPitchAtSvg(svgP, ctxt);
     if (pp) {
       const inp = window._gregPitchInput;
+      // Nicht mehr Töne als der gewählte Neumentyp hat (Build 449, Wunsch Matthias) – erst den Typ wählen, dann Töne setzen
+      const nsel = document.querySelector('#greg-edit-pop .greg-pop-neume'), nv = nsel ? nsel.value : '';
+      const cap = !nv ? Infinity : NEUME_OPEN_ENDED.includes(nv) ? Infinity : (NEUME_PITCHES[nv] || 1);
+      const have = inp.value.split('').filter(c => /[a-m]/i.test(c)).length;
+      if (have >= cap) { gregGst('«' + gregNeumeLabel(nv) + '» hat ' + cap + (cap === 1 ? ' Ton' : ' Töne') + ' – für mehr Töne zuerst einen anderen Neumentyp wählen (oder einen Ton im Feld «Töne» löschen).'); return; }
       inp.value += pp.letter;
       inp.dispatchEvent(new Event('input', {bubbles: true}));
       gregGst('Ton ' + pp.letter + ' angehängt → «' + inp.value + '». Weitere Töne anklicken, dann «✓ Übernehmen».');
@@ -166,7 +171,7 @@ function gregFinishPendingNeume() {
 // Vorzeichen-Knöpfe nicht mehr hervorgehoben).
 function gregInputConsumed() {
   const we = document.getElementById('greg-wordend'); if (we) { we.checked = false; we._auto = false; }
-  if (gregTextQueue()) setTimeout(() => gregTextQueueAfterPlace(gregEntries[gregEntries.length - 1]), 0);
+  if (gregTextQueue()) { const le = window._gregLastAdded || gregEntries[gregEntries.length - 1]; setTimeout(() => gregTextQueueAfterPlace(le), 0); }   // eingefügt, nicht unbedingt am Ende (Build 449)
   // Mora gilt nur für die eben gesetzte Neume (Nutzerwunsch 2026-10-22)
   [1,2,3,4].forEach(p => { const m = document.getElementById('greg-mora-n' + p); if (m) m.checked = false; });
   // ebenso Iktus, Episema und Modifier (Liqueszenz, Oriscus, Strophicus, Pressus, Quilisma) – Nutzerwunsch 2026-11-04
