@@ -555,7 +555,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
 
     if (inRun) endRun();
     // «V/.», «R/.», «A/.» (aus «<sp>V/</sp>.») wieder in <sp> fassen – exsurge liest «V/» ohne <sp> als «V» (Build 444, GregoBase-Rundlauf)
-    if (e.type === 'special')        { frags.push({text: String(e.text).replace(/^([VRA])\/(\.?)$/, '<sp>$1/</sp>$2'), glue:false, special: true}); }
+    if (e.type === 'special')        { frags.push({text: String(e.text).replace(/(^|\s)([VRA])\/(?=\.|\s|$)/g, '$1<sp>$2/</sp>'), glue:false, special: true}); }
     else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue: (() => {      // auch nach einer Silbe mit Noten desselben Worts («glo()ri(f)a()»)
       if (typeof e.mappingIdx !== 'number') return false;
       for (let j = idx - 1; j >= 0; j--) { const n = entries[j]; if (n.type === 'linebreak' || n.type === 'comment') continue; return n.mappingIdx === e.mappingIdx && (n.type === 'note' || n.type === 'textonly'); }

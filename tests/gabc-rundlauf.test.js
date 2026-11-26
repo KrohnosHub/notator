@@ -23,6 +23,7 @@ const FAELLE = [
   ['(c3) VI(d|ta) runt(fh~|pe~) Te([alt:Tonus solemnis.]e) su(d|vi)am.(cd/efe.|/toS2hhpp2) (,)', '(c3) VI(d) runt(fh~) Te(e) su(d)am.(cd/efe.) (,)'],
   // ℣ am Trennstrich, Text über dem System ohne Silbe, Gruppe mit Leerzeichen (Build 444)
   ['(c4) ia.(f) <sp>V/</sp>.(::) Cap(f)', '(c4) ia.(f) <sp>V/</sp>.(::) Cap(f)'],
+  ['(c4) a(g) <i>ij.</i> <sp>V/</sp>.(::) M(g)', '(c4) a(g) ij. <sp>V/</sp>.(::) M(g)'],
   ['(c4) a(e) (::) <alt>Hic genuflectitur</alt>() Te(e)', '(c4) a(e) (::) <alt>Hic genuflectitur</alt>() Te(e)'],
   ['(c4) a(e) <i>Chorus repetit</i>( ) At(e)', '(c4) a(e) <i>Chorus repetit</i>() At(e)'],
   // getrennte notenlose Wörter bleiben getrennt
