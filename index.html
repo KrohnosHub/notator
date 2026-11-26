@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-reZbonD8fPhJ4j5Mm+xHu3tHWJL2ZPZAiSq8h31s7A0=' 'sha256-EbHyasMYbHrNfebSlFHin/jLZ2qEcpM/fDwEq/iLGDc=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-ye2XI0x1kXPmUS/spOuX/Jv/1p7zzjMR3t+ISsEWV8c=' 'sha256-bZm6XR4T/KF11yoqR78A0gQiugXs1D/qFHIEzMZsRaw=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -1427,7 +1427,15 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
 
     if (inRun) endRun();
     if (e.type === 'special')        { frags.push({text: e.text, glue:false, special: true}); }
-    else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue:false}); }
+    else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue: (() => {      // auch nach einer Silbe mit Noten desselben Worts («glo()ri(f)a()»)
+      if (typeof e.mappingIdx !== 'number') return false;
+      for (let j = idx - 1; j >= 0; j--) { const n = entries[j]; if (n.type === 'linebreak' || n.type === 'comment') continue; return n.mappingIdx === e.mappingIdx && (n.type === 'note' || n.type === 'textonly'); }
+      return false; })(), contAfter: (() => {
+      // Silbe ohne Noten mitten im Wort («A()do()ré()mus.», Build 443): exsurge legt je Wort ein Mapping an – folgt ein Eintrag
+      // aus demselben Mapping, ohne Leerzeichen anschliessen (sonst wurden daraus getrennte Wörter)
+      if (typeof e.mappingIdx !== 'number') return false;
+      for (let j = idx + 1; j < entries.length; j++) { const n = entries[j]; if (n.type === 'linebreak' || n.type === 'comment') continue; return n.mappingIdx === e.mappingIdx && n.type !== 'divisio'; }
+      return false; })()}); }
     // Exported as gabc's <i>...</i> HTML-style italic markup rather than
     // the native "_..._()" underscore syntax (changed 2026-08-10, per
     // user request): real-world sources (GregoBase, Source&Summit, ...)
@@ -1507,7 +1515,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
     // bleibt leer (Fehler "needsLayout", Nutzerbericht 2026-10-05).
     const nx = frags[i + 1];
     if (f.special && nx && !nx.div && !nx.glue && /^\(/.test(nx.text)) t += '()';
-    body += (f.glue ? '' : ' ') + t;
+    body += (f.glue || (frags[i - 1] && frags[i - 1].contAfter) ? '' : ' ') + t;
   });
   return body.trim();
 }
@@ -8258,7 +8266,8 @@ function gregImportGABCString(gabcStr, opts) {
           } else if (nativeItalicMatch) {
             tokens.push({type: 'directive', text: cleanSyl(rawLyric)});
           } else {
-            tokens.push({type: (cname === 'TextOnly' ? 'textonly' : 'special'), text: cleanSyl(rawLyric)});
+            // mappingIdx (Build 443): exsurge legt je Wort ein Mapping an – der Export erkennt daran Silben ohne Noten mitten im Wort
+            tokens.push(cname === 'TextOnly' ? {type: 'textonly', text: cleanSyl(rawLyric), mappingIdx} : {type: 'special', text: cleanSyl(rawLyric)});
           }
         } else if (hasLeadingAsterisk && !asteriskEmitted) {
           tokens.push({type:'special', text: '*'});
@@ -9036,7 +9045,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '442';
+const NOTATOR_BUILD_ID = '443';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -15991,11 +16000,14 @@ var exsurge = (() => {
       var matches = [];
       var notations = [];
       var currSyllable = 0;
+      var pendingAccLyric = null;   // Notator-Patch (Build 443): Silbe an einer reinen Vorzeichen-Gruppe
       while (match = __syllablesRegex.exec(word))
         matches.push(match);
       for (var j2 = 0; j2 < matches.length; j2++) {
         var match = matches[j2];
         var lyricText = match[1].trim();
+        if (pendingAccLyric !== null && lyricText === "") lyricText = pendingAccLyric;
+        pendingAccLyric = null;
         var notationData = match[2];
         var items = this.parseNotations(ctxt2, notationData);
         if (items.length === 0)
@@ -16011,8 +16023,12 @@ var exsurge = (() => {
           notationWithLyrics = cne;
           break;
         }
-        if (notationWithLyrics === null)
-          return notations;
+        // Notator-Patch (Build 443): «vé(ix)(i)runt» – die Silbe hängt an einer Gruppe nur mit Vorzeichen. Original: return notations
+        // (kein ChantMapping, das ganze Wort samt Noten fiel aus Notenbild und Import). Jetzt: Silbe an die nächste Gruppe weitergeben.
+        if (notationWithLyrics === null) {
+          pendingAccLyric = lyricText;
+          continue;
+        }
         var proposedLyricType;
         if (!cne.isNeume && cne.constructor !== TextOnly)
           proposedLyricType = LyricType.Directive;

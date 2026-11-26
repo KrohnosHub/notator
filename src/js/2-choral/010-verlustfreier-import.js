@@ -545,7 +545,15 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
 
     if (inRun) endRun();
     if (e.type === 'special')        { frags.push({text: e.text, glue:false, special: true}); }
-    else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue:false}); }
+    else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue: (() => {      // auch nach einer Silbe mit Noten desselben Worts («glo()ri(f)a()»)
+      if (typeof e.mappingIdx !== 'number') return false;
+      for (let j = idx - 1; j >= 0; j--) { const n = entries[j]; if (n.type === 'linebreak' || n.type === 'comment') continue; return n.mappingIdx === e.mappingIdx && (n.type === 'note' || n.type === 'textonly'); }
+      return false; })(), contAfter: (() => {
+      // Silbe ohne Noten mitten im Wort («A()do()ré()mus.», Build 443): exsurge legt je Wort ein Mapping an – folgt ein Eintrag
+      // aus demselben Mapping, ohne Leerzeichen anschliessen (sonst wurden daraus getrennte Wörter)
+      if (typeof e.mappingIdx !== 'number') return false;
+      for (let j = idx + 1; j < entries.length; j++) { const n = entries[j]; if (n.type === 'linebreak' || n.type === 'comment') continue; return n.mappingIdx === e.mappingIdx && n.type !== 'divisio'; }
+      return false; })()}); }
     // Exported as gabc's <i>...</i> HTML-style italic markup rather than
     // the native "_..._()" underscore syntax (changed 2026-08-10, per
     // user request): real-world sources (GregoBase, Source&Summit, ...)
@@ -625,7 +633,7 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
     // bleibt leer (Fehler "needsLayout", Nutzerbericht 2026-10-05).
     const nx = frags[i + 1];
     if (f.special && nx && !nx.div && !nx.glue && /^\(/.test(nx.text)) t += '()';
-    body += (f.glue ? '' : ' ') + t;
+    body += (f.glue || (frags[i - 1] && frags[i - 1].contAfter) ? '' : ' ') + t;
   });
   return body.trim();
 }

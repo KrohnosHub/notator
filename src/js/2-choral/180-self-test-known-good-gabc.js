@@ -602,7 +602,8 @@ function gregImportGABCString(gabcStr, opts) {
           } else if (nativeItalicMatch) {
             tokens.push({type: 'directive', text: cleanSyl(rawLyric)});
           } else {
-            tokens.push({type: (cname === 'TextOnly' ? 'textonly' : 'special'), text: cleanSyl(rawLyric)});
+            // mappingIdx (Build 443): exsurge legt je Wort ein Mapping an – der Export erkennt daran Silben ohne Noten mitten im Wort
+            tokens.push(cname === 'TextOnly' ? {type: 'textonly', text: cleanSyl(rawLyric), mappingIdx} : {type: 'special', text: cleanSyl(rawLyric)});
           }
         } else if (hasLeadingAsterisk && !asteriskEmitted) {
           tokens.push({type:'special', text: '*'});

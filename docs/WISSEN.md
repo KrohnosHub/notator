@@ -40,6 +40,10 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   `patchNeumeFinalNoteBoundsForSpacing` (Mora/Episem/Iktus auf einer **nicht letzten** Note blähte den Abstand zur
   Folgeneume auf), `patchAnnotationDropCapSpacing`; `ChantLineBreak`: `this.justify = false` (keine gedehnte Zeile
   vor erzwungenem Umbruch); Strophen: nach mehrzeiligem Text (`lastMulti`) landet einzeiliger Text wie «Amen» auf der untersten Zeile.
+- **Build 443:** `createMappingFromWord` gab bei einer Silbe, deren Gruppe nur ein Vorzeichen enthält («vé(ix)(i)runt»), statt eines
+  ChantMapping ein Array zurück – das ganze Wort fehlte im Notenbild und im Import (Media vita, GregoBase-Schreibweise). Notator-Patch:
+  Silbe an die nächste Gruppe weitergeben. TextOnly-Notationen haben in exsurge immer `lyricType` 0 – ob eine notenlose Silbe zum Wort
+  gehört, erkennt der Export am gleichen `mappingIdx` (ein Mapping je Wort).
 - `<i>…</i>` wird intern wie `_…_` als Kursiv behandelt (exsurge kannte nur `_`). Folge: `lyric.text` verliert
   die Tags schon beim Parsen – für die Erkennung `lyric.originalText` lesen.
 - exsurge färbt «V/.», «R/.», «A/.» fest rot → `gregNeutralizeRubricRed()` setzt nach dem Rendern auf Schwarz.
@@ -283,6 +287,9 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Eine Note im ♭-Kasten wird jetzt entfernt, aber **nur genau eine Stufe über dem Bauch** – die allgemeine Regel «Note im ♭-Kasten
   entfernen» (Build 415) hatte echte Noten gekostet, damals noch mit vielen falschen ♭ (vor der b-Stufen-Regel aus Build 418).
   Mock-Messung: Media vita +30 %, Inviolata +12 % Notenzahl, keine Verluste; gesamt 75 → 77 %, Tonhöhen 95 → 96 %.
+- **GABC-Rundlauf (Build 443, 26.11.2026):** `tests/gabc-rundlauf.test.js` importiert/exportiert alle Soll-Stücke zweimal; vorher waren
+  62 von 63 stabil (Media vita verlor «vé…runt»). Gewollte Vereinheitlichungen beim Export: «ed..» → «e.d.», «/» zwischen Neumenteilen,
+  ♭ als eigene Gruppe vor der Silbe («(ix)á(i)»).
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

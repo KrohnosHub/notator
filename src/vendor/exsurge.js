@@ -4975,11 +4975,14 @@ var exsurge = (() => {
       var matches = [];
       var notations = [];
       var currSyllable = 0;
+      var pendingAccLyric = null;   // Notator-Patch (Build 443): Silbe an einer reinen Vorzeichen-Gruppe
       while (match = __syllablesRegex.exec(word))
         matches.push(match);
       for (var j2 = 0; j2 < matches.length; j2++) {
         var match = matches[j2];
         var lyricText = match[1].trim();
+        if (pendingAccLyric !== null && lyricText === "") lyricText = pendingAccLyric;
+        pendingAccLyric = null;
         var notationData = match[2];
         var items = this.parseNotations(ctxt2, notationData);
         if (items.length === 0)
@@ -4995,8 +4998,12 @@ var exsurge = (() => {
           notationWithLyrics = cne;
           break;
         }
-        if (notationWithLyrics === null)
-          return notations;
+        // Notator-Patch (Build 443): «vé(ix)(i)runt» – die Silbe hängt an einer Gruppe nur mit Vorzeichen. Original: return notations
+        // (kein ChantMapping, das ganze Wort samt Noten fiel aus Notenbild und Import). Jetzt: Silbe an die nächste Gruppe weitergeben.
+        if (notationWithLyrics === null) {
+          pendingAccLyric = lyricText;
+          continue;
+        }
         var proposedLyricType;
         if (!cne.isNeume && cne.constructor !== TextOnly)
           proposedLyricType = LyricType.Directive;
