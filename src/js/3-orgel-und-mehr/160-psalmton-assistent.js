@@ -11,13 +11,14 @@ const NT_PT_ACUTE = /[áéíóúýǽÁÉÍÓÚÝǼ]/;
 // Regeln für Latein (Diphthonge ae/oe/au, qu/gu, Muta cum liquida).
 function ntPtSyllabify(word) {
   if (word.indexOf('-') > 0) return word.split('-').filter(x => x);
+  if (/^sicut\W*$/i.test(word)) return [word.slice(0, 3), word.slice(3)];   // Sic-ut wie in den Choralbüchern (Build 447)
   const lw = word.toLowerCase();
-  const VOW = 'aeiouyáéíóúýàèìòùǽæœäöüëï';
+  const VOW = 'aeiouyáéíóúýàèìòùâêîôûǽæœäöüëï';   // â…û seit Build 447 (côn-do-lens)
   const isV = i => {
     const c = lw[i]; if (!c || VOW.indexOf(c) < 0) return false;
     const nxtV = lw[i + 1] && VOW.indexOf(lw[i + 1]) >= 0;
     if (c === 'u' && i > 0 && (lw[i - 1] === 'q' || (lw[i - 1] === 'g' && i > 1 && lw[i - 2] === 'n')) && nxtV) return false; // qu, ngu
-    if (c === 'i' && nxtV && (i === 0 || (i > 0 && VOW.indexOf(lw[i - 1]) >= 0))) return false; // konsonantisches i (iam, eius)
+    if (c === 'i' && nxtV && (i === 0 || (i > 0 && VOW.indexOf(lw[i - 1]) >= 0 && !(lw[i - 1] === 'u' && i > 1 && lw[i - 2] === 'q')))) return false; // konsonantisches i (iam, eius) – nicht nach qu (qui-a, Build 447)
     return true;
   };
   const nuc = [];
@@ -25,7 +26,9 @@ function ntPtSyllabify(word) {
     if (!isV(i)) continue;
     let e = i;
     const two = lw.slice(i, i + 2).normalize('NFD').replace(/[̀-ͯ]/g, '');
-    if (/^(ae|oe|au)$/.test(two) && isV(i + 1) && !NT_PT_ACUTE.test(lw[i + 1]) && 'ëïüö'.indexOf(lw[i + 1]) < 0) e = i + 1; // Trema = getrennt (Is-ra-ël)
+    // Trema = getrennt (Is-ra-ël); «aé»/«oé» = æ/œ mit Akzent (saé-cu-la, praé-mi-um, Build 447); «-ael» am Wortende getrennt (Is-ra-el, Mi-cha-el)
+    const accOk = !NT_PT_ACUTE.test(lw[i + 1]) || (lw[i + 1] === 'é' && /^[ao]$/.test(lw[i]));
+    if (/^(ae|oe|au)$/.test(two) && isV(i + 1) && accOk && 'ëïüö'.indexOf(lw[i + 1]) < 0 && !(two === 'ae' && i + 3 === lw.length && lw[i + 2] === 'l')) e = i + 1;
     nuc.push([i, e]); i = e;
   }
   if (nuc.length <= 1) return [word];
@@ -33,7 +36,8 @@ function ntPtSyllabify(word) {
   for (let k = 0; k < nuc.length - 1; k++) {
     const a = nuc[k][1] + 1, b = nuc[k + 1][0];
     let cut;
-    if (b - a <= 1) cut = b - a === 0 ? b : a;
+    // Vorsilbe «ex-» vor Vokal behält das x (ex-áu-di, ex-ér-ci-tus); sonst geht x zur nächsten Silbe (Sur-ré-xit, du-xit) – Build 447
+    if (b - a <= 1) cut = b - a === 0 ? b : (lw[a] === 'x' && a === 1 && lw[0] === 'e' ? a + 1 : a);
     else {
       // Solesmes-Konvention (docs/WISSEN.md 4a): der längste zulässige Silbenanfang der Konsonantengruppe geht zur
       // nächsten Silbe – be-ne-dí-cta, San-ctus, ó-mni-um, no-stra, mon-stra, re-dém-ptor, a-gnus, Chri-ste; x bleibt vorne (ex-sul-tá-te).

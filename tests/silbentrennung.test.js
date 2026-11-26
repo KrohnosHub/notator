@@ -13,6 +13,9 @@ const cases = {
   'Dóminus': 'Dó-mi-nus', 'glória': 'gló-ri-a', 'lacrimárum': 'la-cri-má-rum', 'sæculórum': 'sæ-cu-ló-rum',
   'eius': 'e-ius', 'quóniam': 'quó-ni-am', 'sanguis': 'san-guis', 'littera': 'lit-te-ra', 'adjútor': 'ad-jú-tor',
   'sancta': 'san-cta', 'perféctum': 'per-fé-ctum', 'cognósce': 'co-gnó-sce', 'Glo-ri-a': 'Glo-ri-a',
+  'quia': 'qui-a', 'Quia': 'Qui-a', 'saécula': 'saé-cu-la', 'praémium': 'praé-mi-um', 'Israel': 'Is-ra-el', 'Michael': 'Mi-cha-el',
+  'exércitus': 'ex-ér-ci-tus', 'exáudi': 'ex-áu-di', 'Surréxit': 'Sur-ré-xit', 'duxit': 'du-xit', 'Sicut': 'Sic-ut', 'sicut': 'sic-ut',
+  'quóniam': 'quó-ni-am', 'aetérna': 'ae-tér-na', 'cælum': 'cæ-lum', 'caélum': 'caé-lum', 'Raphael': 'Ra-pha-el',
 };
 let bad = 0;
 for (const [w, want] of Object.entries(cases)) {

@@ -1,4 +1,4 @@
-# Notator – Stand Build 446 (26.11.2026)
+# Notator – Stand Build 447 (26.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–446 (Auszug)
+## Neu in Build 298–447 (Auszug)
 
+- **Silbentrennung (447):** «qui-a», «saé-cu-la», «Is-ra-el», «ex-áu-di» (aber «Sur-ré-xit»), «Sic-ut», Vokale mit Zirkumflex – geprüft an rund 12 000 Wörtern aus Testset und GregoBase.
 - **PDF lesen (446):** hoher Einzelkopf an der Linie wird nicht mehr in zwei Noten geteilt (Attende +25 %).
 - **GABC (445):** «℣» nach «ij.» oder Satzzeichen am Trennstrich bleibt beim erneuten Import erhalten. Zweite Stichprobe (277 GregoBase-Dateien): keine Noten- oder Silbenverluste ausser TeX-Befehlen; Orgelfassung mit/ohne Begleitsatz und Notenbild für 150 Dateien ohne Fehler.
 - **GABC (444, Stichprobe 150 GregoBase-Dateien):** Bivirga/Trivirga/Distropha («hvv», «gss») bekamen in exsurge für die Folgenote die Tonhöhe «g» und verschoben beim Export Noten auf Nachbarsilben; Neumenschrift nach «|» (St. Galler Neumen) und «[alt:…]» in Gruppen wurden als Noten gelesen; «<sp>V/</sp>.» am Trennstrich, «<alt>…</alt>()» und «( )» gingen verloren. Eintragsliste setzt Texte escaped ein.

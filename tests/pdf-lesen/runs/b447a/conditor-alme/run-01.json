@@ -1,0 +1,47 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "CONditor alme síderum, aetérna lux",
+   "mode": "",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "CON(e)di(c)tor(e) al(g)me(h) sí(h)de(f)rum,(g) (,) a()e(g)tér(h)na(f) lux(g) cre(f)dén(e)ti(d)um.(e.) (;) Chri(g)ste,(f) re(d)démp(e)tor(f)",
+    "óm(e)ni(d)um,(c) (,) ex(c)á()u(e)di(f) pre(g)ces(f) súp(e)pli(d)cum.(e.) (::) Qui(e) cón(c)do(e)lens(g) in(h)té(h)ri(f)tu(g) (,) mor(g)tis(h) pe(f)rí(g)re(f)",
+    "sa(e)é()cu(d)lum,(e.) (;) sal(g)vá(f)sti(d) mun(e)dum(f) lán(e)gui(d)dum,(c) (,)",
+    "mun(g)di(h) vé(h)spe(f)re,(g) (,) u(g)ti(h) spon(f)sus(g) de(f) thá(e)la(d)mo,(e.) (;) e(g)gré(f)ssus(d) ho()ne(e)stís(f)si(e)ma(d) Vír(c)gi(c)nis(e) ma(f)tris(gf) (:)",
+    "con(ikg)sér(f)va(d) nos(e) in(f) tém(e)po(d)re(c) ho(c)stis(e) a(f) te(g)lo(f) pér(e)ti(d)di.(e.) (::) Sit,(e) Chri(c)ste,(e) rex(g) pi(h)ís(h)si(f)me,(g) (,) ti(g)bi(h)",
+    "Pa(f)trí(g)que(f) gló(e)ri(d)a(e.) (;) cum(g) Spí(f)ri(d)tu(e) Pa(f)rá(e)cli(d)to,(c) in(c) sem(e)pi(f)tér(g)na(f) sa(e)é()cu(d)la.(e.) (::) A(efe)men.(d.e.) (:)"
+   ],
+   "unsure": [
+    1,
+    1,
+    1,
+    1,
+    0,
+    1
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "CONditor alme siderum",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 3387,
+  "output_tokens": 429,
+  "costUsd": 0.011064
+ },
+ "durationMs": 6015
+}

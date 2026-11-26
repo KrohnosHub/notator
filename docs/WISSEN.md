@@ -78,6 +78,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   zur nächsten Silbe – «be-ne-dí-cta», «dí-ctus», «frú-ctus», «San-ctus», «ó-mni-um», «no-stra», «a-gnus»; ebenso sc, ps.
   x bleibt vorne («ex-sul-tá-te»); in «alleluia» ist «ia» eine Silbe («Al-le-lú-ia»).
   Belege im Druck: Graduale «re-ctos», «sol-e-mni-tá-te»; Liber Usualis «bene-dí-ctum».
+- **Build 447 (26.11.2026):** `ntPtSyllabify` an rund 12 000 Wörtern (Soll des Testsets + 430 GregoBase-Dateien) geprüft. Korrigiert:
+  «quia» blieb ungetrennt (i nach qu galt als konsonantisch) → «qui-a»; «aé/oé» = æ/œ mit Akzent → «saé-cu-la», «praé-mi-um»;
+  «-ael» am Wortende getrennt → «Is-ra-el», «Mi-cha-el»; x zwischen Vokalen geht zur nächsten Silbe («Sur-ré-xit», «du-xit» – so im
+  Testset gedruckt), nur die Vorsilbe «ex-» behält es («ex-áu-di», «ex-ér-ci-tus»); «Sic-ut» (Build 430); â ê î ô û sind Vokale.
+  Bewusst nicht geändert: Vorsilben («Ad-o-ré-mus», «in-i-mí-ci», «sub-le-vá-mus») – die Drucke trennen uneinheitlich; restliche
+  Abweichungen (7 %) sind überwiegend klassische statt Solesmes-Trennung in GregoBase («om-nes», «Sanc-tus»).
 - Ausnahme: Drucke mit klassischer Trennung (Cantus Mariales 1906: «díg-ni-or», «om-nes») – dort folgt das Soll dem Druck.
 - **Fehlender Trennstrich heisst nicht «keine Silbengrenze»** (geklärt August 2026): Ältere Drucke setzen Trennstriche unvollständig,
   z. B. Liber Usualis, Hymnus «Audi benigne Conditor»: gedruckt «Cóndi-tor» (GregoBase und Notengruppen: Cón-di-tor),

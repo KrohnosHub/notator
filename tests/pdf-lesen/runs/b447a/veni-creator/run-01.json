@@ -1,0 +1,53 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VEni Creátor Spíritus, Méntes tuórum",
+   "mode": "8",
+   "clef": "c3",
+   "hasDropCap": true,
+   "systems": [
+    "VE(e)ni(f) Cre(ed)á(e)tor(fe) Spí(h)ri(i)tus,(h.) (;) Mén(h)tes(e)",
+    "tu(f)ó(h)rum(ih) ví(i)si()ta:(j) (:) Im(h)ple(ij) su(hg)pér(fe)na(hi) grá(e)",
+    "ti(f)a(h.) (;) Quæ(gh) tu(f) cre(ed)á(f)sti(fgf) pé(e)cto(d)ra.(e.) (::) Qui(e) dí(f)",
+    "ce(ed)ris(e) Pa(fe)rá(h)cli(i)tus,(h.) (;) Al(h)tís(e)si(f)mi(h) dó(ih)num(i) Dé(j)i,(i.) (:)",
+    "Fons(h) ví(j)vus,(ghg) íg(e)nis,(hi) cá(e)ri(f)tas,(h.) (;) Et(gh) spi(f)ri(ed)tá(f)lis(fgf)",
+    "ún(e)cti(d)o.(e.) (::) Tu(e) sep(f)ti(ed)fór(e)mis(fe) mú(h)ne(i)re,(h.) (;) Dí(h)gi(h)",
+    "tus(e) pa(f)tér(h)næ(ih) déx(i)te(j)ræ,() (:) Tu(h) ri(ij)te(hg) pro(e)mís(hi)sum(e)",
+    "Pá(f)tris,(h.) (;) Ser(gh)mó(f)ne(ed) dí(f)tans(fgf) gút(e)tu(d)ra.(e.) (::) Ac(e)cén(f)de(ed) lú(e)men(fe) sén(h)si()bus,() (;)"
+   ],
+   "unsure": [
+    0,
+    1,
+    0,
+    0,
+    2,
+    0,
+    1,
+    3
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Veni Creator Spiritus",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 3189,
+  "output_tokens": 422,
+  "costUsd": 0.010598
+ },
+ "durationMs": 5690
+}
