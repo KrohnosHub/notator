@@ -214,6 +214,7 @@ function gregHighlightEditingEntry(entryIdx) {
 // waiting for the next debounced re-render).
 function gregCloseEditForm() {
   _gregEditingEntryIdx = null;
+  window._gregPitchInput = null;   // «Töne per Klick» beenden (Build 448)
   gregEditPopRemove();
   gregClearEditHighlight();
 }
@@ -286,6 +287,7 @@ function gregEditEntryInner(i) {
     const sylI = inp('input',170, e.syllable,'Silbe');
     sylI.className = 'greg-pop-syl'; gregNoAutoCaps(sylI);
     const pitI = inp('input',80,(e.pitches||[]).join(''),'Töne','GABC a-m; Grossbuchstabe = Punctum inclinatum (Raute), z.B. efED');
+    pitI.classList.add('greg-pop-pitches');   // für «Töne per Klick» (Build 448)
     // Accidental
     const accSel = document.createElement('select');
     accSel.id = 'greg-edit-acc';
@@ -470,6 +472,8 @@ function gregEditEntryInner(i) {
       // ONE note of a manually-built neume as an apostropha/inclinatum.
       e.pitches=pitI.value.split('').filter(c=>c.toLowerCase()>='a'&&c.toLowerCase()<='m');
       if(!e.pitches.length) e.pitches=['f'];
+      // Tonzahl passt nicht zum Neumentyp (Töne ergänzt/gelöscht): Typ aus dem Verlauf ableiten (Build 448)
+      if (typeof gregNeumeFits === 'function' && !gregNeumeFits(e.neume, e.pitches.length)) { const gn = gregNeumeFromPitches(e.pitches); if (gn) { e.neume = gn; neuSel.value = gn; } }
       e.accidental=accSel.value||null;
       if (e.accidental && !/^p:/.test(accPosSel.value)) {
         const ap = parseInt(accPosSel.value) || 1;

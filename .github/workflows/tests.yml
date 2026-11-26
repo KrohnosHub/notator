@@ -42,6 +42,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: GABC-Rundlauf (Import/Export stabil, keine verlorenen Silben)
         run: node tests/gabc-rundlauf.test.js
+      - name: Einfügen an beliebiger Stelle (Einfügemarke, Neumentyp)
+        run: node tests/einfuegen.test.js
       # Bildvergleich gegen den Ziel-Branch, auf derselben Maschine gerendert (gleiche Schriften/Kantenglättung):
       # meldet nur Änderungen am Notenbild, die dieser PR verursacht. Gewollte Änderungen sind erlaubt,
       # deshalb nur als Hinweis (nicht blockierend); Bericht unter «Artifacts» und in der Zusammenfassung.

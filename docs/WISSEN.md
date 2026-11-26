@@ -309,6 +309,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   mit/ohne Begleitsatz) und Choral-Notenbild für 150 Dateien ohne Absturz bzw. leeres Bild; eingebauter Selbsttest 20/20.
 - **Build 446 (26.11.2026):** Zwei Noten übereinander (Pes/Clivis in einem Fleck) erst ab 0.9 statt 0.8 Linienabständen Höhe – ein an der
   Linie hängender Einzelkopf (Attende, ~0.85) wurde sonst zu zwei Noten. 0.95 brachte Attende +50 %, kostete aber Ad te levavi – 0.9 ohne Verluste.
+- **Build 448 (26.11.2026):** Bisher hängte jede Eingabe ans Ende an (`gregEntries.push`); jetzt zentral über `gregAddEntries`
+  (`055-einfuegemarke.js`), das auch Notiz-Anker (`anchorNoteIdx`, Notennummer) hinter der Einfügestelle mitverschiebt. Notengruppe ↔
+  Eintrag ist 1:1 (der Import zerlegt Melismen in einzelne Einträge), darauf beruht die Position beim Tippen zwischen Neumen.
+  Gefundener Fehler: Der ältere Export (`buildSingleNeumeGABC`, ohne `e.notes`) gab nur so viele Töne aus, wie der Neumentyp vorsieht –
+  ein im Feld «Töne» zu einem Punctum ergänzter Ton fiel weg. Jetzt passt sich der Typ beim Übernehmen an (`gregNeumeFromPitches`),
+  und überzählige Töne werden angehängt statt verworfen.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.
@@ -316,6 +322,10 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 ## 5. Entscheidungen von Matthias (gelten, bis er sie ändert)
 
 Allgemein
+- **Einfügen (Entscheid 26.11.2026, Build 448):** Neue Elemente kommen an die Einfügemarke («⇤ davor»/«danach ⇥» im Notenfenster) oder an
+  die getippte Stelle zwischen zwei Neumen; ohne Marke und rechts der letzten Note wie bisher ans Ende. Eingefügte Noten gelten als
+  **neue Einträge** (Silbe aus dem Silbenfeld), wie am Ende hinzugefügte. Töne einer bestehenden Silbe ergänzt man im bestehenden
+  Eintrag («Töne per Klick» oder Feld «Töne»).
 - Ablage: Google Drive (Liturgie › Notator) ist die Hauptablage, die Browser-Kopie nur Offline-Zwischenspeicher; Anmeldung per Google-OAuth.
 - Vorrang: Handy-Tauglichkeit und Teilen mit anderen; Hauptnutzer ist Matthias selbst.
 - **Speichern unter** wie in Word/Excel: danach arbeitet man in der neuen Datei, das Original bleibt auf dem letzten

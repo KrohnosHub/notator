@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-lPWyorLBpyELRi0u806FSS8g1rQIrv59FYwNBsvRWI0=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-CltBp5KKFBnMlxrePKwu6DtwyBWfRNALUaWX7eqCPUo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-G4rsRNTgfT6LzInla8BPSeVOokxK0lDG9TEicL9BXnU=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-CltBp5KKFBnMlxrePKwu6DtwyBWfRNALUaWX7eqCPUo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -1117,7 +1117,7 @@ function buildSingleNeumeGABC(e) {
   // Accidentals are NOT emitted inline here — emitParenGroup() always
   // prepends a standalone accidental group ("(ix)(hi)" GABC convention)
   // before calling this function, for every neume type alike.
-  switch(e.neume) {
+  const _neumeStr = (() => { switch(e.neume) {
     case 'punctum':    return lastMod(r(0)) + ep + ik + dot;
     case 'virga':      return r(0) + 'v' + ep + ik + dot;
     case 'quilisma':   return r(0) + 'w' + dot;
@@ -1183,7 +1183,12 @@ function buildSingleNeumeGABC(e) {
     case 'porrectus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;
     case 'scandicus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;
     default:           return lastMod(r(0)) + dot;
-  }
+  } })();
+  // Mehr Töne als der Neumentyp verwendet (z. B. im Feld «Töne» ergänzt, Typ nicht angepasst): nicht stillschweigend weglassen,
+  // sondern anhängen (Build 448)
+  const used = NEUME_OPEN_ENDED.includes(e.neume) ? rp.length : (NEUME_PITCHES[e.neume] || 1);
+  let extra = ''; for (let i = used; i < rp.length; i++) extra += r(i);
+  return _neumeStr + extra;
 }
 
 // Strophentext einer Silbe für GABC: Klammern/Trenner/Markup entfernen, «-» am Ende = Wort geht weiter
@@ -2176,6 +2181,7 @@ function gregRenderActiveOnly() {
     if (svgEl) {
       _gregActiveScore = score;
       gregEmbedCommentsIntoSvg(svgEl, gregEntries, score, true);
+      if (typeof gregInsMarkDraw === 'function') gregInsMarkDraw(svgEl, score);   // Einfügemarke (Build 448)
       // NOTE: no manual zoom-division here. svgEl.getScreenCTM() (used inside
       // gregHandleClick) already maps real client/screen pixels to native
       // viewBox units, correctly accounting for the width/height-vs-viewBox
@@ -2611,6 +2617,15 @@ function gregDefaultNoteCase(neume, idx, letter) {
 }
 
 // ── Staff click handler ──────────────────────────────────────────
+// Tonbuchstabe an einem Punkt (native SVG-Koordinaten): nächstgelegene Zeile (Ursprung bounds.y), Stufe aus dem Abstand
+function gregPitchAtSvg(svgP, ctxt) {
+  const lines = _gregScore && _gregScore.lines;
+  if (!lines || !lines.length) return null;
+  let best = lines[0], bestDist = Infinity;
+  for (const line of lines) { const dist = Math.abs(svgP.y - line.bounds.y); if (dist < bestDist) { bestDist = dist; best = line; } }
+  const sp = Math.round(-(svgP.y - best.bounds.y) / ctxt.staffInterval);
+  return {line: best, letter: staffPosToGabc(sp)};
+}
 function gregHandleClick(svgEl, clientX, clientY) {
   if (!_gregScore || !_gregCtxtRef) return;
   const ctxt = _gregCtxtRef;
@@ -2619,6 +2634,17 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const svgP = pt.matrixTransform(svgEl.getScreenCTM().inverse());
   if (typeof ntPlay !== 'undefined' && ntPlay.pick === 'greg') {
     ntPlayFromChoralEntry(gregFindEntryAtNativePoint(_gregScore, gregEntries, svgP.x, svgP.y, ctxt));
+    return;
+  }
+  // «Töne per Klick» im Fenster einer Note (Build 448): Klick ins System hängt den Ton an das Feld «Töne» dieser Note an
+  if (window._gregPitchInput && document.body.contains(window._gregPitchInput)) {
+    const pp = gregPitchAtSvg(svgP, ctxt);
+    if (pp) {
+      const inp = window._gregPitchInput;
+      inp.value += pp.letter;
+      inp.dispatchEvent(new Event('input', {bubbles: true}));
+      gregGst('Ton ' + pp.letter + ' angehängt → «' + inp.value + '». Weitere Töne anklicken, dann «✓ Übernehmen».');
+    }
     return;
   }
 
@@ -2656,20 +2682,15 @@ function gregHandleClick(svgEl, clientX, clientY) {
   // geometric anchor. Using the bbox midpoint instead caused misattribution
   // on lines with little/no ledger content (e.g. a fresh empty line), since
   // their midpoint shifts relative to lines with notes above/below the staff.
-  const lines = _gregScore.lines;
-  if (!lines || !lines.length) return;
-  let best = lines[0], bestDist = Infinity;
-  for (const line of lines) {
-    const dist = Math.abs(svgP.y - line.bounds.y);
-    if (dist < bestDist) { bestDist = dist; best = line; }
+  const _pp = gregPitchAtSvg(svgP, ctxt);
+  if (!_pp) return;
+  const best = _pp.line, gabcLetter = _pp.letter;
+  // Einfügen an der getippten Stelle (Build 448): ohne gesetzte Einfügemarke bestimmt die waagrechte Lage zwischen den
+  // Neumen die Position; rechts der letzten Note des Stücks wird wie bisher angehängt. Gilt nur für diese eine Neume.
+  if (!_gregPending && gregInsAt() == null) {
+    const ia = gregInsAtPoint(_gregScore, best, svgP.x);
+    if (ia != null) { window._gregInsAt = ia; window._gregInsTemp = true; }
   }
-
-  // staffPosition: inside line group, y=0 is staff origin
-  // line.bounds.y is the SVG y of line origin after layout
-  const si = ctxt.staffInterval;
-  const relY = svgP.y - best.bounds.y;
-  const sp = Math.round(-relY / si);
-  const gabcLetter = staffPosToGabc(sp);
 
   const neume = (document.getElementById('greg-neume-sel')||{value:'punctum'}).value;
   const nPitch = NEUME_PITCHES[neume] || 1;
@@ -2708,11 +2729,12 @@ function gregHandleClick(svgEl, clientX, clientY) {
       const ne = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, accidental};
       if (wordEnd) ne.wordEnd = true;
       { const ap = parseInt((document.getElementById('greg-acc-pos')||{}).value); if (accidental && ap) ne.accidentalPos = ap; }
-      gregEntries.push(ne);
+      const ni = gregAddEntries(ne);
+      if (window._gregInsTemp) { window._gregInsTemp = false; window._gregInsAt = null; }
       if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
       _gregAccidental = null; // consume accidental
       gregInputConsumed();
-      if (!syllable) gregSylAsk(gregEntries.length - 1);
+      if (!syllable) gregSylAsk(ni);
       gregRefreshList();
     } else {
       _gregPending = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, _need:nPitch};
@@ -2749,8 +2771,9 @@ function gregFinishPendingNeume() {
   const e = _gregPending; delete e._need;
   e.accidental = _gregAccidental || null;
   { const ap = parseInt((document.getElementById('greg-acc-pos')||{}).value); if (e.accidental && ap) e.accidentalPos = ap; }
-  gregEntries.push(e);
-  if (!e.syllable) gregSylAsk(gregEntries.length - 1);
+  const ni = gregAddEntries(e);
+  if (window._gregInsTemp) { window._gregInsTemp = false; window._gregInsAt = null; }
+  if (!e.syllable) gregSylAsk(ni);
   if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
   _gregAccidental = null;
   _gregPending = null;
@@ -2804,6 +2827,139 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// ── Einfügemarke (Build 448, Wunsch Matthias) ──────────────────────
+// Neue Elemente (Noten per Klick, Trennstriche, ij./Ps./℣, Zeilenumbruch) landeten immer am Ende des Stücks und mussten danach
+// in der Eintragsliste verschoben werden. Jetzt gibt es eine Einfügemarke:
+//   - im Fenster einer Note «⇤ davor» / «danach ⇥» (gregInsSet)
+//   - Tippen auf eine freie Stelle zwischen zwei Neumen setzt die Note dort ein (gregInsAtPoint, aus gregHandleClick)
+// gregAddEntries() fügt an der Marke ein und rückt sie weiter; ohne Marke wird wie bisher angehängt.
+// Eingefügte Noten gelten als neue Einträge (mit der Silbe aus dem Silbenfeld), genau wie am Ende hinzugefügte.
+window._gregInsAt = null;          // Index in gregEntries; null = am Ende anhängen
+
+function gregInsAt() {
+  const a = window._gregInsAt;
+  if (a == null) return null;
+  if (!(a >= 0 && a <= gregEntries.length)) { window._gregInsAt = null; return null; }
+  return a;
+}
+// Note-tragende Einträge (wie gregOrdinalToEntryIndex zählt) vor Index i
+function gregNoteOrdinalBefore(i) {
+  let n = 0; for (let k = 0; k < i && k < gregEntries.length; k++) { const e = gregEntries[k]; if (e.type === 'note' && e.pitches && e.pitches.length) n++; }
+  return n;
+}
+// Fügt Einträge an der Marke ein (oder hängt an) und gibt den Index des ersten zurück. Notizen (comment) sind über die
+// Notennummer verankert – bei eingefügten Noten werden die Anker dahinter mitverschoben.
+function gregAddEntries(...items) {
+  const at = gregInsAt();
+  if (at == null || at >= gregEntries.length) {
+    gregEntries.push(...items);
+    if (at != null) window._gregInsAt = gregEntries.length;   // Marke am Ende bleibt am Ende
+    return gregEntries.length - items.length;
+  }
+  const nNotes = items.filter(e => e.type === 'note' && e.pitches && e.pitches.length).length;
+  if (nNotes) {
+    const ord = gregNoteOrdinalBefore(at);
+    gregEntries.forEach(c => { if (c.type === 'comment' && typeof c.anchorNoteIdx === 'number' && c.anchorNoteIdx >= ord) c.anchorNoteIdx += nNotes; });
+  }
+  gregEntries.splice(at, 0, ...items);
+  window._gregInsAt = at + items.length;
+  gregInsStatus();
+  return at;
+}
+function gregInsLabel(at) {
+  for (let k = at - 1; k >= 0; k--) { const e = gregEntries[k]; if (e.type === 'note' && e.syllable) return 'nach «' + e.syllable + '»'; }
+  return 'am Anfang';
+}
+function gregInsStatus() {
+  const at = gregInsAt();
+  if (at == null || at >= gregEntries.length) return;
+  gregGst('Einfügen ' + gregInsLabel(at) + ' (Eintrag ' + (at + 1) + ') – neue Noten, Trennstriche usw. kommen hierhin. Esc oder «⇥ ans Ende» = wieder am Ende.');
+}
+function gregInsSet(idx) {
+  window._gregInsAt = Math.max(0, Math.min(idx, gregEntries.length));
+  gregInsStatus();
+  if (typeof gregRender === 'function') gregRender();
+}
+function gregInsClear(silent) {
+  if (window._gregInsAt == null) return;
+  window._gregInsAt = null;
+  if (!silent) gregGst('Neue Elemente kommen wieder ans Ende.');
+  if (typeof gregRender === 'function') gregRender();
+}
+
+// Tippen auf eine freie Stelle im Notenbild: Einfügeposition aus der waagrechten Lage zwischen den Neumen der Zeile.
+// Gibt einen Eintragsindex zurück oder null (= rechts der letzten Note des Stücks: wie bisher anhängen).
+function gregInsAtPoint(score, line, x) {
+  if (!score || !line) return null;
+  const a = line.notationsStartIndex, b = a + line.numNotationsOnLine;
+  let ord = 0; for (let i = 0; i < a; i++) { const nt = score.notations[i]; if (nt.notes && nt.notes.length) ord++; }
+  let prevOrd = null, nextOrd = null, barBetween = false, lastNoteOrdAll = -1;
+  for (let i = 0; i < score.notations.length; i++) { const nt = score.notations[i]; if (nt.notes && nt.notes.length) lastNoteOrdAll++; }
+  let o = ord;
+  for (let i = a; i < b; i++) {
+    const nt = score.notations[i], cx = (line.bounds.x || 0) + nt.bounds.x + (nt.bounds.width || 0) / 2;
+    const isNote = !!(nt.notes && nt.notes.length);
+    if (isNote) {
+      if (cx < x) { prevOrd = o; barBetween = false; }
+      else if (nextOrd == null) nextOrd = o;
+      o++;
+    } else if (cx < x && prevOrd != null && nextOrd == null && nt.constructor && /Divisio|Bar|DoubleBar|Virgula/i.test(nt.constructor.name)) barBetween = true;
+  }
+  if (nextOrd == null && prevOrd === lastNoteOrdAll) return null;          // hinter der letzten Note des Stücks: anhängen
+  if (prevOrd != null && !barBetween) { const ei = gregOrdinalToEntryIndex(gregEntries, prevOrd); return ei == null ? null : ei + 1; }
+  if (nextOrd != null) { const ei = gregOrdinalToEntryIndex(gregEntries, nextOrd); return ei == null ? null : ei; }
+  if (prevOrd != null) {                                                    // nach einem Trennstrich am Zeilenende
+    let ei = gregOrdinalToEntryIndex(gregEntries, prevOrd); if (ei == null) return null;
+    ei++; while (ei < gregEntries.length && gregEntries[ei].type === 'divisio') ei++;
+    return ei;
+  }
+  return null;
+}
+
+// Rote Einfügemarke im Notenbild (nach jedem Zeichnen, aus gregRender)
+function gregInsMarkDraw(svgEl, score) {
+  if (!svgEl) return;
+  svgEl.querySelectorAll('.greg-ins-mark').forEach(n => n.remove());
+  const at = gregInsAt();
+  if (at == null || at >= gregEntries.length || !score || !score.lines) return;
+  const si = (typeof _gregCtxtRef !== 'undefined' && _gregCtxtRef && _gregCtxtRef.staffInterval) || 10;
+  const ord = gregNoteOrdinalBefore(at);             // Notengruppen davor
+  const posOf = n => { let k = -1;
+    for (let i = 0; i < score.notations.length; i++) { const nt = score.notations[i]; if (!(nt.notes && nt.notes.length)) continue; k++;
+      if (k === n) { const line = score.lines.find(l => i >= l.notationsStartIndex && i < l.notationsStartIndex + l.numNotationsOnLine); return line ? {line, nt, i} : null; } }
+    return null; };
+  let x, line;
+  const prev = ord > 0 ? posOf(ord - 1) : null, next = posOf(ord);
+  const divAfterPrev = gregEntries.slice(0, at).reverse().findIndex(e => e.type === 'note') > 0 &&
+    gregEntries.slice(0, at).reverse().slice(0, gregEntries.slice(0, at).reverse().findIndex(e => e.type === 'note')).some(e => e.type === 'divisio');
+  if (prev && !(next && divAfterPrev && next.line === prev.line)) {
+    line = prev.line; x = (line.bounds.x || 0) + prev.nt.bounds.x + (prev.nt.bounds.width || 0) + 0.6 * si;
+  } else if (next) { line = next.line; x = (line.bounds.x || 0) + next.nt.bounds.x - 0.6 * si; }
+  else return;
+  const y0 = line.bounds.y - 4.5 * si, y1 = line.bounds.y + 4.5 * si;
+  const ns = 'http://www.w3.org/2000/svg', r = document.createElementNS(ns, 'rect');
+  r.setAttribute('class', 'greg-ins-mark');
+  r.setAttribute('x', (x - 1.2).toFixed(1)); r.setAttribute('y', y0.toFixed(1));
+  r.setAttribute('width', '2.4'); r.setAttribute('height', (y1 - y0).toFixed(1));
+  r.setAttribute('fill', '#d0281e'); r.setAttribute('opacity', '0.85'); r.style.pointerEvents = 'none';
+  svgEl.appendChild(r);
+}
+
+// Neumentyp aus dem Tonverlauf (Build 448): wird beim Übernehmen gesetzt, wenn die Tonzahl nicht mehr zum gewählten Typ passt –
+// vorher fiel z. B. eine im Feld «Töne» ergänzte zweite Note eines Punctum beim Speichern stillschweigend weg.
+function gregNeumeFromPitches(ps) {
+  const p = (ps || []).map(c => 'abcdefghijklm'.indexOf(String(c).toLowerCase()));
+  const d = p.slice(1).map((v, i) => Math.sign(v - p[i])).join('');
+  if (p.length === 1) return 'punctum';
+  return ({'1': 'podatus', '-1': 'clivis',
+    '1-1': 'torculus', '-11': 'porrectus', '11': 'scandicus', '-1-1': 'climacus',
+    '11-1': 'scandicus_flexus', '1-11': 'torculus_resupinus', '-11-1': 'porrectus_flexus', '1-1-1': 'pes_subpunctis'})[d]
+    || (/^(-1)+$/.test(d) ? 'climacus' : null);
+}
+function gregNeumeFits(neume, n) {
+  if (typeof NEUME_OPEN_ENDED !== 'undefined' && NEUME_OPEN_ENDED.includes(neume)) return n >= (NEUME_PITCHES[neume] || 1);
+  return (NEUME_PITCHES[neume] || 1) === n;
+}
 // ── Entry list ───────────────────────────────────────────────────
 let _gregDragIdx = null;
 let gregSelectedIndices = new Set(); // indices into gregEntries currently checked for bulk actions
@@ -3020,6 +3176,7 @@ function gregHighlightEditingEntry(entryIdx) {
 // waiting for the next debounced re-render).
 function gregCloseEditForm() {
   _gregEditingEntryIdx = null;
+  window._gregPitchInput = null;   // «Töne per Klick» beenden (Build 448)
   gregEditPopRemove();
   gregClearEditHighlight();
 }
@@ -3092,6 +3249,7 @@ function gregEditEntryInner(i) {
     const sylI = inp('input',170, e.syllable,'Silbe');
     sylI.className = 'greg-pop-syl'; gregNoAutoCaps(sylI);
     const pitI = inp('input',80,(e.pitches||[]).join(''),'Töne','GABC a-m; Grossbuchstabe = Punctum inclinatum (Raute), z.B. efED');
+    pitI.classList.add('greg-pop-pitches');   // für «Töne per Klick» (Build 448)
     // Accidental
     const accSel = document.createElement('select');
     accSel.id = 'greg-edit-acc';
@@ -3276,6 +3434,8 @@ function gregEditEntryInner(i) {
       // ONE note of a manually-built neume as an apostropha/inclinatum.
       e.pitches=pitI.value.split('').filter(c=>c.toLowerCase()>='a'&&c.toLowerCase()<='m');
       if(!e.pitches.length) e.pitches=['f'];
+      // Tonzahl passt nicht zum Neumentyp (Töne ergänzt/gelöscht): Typ aus dem Verlauf ableiten (Build 448)
+      if (typeof gregNeumeFits === 'function' && !gregNeumeFits(e.neume, e.pitches.length)) { const gn = gregNeumeFromPitches(e.pitches); if (gn) { e.neume = gn; neuSel.value = gn; } }
       e.accidental=accSel.value||null;
       if (e.accidental && !/^p:/.test(accPosSel.value)) {
         const ap = parseInt(accPosSel.value) || 1;
@@ -3439,6 +3599,50 @@ function gregEditPopCreate(i) {
 function gregEditPopButtons(host, i, save) {
   host._btns = true;
   const cur = () => { const p = document.getElementById('greg-edit-pop'); return p && p._idx != null ? p._idx : i; }; // Index kann sich durch Zeilenumbruch-Option verschieben
+  // Einfügen an dieser Stelle, Trennstrich danach, Töne per Klick (Build 448, Wunsch Matthias)
+  {
+    const row = document.createElement('div'); row.className = 'greg-pop-row greg-pop-ins';
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:11px';
+    const b = (txt, title, fn) => { const x = document.createElement('button'); x.className = 'b'; x.textContent = txt; x.title = title; x.style.cssText = 'font-size:11px;padding:2px 7px'; x.onclick = fn; row.appendChild(x); return x; };
+    const lab = t => { const s = document.createElement('span'); s.textContent = t; s.style.color = '#8aa070'; row.appendChild(s); };
+    lab('Einfügen:');
+    b('⇤ davor', 'Neue Noten, Trennstriche usw. vor diesem Eintrag einfügen (statt am Ende)', () => { const k = cur(); gregCloseEditForm(); gregRefreshListNoRender(); gregInsSet(k); });
+    b('danach ⇥', 'Neue Noten, Trennstriche usw. nach diesem Eintrag einfügen (statt am Ende)', () => { const k = cur(); gregCloseEditForm(); gregRefreshListNoRender(); gregInsSet(k + 1); });
+    if (window._gregInsAt != null) b('⇥ ans Ende', 'Einfügemarke aufheben – neue Elemente wieder am Ende (Esc)', () => { gregCloseEditForm(); gregRefreshListNoRender(); gregInsClear(); });
+    host.appendChild(row);
+    const e0 = gregEntries[i];
+    if (e0 && e0.type === 'note') {
+      const row2 = document.createElement('div'); row2.className = 'greg-pop-row greg-pop-div';
+      row2.style.cssText = row.style.cssText;
+      const lab2 = document.createElement('span'); lab2.textContent = 'Trennstrich danach:'; lab2.style.color = '#8aa070'; row2.appendChild(lab2);
+      const nxt = () => { let k = cur() + 1; return gregEntries[k] && gregEntries[k].type === 'divisio' ? k : -1; };
+      [[',', 'Divisio minima'], [';', 'Divisio minor'], [':', 'Divisio maior'], ['::', 'Divisio finalis']].forEach(([d, nm]) => {
+        const x = document.createElement('button'); x.className = 'b'; x.textContent = d; x.style.cssText = 'font-size:12px;padding:1px 9px;font-weight:bold';
+        const k0 = nxt(); if (k0 >= 0 && gregEntries[k0].div === d) { x.style.background = '#5a8a40'; x.style.color = '#fff'; }
+        x.title = nm + ' nach dieser Note setzen; nochmals tippen = entfernen, anderes Zeichen = ersetzen';
+        x.onclick = () => {
+          const k = cur(), kd = nxt(); gregPush();
+          let msg;
+          if (kd >= 0 && gregEntries[kd].div === d) { gregEntries.splice(kd, 1); msg = 'Trennstrich entfernt.'; }
+          else if (kd >= 0) { gregEntries[kd] = Object.assign({}, gregEntries[kd], {div: d}); msg = 'Trennstrich ersetzt: ' + d; }
+          else { gregEntries.splice(k + 1, 0, {type: 'divisio', div: d}); if (window._gregInsAt != null && window._gregInsAt > k) window._gregInsAt++; msg = 'Trennstrich gesetzt: ' + d; }
+          gregCloseEditForm(); gregRefreshList(); gregGst(msg);
+        };
+        row2.appendChild(x);
+      });
+      host.appendChild(row2);
+      const pit = host.querySelector('.greg-pop-pitches');
+      if (pit) {
+        const row3 = document.createElement('div'); row3.className = 'greg-pop-row'; row3.style.cssText = row.style.cssText;
+        const tb = document.createElement('button'); tb.className = 'b'; tb.style.cssText = 'font-size:11px;padding:2px 7px';
+        const upd = () => { const on = window._gregPitchInput === pit; tb.textContent = on ? '● Töne per Klick (aktiv)' : '＋ Töne per Klick'; tb.style.background = on ? '#8a3020' : ''; tb.style.color = on ? '#fff' : ''; };
+        tb.title = 'Danach ins Notensystem klicken: jeder Klick hängt einen Ton an diese Silbe an (Feld «Töne»); dann «✓ Übernehmen». Der Neumentyp passt sich an.';
+        tb.onclick = () => { window._gregPitchInput = window._gregPitchInput === pit ? null : pit; upd();
+          gregGst(window._gregPitchInput ? 'Töne per Klick: ins Notensystem klicken – jeder Klick hängt einen Ton an diese Silbe an. Dann «✓ Übernehmen».' : 'Töne per Klick beendet.'); };
+        upd(); row3.appendChild(tb); host.appendChild(row3);
+      }
+    }
+  }
   const bar = document.createElement('div'); bar.className = 'greg-pop-row greg-pop-btns';
   const mk = (txt, title, fn, cls) => { const b = document.createElement('button'); b.className = 'b' + (cls ? ' ' + cls : ''); b.textContent = txt; b.title = title; b.onclick = fn; bar.appendChild(b); return b; };
   mk('◀', 'Vorige Note (Alt+←) – Änderungen werden übernommen', () => gregEditStep(cur(), -1));
@@ -3930,11 +4134,11 @@ function gregPush() {
   if (gregHistory.length > 100) gregHistory.shift();
   gregRedoHistory = [];
 }
-function gregAddDiv(d) { gregPush(); gregEntries.push({type:'divisio',div:d}); _gregPending=null; gregRefreshList(); }
-function gregAddSpecial(t) { gregPush(); gregEntries.push({type:'special',text:t}); _gregPending=null; gregRefreshList(); }
+function gregAddDiv(d) { gregPush(); gregAddEntries({type:'divisio',div:d}); _gregPending=null; gregRefreshList(); }
+function gregAddSpecial(t) { gregPush(); gregAddEntries({type:'special',text:t}); _gregPending=null; gregRefreshList(); }
 function gregAddLinebreak() {
   gregPush();
-  gregEntries.push({type:'linebreak'});
+  gregAddEntries({type:'linebreak'});
   _gregPending=null;
   gregRefreshList();
 }
@@ -4307,7 +4511,7 @@ function gregSetAccidental(acc) {
 // ── Directive text (ij., iij.) ───────────────────────────────────
 function gregAddDirective(text) {
   gregPush();
-  gregEntries.push({type:'directive', text});
+  gregAddEntries({type:'directive', text});
   _gregPending = null;
   gregRefreshList();
 }
@@ -4864,7 +5068,7 @@ function gregInsertDropCapLetter() {
 function gregInsertVers() {
   // ℣. is a standalone TextOnly element in GABC: ℣.()
   gregPush();
-  gregEntries.push({type:'textonly', text:'℣.'});
+  gregAddEntries({type:'textonly', text:'℣.'});
   _gregPending = null;
   gregRefreshList();
   gregGst('℣. als eigenständiges Element eingefügt');
@@ -4872,7 +5076,7 @@ function gregInsertVers() {
 
 function gregInsertResp() {
   gregPush();
-  gregEntries.push({type:'textonly', text:'℟.'});
+  gregAddEntries({type:'textonly', text:'℟.'});
   _gregPending = null;
   gregRefreshList();
   gregGst('℟. als eigenständiges Element eingefügt');
@@ -4884,7 +5088,7 @@ function gregInsertTextOnly() {
   if (!t) return;
   t = t.replace(/[()]/g, '');
   gregPush();
-  gregEntries.push({type:'textonly', text: t});
+  gregAddEntries({type:'textonly', text: t});
   if (sy) sy.value = '';
   _gregPending = null;
   gregRefreshList();
@@ -5204,6 +5408,7 @@ document.addEventListener('keydown', ev => {
   const done = () => { ev.preventDefault(); ev.stopPropagation(); };
   if (k === '?') { done(); gregShortcutHelp(); return; }
   if (k === 'Escape' && pop) { done(); gregCloseEditForm(); gregRefreshListNoRender(); return; }
+  if (k === 'Escape' && window._gregInsAt != null && !_gregPending) { done(); gregInsClear(); return; }   // Einfügemarke aufheben (Build 448)
   if (k === 'ArrowLeft' || k === 'ArrowRight') {
     const dir = k === 'ArrowRight' ? 1 : -1;
     done();
@@ -9059,7 +9264,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '447';
+const NOTATOR_BUILD_ID = '448';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -10824,6 +11029,7 @@ function ntInsertMenu(btn) {
   const r = btn.getBoundingClientRect();
   d.style.top = Math.min(r.bottom + 4, window.innerHeight - 260) + 'px'; d.style.left = Math.max(6, Math.min(r.left, window.innerWidth - 250)) + 'px';
   const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:13px;padding:6px 10px'; b.onclick = () => { d.remove(); if (window._ntTab !== 'greg') switchTab('greg'); fn(); }; d.appendChild(b); };
+  if (window._gregInsAt != null) item('⇥ Einfügemarke aufheben (wieder am Ende)', 'Neue Noten, Trennstriche usw. wieder am Ende anhängen (am PC auch Esc)', () => gregInsClear());   // Build 448
   item('♫ Psalmton-Assistent …', 'Psalmverse auf einen Psalmton setzen', () => ntPsalmToneShow());
   item('✝ Gloria Patri …', 'Ausgeschriebenes Gloria Patri (Introitus oder Psalmton) einfügen bzw. «E u o u a e» ersetzen', () => ntGloriaPatriShow());
   item('📜 Strophen …', 'Weitere Strophen: Text untereinander oder eigene Noten je Strophe', () => gregVersesShow());

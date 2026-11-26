@@ -235,7 +235,7 @@ function buildSingleNeumeGABC(e) {
   // Accidentals are NOT emitted inline here — emitParenGroup() always
   // prepends a standalone accidental group ("(ix)(hi)" GABC convention)
   // before calling this function, for every neume type alike.
-  switch(e.neume) {
+  const _neumeStr = (() => { switch(e.neume) {
     case 'punctum':    return lastMod(r(0)) + ep + ik + dot;
     case 'virga':      return r(0) + 'v' + ep + ik + dot;
     case 'quilisma':   return r(0) + 'w' + dot;
@@ -301,7 +301,12 @@ function buildSingleNeumeGABC(e) {
     case 'porrectus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;
     case 'scandicus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;
     default:           return lastMod(r(0)) + dot;
-  }
+  } })();
+  // Mehr Töne als der Neumentyp verwendet (z. B. im Feld «Töne» ergänzt, Typ nicht angepasst): nicht stillschweigend weglassen,
+  // sondern anhängen (Build 448)
+  const used = NEUME_OPEN_ENDED.includes(e.neume) ? rp.length : (NEUME_PITCHES[e.neume] || 1);
+  let extra = ''; for (let i = used; i < rp.length; i++) extra += r(i);
+  return _neumeStr + extra;
 }
 
 // Strophentext einer Silbe für GABC: Klammern/Trenner/Markup entfernen, «-» am Ende = Wort geht weiter

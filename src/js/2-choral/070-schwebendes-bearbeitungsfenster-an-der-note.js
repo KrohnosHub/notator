@@ -54,6 +54,50 @@ function gregEditPopCreate(i) {
 function gregEditPopButtons(host, i, save) {
   host._btns = true;
   const cur = () => { const p = document.getElementById('greg-edit-pop'); return p && p._idx != null ? p._idx : i; }; // Index kann sich durch Zeilenumbruch-Option verschieben
+  // Einfügen an dieser Stelle, Trennstrich danach, Töne per Klick (Build 448, Wunsch Matthias)
+  {
+    const row = document.createElement('div'); row.className = 'greg-pop-row greg-pop-ins';
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:11px';
+    const b = (txt, title, fn) => { const x = document.createElement('button'); x.className = 'b'; x.textContent = txt; x.title = title; x.style.cssText = 'font-size:11px;padding:2px 7px'; x.onclick = fn; row.appendChild(x); return x; };
+    const lab = t => { const s = document.createElement('span'); s.textContent = t; s.style.color = '#8aa070'; row.appendChild(s); };
+    lab('Einfügen:');
+    b('⇤ davor', 'Neue Noten, Trennstriche usw. vor diesem Eintrag einfügen (statt am Ende)', () => { const k = cur(); gregCloseEditForm(); gregRefreshListNoRender(); gregInsSet(k); });
+    b('danach ⇥', 'Neue Noten, Trennstriche usw. nach diesem Eintrag einfügen (statt am Ende)', () => { const k = cur(); gregCloseEditForm(); gregRefreshListNoRender(); gregInsSet(k + 1); });
+    if (window._gregInsAt != null) b('⇥ ans Ende', 'Einfügemarke aufheben – neue Elemente wieder am Ende (Esc)', () => { gregCloseEditForm(); gregRefreshListNoRender(); gregInsClear(); });
+    host.appendChild(row);
+    const e0 = gregEntries[i];
+    if (e0 && e0.type === 'note') {
+      const row2 = document.createElement('div'); row2.className = 'greg-pop-row greg-pop-div';
+      row2.style.cssText = row.style.cssText;
+      const lab2 = document.createElement('span'); lab2.textContent = 'Trennstrich danach:'; lab2.style.color = '#8aa070'; row2.appendChild(lab2);
+      const nxt = () => { let k = cur() + 1; return gregEntries[k] && gregEntries[k].type === 'divisio' ? k : -1; };
+      [[',', 'Divisio minima'], [';', 'Divisio minor'], [':', 'Divisio maior'], ['::', 'Divisio finalis']].forEach(([d, nm]) => {
+        const x = document.createElement('button'); x.className = 'b'; x.textContent = d; x.style.cssText = 'font-size:12px;padding:1px 9px;font-weight:bold';
+        const k0 = nxt(); if (k0 >= 0 && gregEntries[k0].div === d) { x.style.background = '#5a8a40'; x.style.color = '#fff'; }
+        x.title = nm + ' nach dieser Note setzen; nochmals tippen = entfernen, anderes Zeichen = ersetzen';
+        x.onclick = () => {
+          const k = cur(), kd = nxt(); gregPush();
+          let msg;
+          if (kd >= 0 && gregEntries[kd].div === d) { gregEntries.splice(kd, 1); msg = 'Trennstrich entfernt.'; }
+          else if (kd >= 0) { gregEntries[kd] = Object.assign({}, gregEntries[kd], {div: d}); msg = 'Trennstrich ersetzt: ' + d; }
+          else { gregEntries.splice(k + 1, 0, {type: 'divisio', div: d}); if (window._gregInsAt != null && window._gregInsAt > k) window._gregInsAt++; msg = 'Trennstrich gesetzt: ' + d; }
+          gregCloseEditForm(); gregRefreshList(); gregGst(msg);
+        };
+        row2.appendChild(x);
+      });
+      host.appendChild(row2);
+      const pit = host.querySelector('.greg-pop-pitches');
+      if (pit) {
+        const row3 = document.createElement('div'); row3.className = 'greg-pop-row'; row3.style.cssText = row.style.cssText;
+        const tb = document.createElement('button'); tb.className = 'b'; tb.style.cssText = 'font-size:11px;padding:2px 7px';
+        const upd = () => { const on = window._gregPitchInput === pit; tb.textContent = on ? '● Töne per Klick (aktiv)' : '＋ Töne per Klick'; tb.style.background = on ? '#8a3020' : ''; tb.style.color = on ? '#fff' : ''; };
+        tb.title = 'Danach ins Notensystem klicken: jeder Klick hängt einen Ton an diese Silbe an (Feld «Töne»); dann «✓ Übernehmen». Der Neumentyp passt sich an.';
+        tb.onclick = () => { window._gregPitchInput = window._gregPitchInput === pit ? null : pit; upd();
+          gregGst(window._gregPitchInput ? 'Töne per Klick: ins Notensystem klicken – jeder Klick hängt einen Ton an diese Silbe an. Dann «✓ Übernehmen».' : 'Töne per Klick beendet.'); };
+        upd(); row3.appendChild(tb); host.appendChild(row3);
+      }
+    }
+  }
   const bar = document.createElement('div'); bar.className = 'greg-pop-row greg-pop-btns';
   const mk = (txt, title, fn, cls) => { const b = document.createElement('button'); b.className = 'b' + (cls ? ' ' + cls : ''); b.textContent = txt; b.title = title; b.onclick = fn; bar.appendChild(b); return b; };
   mk('◀', 'Vorige Note (Alt+←) – Änderungen werden übernommen', () => gregEditStep(cur(), -1));

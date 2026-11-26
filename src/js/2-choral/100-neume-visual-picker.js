@@ -325,7 +325,7 @@ function gregSetAccidental(acc) {
 // ── Directive text (ij., iij.) ───────────────────────────────────
 function gregAddDirective(text) {
   gregPush();
-  gregEntries.push({type:'directive', text});
+  gregAddEntries({type:'directive', text});
   _gregPending = null;
   gregRefreshList();
 }

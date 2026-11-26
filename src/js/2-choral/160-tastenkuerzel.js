@@ -77,6 +77,7 @@ document.addEventListener('keydown', ev => {
   const done = () => { ev.preventDefault(); ev.stopPropagation(); };
   if (k === '?') { done(); gregShortcutHelp(); return; }
   if (k === 'Escape' && pop) { done(); gregCloseEditForm(); gregRefreshListNoRender(); return; }
+  if (k === 'Escape' && window._gregInsAt != null && !_gregPending) { done(); gregInsClear(); return; }   // Einfügemarke aufheben (Build 448)
   if (k === 'ArrowLeft' || k === 'ArrowRight') {
     const dir = k === 'ArrowRight' ? 1 : -1;
     done();

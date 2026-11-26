@@ -589,6 +589,7 @@ function gregRenderActiveOnly() {
     if (svgEl) {
       _gregActiveScore = score;
       gregEmbedCommentsIntoSvg(svgEl, gregEntries, score, true);
+      if (typeof gregInsMarkDraw === 'function') gregInsMarkDraw(svgEl, score);   // Einfügemarke (Build 448)
       // NOTE: no manual zoom-division here. svgEl.getScreenCTM() (used inside
       // gregHandleClick) already maps real client/screen pixels to native
       // viewBox units, correctly accounting for the width/height-vs-viewBox

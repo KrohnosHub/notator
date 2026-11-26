@@ -230,6 +230,7 @@ function ntInsertMenu(btn) {
   const r = btn.getBoundingClientRect();
   d.style.top = Math.min(r.bottom + 4, window.innerHeight - 260) + 'px'; d.style.left = Math.max(6, Math.min(r.left, window.innerWidth - 250)) + 'px';
   const item = (label, title, fn) => { const b = document.createElement('button'); b.className = 'b'; b.textContent = label; b.title = title; b.style.cssText = 'text-align:left;font-size:13px;padding:6px 10px'; b.onclick = () => { d.remove(); if (window._ntTab !== 'greg') switchTab('greg'); fn(); }; d.appendChild(b); };
+  if (window._gregInsAt != null) item('⇥ Einfügemarke aufheben (wieder am Ende)', 'Neue Noten, Trennstriche usw. wieder am Ende anhängen (am PC auch Esc)', () => gregInsClear());   // Build 448
   item('♫ Psalmton-Assistent …', 'Psalmverse auf einen Psalmton setzen', () => ntPsalmToneShow());
   item('✝ Gloria Patri …', 'Ausgeschriebenes Gloria Patri (Introitus oder Psalmton) einfügen bzw. «E u o u a e» ersetzen', () => ntGloriaPatriShow());
   item('📜 Strophen …', 'Weitere Strophen: Text untereinander oder eigene Noten je Strophe', () => gregVersesShow());

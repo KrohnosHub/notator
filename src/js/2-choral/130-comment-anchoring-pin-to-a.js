@@ -288,7 +288,7 @@ function gregInsertDropCapLetter() {
 function gregInsertVers() {
   // ℣. is a standalone TextOnly element in GABC: ℣.()
   gregPush();
-  gregEntries.push({type:'textonly', text:'℣.'});
+  gregAddEntries({type:'textonly', text:'℣.'});
   _gregPending = null;
   gregRefreshList();
   gregGst('℣. als eigenständiges Element eingefügt');
@@ -296,7 +296,7 @@ function gregInsertVers() {
 
 function gregInsertResp() {
   gregPush();
-  gregEntries.push({type:'textonly', text:'℟.'});
+  gregAddEntries({type:'textonly', text:'℟.'});
   _gregPending = null;
   gregRefreshList();
   gregGst('℟. als eigenständiges Element eingefügt');
@@ -308,7 +308,7 @@ function gregInsertTextOnly() {
   if (!t) return;
   t = t.replace(/[()]/g, '');
   gregPush();
-  gregEntries.push({type:'textonly', text: t});
+  gregAddEntries({type:'textonly', text: t});
   if (sy) sy.value = '';
   _gregPending = null;
   gregRefreshList();

@@ -172,11 +172,11 @@ function gregPush() {
   if (gregHistory.length > 100) gregHistory.shift();
   gregRedoHistory = [];
 }
-function gregAddDiv(d) { gregPush(); gregEntries.push({type:'divisio',div:d}); _gregPending=null; gregRefreshList(); }
-function gregAddSpecial(t) { gregPush(); gregEntries.push({type:'special',text:t}); _gregPending=null; gregRefreshList(); }
+function gregAddDiv(d) { gregPush(); gregAddEntries({type:'divisio',div:d}); _gregPending=null; gregRefreshList(); }
+function gregAddSpecial(t) { gregPush(); gregAddEntries({type:'special',text:t}); _gregPending=null; gregRefreshList(); }
 function gregAddLinebreak() {
   gregPush();
-  gregEntries.push({type:'linebreak'});
+  gregAddEntries({type:'linebreak'});
   _gregPending=null;
   gregRefreshList();
 }

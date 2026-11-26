@@ -1,4 +1,13 @@
 // ── Staff click handler ──────────────────────────────────────────
+// Tonbuchstabe an einem Punkt (native SVG-Koordinaten): nächstgelegene Zeile (Ursprung bounds.y), Stufe aus dem Abstand
+function gregPitchAtSvg(svgP, ctxt) {
+  const lines = _gregScore && _gregScore.lines;
+  if (!lines || !lines.length) return null;
+  let best = lines[0], bestDist = Infinity;
+  for (const line of lines) { const dist = Math.abs(svgP.y - line.bounds.y); if (dist < bestDist) { bestDist = dist; best = line; } }
+  const sp = Math.round(-(svgP.y - best.bounds.y) / ctxt.staffInterval);
+  return {line: best, letter: staffPosToGabc(sp)};
+}
 function gregHandleClick(svgEl, clientX, clientY) {
   if (!_gregScore || !_gregCtxtRef) return;
   const ctxt = _gregCtxtRef;
@@ -7,6 +16,17 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const svgP = pt.matrixTransform(svgEl.getScreenCTM().inverse());
   if (typeof ntPlay !== 'undefined' && ntPlay.pick === 'greg') {
     ntPlayFromChoralEntry(gregFindEntryAtNativePoint(_gregScore, gregEntries, svgP.x, svgP.y, ctxt));
+    return;
+  }
+  // «Töne per Klick» im Fenster einer Note (Build 448): Klick ins System hängt den Ton an das Feld «Töne» dieser Note an
+  if (window._gregPitchInput && document.body.contains(window._gregPitchInput)) {
+    const pp = gregPitchAtSvg(svgP, ctxt);
+    if (pp) {
+      const inp = window._gregPitchInput;
+      inp.value += pp.letter;
+      inp.dispatchEvent(new Event('input', {bubbles: true}));
+      gregGst('Ton ' + pp.letter + ' angehängt → «' + inp.value + '». Weitere Töne anklicken, dann «✓ Übernehmen».');
+    }
     return;
   }
 
@@ -44,20 +64,15 @@ function gregHandleClick(svgEl, clientX, clientY) {
   // geometric anchor. Using the bbox midpoint instead caused misattribution
   // on lines with little/no ledger content (e.g. a fresh empty line), since
   // their midpoint shifts relative to lines with notes above/below the staff.
-  const lines = _gregScore.lines;
-  if (!lines || !lines.length) return;
-  let best = lines[0], bestDist = Infinity;
-  for (const line of lines) {
-    const dist = Math.abs(svgP.y - line.bounds.y);
-    if (dist < bestDist) { bestDist = dist; best = line; }
+  const _pp = gregPitchAtSvg(svgP, ctxt);
+  if (!_pp) return;
+  const best = _pp.line, gabcLetter = _pp.letter;
+  // Einfügen an der getippten Stelle (Build 448): ohne gesetzte Einfügemarke bestimmt die waagrechte Lage zwischen den
+  // Neumen die Position; rechts der letzten Note des Stücks wird wie bisher angehängt. Gilt nur für diese eine Neume.
+  if (!_gregPending && gregInsAt() == null) {
+    const ia = gregInsAtPoint(_gregScore, best, svgP.x);
+    if (ia != null) { window._gregInsAt = ia; window._gregInsTemp = true; }
   }
-
-  // staffPosition: inside line group, y=0 is staff origin
-  // line.bounds.y is the SVG y of line origin after layout
-  const si = ctxt.staffInterval;
-  const relY = svgP.y - best.bounds.y;
-  const sp = Math.round(-relY / si);
-  const gabcLetter = staffPosToGabc(sp);
 
   const neume = (document.getElementById('greg-neume-sel')||{value:'punctum'}).value;
   const nPitch = NEUME_PITCHES[neume] || 1;
@@ -96,11 +111,12 @@ function gregHandleClick(svgEl, clientX, clientY) {
       const ne = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, accidental};
       if (wordEnd) ne.wordEnd = true;
       { const ap = parseInt((document.getElementById('greg-acc-pos')||{}).value); if (accidental && ap) ne.accidentalPos = ap; }
-      gregEntries.push(ne);
+      const ni = gregAddEntries(ne);
+      if (window._gregInsTemp) { window._gregInsTemp = false; window._gregInsAt = null; }
       if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
       _gregAccidental = null; // consume accidental
       gregInputConsumed();
-      if (!syllable) gregSylAsk(gregEntries.length - 1);
+      if (!syllable) gregSylAsk(ni);
       gregRefreshList();
     } else {
       _gregPending = {type:'note', syllable, neume, pitches:[gregDefaultNoteCase(neume, 0, gabcLetter)], mora, moraExtra, iktus, iktusPos, episema, episemaPos, liquescent, oriscus, strophicus, pressus, quilisma, quilismaPos, _need:nPitch};
@@ -137,8 +153,9 @@ function gregFinishPendingNeume() {
   const e = _gregPending; delete e._need;
   e.accidental = _gregAccidental || null;
   { const ap = parseInt((document.getElementById('greg-acc-pos')||{}).value); if (e.accidental && ap) e.accidentalPos = ap; }
-  gregEntries.push(e);
-  if (!e.syllable) gregSylAsk(gregEntries.length - 1);
+  const ni = gregAddEntries(e);
+  if (window._gregInsTemp) { window._gregInsTemp = false; window._gregInsAt = null; }
+  if (!e.syllable) gregSylAsk(ni);
   if (document.getElementById('greg-syllable')) document.getElementById('greg-syllable').value = '';
   _gregAccidental = null;
   _gregPending = null;

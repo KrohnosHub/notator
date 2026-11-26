@@ -39,7 +39,7 @@ Beide Seiten arbeiten an Notator; **einzige gemeinsame Quelle ist `main`** (Code
 1. **Vorher `git fetch origin main`** und auf dem neuesten Stand aufsetzen.
 2. `NOTATOR_BUILD_ID` erhöhen (`src/js/2-choral/190-autosave.js`) **und** `CACHE` in `sw.js` (`notator-vNNN`) – beide höher als auf `origin/main`, nie doppelt.
 3. `python3 build.py` (bei geänderten `data-on…`-Attributen vorher `python3 tools/handlers.py`)
-4. Tests: `node tests/gd-core.test.js`, `node tests/silbentrennung.test.js`, `node tests/pdf-geometrie.test.js` («PDF lesen», Geometrie; mit lokalen Scans zusätzlich Vergleich mit dem Python-Prototyp), `node tests/begleitsatz.test.js` (Orgel-Begleitsatz; nach gewollter Änderung der Harmonisierung `--update`), `node tests/visual/run.js` (Bildvergleich des Notenbilds; nach gewollter Darstellungsänderung `--update`), `node tests/gabc-rundlauf.test.js` (GABC-Import/Export stabil über alle Soll-Stücke).
+4. Tests: `node tests/gd-core.test.js`, `node tests/silbentrennung.test.js`, `node tests/pdf-geometrie.test.js` («PDF lesen», Geometrie; mit lokalen Scans zusätzlich Vergleich mit dem Python-Prototyp), `node tests/begleitsatz.test.js` (Orgel-Begleitsatz; nach gewollter Änderung der Harmonisierung `--update`), `node tests/visual/run.js` (Bildvergleich des Notenbilds; nach gewollter Darstellungsänderung `--update`), `node tests/gabc-rundlauf.test.js` (GABC-Import/Export stabil über alle Soll-Stücke), `node tests/einfuegen.test.js` (Einfügemarke).
 5. `python3 tools/check-version.py` prüft Build-Nummer und Cache gegen `origin/main`.
 6. Kurz vor dem Mergen nochmals gegen den neuesten `main` prüfen; bei Kollision Nummern neu vergeben.
 7. Commit-Titel: `Build NNN: Kurzbeschreibung`.
