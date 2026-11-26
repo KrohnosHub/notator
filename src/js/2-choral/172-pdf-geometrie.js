@@ -763,7 +763,9 @@ function pgSplitBlob(b, gl, hs, stepOf) {
     let xm = (X(0) + X(-1)) / 2;
     const ytop = pgMedian(t.map(c => c[1])), ybot = pgMedian(t.map(c => c[2]));
     const nstack = pgRound(hmed / hs);
-    if (nstack >= 2 && hmed > 0.8 * gl) {
+    // Build 446 (nicht im Prototyp): erst ab 0.9 statt 0.8 Linienabständen zwei Noten übereinander – ein hoher Einzelkopf an der Linie
+    // (Attende) wurde sonst geteilt; 0.95 half Attende mehr, kostete aber Ad te levavi
+    if (nstack >= 2 && hmed > (globalThis._pgNurPrototyp ? 0.8 : 0.9) * gl) {
       let ink = 0; for (const c of t) for (let y = c[1]; y <= c[2]; y++) ink += sub[y * sw + c[0]];
       if (ink / hts.reduce((a, v) => a + v, 0) < 0.8) { pgDiag('hohl', {x0: b.x0 + t[0][0], x1: b.x0 + t[t.length - 1][0], y0: b.y0, y1: b.y0 + sh, area: 0}, {lines: [0]}); continue; }
       const nh = 0.45 * gl;

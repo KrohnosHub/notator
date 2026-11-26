@@ -1,0 +1,69 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "JUbiláte Deo omnis terra, allelúia",
+   "mode": "8",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "JU(g)bi(g)lá(hjg)te(f) De(gh)o(h.) (,) o(jj)mnis(g) ter(h)ra,(g.) (,) al(h)le(g)lú(ghg)ia:(g.) psal(gjj)",
+    "mum(j.jjjh) dí(hij)ci(hg)te(gf) nó(hij)mi(hgf)ni(h) e(hi)ius,(g.) (;) al(gj)le(j.jjjh)lú(hjih)ia:(h.) (:)",
+    "da(iij)te(ghgf) gló(hij)ri(h)am(fg) lau(gf)di(hfhg) e(ghg)ius,(g.) (:) al(g)le(g)lú(fef)ia,(dffdf.) (,)",
+    "al(cd)le(fg)lú(gh)ia,(hgh.) (,) al(hij)le(j.ijhg)lú(ghig)ia.(g.) (::) <i>Ps.</i>() Dí(g)ci(hg)te(gj) De(j)o,(j) (,) quam(j)",
+    "ter(j)ri(j)bí(j)li(j)a(j) sunt(j) ó(j)pe(j)ra(ji) tu(jk)a,(k) Dó(jk)mi(j)ne!(j.) (:) in(j) mul(hj)ti(j)tú(j)di(j)ne(j)",
+    "vir(j)tú(j)tis(j) tu(j)ae(j) (,) men(j)ti(j)én(j)tur(j) ti(j)bi(j) in(j)i(jji)mí(gh)ci(ji) tu(h)i.(g.) (::)"
+   ],
+   "unsure": [
+    0,
+    1,
+    0,
+    1,
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Jubilate Deo omnis terra",
+    "subtitle": ""
+   }
+  },
+  {
+   "incipit": "GLória Pátri, et Fílio, et",
+   "mode": "8",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "GLó(g)ri(hg)a(gj) Pá(j)tri,(j) et(j) Fí(j)li(j)o,(j.) (,) et(j) Spi(j)rí(ji)tu(jk)i(k) Sán(jk)cto.(j.) (:) Sic(jh)ut(hj) é(j)rat(j) in(j)",
+    "prin(j)cí(j)pi(j)o,(j.) (,) et(ji) nunc,(jk) et(k) sem(jk)per,(j.) (:) et(jh) in(hj) sæ(j)cu(j)la(j) sæ(j)cu(jji)ló(gh)rum.(ji) A(h)men.(g.) (::)"
+   ],
+   "unsure": [
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Gloria Patri",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 3537,
+  "output_tokens": 471,
+  "costUsd": 0.011784
+ },
+ "durationMs": 5785
+}

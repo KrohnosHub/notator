@@ -1,0 +1,72 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "TErríbilis est locus iste: hic",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "TEr(f)rí(f)bi(e)lis(c) est(cef) (,) lo(h)cus(hhh) i(kxhihh)ste:(g.f.) hic(e) do(efg)mus(igge)",
+    "De(efghgf)i(ef) est,(f.) et(fh) por(h)ta(ghi) cae(ih)li:(hihhefe.) (:) et(e) vo(f)cá(fhih)bi(hkxhh.)tur(fgece.)",
+    "au(cef)la(fhhegf) De(fgf)i.(f.) T.P.() (::) Al()le(efh)lú(hg)ia,(hih) al(hhhffe.) (,) le(fhhgghf)lú(fgf)ia.(f.) (;) (;)",
+    "<i>Ps.</i>() Quam(e) di(fe)léc(eh)ta(h) ta(h)ber(h)ná(h)cu(h)la(h) tu(h)a,(h) Dó(h)mi(hg)ne(hi) vir(i)tú(hi)tum!(h.) (:)",
+    "con(h)cu(fh)pí(h)scit,(h) et(h) dé(h)fi(h)cit(h) á(h)ni(h)ma(h) me(h)a(h) (,) in(h) á(h)tri(i)a(hf) Dó(h)mi(ge)",
+    "(fgf) (:)"
+   ],
+   "unsure": [
+    0,
+    1,
+    4,
+    3,
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Terribilis est locus iste",
+    "subtitle": ""
+   }
+  },
+  {
+   "incipit": "GLória Patri, et Fílio, et",
+   "mode": "2",
+   "clef": "f3",
+   "hasDropCap": true,
+   "systems": [
+    "GLó(e)ri(fe)a(eh) Pa(h)tri,(h) et(h) Fí(h)li(h)o,(h.) et(h) Spi(h)rí(hg)tu(hi)i(i) San(hi)",
+    "cto.(h.) (:) Sic(hf)ut(fh) e(h)rat(h) in(h) prin(h)cí(h)pi(h)o,(h.) et(hg) nunc,(hi) et(i) sem(hi)per,(h.) (:)",
+    "et(hf) in(fh) sae(h)cu(h)la(h) sae(h)cu(i)ló(hf)rum.(h) A(ge)men.(fgf) (:)"
+   ],
+   "unsure": [
+    0,
+    1,
+    1
+   ],
+   "verses": [
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Gloria Patri",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 3189,
+  "output_tokens": 422,
+  "costUsd": 0.010598
+ },
+ "durationMs": 5517
+}

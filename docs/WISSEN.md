@@ -301,6 +301,8 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - **Build 445 (26.11.2026):** Zweite GregoBase-Stichprobe (277 Dateien): verbleibende Abweichungen sind TeX in `<v>…</v>`, Kopfzeilen und
   seltene Trennstrich-Schreibweisen («rí(c:)a», «sti,(i)* (,)»), bei denen sich nur der Abstand einmal ändert. Orgelfassung (`clGabcToAbc`,
   mit/ohne Begleitsatz) und Choral-Notenbild für 150 Dateien ohne Absturz bzw. leeres Bild; eingebauter Selbsttest 20/20.
+- **Build 446 (26.11.2026):** Zwei Noten übereinander (Pes/Clivis in einem Fleck) erst ab 0.9 statt 0.8 Linienabständen Höhe – ein an der
+  Linie hängender Einzelkopf (Attende, ~0.85) wurde sonst zu zwei Noten. 0.95 brachte Attende +50 %, kostete aber Ad te levavi – 0.9 ohne Verluste.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

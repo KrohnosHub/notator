@@ -1,0 +1,35 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "STabat Mater dolorósa Juxta crucem",
+   "mode": "6",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "STa(f)bat(g) Ma(h)ter(g) do(h)lo(j)ró(ixi)sa(h.) (;) Jux(h)ta(g) cru(f)cem(e) la(d)cri(e)mó(d)sa,(c.) (;)",
+    "Dum(g) pen(f)dé(g)bat(h) Fí(g)li(f)us.(f.) (::)"
+   ],
+   "unsure": [
+    0,
+    0
+   ],
+   "verses": [
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Stabat Mater dolorosa Juxta",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 2174,
+  "output_tokens": 115,
+  "costUsd": 0.005498
+ },
+ "durationMs": 5165
+}

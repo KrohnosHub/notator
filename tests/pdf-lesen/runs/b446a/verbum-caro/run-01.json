@@ -1,0 +1,41 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "VErbum caro factum est, Allelúia",
+   "mode": "6",
+   "clef": "c4",
+   "hasDropCap": true,
+   "systems": [
+    "VEr(fg)bum(f) ca(fe)ro(dc) fa(f)ctum(fgd) (,) est,(ixfghih) (;) Al(ixi)le(ihg)lú(gh)ia,(f.) (,) al(dc)",
+    "le(ixfghihgf)lú(ghf)ia.(f.) (::) Ver(fg)bum.(f) (::) V/.() Et(f) ha(f)bi(f)tá(g)vit(fe) in(dc) no(fgd)bis.(ixfghih) (::)",
+    "Al(ixi)le(ihg)lú(gh)ia.(f.) etc.() (::) V/.() Gló(f)ri(f)a(f) Pa(gh)tri,(f) (,) et(g) Fí(fe)li(dc)o,(c.) (;) et(dc) Spi(f)",
+    "rí(ixghi)tu(ih)i(gh) San(gf)cto.(f.) (::) Ver(fg)bum.(f) (::)"
+   ],
+   "unsure": [
+    0,
+    1,
+    1,
+    0
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Verbum caro factum est",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 2435,
+  "output_tokens": 218,
+  "costUsd": 0.00705
+ },
+ "durationMs": 4648
+}

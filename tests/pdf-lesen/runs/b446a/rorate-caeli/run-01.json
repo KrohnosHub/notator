@@ -1,0 +1,59 @@
+{
+ "model": "gespeichert (/tmp/claude-0/-home-user-notator/48f9cf66-bf2a-5d54-8b2f-26785986b543/scratchpad/live429)",
+ "effort": "low",
+ "pipeline": "Notator, neue Erkennung (pdf.js, 172/174)",
+ "pieces": [
+  {
+   "incipit": "Roráte, cæli, désuper, et nubes",
+   "mode": "1",
+   "clef": "c4",
+   "hasDropCap": false,
+   "systems": [
+    "Ro(f)rá(gh)te,(h.) cæ(k)li,(j) dé(ixji)su(h)per,(hg.) (;) et(h) (,) nu(ixi)bes(h) plu(gf)ant(e) ju(fe)stum.(d.) (::)",
+    "Ne(f) i(g)ra()cá()ris,(h) Dó()mi(h)ne,(h.) ne(h) ul(h)tra() me(hh)mí(h)ne(h)ris() (;)",
+    "i(g)ni(i)qui() (;) tá(g)tis:(f.) (:) ec(h)ce(i) cí() (,) vi(j)tas() Sanc() (,) ti(j.) fac(j)ta(j)",
+    "est(j) de(j)sér(j)ta:(j.) (,) Si(j)on(j) de(j)sér(jk)ta(j) (,) fac(ixji)ta(h) est:(h.) (;)",
+    "Je()rú()sa(h)lem(h.) de(ixgi)so(h)lá()ta() est:(f.) (:) do()mus(h) sanc(h)ti() (;)",
+    "fi(h)ca(h)ti(h)ó(h)nis(h) tu(h)æ(h.) et(h) gló(h)ri(g)æ(j) tu(ji)æ,(h.) (;)",
+    "u(f)bi(gh) lau(h)da(h)vé(ixhi)runt(h) te(h.) pa(gf)tres(e) no(fe)stri.(d.) (::) R/.() Ro()rá()te.()",
+    "Pec(f)cá(gh)vi(h)mus,(h.) et(h) fac(h)ti(h) su(h)mus(h) tam(h)quam(gg) im(h) (,) mún(ixhi)dus(h) nos,(h.) (;)",
+    "et(h) ce(g)cí(f)di(e)mus() (;) qua(h)si(h) fó(h)li(h)um(g) u(i)ni(h)vér(h)si:(f.) (:) et(h) i(ixi)ni(j) (;)",
+    "qui(j)tá(j)tes(j) no() (,) stræ(j.) qua(j)si(j) ven(j)tus(j) abs(k)tu(j)lé(j)runt(h) nos:() (;) (;)"
+   ],
+   "unsure": [
+    2,
+    10,
+    6,
+    0,
+    10,
+    0,
+    0,
+    0,
+    2,
+    6
+   ],
+   "verses": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "title": {
+    "title": "Rorate",
+    "subtitle": ""
+   }
+  }
+ ],
+ "usage": {
+  "input_tokens": 4871,
+  "output_tokens": 514,
+  "costUsd": 0.014882
+ },
+ "durationMs": 5274
+}
