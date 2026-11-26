@@ -32,16 +32,34 @@ function gregCountNoteEntries(entries, uptoIdx) {
 // numbering), returns its actual index within `entries`. Used to jump from
 // "the note the user clicked on" back to "which row in the entry list is
 // that".
+// Build 450 (Meldung Matthias: Klick öffnete eine Neume ca. 2 Silben weiter rechts): Ein Eintrag mit vielen Tönen («efgfddfe»)
+// zeichnet exsurge als mehrere Neumen – «ein Eintrag = eine Notengruppe» stimmte dann ab dort nicht mehr. Jetzt wird je Eintrag
+// gezählt, wie viele Notengruppen sein GABC ergibt (wie die rote Hervorhebung, gregEntryNotationEls).
+function gregEntryNotationCount(e) {
+  if (!e || e.type !== 'note' || !e.pitches || !e.pitches.length) return 0;
+  if (typeof gregEntriesToBody !== 'function' || typeof gregCountNoteBearingNotations !== 'function' || typeof exsurge === 'undefined') return 1;
+  const sig = JSON.stringify([e.pitches, e.neume, e.notes ? e.notes.length : 0, e.accidental || '', e.rawPitches || '']);
+  if (e._ntCountSig === sig && typeof e._ntCount === 'number') return e._ntCount;
+  let n = null;
+  try { n = gregCountNoteBearingNotations(gregEntriesToBody([Object.assign({}, e, {syllable: e.syllable || 'x'})], 'c4'), new exsurge.ChantContext()); } catch (err) { n = null; }
+  n = n == null || n < 1 ? 1 : n;
+  try { Object.defineProperty(e, '_ntCount', {value: n, writable: true, configurable: true, enumerable: false});
+    Object.defineProperty(e, '_ntCountSig', {value: sig, writable: true, configurable: true, enumerable: false}); } catch (err) { /* eingefroren */ }
+  return n;
+}
 function gregOrdinalToEntryIndex(entries, ordinal) {
   let n = 0;
   for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    if (e.type === 'note' && e.pitches && e.pitches.length) {
-      if (n === ordinal) return i;
-      n++;
-    }
+    const k = gregEntryNotationCount(entries[i]);
+    if (k && ordinal < n + k) return i;
+    n += k;
   }
   return null;
+}
+// Notengruppen-Nummer (wie in score.notations gezählt) des ersten Eintrags ab Index i
+function gregEntryToOrdinal(entries, i) {
+  let n = 0; for (let k = 0; k < i && k < entries.length; k++) n += gregEntryNotationCount(entries[k]);
+  return n;
 }
 
 // Resolves an ordinal note index to its absolute {x,y} position in the

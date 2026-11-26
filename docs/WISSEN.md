@@ -319,6 +319,12 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   wählen, dann Töne). Neumentyp im Notenfenster mit Bild (`gregNeumeSelectWithIcons`, das `<select>` bleibt versteckt die Quelle).
   Gemeldete Silbenverschiebung nach «danach ⇥» liess sich nicht nachstellen (Note anklicken → danach → Neume setzen: Silben bleiben bei
   ihren Neumen); gefunden und behoben nur Stellen, die «neu = letzter Eintrag» annahmen (`gregInputConsumed`/«Text zuerst», Doppel-«:»).
+- **Build 450 (26.11.2026, Meldung Matthias):** «Ein Eintrag = eine Notengruppe» (Build 448) gilt nicht für Einträge mit vielen Tönen –
+  exsurge zeichnet «efgfddfe» als mehrere Neumen; Klicks dahinter öffneten eine Neume weiter rechts. `gregOrdinalToEntryIndex` und
+  `gregEntryToOrdinal` zählen jetzt je Eintrag die Notengruppen seines GABC (`gregEntryNotationCount`, zwischengespeichert am Eintrag).
+  Handy: Der Notenbereich (`#greg-canvas-wrap`, Flex-Container mit mitrollender Werkzeugleiste) ignoriert `padding-bottom` beim Scrollen –
+  deshalb ein Platzhalter-`div` am Ende, solange das Notenfenster offen ist. Bei 55 % Fensterhöhe blieb zwischen Werkzeugleiste und
+  Fenster zu wenig Platz für eine Notenzeile, deshalb 42 %.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

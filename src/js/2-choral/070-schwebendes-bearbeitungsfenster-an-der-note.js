@@ -1,5 +1,5 @@
 // ── Schwebendes Bearbeitungsfenster an der Note ──────────────────────
-function gregEditPopRemove() { const p = document.getElementById('greg-edit-pop'); if (p) p.remove(); }
+function gregEditPopRemove() { const p = document.getElementById('greg-edit-pop'); if (p) p.remove(); const sp = document.getElementById('greg-pop-spacer'); if (sp) sp.remove(); }
 function gregEditPopCreate(i) {
   gregEditPopRemove(); gregSylInlineClose(false);
   const pop = document.createElement('div');
@@ -64,7 +64,10 @@ function gregEditPopButtons(host, i, save) {
     b('⇤ davor', 'Neue Noten, Trennstriche usw. vor diesem Eintrag einfügen (statt am Ende)', () => { const k = cur(); gregCloseEditForm(); gregRefreshListNoRender(); gregInsSet(k); });
     b('danach ⇥', 'Neue Noten, Trennstriche usw. nach diesem Eintrag einfügen (statt am Ende)', () => { const k = cur(); gregCloseEditForm(); gregRefreshListNoRender(); gregInsSet(k + 1); });
     if (window._gregInsAt != null) b('⇥ ans Ende', 'Einfügemarke aufheben – neue Elemente wieder am Ende (Esc)', () => { gregCloseEditForm(); gregRefreshListNoRender(); gregInsClear(); });
-    host.appendChild(row);
+    const _after = (host.querySelector('.greg-pop-pitches') || {}).closest ? host.querySelector('.greg-pop-pitches').closest('.greg-pop-row') : null;
+    let _last = _after;   // neue Zeilen direkt unter «Neume» (Build 450: im kurzen Handy-Fenster sonst erst nach Scrollen sichtbar)
+    const put = el => { if (_last && _last.parentNode) { _last.parentNode.insertBefore(el, _last.nextSibling); _last = el; } else host.appendChild(el); };
+    put(row);
     const e0 = gregEntries[i];
     if (e0 && e0.type === 'note') {
       const row2 = document.createElement('div'); row2.className = 'greg-pop-row greg-pop-div';
@@ -85,7 +88,7 @@ function gregEditPopButtons(host, i, save) {
         };
         row2.appendChild(x);
       });
-      host.appendChild(row2);
+      put(row2);
       const pit = host.querySelector('.greg-pop-pitches');
       if (pit) {
         const row3 = document.createElement('div'); row3.className = 'greg-pop-row'; row3.style.cssText = row.style.cssText;
@@ -94,7 +97,7 @@ function gregEditPopButtons(host, i, save) {
         tb.title = 'Danach ins Notensystem klicken: jeder Klick hängt einen Ton an diese Silbe an (Feld «Töne»); dann «✓ Übernehmen». Der Neumentyp passt sich an.';
         tb.onclick = () => { window._gregPitchInput = window._gregPitchInput === pit ? null : pit; upd();
           gregGst(window._gregPitchInput ? 'Töne per Klick: ins Notensystem klicken – jeder Klick hängt einen Ton an diese Silbe an. Dann «✓ Übernehmen».' : 'Töne per Klick beendet.'); };
-        upd(); row3.appendChild(tb); host.appendChild(row3);
+        upd(); row3.appendChild(tb); put(row3);
       }
     }
   }
@@ -152,6 +155,25 @@ function gregEditPopPlace() {
   const i = pop._idx;
   let r = gregEntryClientRect(i);
   if (!r) { const row = document.querySelectorAll('#greg-entry-list [data-idx]')[i]; if (row) { const b = row.getBoundingClientRect(); r = { left: b.right + 8, top: b.top, right: b.right + 8, bottom: b.top }; } }
+  // Handy (Build 450, Meldung Matthias: Fenster verdeckte die Neume, Notenbereich liess sich nicht weiterscrollen): Fenster unten
+  // andocken, höchstens 42 % hoch und in sich scrollbar; der Notenbereich bekommt unten Platz und rollt die Neume über das Fenster
+  if (typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) {
+    pop.style.left = '6px'; pop.style.right = '6px'; pop.style.top = 'auto'; pop.style.bottom = '6px';
+    pop.style.maxHeight = '42vh'; pop.style.overflowY = 'auto'; pop.style.width = 'auto';
+    const cw = document.getElementById('greg-canvas-wrap');
+    if (cw && r) {
+      const pr = pop.getBoundingClientRect();
+      let sp = document.getElementById('greg-pop-spacer');                  // Platzhalter am Ende (padding zählt im Flex-Container nicht)
+      if (!sp) { sp = document.createElement('div'); sp.id = 'greg-pop-spacer'; sp.style.flex = '0 0 auto'; cw.appendChild(sp); }
+      sp.style.height = Math.ceil(pr.height + 0.5 * cw.clientHeight) + 'px';
+      const qb = document.getElementById('greg-quickbar'), qbH = qb && getComputedStyle(qb).position === 'sticky' ? qb.getBoundingClientRect().height : 0;
+      const top = cw.getBoundingClientRect().top + qbH;   // unter der mitrollenden Werkzeugleiste
+      const want = Math.max(top + 8, Math.min(r.top - 30, pr.top - 16 - (r.bottom - r.top)));   // Neume knapp über dem Fenster
+      if (!pop._scrolled && (r.bottom > pr.top - 12 || r.top < top)) cw.scrollTop += (r.top - want);   // nur beim Öffnen, sonst kämpft es gegen das Scrollen
+      pop._scrolled = true;
+    }
+    return;
+  }
   const vw = window.innerWidth, vh = window.innerHeight, pw = pop.offsetWidth, ph = pop.offsetHeight;
   let x = r ? r.left - 20 : (vw - pw) / 2, y = r ? r.bottom + 34 : 80; // unter der Note, unterhalb der Textzeile
   if (r && y + ph > vh - 8) y = Math.max(8, r.top - ph - 10);              // kein Platz unten -> über der Note

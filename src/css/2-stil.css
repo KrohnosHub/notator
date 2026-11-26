@@ -89,6 +89,7 @@
 .greg-pop .greg-pop-lbl{min-width:80px;color:#8aa070;font-size:12px !important}
 .greg-pop input[type=text],.greg-pop input:not([type]),.greg-pop select{font-size:14px !important;padding:3px 6px !important;border-radius:3px}
 .greg-pop label,.greg-pop span{font-size:13px !important;gap:3px !important}
+.greg-pop .greg-pop-btns{position:sticky;bottom:-8px;background:#1a2414;padding:6px 0 4px;margin-bottom:-4px;z-index:1;border-top:1px solid #2a3820} /* Build 450: Knöpfe bleiben im scrollbaren Handy-Fenster sichtbar */
 .greg-pop input[type=checkbox]{width:16px;height:16px;margin:0}
 .greg-pop input.greg-pop-syl{font-size:18px !important;width:5.2em !important;color:#f0f4d8 !important}
 .greg-pop-hd{font-size:11px;color:#8aa070;border-bottom:1px solid #2a3820;padding-bottom:4px}

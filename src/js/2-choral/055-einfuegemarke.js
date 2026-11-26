@@ -14,10 +14,7 @@ function gregInsAt() {
   return a;
 }
 // Note-tragende Einträge (wie gregOrdinalToEntryIndex zählt) vor Index i
-function gregNoteOrdinalBefore(i) {
-  let n = 0; for (let k = 0; k < i && k < gregEntries.length; k++) { const e = gregEntries[k]; if (e.type === 'note' && e.pitches && e.pitches.length) n++; }
-  return n;
-}
+function gregNoteOrdinalBefore(i) { return gregEntryToOrdinal(gregEntries, i); }   // Notengruppen davor (Build 450: genau gezählt)
 // Fügt Einträge an der Marke ein (oder hängt an) und gibt den Index des ersten zurück. Notizen (comment) sind über die
 // Notennummer verankert – bei eingefügten Noten werden die Anker dahinter mitverschoben.
 function gregAddEntries(...items) {
@@ -28,7 +25,7 @@ function gregAddEntries(...items) {
     if (at != null) window._gregInsAt = gregEntries.length;   // Marke am Ende bleibt am Ende
     return gregEntries.length - items.length;
   }
-  const nNotes = items.filter(e => e.type === 'note' && e.pitches && e.pitches.length).length;
+  const nNotes = items.reduce((t, e) => t + gregEntryNotationCount(e), 0);
   if (nNotes) {
     const ord = gregNoteOrdinalBefore(at);
     gregEntries.forEach(c => { if (c.type === 'comment' && typeof c.anchorNoteIdx === 'number' && c.anchorNoteIdx >= ord) c.anchorNoteIdx += nNotes; });

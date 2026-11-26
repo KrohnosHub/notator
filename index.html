@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-R1X4oTpCB8SfYQENyI7xVc2QhKnsk90t/F0zaG66jYY=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-CltBp5KKFBnMlxrePKwu6DtwyBWfRNALUaWX7eqCPUo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-Ppo8jF/et2b4lH+SqBvdaPklAsGNtAZ8nxdsylhlxbo=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-CltBp5KKFBnMlxrePKwu6DtwyBWfRNALUaWX7eqCPUo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -312,6 +312,7 @@ input[type=file]{display:none}
 .greg-pop .greg-pop-lbl{min-width:80px;color:#8aa070;font-size:12px !important}
 .greg-pop input[type=text],.greg-pop input:not([type]),.greg-pop select{font-size:14px !important;padding:3px 6px !important;border-radius:3px}
 .greg-pop label,.greg-pop span{font-size:13px !important;gap:3px !important}
+.greg-pop .greg-pop-btns{position:sticky;bottom:-8px;background:#1a2414;padding:6px 0 4px;margin-bottom:-4px;z-index:1;border-top:1px solid #2a3820} /* Build 450: Knöpfe bleiben im scrollbaren Handy-Fenster sichtbar */
 .greg-pop input[type=checkbox]{width:16px;height:16px;margin:0}
 .greg-pop input.greg-pop-syl{font-size:18px !important;width:5.2em !important;color:#f0f4d8 !important}
 .greg-pop-hd{font-size:11px;color:#8aa070;border-bottom:1px solid #2a3820;padding-bottom:4px}
@@ -2848,10 +2849,7 @@ function gregInsAt() {
   return a;
 }
 // Note-tragende Einträge (wie gregOrdinalToEntryIndex zählt) vor Index i
-function gregNoteOrdinalBefore(i) {
-  let n = 0; for (let k = 0; k < i && k < gregEntries.length; k++) { const e = gregEntries[k]; if (e.type === 'note' && e.pitches && e.pitches.length) n++; }
-  return n;
-}
+function gregNoteOrdinalBefore(i) { return gregEntryToOrdinal(gregEntries, i); }   // Notengruppen davor (Build 450: genau gezählt)
 // Fügt Einträge an der Marke ein (oder hängt an) und gibt den Index des ersten zurück. Notizen (comment) sind über die
 // Notennummer verankert – bei eingefügten Noten werden die Anker dahinter mitverschoben.
 function gregAddEntries(...items) {
@@ -2862,7 +2860,7 @@ function gregAddEntries(...items) {
     if (at != null) window._gregInsAt = gregEntries.length;   // Marke am Ende bleibt am Ende
     return gregEntries.length - items.length;
   }
-  const nNotes = items.filter(e => e.type === 'note' && e.pitches && e.pitches.length).length;
+  const nNotes = items.reduce((t, e) => t + gregEntryNotationCount(e), 0);
   if (nNotes) {
     const ord = gregNoteOrdinalBefore(at);
     gregEntries.forEach(c => { if (c.type === 'comment' && typeof c.anchorNoteIdx === 'number' && c.anchorNoteIdx >= ord) c.anchorNoteIdx += nNotes; });
@@ -3552,7 +3550,7 @@ function gregEditEntryInner(i) {
 }
 
 // ── Schwebendes Bearbeitungsfenster an der Note ──────────────────────
-function gregEditPopRemove() { const p = document.getElementById('greg-edit-pop'); if (p) p.remove(); }
+function gregEditPopRemove() { const p = document.getElementById('greg-edit-pop'); if (p) p.remove(); const sp = document.getElementById('greg-pop-spacer'); if (sp) sp.remove(); }
 function gregEditPopCreate(i) {
   gregEditPopRemove(); gregSylInlineClose(false);
   const pop = document.createElement('div');
@@ -3617,7 +3615,10 @@ function gregEditPopButtons(host, i, save) {
     b('⇤ davor', 'Neue Noten, Trennstriche usw. vor diesem Eintrag einfügen (statt am Ende)', () => { const k = cur(); gregCloseEditForm(); gregRefreshListNoRender(); gregInsSet(k); });
     b('danach ⇥', 'Neue Noten, Trennstriche usw. nach diesem Eintrag einfügen (statt am Ende)', () => { const k = cur(); gregCloseEditForm(); gregRefreshListNoRender(); gregInsSet(k + 1); });
     if (window._gregInsAt != null) b('⇥ ans Ende', 'Einfügemarke aufheben – neue Elemente wieder am Ende (Esc)', () => { gregCloseEditForm(); gregRefreshListNoRender(); gregInsClear(); });
-    host.appendChild(row);
+    const _after = (host.querySelector('.greg-pop-pitches') || {}).closest ? host.querySelector('.greg-pop-pitches').closest('.greg-pop-row') : null;
+    let _last = _after;   // neue Zeilen direkt unter «Neume» (Build 450: im kurzen Handy-Fenster sonst erst nach Scrollen sichtbar)
+    const put = el => { if (_last && _last.parentNode) { _last.parentNode.insertBefore(el, _last.nextSibling); _last = el; } else host.appendChild(el); };
+    put(row);
     const e0 = gregEntries[i];
     if (e0 && e0.type === 'note') {
       const row2 = document.createElement('div'); row2.className = 'greg-pop-row greg-pop-div';
@@ -3638,7 +3639,7 @@ function gregEditPopButtons(host, i, save) {
         };
         row2.appendChild(x);
       });
-      host.appendChild(row2);
+      put(row2);
       const pit = host.querySelector('.greg-pop-pitches');
       if (pit) {
         const row3 = document.createElement('div'); row3.className = 'greg-pop-row'; row3.style.cssText = row.style.cssText;
@@ -3647,7 +3648,7 @@ function gregEditPopButtons(host, i, save) {
         tb.title = 'Danach ins Notensystem klicken: jeder Klick hängt einen Ton an diese Silbe an (Feld «Töne»); dann «✓ Übernehmen». Der Neumentyp passt sich an.';
         tb.onclick = () => { window._gregPitchInput = window._gregPitchInput === pit ? null : pit; upd();
           gregGst(window._gregPitchInput ? 'Töne per Klick: ins Notensystem klicken – jeder Klick hängt einen Ton an diese Silbe an. Dann «✓ Übernehmen».' : 'Töne per Klick beendet.'); };
-        upd(); row3.appendChild(tb); host.appendChild(row3);
+        upd(); row3.appendChild(tb); put(row3);
       }
     }
   }
@@ -3705,6 +3706,25 @@ function gregEditPopPlace() {
   const i = pop._idx;
   let r = gregEntryClientRect(i);
   if (!r) { const row = document.querySelectorAll('#greg-entry-list [data-idx]')[i]; if (row) { const b = row.getBoundingClientRect(); r = { left: b.right + 8, top: b.top, right: b.right + 8, bottom: b.top }; } }
+  // Handy (Build 450, Meldung Matthias: Fenster verdeckte die Neume, Notenbereich liess sich nicht weiterscrollen): Fenster unten
+  // andocken, höchstens 42 % hoch und in sich scrollbar; der Notenbereich bekommt unten Platz und rollt die Neume über das Fenster
+  if (typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) {
+    pop.style.left = '6px'; pop.style.right = '6px'; pop.style.top = 'auto'; pop.style.bottom = '6px';
+    pop.style.maxHeight = '42vh'; pop.style.overflowY = 'auto'; pop.style.width = 'auto';
+    const cw = document.getElementById('greg-canvas-wrap');
+    if (cw && r) {
+      const pr = pop.getBoundingClientRect();
+      let sp = document.getElementById('greg-pop-spacer');                  // Platzhalter am Ende (padding zählt im Flex-Container nicht)
+      if (!sp) { sp = document.createElement('div'); sp.id = 'greg-pop-spacer'; sp.style.flex = '0 0 auto'; cw.appendChild(sp); }
+      sp.style.height = Math.ceil(pr.height + 0.5 * cw.clientHeight) + 'px';
+      const qb = document.getElementById('greg-quickbar'), qbH = qb && getComputedStyle(qb).position === 'sticky' ? qb.getBoundingClientRect().height : 0;
+      const top = cw.getBoundingClientRect().top + qbH;   // unter der mitrollenden Werkzeugleiste
+      const want = Math.max(top + 8, Math.min(r.top - 30, pr.top - 16 - (r.bottom - r.top)));   // Neume knapp über dem Fenster
+      if (!pop._scrolled && (r.bottom > pr.top - 12 || r.top < top)) cw.scrollTop += (r.top - want);   // nur beim Öffnen, sonst kämpft es gegen das Scrollen
+      pop._scrolled = true;
+    }
+    return;
+  }
   const vw = window.innerWidth, vh = window.innerHeight, pw = pop.offsetWidth, ph = pop.offsetHeight;
   let x = r ? r.left - 20 : (vw - pw) / 2, y = r ? r.bottom + 34 : 80; // unter der Note, unterhalb der Textzeile
   if (r && y + ph > vh - 8) y = Math.max(8, r.top - ph - 10);              // kein Platz unten -> über der Note
@@ -4862,16 +4882,34 @@ function gregCountNoteEntries(entries, uptoIdx) {
 // numbering), returns its actual index within `entries`. Used to jump from
 // "the note the user clicked on" back to "which row in the entry list is
 // that".
+// Build 450 (Meldung Matthias: Klick öffnete eine Neume ca. 2 Silben weiter rechts): Ein Eintrag mit vielen Tönen («efgfddfe»)
+// zeichnet exsurge als mehrere Neumen – «ein Eintrag = eine Notengruppe» stimmte dann ab dort nicht mehr. Jetzt wird je Eintrag
+// gezählt, wie viele Notengruppen sein GABC ergibt (wie die rote Hervorhebung, gregEntryNotationEls).
+function gregEntryNotationCount(e) {
+  if (!e || e.type !== 'note' || !e.pitches || !e.pitches.length) return 0;
+  if (typeof gregEntriesToBody !== 'function' || typeof gregCountNoteBearingNotations !== 'function' || typeof exsurge === 'undefined') return 1;
+  const sig = JSON.stringify([e.pitches, e.neume, e.notes ? e.notes.length : 0, e.accidental || '', e.rawPitches || '']);
+  if (e._ntCountSig === sig && typeof e._ntCount === 'number') return e._ntCount;
+  let n = null;
+  try { n = gregCountNoteBearingNotations(gregEntriesToBody([Object.assign({}, e, {syllable: e.syllable || 'x'})], 'c4'), new exsurge.ChantContext()); } catch (err) { n = null; }
+  n = n == null || n < 1 ? 1 : n;
+  try { Object.defineProperty(e, '_ntCount', {value: n, writable: true, configurable: true, enumerable: false});
+    Object.defineProperty(e, '_ntCountSig', {value: sig, writable: true, configurable: true, enumerable: false}); } catch (err) { /* eingefroren */ }
+  return n;
+}
 function gregOrdinalToEntryIndex(entries, ordinal) {
   let n = 0;
   for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    if (e.type === 'note' && e.pitches && e.pitches.length) {
-      if (n === ordinal) return i;
-      n++;
-    }
+    const k = gregEntryNotationCount(entries[i]);
+    if (k && ordinal < n + k) return i;
+    n += k;
   }
   return null;
+}
+// Notengruppen-Nummer (wie in score.notations gezählt) des ersten Eintrags ab Index i
+function gregEntryToOrdinal(entries, i) {
+  let n = 0; for (let k = 0; k < i && k < entries.length; k++) n += gregEntryNotationCount(entries[k]);
+  return n;
 }
 
 // Resolves an ordinal note index to its absolute {x,y} position in the
@@ -9314,7 +9352,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '449';
+const NOTATOR_BUILD_ID = '450';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
