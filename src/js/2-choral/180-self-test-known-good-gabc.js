@@ -401,7 +401,7 @@ function gregImportGABCString(gabcStr, opts) {
           // Rohform nur übernehmen, wenn sie zur Mora-Deutung passt: bei
           // gestapelten Morae ("dc..") erhält die vorangehende Note eine
           // Mora, die im Original-Suffix nicht steht -> normal ausgeben.
-          if (rt.suf.indexOf('..') < 0 && (/\./.test(rt.suf) === !!cn.mora)) { cn.gabcPre = rt.pre; cn.gabcSuf = rt.suf; cn.gabcSig = gregRawNoteSig(cn); }
+          if (rt.suf.indexOf('..') < 0 && (/\./.test(rt.suf) === !!cn.mora)) { cn.gabcPre = rt.pre; cn.gabcSuf = rt.suf; cn.gabcSig = gregRawNoteSig(cn); if (rt.cont) cn.gabcCont = true; }
           if (i === 0) sepRaw = rt.sep;
           _rawNote = k + 1;
           break;
@@ -545,7 +545,8 @@ function gregImportGABCString(gabcStr, opts) {
       }
 
       if (!nt.notes || !nt.notes.length) {
-        if (nt.lyrics && nt.lyrics[0] && nt.lyrics[0].text) {
+        // auch nur «<alt>…</alt>()» (Text über dem System ohne Silbe, «Hic genuflectitur») – vorher ging er verloren (Build 444)
+        if (nt.lyrics && nt.lyrics[0] && (nt.lyrics[0].text || (cname === 'TextOnly' && /<alt>/i.test(nt.lyrics[0].gabcRaw || '')))) {
           // exsurge distinguishes two very different zero-note cases that
           // both end up here, and export must NOT treat them the same way:
           //   - a standalone "text()" group (e.g. "<i>Ant.</i>()", used for

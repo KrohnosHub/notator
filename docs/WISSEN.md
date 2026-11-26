@@ -44,6 +44,9 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   ChantMapping ein Array zurück – das ganze Wort fehlte im Notenbild und im Import (Media vita, GregoBase-Schreibweise). Notator-Patch:
   Silbe an die nächste Gruppe weitergeben. TextOnly-Notationen haben in exsurge immer `lyricType` 0 – ob eine notenlose Silbe zum Wort
   gehört, erkennt der Export am gleichen `mappingIdx` (ein Mapping je Wort).
+- **Build 444 (exsurge-Patches):** In `createNoteFromData` erzeugte das zweite «v»/«s» («hvv», «gss») eine neue Note ohne Tonhöhe
+  (Standard = «g») – jetzt übernimmt sie die Tonhöhe der ersten. In `createMappingFromWord` wird Neumenschrift nach «|» (nabc) und
+  «[alt:…]» aus der Gruppe entfernt und «( )» wie «()» behandelt.
 - `<i>…</i>` wird intern wie `_…_` als Kursiv behandelt (exsurge kannte nur `_`). Folge: `lyric.text` verliert
   die Tags schon beim Parsen – für die Erkennung `lyric.originalText` lesen.
 - exsurge färbt «V/.», «R/.», «A/.» fest rot → `gregNeutralizeRubricRed()` setzt nach dem Rendern auf Schwarz.
@@ -290,6 +293,11 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
 - **GABC-Rundlauf (Build 443, 26.11.2026):** `tests/gabc-rundlauf.test.js` importiert/exportiert alle Soll-Stücke zweimal; vorher waren
   62 von 63 stabil (Media vita verlor «vé…runt»). Gewollte Vereinheitlichungen beim Export: «ed..» → «e.d.», «/» zwischen Neumenteilen,
   ♭ als eigene Gruppe vor der Silbe («(ix)á(i)»).
+- **GregoBase-Stichprobe (Build 444, 26.11.2026):** 150 zufällige GregoBase-Dateien importiert/exportiert (Skript nur im Scratchpad):
+  vorher 34 auffällig, danach 14 – der Rest sind TeX-Befehle in `<v>…</v>` («\greheightstar», «\textcolor»), die Notator bewusst
+  nicht darstellt, und Kopfzeilen. Rohform-Zerlegung (`gregGabcRawTokens`) muss sich genau wie exsurge verhalten (eine Rohnote je
+  exsurge-Note), sonst verschiebt sich die Zuordnung «Original-gabc je Note» auf die Nachbarsilben. Alte gespeicherte Rohformen mit
+  «vv»/«ss» werden beim Export ignoriert.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

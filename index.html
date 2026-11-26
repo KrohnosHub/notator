@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-ye2XI0x1kXPmUS/spOuX/Jv/1p7zzjMR3t+ISsEWV8c=' 'sha256-bZm6XR4T/KF11yoqR78A0gQiugXs1D/qFHIEzMZsRaw=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-O0YPTUc8/R13al7zOH90xLlfEHaxLHea6h2BCpcMd7s=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-ZdpsQhvtjtbEZPHl+AAjKxx8WL3AeAIVlEfDkK+7OMo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -950,7 +950,7 @@ function gregGabcRawTokens(body) {
   const notes = [], clefs = [], custos = [];
   const groupRe = /\(([^)]*)\)/g; let g;
   while ((g = groupRe.exec(body))) {
-    const t = g[1]; let i = 0, sep = '', pre = '', last = null;
+    const t = g[1].split('|')[0].replace(/\[alt:[^\]]*\]/gi, ''); let i = 0, sep = '', pre = '', last = null;   // wie exsurge (Build 444): Neumenschrift nach «|» ignorieren
     while (i < t.length) {
       const c = t[i];
       if (c === '[') { const j = t.indexOf(']', i); const br = j < 0 ? t.slice(i) : t.slice(i, j + 1);
@@ -969,7 +969,15 @@ function gregGabcRawTokens(body) {
           if (d === '[') { const k = t.indexOf(']', j); j = k < 0 ? t.length : k + 1; continue; }
           break;
         }
-        last = { pitch: c.toLowerCase(), pre, suf: t.slice(i + 1, j), sep };
+        const suf = t.slice(i + 1, j), rep = /^(v{2,3}|s{2,3})(?![0-9])/.exec(suf);
+        if (rep) {                                               // Bivirga/Trivirga «gvv», Distropha/Tristropha «gss»: je Zeichen eine Note (Build 444)
+          for (let r = 0; r < rep[1].length; r++) {
+            last = { pitch: c.toLowerCase(), pre: r ? '' : pre, suf: rep[1][0] + (r === rep[1].length - 1 ? suf.slice(rep[1].length) : ''), sep: r ? '' : sep, cont: r > 0 };
+            notes.push(last);
+          }
+          i = j; sep = ''; pre = ''; continue;
+        }
+        last = { pitch: c.toLowerCase(), pre, suf, sep };
         notes.push(last); i = j; sep = ''; pre = ''; continue;
       }
       if (c === '/') { let j = i + 1; if (t[j] === '/') j++; else if (t[j] === '0') j++; else if (t[j] === '[') { const k = t.indexOf(']', j); j = k < 0 ? t.length : k + 1; }
@@ -1010,8 +1018,10 @@ function buildSingleNeumeGABC(e) {
     // "g" note).
     return e.notes.map((n, i) => {
       // Original-gabc der Note, solange unverändert (siehe gregGabcRawTokens)
-      if (n.gabcSuf !== undefined && n.gabcSig === gregRawNoteSig(n)) {
+      // «vv»/«ss» am Anfang: Rohform aus der Zeit vor Build 444 (Bivirga als eine Note gemerkt) – nicht übernehmen, sonst doppelte Noten
+      if (n.gabcSuf !== undefined && n.gabcSig === gregRawNoteSig(n) && !/^(vv|ss)/.test(n.gabcSuf)) {
         const pc = (n.shape === 2) ? n.pitch.toUpperCase() : n.pitch;
+        if (n.gabcCont && i > 0 && e.notes[i - 1].pitch === n.pitch && e.notes[i - 1].gabcSuf !== undefined) return n.gabcSuf;   // «hvv»: Folge-Virga ohne Tonbuchstaben
         return (n.gabcPre || '') + pc + n.gabcSuf;
       }
       // ix prefix (ascending quilisma/oriscus variant) = shapeModifiers & Ascending
@@ -1426,7 +1436,8 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
     }
 
     if (inRun) endRun();
-    if (e.type === 'special')        { frags.push({text: e.text, glue:false, special: true}); }
+    // «V/.», «R/.», «A/.» (aus «<sp>V/</sp>.») wieder in <sp> fassen – exsurge liest «V/» ohne <sp> als «V» (Build 444, GregoBase-Rundlauf)
+    if (e.type === 'special')        { frags.push({text: String(e.text).replace(/^([VRA])\/(\.?)$/, '<sp>$1/</sp>$2'), glue:false, special: true}); }
     else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue: (() => {      // auch nach einer Silbe mit Noten desselben Worts («glo()ri(f)a()»)
       if (typeof e.mappingIdx !== 'number') return false;
       for (let j = idx - 1; j >= 0; j--) { const n = entries[j]; if (n.type === 'linebreak' || n.type === 'comment') continue; return n.mappingIdx === e.mappingIdx && (n.type === 'note' || n.type === 'textonly'); }
@@ -2799,13 +2810,13 @@ let gregSelectedIndices = new Set(); // indices into gregEntries currently check
 
 function gregEntryLabel(e) {
   if (e.type==='divisio') return '<span style="color:#c8a060;font-weight:bold">'+e.div+'</span>';
-  if (e.type==='special') return '<span style="color:#a06030">'+e.text+'</span>';
-  if (e.type==='textonly') return '<span style="color:#c8a060">'+e.text+'</span> <span style="color:#6b8a60;font-size:8px">standalone</span>';
+  if (e.type==='special') return '<span style="color:#a06030">'+gregEscHtml(e.text)+'</span>';
+  if (e.type==='textonly') return '<span style="color:#c8a060">'+gregEscHtml(e.text)+'</span> <span style="color:#6b8a60;font-size:8px">standalone</span>';
   if (e.type==='linebreak') return '<span style="font-size:11px;color:#6b8a60">⏎ Neue Notenlinie</span>';
-  if (e.type==='raw') return '<span style="color:#c8a060">' + (e.label || e.gabc) + '</span> <span style="color:#6b8a60;font-size:8px">' + gregEscHtml(e.gabc) + '</span>';
-  if (e.type==='dropcapletter') return '<span style="font-size:13px;font-weight:bold;color:#c0d890">'+e.text+'</span> <span style="color:#6b8a60;font-size:8px">Drop Cap (ohne Noten)</span>';
-  if (e.type==='directive') return '<i style="color:#c8a060">'+e.text+'</i> <span style="color:#6b8a60;font-size:8px">kursiv</span>';
-  if (e.type==='comment') return '<span style="color:#8b4513">&#128172; '+e.text+'</span>';
+  if (e.type==='raw') return '<span style="color:#c8a060">' + gregEscHtml(e.label || e.gabc) + '</span> <span style="color:#6b8a60;font-size:8px">' + gregEscHtml(e.gabc) + '</span>';
+  if (e.type==='dropcapletter') return '<span style="font-size:13px;font-weight:bold;color:#c0d890">'+gregEscHtml(e.text)+'</span> <span style="color:#6b8a60;font-size:8px">Drop Cap (ohne Noten)</span>';
+  if (e.type==='directive') return '<i style="color:#c8a060">'+gregEscHtml(e.text)+'</i> <span style="color:#6b8a60;font-size:8px">kursiv</span>';
+  if (e.type==='comment') return '<span style="color:#8b4513">&#128172; '+gregEscHtml(e.text)+'</span>';
   const hmark = (e.hyphen && e.wordEnd === undefined) ? '<span style="color:#a8d878">-</span>' : '';
   const wemark = e.wordEnd ? '<span style="color:#c0a060" title="Wortende"> |</span>' : '';
   function fmtGroup(g) {
@@ -2832,7 +2843,7 @@ function gregEntryLabel(e) {
   }
   const isContinuation = !e.syllable && !e.hyphen;
   const sylDisplay = e.syllable
-    ? (e.italic ? '<i>' + e.syllable + '</i>' : e.syllable)
+    ? (e.italic ? '<i>' + gregEscHtml(e.syllable) + '</i>' : gregEscHtml(e.syllable))
     : (isContinuation ? '<span style="color:#5a7a50">↳</span>' : '—');
   return '<b style="color:#c0d890">'+sylDisplay+hmark+wemark+'</b><span style="color:#6b8a60;font-size:9px"> '+neumeInfo+'</span>';
 }
@@ -8065,7 +8076,7 @@ function gregImportGABCString(gabcStr, opts) {
           // Rohform nur übernehmen, wenn sie zur Mora-Deutung passt: bei
           // gestapelten Morae ("dc..") erhält die vorangehende Note eine
           // Mora, die im Original-Suffix nicht steht -> normal ausgeben.
-          if (rt.suf.indexOf('..') < 0 && (/\./.test(rt.suf) === !!cn.mora)) { cn.gabcPre = rt.pre; cn.gabcSuf = rt.suf; cn.gabcSig = gregRawNoteSig(cn); }
+          if (rt.suf.indexOf('..') < 0 && (/\./.test(rt.suf) === !!cn.mora)) { cn.gabcPre = rt.pre; cn.gabcSuf = rt.suf; cn.gabcSig = gregRawNoteSig(cn); if (rt.cont) cn.gabcCont = true; }
           if (i === 0) sepRaw = rt.sep;
           _rawNote = k + 1;
           break;
@@ -8209,7 +8220,8 @@ function gregImportGABCString(gabcStr, opts) {
       }
 
       if (!nt.notes || !nt.notes.length) {
-        if (nt.lyrics && nt.lyrics[0] && nt.lyrics[0].text) {
+        // auch nur «<alt>…</alt>()» (Text über dem System ohne Silbe, «Hic genuflectitur») – vorher ging er verloren (Build 444)
+        if (nt.lyrics && nt.lyrics[0] && (nt.lyrics[0].text || (cname === 'TextOnly' && /<alt>/i.test(nt.lyrics[0].gabcRaw || '')))) {
           // exsurge distinguishes two very different zero-note cases that
           // both end up here, and export must NOT treat them the same way:
           //   - a standalone "text()" group (e.g. "<i>Ant.</i>()", used for
@@ -9045,7 +9057,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '443';
+const NOTATOR_BUILD_ID = '444';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst
@@ -16008,7 +16020,9 @@ var exsurge = (() => {
         var lyricText = match[1].trim();
         if (pendingAccLyric !== null && lyricText === "") lyricText = pendingAccLyric;
         pendingAccLyric = null;
-        var notationData = match[2];
+        // Notator-Patch (Build 444): Neumenschrift nach «|» (nabc, St. Galler Neumen: «d|ta») und «[alt:…]» in der Gruppe sind keine
+        // Tonhöhen – sonst wurden ihre Buchstaben als Noten gelesen (GregoBase). Beides wird hier ignoriert.
+        var notationData = (match[2] || "").split("|")[0].replace(/\[alt:[^\]]*\]/gi, "").trim();   // «( )» wie «()» (sonst Silbe weg)
         var items = this.parseNotations(ctxt2, notationData);
         if (items.length === 0)
           continue;
@@ -16639,7 +16653,11 @@ var exsurge = (() => {
           case "s":
             if (note.shape === NoteShape.Stropha) {
               notes.push(note);
+              var prevNote = note;
               note = new Note();
+              // Notator-Patch (Build 444): «hvv»/«hss» – die weitere Virga/Stropha bekommt die Tonhöhe der ersten (vorher Standard 0 = «g»)
+              note.staffPosition = prevNote.staffPosition;
+              note.pitch = prevNote.pitch;
               episemaNoteIndex++;
             }
             note.shape = NoteShape.Stropha;
@@ -16647,7 +16665,11 @@ var exsurge = (() => {
           case "v":
             if (note.shape === NoteShape.Virga) {
               notes.push(note);
+              var prevNote = note;
               note = new Note();
+              // Notator-Patch (Build 444): «hvv»/«hss» – die weitere Virga/Stropha bekommt die Tonhöhe der ersten (vorher Standard 0 = «g»)
+              note.staffPosition = prevNote.staffPosition;
+              note.pitch = prevNote.pitch;
               episemaNoteIndex++;
             }
             note.shape = NoteShape.Virga;

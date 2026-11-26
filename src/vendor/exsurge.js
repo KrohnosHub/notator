@@ -4983,7 +4983,9 @@ var exsurge = (() => {
         var lyricText = match[1].trim();
         if (pendingAccLyric !== null && lyricText === "") lyricText = pendingAccLyric;
         pendingAccLyric = null;
-        var notationData = match[2];
+        // Notator-Patch (Build 444): Neumenschrift nach «|» (nabc, St. Galler Neumen: «d|ta») und «[alt:…]» in der Gruppe sind keine
+        // Tonhöhen – sonst wurden ihre Buchstaben als Noten gelesen (GregoBase). Beides wird hier ignoriert.
+        var notationData = (match[2] || "").split("|")[0].replace(/\[alt:[^\]]*\]/gi, "").trim();   // «( )» wie «()» (sonst Silbe weg)
         var items = this.parseNotations(ctxt2, notationData);
         if (items.length === 0)
           continue;
@@ -5614,7 +5616,11 @@ var exsurge = (() => {
           case "s":
             if (note.shape === NoteShape.Stropha) {
               notes.push(note);
+              var prevNote = note;
               note = new Note();
+              // Notator-Patch (Build 444): «hvv»/«hss» – die weitere Virga/Stropha bekommt die Tonhöhe der ersten (vorher Standard 0 = «g»)
+              note.staffPosition = prevNote.staffPosition;
+              note.pitch = prevNote.pitch;
               episemaNoteIndex++;
             }
             note.shape = NoteShape.Stropha;
@@ -5622,7 +5628,11 @@ var exsurge = (() => {
           case "v":
             if (note.shape === NoteShape.Virga) {
               notes.push(note);
+              var prevNote = note;
               note = new Note();
+              // Notator-Patch (Build 444): «hvv»/«hss» – die weitere Virga/Stropha bekommt die Tonhöhe der ersten (vorher Standard 0 = «g»)
+              note.staffPosition = prevNote.staffPosition;
+              note.pitch = prevNote.pitch;
               episemaNoteIndex++;
             }
             note.shape = NoteShape.Virga;

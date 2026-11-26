@@ -1,4 +1,4 @@
-# Notator – Stand Build 443 (26.11.2026)
+# Notator – Stand Build 444 (26.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–443 (Auszug)
+## Neu in Build 298–444 (Auszug)
 
+- **GABC (444, Stichprobe 150 GregoBase-Dateien):** Bivirga/Trivirga/Distropha («hvv», «gss») bekamen in exsurge für die Folgenote die Tonhöhe «g» und verschoben beim Export Noten auf Nachbarsilben; Neumenschrift nach «|» (St. Galler Neumen) und «[alt:…]» in Gruppen wurden als Noten gelesen; «<sp>V/</sp>.» am Trennstrich, «<alt>…</alt>()» und «( )» gingen verloren. Eintragsliste setzt Texte escaped ein.
 - **GABC (443):** Silbe an einer reinen ♭-Gruppe («vé(ix)(i)runt», GregoBase) liess exsurge das ganze Wort verlieren – in Notenbild und Import (Notator-Patch); notenlose Silben im Wort («A()do()ré()mus.») werden zusammen exportiert. Neuer Test `tests/gabc-rundlauf.test.js` (63 Soll-Stücke stabil).
 - **PDF lesen (442):** Hals eines ♭ wird nicht mehr als Zusatznote gelesen (Media vita +30 %, Inviolata +12 %, gesamt Notenzahl 75 → 77 %).
 - **PDF lesen (441):** zerfallene Notenköpfe auch ohne Notenlinie dazwischen (gesprenkelter Druck), wenn fast quadratisch und im System (Salve mater «pe»).

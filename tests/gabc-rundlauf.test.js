@@ -17,6 +17,14 @@ const FAELLE = [
   // Silbe an einer reinen Vorzeichen-Gruppe: exsurge verlor das ganze Wort (Notator-Patch in exsurge.js)
   ['(c4) a(f) vé(ix)(i)runt(h.) o(g)', '(c4) a(f) (ix)vé(i)runt(h.) o(g)'],
   ['(c4) a(f) Sán(h_)(ix)cte(g.) o(g)', '(c4) a(f) Sán(h_)(ix)cte(g.) o(g)'],
+  // Bivirga/Trivirga/Distropha: exsurge gab der zweiten Note die Tonhöhe «g», der Rohtext verschob Noten auf Nachbarsilben (Build 444)
+  ['(c4) le(gvv) a(g) b(hvvv) d(jss) e(fsss.) f(hvv.) g(g)', '(c4) le(gvv) a(g) b(hvvv) d(jss) e(fsss.) f(hvv.) g(g)'],
+  // Neumenschrift nach «|» und [alt:…] in der Gruppe sind keine Noten (Build 444)
+  ['(c3) VI(d|ta) runt(fh~|pe~) Te([alt:Tonus solemnis.]e) su(d|vi)am.(cd/efe.|/toS2hhpp2) (,)', '(c3) VI(d) runt(fh~) Te(e) su(d)am.(cd/efe.) (,)'],
+  // ℣ am Trennstrich, Text über dem System ohne Silbe, Gruppe mit Leerzeichen (Build 444)
+  ['(c4) ia.(f) <sp>V/</sp>.(::) Cap(f)', '(c4) ia.(f) <sp>V/</sp>.(::) Cap(f)'],
+  ['(c4) a(e) (::) <alt>Hic genuflectitur</alt>() Te(e)', '(c4) a(e) (::) <alt>Hic genuflectitur</alt>() Te(e)'],
+  ['(c4) a(e) <i>Chorus repetit</i>( ) At(e)', '(c4) a(e) <i>Chorus repetit</i>() At(e)'],
   // getrennte notenlose Wörter bleiben getrennt
   ['(c4) Ant.() Ps.() <i>Ant.</i>() ij.()', '(c4) Ant.() Ps.() <i>Ant.</i>() ij.()'],
 ];

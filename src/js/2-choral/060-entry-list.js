@@ -4,13 +4,13 @@ let gregSelectedIndices = new Set(); // indices into gregEntries currently check
 
 function gregEntryLabel(e) {
   if (e.type==='divisio') return '<span style="color:#c8a060;font-weight:bold">'+e.div+'</span>';
-  if (e.type==='special') return '<span style="color:#a06030">'+e.text+'</span>';
-  if (e.type==='textonly') return '<span style="color:#c8a060">'+e.text+'</span> <span style="color:#6b8a60;font-size:8px">standalone</span>';
+  if (e.type==='special') return '<span style="color:#a06030">'+gregEscHtml(e.text)+'</span>';
+  if (e.type==='textonly') return '<span style="color:#c8a060">'+gregEscHtml(e.text)+'</span> <span style="color:#6b8a60;font-size:8px">standalone</span>';
   if (e.type==='linebreak') return '<span style="font-size:11px;color:#6b8a60">⏎ Neue Notenlinie</span>';
-  if (e.type==='raw') return '<span style="color:#c8a060">' + (e.label || e.gabc) + '</span> <span style="color:#6b8a60;font-size:8px">' + gregEscHtml(e.gabc) + '</span>';
-  if (e.type==='dropcapletter') return '<span style="font-size:13px;font-weight:bold;color:#c0d890">'+e.text+'</span> <span style="color:#6b8a60;font-size:8px">Drop Cap (ohne Noten)</span>';
-  if (e.type==='directive') return '<i style="color:#c8a060">'+e.text+'</i> <span style="color:#6b8a60;font-size:8px">kursiv</span>';
-  if (e.type==='comment') return '<span style="color:#8b4513">&#128172; '+e.text+'</span>';
+  if (e.type==='raw') return '<span style="color:#c8a060">' + gregEscHtml(e.label || e.gabc) + '</span> <span style="color:#6b8a60;font-size:8px">' + gregEscHtml(e.gabc) + '</span>';
+  if (e.type==='dropcapletter') return '<span style="font-size:13px;font-weight:bold;color:#c0d890">'+gregEscHtml(e.text)+'</span> <span style="color:#6b8a60;font-size:8px">Drop Cap (ohne Noten)</span>';
+  if (e.type==='directive') return '<i style="color:#c8a060">'+gregEscHtml(e.text)+'</i> <span style="color:#6b8a60;font-size:8px">kursiv</span>';
+  if (e.type==='comment') return '<span style="color:#8b4513">&#128172; '+gregEscHtml(e.text)+'</span>';
   const hmark = (e.hyphen && e.wordEnd === undefined) ? '<span style="color:#a8d878">-</span>' : '';
   const wemark = e.wordEnd ? '<span style="color:#c0a060" title="Wortende"> |</span>' : '';
   function fmtGroup(g) {
@@ -37,7 +37,7 @@ function gregEntryLabel(e) {
   }
   const isContinuation = !e.syllable && !e.hyphen;
   const sylDisplay = e.syllable
-    ? (e.italic ? '<i>' + e.syllable + '</i>' : e.syllable)
+    ? (e.italic ? '<i>' + gregEscHtml(e.syllable) + '</i>' : gregEscHtml(e.syllable))
     : (isContinuation ? '<span style="color:#5a7a50">↳</span>' : '—');
   return '<b style="color:#c0d890">'+sylDisplay+hmark+wemark+'</b><span style="color:#6b8a60;font-size:9px"> '+neumeInfo+'</span>';
 }

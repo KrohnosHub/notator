@@ -68,7 +68,7 @@ function gregGabcRawTokens(body) {
   const notes = [], clefs = [], custos = [];
   const groupRe = /\(([^)]*)\)/g; let g;
   while ((g = groupRe.exec(body))) {
-    const t = g[1]; let i = 0, sep = '', pre = '', last = null;
+    const t = g[1].split('|')[0].replace(/\[alt:[^\]]*\]/gi, ''); let i = 0, sep = '', pre = '', last = null;   // wie exsurge (Build 444): Neumenschrift nach «|» ignorieren
     while (i < t.length) {
       const c = t[i];
       if (c === '[') { const j = t.indexOf(']', i); const br = j < 0 ? t.slice(i) : t.slice(i, j + 1);
@@ -87,7 +87,15 @@ function gregGabcRawTokens(body) {
           if (d === '[') { const k = t.indexOf(']', j); j = k < 0 ? t.length : k + 1; continue; }
           break;
         }
-        last = { pitch: c.toLowerCase(), pre, suf: t.slice(i + 1, j), sep };
+        const suf = t.slice(i + 1, j), rep = /^(v{2,3}|s{2,3})(?![0-9])/.exec(suf);
+        if (rep) {                                               // Bivirga/Trivirga «gvv», Distropha/Tristropha «gss»: je Zeichen eine Note (Build 444)
+          for (let r = 0; r < rep[1].length; r++) {
+            last = { pitch: c.toLowerCase(), pre: r ? '' : pre, suf: rep[1][0] + (r === rep[1].length - 1 ? suf.slice(rep[1].length) : ''), sep: r ? '' : sep, cont: r > 0 };
+            notes.push(last);
+          }
+          i = j; sep = ''; pre = ''; continue;
+        }
+        last = { pitch: c.toLowerCase(), pre, suf, sep };
         notes.push(last); i = j; sep = ''; pre = ''; continue;
       }
       if (c === '/') { let j = i + 1; if (t[j] === '/') j++; else if (t[j] === '0') j++; else if (t[j] === '[') { const k = t.indexOf(']', j); j = k < 0 ? t.length : k + 1; }
@@ -128,8 +136,10 @@ function buildSingleNeumeGABC(e) {
     // "g" note).
     return e.notes.map((n, i) => {
       // Original-gabc der Note, solange unverändert (siehe gregGabcRawTokens)
-      if (n.gabcSuf !== undefined && n.gabcSig === gregRawNoteSig(n)) {
+      // «vv»/«ss» am Anfang: Rohform aus der Zeit vor Build 444 (Bivirga als eine Note gemerkt) – nicht übernehmen, sonst doppelte Noten
+      if (n.gabcSuf !== undefined && n.gabcSig === gregRawNoteSig(n) && !/^(vv|ss)/.test(n.gabcSuf)) {
         const pc = (n.shape === 2) ? n.pitch.toUpperCase() : n.pitch;
+        if (n.gabcCont && i > 0 && e.notes[i - 1].pitch === n.pitch && e.notes[i - 1].gabcSuf !== undefined) return n.gabcSuf;   // «hvv»: Folge-Virga ohne Tonbuchstaben
         return (n.gabcPre || '') + pc + n.gabcSuf;
       }
       // ix prefix (ascending quilisma/oriscus variant) = shapeModifiers & Ascending
@@ -544,7 +554,8 @@ function gregEntriesToBody(entries, clefGabc, clefRaw) {
     }
 
     if (inRun) endRun();
-    if (e.type === 'special')        { frags.push({text: e.text, glue:false, special: true}); }
+    // «V/.», «R/.», «A/.» (aus «<sp>V/</sp>.») wieder in <sp> fassen – exsurge liest «V/» ohne <sp> als «V» (Build 444, GregoBase-Rundlauf)
+    if (e.type === 'special')        { frags.push({text: String(e.text).replace(/^([VRA])\/(\.?)$/, '<sp>$1/</sp>$2'), glue:false, special: true}); }
     else if (e.type === 'textonly')  { frags.push({text: e.text + '()', glue: (() => {      // auch nach einer Silbe mit Noten desselben Worts («glo()ri(f)a()»)
       if (typeof e.mappingIdx !== 'number') return false;
       for (let j = idx - 1; j >= 0; j--) { const n = entries[j]; if (n.type === 'linebreak' || n.type === 'comment') continue; return n.mappingIdx === e.mappingIdx && (n.type === 'note' || n.type === 'textonly'); }
