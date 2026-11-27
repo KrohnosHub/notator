@@ -239,8 +239,9 @@ function buildSingleNeumeGABC(e) {
     case 'punctum':    return lastMod(r(0)) + ep + ik + dot;
     case 'virga':      return r(0) + 'v' + ep + ik + dot;
     case 'quilisma':   return r(0) + 'w' + dot;
-    case 'podatus':    return r(0) + lastMod(r(1)) + ep + ik + dot;
-    case 'clivis':     return r(0) + lastMod(r(1)) + ep + ik + dot;
+    // Episem-Position (Build 451): ohne Angabe wie bisher auf der 2. Note, mit episemaPos 1 auf der ersten («f_g»)
+    case 'podatus':
+    case 'clivis':     { const epos = e.episemaPos || 2; return r(0) + (epos === 1 ? ep : '') + lastMod(r(1)) + (epos === 2 ? ep : '') + ik + dot; }
     // Salicus is intrinsically a 3-note figure (per exsurge's own Salicus
     // class, which directly indexes notes[0..2] — and per real chant
     // notation): punctum, then an ASCENDING note marked oriscus ('o'
@@ -296,7 +297,7 @@ function buildSingleNeumeGABC(e) {
     // subpunctis notes E-D capitalized). Uses rc() (not r()) so this stays
     // correct even after an edit-form save, see rc's own comment above.
     case 'pes_subpunctis':     return r(0) + r(1) + rc(2) + rc(3) + dot;
-    case 'pes_quassus':        return r(0) + 'o' + r(1) + dot;
+    case 'pes_quassus':        { const epos = e.episemaPos || 2; return r(0) + 'o' + (epos === 1 ? ep : '') + r(1) + (epos === 2 ? ep : '') + dot; }
     case 'torculus_resupinus': return r(0) + r(1) + r(2) + r(3) + dot;
     case 'porrectus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;
     case 'scandicus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;

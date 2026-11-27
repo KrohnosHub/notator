@@ -325,6 +325,11 @@ nachtragen** (kurz, mit Datum oder Build), damit alle Sitzungen – claude.ai un
   Handy: Der Notenbereich (`#greg-canvas-wrap`, Flex-Container mit mitrollender Werkzeugleiste) ignoriert `padding-bottom` beim Scrollen –
   deshalb ein Platzhalter-`div` am Ende, solange das Notenfenster offen ist. Bei 55 % Fensterhöhe blieb zwischen Werkzeugleiste und
   Fenster zu wenig Platz für eine Notenzeile, deshalb 42 %.
+- **Build 451 (27.11.2026, Meldung Matthias):** Notenfenster auf dem Handy oben statt unten (unten deckte es die PDF-Vorschau ab).
+  Episem-Position fehlte bei 2-Ton-Neumen: Der ältere Export setzte es bei Podatus/Clivis immer auf die 2. Note; jetzt `episemaPos` 1/2
+  («f_g» / «fg_»). Vorwahl beim Neumenwechsel (Podatus/Clivis 2, Torculus/Scandicus 3, Porrectus 1) – die Werkzeugleiste übergab vorher
+  immer «1». exsurge zeichnet bei der Clivis das Episem in beiden Fällen oben (Darstellung, nicht geändert). Testlehre: Das Notenfenster
+  speichert nur bei `change`-Ereignissen (musicDirty/textDirty) – programmatisch gesetzte Häkchen brauchen `dispatchEvent('change')`.
 - **Custos** lässt sich nicht an der Tonhöhe erkennen (oft wiederholt die Melodie den Ton ohnehin); in manchen Drucken sieht er
   aus wie eine Note. Versuch verworfen (Build 414).
 - API-Key in der Cloud-Umgebung als `NOTATOR_API_KEY` hinterlegen: `ANTHROPIC_API_KEY` kommt dort leer an.

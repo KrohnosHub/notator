@@ -155,21 +155,28 @@ function gregEditPopPlace() {
   const i = pop._idx;
   let r = gregEntryClientRect(i);
   if (!r) { const row = document.querySelectorAll('#greg-entry-list [data-idx]')[i]; if (row) { const b = row.getBoundingClientRect(); r = { left: b.right + 8, top: b.top, right: b.right + 8, bottom: b.top }; } }
-  // Handy (Build 450, Meldung Matthias: Fenster verdeckte die Neume, Notenbereich liess sich nicht weiterscrollen): Fenster unten
-  // andocken, höchstens 42 % hoch und in sich scrollbar; der Notenbereich bekommt unten Platz und rollt die Neume über das Fenster
+  // Handy (Build 450/451, Meldungen Matthias): Fenster oben andocken (unten verdeckte es die PDF-Vorschau), höchstens 42 % hoch und in
+  // sich scrollbar; der Notenbereich rollt beim Öffnen die bearbeitete Neume unter das Fenster (Platzhalter oben/unten, falls nötig)
   if (typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) {
-    pop.style.left = '6px'; pop.style.right = '6px'; pop.style.top = 'auto'; pop.style.bottom = '6px';
+    pop.style.left = '6px'; pop.style.right = '6px'; pop.style.top = '6px'; pop.style.bottom = 'auto';
     pop.style.maxHeight = '42vh'; pop.style.overflowY = 'auto'; pop.style.width = 'auto';
     const cw = document.getElementById('greg-canvas-wrap');
-    if (cw && r) {
-      const pr = pop.getBoundingClientRect();
-      let sp = document.getElementById('greg-pop-spacer');                  // Platzhalter am Ende (padding zählt im Flex-Container nicht)
-      if (!sp) { sp = document.createElement('div'); sp.id = 'greg-pop-spacer'; sp.style.flex = '0 0 auto'; cw.appendChild(sp); }
-      sp.style.height = Math.ceil(pr.height + 0.5 * cw.clientHeight) + 'px';
-      const qb = document.getElementById('greg-quickbar'), qbH = qb && getComputedStyle(qb).position === 'sticky' ? qb.getBoundingClientRect().height : 0;
-      const top = cw.getBoundingClientRect().top + qbH;   // unter der mitrollenden Werkzeugleiste
-      const want = Math.max(top + 8, Math.min(r.top - 30, pr.top - 16 - (r.bottom - r.top)));   // Neume knapp über dem Fenster
-      if (!pop._scrolled && (r.bottom > pr.top - 12 || r.top < top)) cw.scrollTop += (r.top - want);   // nur beim Öffnen, sonst kämpft es gegen das Scrollen
+    if (cw && r && !pop._scrolled) {
+      const pr = pop.getBoundingClientRect(), cr = cw.getBoundingClientRect();
+      const want = Math.max(pr.bottom, cr.top) + 24;                          // Oberkante der Neume knapp unter dem Fenster
+      let d = r.top - want;                                                   // > 0: Neume liegt tiefer -> hochrollen
+      const roomBelow = cr.bottom - 20 - (r.bottom - r.top);
+      if (d < 0 || r.top > roomBelow) {
+        let sp = document.getElementById('greg-pop-spacer');                // Platzhalter (padding zählt im Flex-Container nicht)
+        if (d < 0 && cw.scrollTop < -d) {                                      // ganz oben im Stück: Platz oberhalb schaffen
+          if (!sp) { sp = document.createElement('div'); sp.id = 'greg-pop-spacer'; sp.style.flex = '0 0 auto'; }
+          const qb = document.getElementById('greg-quickbar');
+          cw.insertBefore(sp, qb && qb.parentNode === cw ? qb.nextSibling : cw.firstChild);
+          const need = Math.ceil(-d - cw.scrollTop);
+          sp.style.height = need + 'px'; d += need;
+        }
+        cw.scrollTop += d;
+      }
       pop._scrolled = true;
     }
     return;

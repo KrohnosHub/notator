@@ -170,9 +170,11 @@ function gregUpdateEpisemaUI() {
   const epCb = document.getElementById('greg-episema');
   const epPos = document.getElementById('greg-episema-pos');
   if (!epCb || !epPos) return;
-  const multiNoteNeumes = ['torculus','porrectus','scandicus','climacus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
+  const multiNoteNeumes = ['podatus','clivis','pes_quassus','torculus','porrectus','scandicus','climacus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
   const neuSel = document.getElementById('greg-neume-sel');
   const curNeume = neuSel ? neuSel.value : '';
+  // Build 451: beim Wechsel des Neumentyps die übliche Lage vorwählen (Podatus/Clivis: 2. Note, Torculus/Scandicus: 3., Porrectus: 1.)
+  if (epPos._neume !== curNeume) { epPos._neume = curNeume; const d = {podatus:2, clivis:2, pes_quassus:2, torculus:3, scandicus:3, porrectus:1}[curNeume]; if (d) { epPos.value = String(d); const m = document.querySelector('[data-m="greg-episema-pos"]'); if (m) m.value = String(d); } }
   epPos.style.display = (epCb.checked && multiNoteNeumes.includes(curNeume)) ? 'inline-block' : 'none';
 }
 

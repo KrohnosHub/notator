@@ -1,4 +1,4 @@
-# Notator – Stand Build 450 (26.11.2026)
+# Notator – Stand Build 451 (27.11.2026)
 
 Live: https://krohnoshub.github.io/notator/ (GitHub Pages, Repo KrohnosHub/notator). Arbeitsweise: `CLAUDE.md`;
 Lehren, Entscheidungen von Matthias und exsurge-Eigenheiten: `docs/WISSEN.md`; Orgel-Begleitsatz: `docs/begleitsatz-regelwerk.md`.
@@ -12,8 +12,9 @@ Diese Datei gibt nur den Überblick; Einzelheiten stehen im Git-Log (`Build NNN:
 - Google-Drive-Kern `shared/gd-core.js`, gemeinsam mit dem Schola-Planer.
 - GregoBase über eigenen Proxy (Cloudflare Worker).
 
-## Neu in Build 298–450 (Auszug)
+## Neu in Build 298–451 (Auszug)
 
+- **Notenfenster (451, Meldung Matthias):** Handy: Fenster wieder oben angedockt (unten verdeckte es die PDF-Vorschau), Grösse 42 %, Neume wird darunter gerollt. Episem-Position jetzt auch bei Podatus, Clivis, Pes quassus («auf N1/N2»), Vorwahl je Neumentyp auch in der Werkzeugleiste.
 - **Notenfenster (450, Meldung Matthias):** Klick auf eine Neume öffnete nach einem Eintrag mit vielen Tönen eine Neume weiter rechts – Zuordnung zählt jetzt die Notengruppen je Eintrag. Auf dem Handy dockt das Fenster unten an (max. 42 % hoch, scrollt in sich, Knöpfe bleiben unten sichtbar) und der Notenbereich rollt die bearbeitete Neume darüber; Einfügen/Trennstrich/Töne per Klick stehen direkt unter «Neume».
 - **Notenfenster (449, Meldung Matthias):** Neumentyp mit Bild auswählen (Raster mit Name und Tonzahl statt Namensliste); «Töne per Klick» nimmt nicht mehr Töne an, als der gewählte Neumentyp hat. «Text zuerst» und Doppel-«:» rechnen mit dem eingefügten statt dem letzten Eintrag.
 - **Einfügen an beliebiger Stelle (448, Wunsch Matthias):** Einfügemarke im Notenfenster («⇤ davor» / «danach ⇥», rote Marke im Notenbild, Esc bzw. Menü «Einfügen» hebt sie auf) – Noten, Trennstriche, ij./Ps./℣, Zeilenumbruch landen dort statt am Ende; Tippen auf eine freie Stelle zwischen zwei Neumen setzt die Note dort ein; «Trennstrich danach» (, ; : ::) direkt im Notenfenster; «Töne per Klick» ergänzt Töne einer bestehenden Silbe, Neumentyp passt sich an. Fehler behoben: im Feld «Töne» ergänzte Töne gingen beim Speichern verloren, wenn der Neumentyp nicht passte.

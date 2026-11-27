@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- Content-Security-Policy: Inline-Skripte nur per Hash (build.py trägt sie ein), keine Inline-Handler (data-on…, siehe tools/handlers.py).
      Neue externe Hosts hier bewusst ergänzen. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-Ppo8jF/et2b4lH+SqBvdaPklAsGNtAZ8nxdsylhlxbo=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-CltBp5KKFBnMlxrePKwu6DtwyBWfRNALUaWX7eqCPUo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com 'sha256-MFBtoo/V2AbPTBqDlc7TQuGeoLUxoadt7nYnSVo1wxU=' 'sha256-V1DilAsmcCG+3zmO51PUUh+Dc6hHNNTmr1FIJ2y9pjI=' 'sha256-ZYK4/QbiwYz+9sfG/DU+bnBZozGob1c8rOFBPbFxqUY=' 'sha256-CltBp5KKFBnMlxrePKwu6DtwyBWfRNALUaWX7eqCPUo='; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self' data:; img-src 'self' data: blob: https://gregobase.selapa.net; media-src 'self' data: blob:; connect-src 'self' https://krohnoshub.github.io https://www.googleapis.com https://accounts.google.com https://api.anthropic.com https://notator-gregobase-proxy.matthias-krohn.workers.dev https://paulrosen.github.io https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://accounts.google.com; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- Notator hat ein eigenes (dunkles) Bedien-Design und weisse Notenblätter.
      Ohne diese Angaben färben Handy-Browser im Dunkelmodus (z.B. Samsung
@@ -1122,8 +1122,9 @@ function buildSingleNeumeGABC(e) {
     case 'punctum':    return lastMod(r(0)) + ep + ik + dot;
     case 'virga':      return r(0) + 'v' + ep + ik + dot;
     case 'quilisma':   return r(0) + 'w' + dot;
-    case 'podatus':    return r(0) + lastMod(r(1)) + ep + ik + dot;
-    case 'clivis':     return r(0) + lastMod(r(1)) + ep + ik + dot;
+    // Episem-Position (Build 451): ohne Angabe wie bisher auf der 2. Note, mit episemaPos 1 auf der ersten («f_g»)
+    case 'podatus':
+    case 'clivis':     { const epos = e.episemaPos || 2; return r(0) + (epos === 1 ? ep : '') + lastMod(r(1)) + (epos === 2 ? ep : '') + ik + dot; }
     // Salicus is intrinsically a 3-note figure (per exsurge's own Salicus
     // class, which directly indexes notes[0..2] — and per real chant
     // notation): punctum, then an ASCENDING note marked oriscus ('o'
@@ -1179,7 +1180,7 @@ function buildSingleNeumeGABC(e) {
     // subpunctis notes E-D capitalized). Uses rc() (not r()) so this stays
     // correct even after an edit-form save, see rc's own comment above.
     case 'pes_subpunctis':     return r(0) + r(1) + rc(2) + rc(3) + dot;
-    case 'pes_quassus':        return r(0) + 'o' + r(1) + dot;
+    case 'pes_quassus':        { const epos = e.episemaPos || 2; return r(0) + 'o' + (epos === 1 ? ep : '') + r(1) + (epos === 2 ? ep : '') + dot; }
     case 'torculus_resupinus': return r(0) + r(1) + r(2) + r(3) + dot;
     case 'porrectus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;
     case 'scandicus_flexus':   return r(0) + r(1) + r(2) + r(3) + dot;
@@ -2536,9 +2537,11 @@ function gregUpdateEpisemaUI() {
   const epCb = document.getElementById('greg-episema');
   const epPos = document.getElementById('greg-episema-pos');
   if (!epCb || !epPos) return;
-  const multiNoteNeumes = ['torculus','porrectus','scandicus','climacus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
+  const multiNoteNeumes = ['podatus','clivis','pes_quassus','torculus','porrectus','scandicus','climacus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
   const neuSel = document.getElementById('greg-neume-sel');
   const curNeume = neuSel ? neuSel.value : '';
+  // Build 451: beim Wechsel des Neumentyps die übliche Lage vorwählen (Podatus/Clivis: 2. Note, Torculus/Scandicus: 3., Porrectus: 1.)
+  if (epPos._neume !== curNeume) { epPos._neume = curNeume; const d = {podatus:2, clivis:2, pes_quassus:2, torculus:3, scandicus:3, porrectus:1}[curNeume]; if (d) { epPos.value = String(d); const m = document.querySelector('[data-m="greg-episema-pos"]'); if (m) m.value = String(d); } }
   epPos.style.display = (epCb.checked && multiNoteNeumes.includes(curNeume)) ? 'inline-block' : 'none';
 }
 
@@ -2725,7 +2728,7 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const quilismaPos = parseInt((document.getElementById('greg-quilisma-pos')||{value:'1'}).value) || 1;
   const accidental = _gregAccidental || null;
   const wordEnd = !_noSyl && (!!(document.getElementById('greg-wordend')||{}).checked || (/\s$/.test(_sylRaw) && !!syllable));
-  const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;
+  const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;   // Vorwahl je Neumentyp: gregUpdateEpisemaUI (Build 451)
 
   const isDescending = ['clivis','porrectus','climacus','puncta_inclinata','porrectus_flexus'].includes(neume);
 
@@ -3408,17 +3411,23 @@ function gregEditEntryInner(i) {
     const epPosSel = document.createElement('select');
     epPosSel.title = 'Episema-Position: auf welcher Note';
     epPosSel.style.cssText = 'font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px';
-    [['1','N1'],['2','N2'],['3','N3']].forEach(([v,t])=>{
-      const o=document.createElement('option');o.value=v;o.textContent=t;
-      if(String(e.episemaPos||1)===v) o.selected=true;
-      epPosSel.appendChild(o);
-    });
-    const multiNoteNeumeTypes=['torculus','porrectus','scandicus','climacus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
+    // Build 451 (Meldung Matthias: Episem auf der 1. Note von «De» nicht setzbar): Position auch bei 2-Ton-Neumen (Podatus, Clivis …),
+    // Auswahl N1…Nn nach Tonzahl; Vorgabe = bisherige Lage im Export (Podatus/Clivis/Torculus/Scandicus: letzte Note, Porrectus: erste)
+    const EP_DEFAULT = {podatus:2, clivis:2, pes_quassus:2, torculus:3, scandicus:3, porrectus:1};
+    const multiNoteNeumeTypes=['podatus','clivis','pes_quassus','torculus','porrectus','scandicus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
+    function fillEpPos(){
+      const n = Math.max(2, Math.min(4, pitI.value.split('').filter(c=>/[a-m]/i.test(c)).length || (NEUME_PITCHES[neuSel.value]||1)));
+      const cur = parseInt(epPosSel.value) || e.episemaPos || EP_DEFAULT[neuSel.value] || 1;
+      epPosSel.innerHTML = '';
+      for (let k = 1; k <= n; k++) { const o=document.createElement('option'); o.value=String(k); o.textContent='N'+k; if (k === Math.min(cur, n)) o.selected=true; epPosSel.appendChild(o); }
+    }
     function updateEpPosVis(){
       const isMulti=multiNoteNeumeTypes.includes(neuSel.value);
       epPosW.style.display=isMulti?'inline-flex':'none';
+      fillEpPos();
     }
     neuSel.addEventListener('change',updateEpPosVis);
+    pitI.addEventListener('input', fillEpPos);
     epPosW.appendChild(document.createTextNode('auf'));
     epPosW.appendChild(epPosSel);
     updateEpPosVis();
@@ -3456,7 +3465,7 @@ function gregEditEntryInner(i) {
         e.mora = moraOn.includes(e.pitches.length);
         e.moraExtra = moraOn.filter(p => p < e.pitches.length); }
       e.iktus=iktI.checked; e.iktusPos=iktPosSel.value; e.episema=epI.checked;
-      e.episemaPos=parseInt(epPosSel.value)||1;
+      e.episemaPos=parseInt(epPosSel.value)||EP_DEFAULT[e.neume]||1;
       e.liquescent=liqI.checked; e.oriscus=orisI.checked;
       e.strophicus=strI.checked; e.pressus=presI.checked;
       e.quilisma=quilI.checked; e.quilismaPos=parseInt(quilPosSel.value)||1;
@@ -3706,21 +3715,28 @@ function gregEditPopPlace() {
   const i = pop._idx;
   let r = gregEntryClientRect(i);
   if (!r) { const row = document.querySelectorAll('#greg-entry-list [data-idx]')[i]; if (row) { const b = row.getBoundingClientRect(); r = { left: b.right + 8, top: b.top, right: b.right + 8, bottom: b.top }; } }
-  // Handy (Build 450, Meldung Matthias: Fenster verdeckte die Neume, Notenbereich liess sich nicht weiterscrollen): Fenster unten
-  // andocken, höchstens 42 % hoch und in sich scrollbar; der Notenbereich bekommt unten Platz und rollt die Neume über das Fenster
+  // Handy (Build 450/451, Meldungen Matthias): Fenster oben andocken (unten verdeckte es die PDF-Vorschau), höchstens 42 % hoch und in
+  // sich scrollbar; der Notenbereich rollt beim Öffnen die bearbeitete Neume unter das Fenster (Platzhalter oben/unten, falls nötig)
   if (typeof gregIsMobileViewport === 'function' && gregIsMobileViewport()) {
-    pop.style.left = '6px'; pop.style.right = '6px'; pop.style.top = 'auto'; pop.style.bottom = '6px';
+    pop.style.left = '6px'; pop.style.right = '6px'; pop.style.top = '6px'; pop.style.bottom = 'auto';
     pop.style.maxHeight = '42vh'; pop.style.overflowY = 'auto'; pop.style.width = 'auto';
     const cw = document.getElementById('greg-canvas-wrap');
-    if (cw && r) {
-      const pr = pop.getBoundingClientRect();
-      let sp = document.getElementById('greg-pop-spacer');                  // Platzhalter am Ende (padding zählt im Flex-Container nicht)
-      if (!sp) { sp = document.createElement('div'); sp.id = 'greg-pop-spacer'; sp.style.flex = '0 0 auto'; cw.appendChild(sp); }
-      sp.style.height = Math.ceil(pr.height + 0.5 * cw.clientHeight) + 'px';
-      const qb = document.getElementById('greg-quickbar'), qbH = qb && getComputedStyle(qb).position === 'sticky' ? qb.getBoundingClientRect().height : 0;
-      const top = cw.getBoundingClientRect().top + qbH;   // unter der mitrollenden Werkzeugleiste
-      const want = Math.max(top + 8, Math.min(r.top - 30, pr.top - 16 - (r.bottom - r.top)));   // Neume knapp über dem Fenster
-      if (!pop._scrolled && (r.bottom > pr.top - 12 || r.top < top)) cw.scrollTop += (r.top - want);   // nur beim Öffnen, sonst kämpft es gegen das Scrollen
+    if (cw && r && !pop._scrolled) {
+      const pr = pop.getBoundingClientRect(), cr = cw.getBoundingClientRect();
+      const want = Math.max(pr.bottom, cr.top) + 24;                          // Oberkante der Neume knapp unter dem Fenster
+      let d = r.top - want;                                                   // > 0: Neume liegt tiefer -> hochrollen
+      const roomBelow = cr.bottom - 20 - (r.bottom - r.top);
+      if (d < 0 || r.top > roomBelow) {
+        let sp = document.getElementById('greg-pop-spacer');                // Platzhalter (padding zählt im Flex-Container nicht)
+        if (d < 0 && cw.scrollTop < -d) {                                      // ganz oben im Stück: Platz oberhalb schaffen
+          if (!sp) { sp = document.createElement('div'); sp.id = 'greg-pop-spacer'; sp.style.flex = '0 0 auto'; }
+          const qb = document.getElementById('greg-quickbar');
+          cw.insertBefore(sp, qb && qb.parentNode === cw ? qb.nextSibling : cw.firstChild);
+          const need = Math.ceil(-d - cw.scrollTop);
+          sp.style.height = need + 'px'; d += need;
+        }
+        cw.scrollTop += d;
+      }
       pop._scrolled = true;
     }
     return;
@@ -9352,7 +9368,7 @@ function gregDownloadGABC() {
 // key per-file: without it, reloading a DIFFERENT (older/newer) Notator
 // build in the same tab would incorrectly restore a previous build's
 // content (originally reported by user, Runde 56).
-const NOTATOR_BUILD_ID = '450';
+const NOTATOR_BUILD_ID = '451';
 const NOTATOR_AUTOSAVE_KEY = 'notatorGregAutosave_v1_' + NOTATOR_BUILD_ID;
 
 // Hinweis auf neue Version: offene Tabs/installierte App laufen sonst

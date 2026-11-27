@@ -442,17 +442,23 @@ function gregEditEntryInner(i) {
     const epPosSel = document.createElement('select');
     epPosSel.title = 'Episema-Position: auf welcher Note';
     epPosSel.style.cssText = 'font-size:9px;background:#0a1406;color:#a8d878;border:1px solid #3a4a30;outline:none;padding:1px';
-    [['1','N1'],['2','N2'],['3','N3']].forEach(([v,t])=>{
-      const o=document.createElement('option');o.value=v;o.textContent=t;
-      if(String(e.episemaPos||1)===v) o.selected=true;
-      epPosSel.appendChild(o);
-    });
-    const multiNoteNeumeTypes=['torculus','porrectus','scandicus','climacus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
+    // Build 451 (Meldung Matthias: Episem auf der 1. Note von «De» nicht setzbar): Position auch bei 2-Ton-Neumen (Podatus, Clivis …),
+    // Auswahl N1…Nn nach Tonzahl; Vorgabe = bisherige Lage im Export (Podatus/Clivis/Torculus/Scandicus: letzte Note, Porrectus: erste)
+    const EP_DEFAULT = {podatus:2, clivis:2, pes_quassus:2, torculus:3, scandicus:3, porrectus:1};
+    const multiNoteNeumeTypes=['podatus','clivis','pes_quassus','torculus','porrectus','scandicus','torculus_resupinus','porrectus_flexus','scandicus_flexus'];
+    function fillEpPos(){
+      const n = Math.max(2, Math.min(4, pitI.value.split('').filter(c=>/[a-m]/i.test(c)).length || (NEUME_PITCHES[neuSel.value]||1)));
+      const cur = parseInt(epPosSel.value) || e.episemaPos || EP_DEFAULT[neuSel.value] || 1;
+      epPosSel.innerHTML = '';
+      for (let k = 1; k <= n; k++) { const o=document.createElement('option'); o.value=String(k); o.textContent='N'+k; if (k === Math.min(cur, n)) o.selected=true; epPosSel.appendChild(o); }
+    }
     function updateEpPosVis(){
       const isMulti=multiNoteNeumeTypes.includes(neuSel.value);
       epPosW.style.display=isMulti?'inline-flex':'none';
+      fillEpPos();
     }
     neuSel.addEventListener('change',updateEpPosVis);
+    pitI.addEventListener('input', fillEpPos);
     epPosW.appendChild(document.createTextNode('auf'));
     epPosW.appendChild(epPosSel);
     updateEpPosVis();
@@ -490,7 +496,7 @@ function gregEditEntryInner(i) {
         e.mora = moraOn.includes(e.pitches.length);
         e.moraExtra = moraOn.filter(p => p < e.pitches.length); }
       e.iktus=iktI.checked; e.iktusPos=iktPosSel.value; e.episema=epI.checked;
-      e.episemaPos=parseInt(epPosSel.value)||1;
+      e.episemaPos=parseInt(epPosSel.value)||EP_DEFAULT[e.neume]||1;
       e.liquescent=liqI.checked; e.oriscus=orisI.checked;
       e.strophicus=strI.checked; e.pressus=presI.checked;
       e.quilisma=quilI.checked; e.quilismaPos=parseInt(quilPosSel.value)||1;

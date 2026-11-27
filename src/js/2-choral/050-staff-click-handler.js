@@ -106,7 +106,7 @@ function gregHandleClick(svgEl, clientX, clientY) {
   const quilismaPos = parseInt((document.getElementById('greg-quilisma-pos')||{value:'1'}).value) || 1;
   const accidental = _gregAccidental || null;
   const wordEnd = !_noSyl && (!!(document.getElementById('greg-wordend')||{}).checked || (/\s$/.test(_sylRaw) && !!syllable));
-  const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;
+  const episemaPos = parseInt((document.getElementById('greg-episema-pos')||{value:'1'}).value) || 1;   // Vorwahl je Neumentyp: gregUpdateEpisemaUI (Build 451)
 
   const isDescending = ['clivis','porrectus','climacus','puncta_inclinata','porrectus_flexus'].includes(neume);
 
